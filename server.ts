@@ -1,0 +1,155 @@
+import express from 'express';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { createServer as createViteServer } from 'vite';
+import cors from 'cors';
+import dotenv from 'dotenv';
+
+import pool from './src/db.js';
+
+dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+async function startServer() {
+  const app = express();
+  const PORT = 3000;
+
+  app.use(cors());
+  app.use(express.json());
+
+  // --- API Routes with MySQL ---
+  
+  // 1. Super Admin: จัดการโรงเรียน
+  app.get('/api/schools', async (req, res) => {
+    try {
+      const [rows] = await pool.query('SELECT * FROM schools ORDER BY created_at DESC');
+      res.json(rows);
+    } catch (error) {
+      console.error('Database Error:', error);
+      res.status(500).json({ error: 'ไม่สามารถดึงข้อมูลโรงเรียนได้' });
+    }
+  });
+
+  app.post('/api/schools', async (req, res) => {
+    const { name, code, province } = req.body;
+    if (!code || code.length !== 8) {
+      return res.status(400).json({ error: 'รหัสโรงเรียนต้องมี 8 หลัก' });
+    }
+    try {
+      await pool.query('INSERT INTO schools (name, code, province) VALUES (?, ?, ?)', [name, code, province]);
+      res.json({ status: 'success', message: 'เพิ่มโรงเรียนเรียบร้อย' });
+    } catch (error) {
+      console.error('Database Error:', error);
+      res.status(500).json({ error: 'ไม่สามารถเพิ่มข้อมูลโรงเรียนได้' });
+    }
+  });
+
+  // 2. Admin: จัดการครู
+  app.get('/api/teachers', async (req, res) => {
+    try {
+      const [rows] = await pool.query('SELECT * FROM users WHERE role = "teacher"');
+      res.json(rows);
+    } catch (error) {
+      console.error('Database Error:', error);
+      res.status(500).json({ error: 'ไม่สามารถดึงข้อมูลครูได้' });
+    }
+  });
+
+  // 3. Admin: จัดการนักเรียน
+  app.get('/api/students', async (req, res) => {
+    try {
+      const [rows] = await pool.query('SELECT * FROM students ORDER BY student_code ASC');
+      res.json(rows);
+    } catch (error) {
+      console.error('Database Error:', error);
+      res.status(500).json({ error: 'ไม่สามารถดึงข้อมูลนักเรียนได้' });
+    }
+  });
+
+  app.post('/api/students', async (req, res) => {
+    const { name, student_code, level, school_id } = req.body;
+    try {
+      await pool.query('INSERT INTO students (name, student_code, level, school_id) VALUES (?, ?, ?, ?)', 
+        [name, student_code, level, school_id]);
+      res.json({ status: 'success', message: 'เพิ่มนักเรียนเรียบร้อย' });
+    } catch (error) {
+      console.error('Database Error:', error);
+      res.status(500).json({ error: 'ไม่สามารถเพิ่มข้อมูลนักเรียนได้' });
+    }
+  });
+
+  app.post('/api/students/promote', async (req, res) => {
+    const { studentIds, nextLevel } = req.body;
+    try {
+      // Simple promotion logic
+      await pool.query('UPDATE students SET level = ? WHERE id IN (?)', [nextLevel, studentIds]);
+      res.json({ status: 'success', message: `เลื่อนชั้นนักเรียนเป็น ${nextLevel} เรียบร้อย` });
+    } catch (error) {
+      console.error('Database Error:', error);
+      res.status(500).json({ error: 'ไม่สามารถเลื่อนชั้นนักเรียนได้' });
+    }
+  });
+
+  // 4. บันทึกข้อมูล ปพ. ต่างๆ
+  app.post('/api/save-record', async (req, res) => {
+    const { studentId, subjectCode, subjectName, k, p, a, midterm, final, year, semester } = req.body;
+    try {
+      await pool.query(
+        'INSERT INTO grades (student_id, subject_code, subject_name, k_score, p_score, a_score, midterm_score, final_score, academic_year, semester) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        [studentId, subjectCode, subjectName, k, p, a, midterm, final, year, semester]
+      );
+      res.json({ status: 'success' });
+    } catch (error) {
+      console.error('Database Error:', error);
+      res.status(500).json({ error: 'ไม่สามารถบันทึกคะแนนได้' });
+    }
+  });
+
+  // 3. API สำหรับสร้าง PDF ปพ.5
+  app.get('/api/export-pdf/:studentId', async (req, res) => {
+    const { studentId } = req.params;
+    
+    try {
+      const PDFDocument = (await import('pdfkit')).default;
+      const doc = new PDFDocument();
+      
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename=PAPOR5_${studentId}.pdf`);
+      
+      doc.pipe(res);
+      doc.fontSize(20).text('แบบรายงานผลการพัฒนาคุณภาพผู้เรียน (ปพ.5)', { align: 'center' });
+      doc.moveDown();
+      doc.fontSize(14).text(`รหัสนักเรียน: ${studentId}`);
+      doc.text('วิชา: ภาษาไทย (ท11101)');
+      doc.text('ผลการเรียน: 4.0');
+      doc.end();
+    } catch (err) {
+      res.status(500).send('Error generating PDF');
+    }
+  });
+
+  // --- Vite Middleware for Development ---
+  if (process.env.NODE_ENV !== 'production') {
+    const vite = await createViteServer({
+      server: { middlewareMode: true },
+      appType: 'spa',
+    });
+    app.use(vite.middlewares);
+  } else {
+    // Production: Serve static files from dist
+    const distPath = path.join(process.cwd(), 'dist');
+    app.use(express.static(distPath));
+    app.get('*', (req, res) => {
+      res.sendFile(path.join(distPath, 'index.html'));
+    });
+  }
+
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running at http://localhost:${PORT}`);
+    console.log(`Node.js Version: ${process.version}`);
+  });
+}
+
+startServer();
