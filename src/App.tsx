@@ -74,18 +74,18 @@ export default function App() {
       };
       setUser(mockUser);
       
-      // Fetch real data from PHP API
+      // Fetch real data from MySQL API
       if (role === 'super_admin') {
-        const res = await fetch('/api/api.php?action=get_schools');
+        const res = await fetch('/api/schools');
         const data = await res.json();
         setSchools(data);
       }
       
-      const teacherRes = await fetch('/api/api.php?action=get_teachers');
+      const teacherRes = await fetch('/api/teachers');
       const teacherData = await teacherRes.json();
       setTeachers(teacherData);
 
-      const studentRes = await fetch('/api/api.php?action=get_students');
+      const studentRes = await fetch('/api/students');
       const studentData = await studentRes.json();
       setStudents(studentData);
       
@@ -103,14 +103,14 @@ export default function App() {
       return;
     }
     try {
-      const res = await fetch('/api/api.php?action=add_school', {
+      const res = await fetch('/api/schools', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newSchool)
       });
       if (res.ok) {
         // Refresh list
-        const refreshRes = await fetch('/api/api.php?action=get_schools');
+        const refreshRes = await fetch('/api/schools');
         const refreshData = await refreshRes.json();
         setSchools(refreshData);
         setNewSchool({ code: '', name: '', province: '' });
@@ -123,7 +123,7 @@ export default function App() {
   const handleAddStudent = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await fetch('/api/api.php?action=add_student', {
+      const res = await fetch('/api/students', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -135,7 +135,7 @@ export default function App() {
       });
       if (res.ok) {
         // Refresh list
-        const refreshRes = await fetch('/api/api.php?action=get_students');
+        const refreshRes = await fetch('/api/students');
         const refreshData = await refreshRes.json();
         setStudents(refreshData);
         setNewStudent({ id: '', name: '', level: 'ป.1', photo: null });
@@ -149,7 +149,7 @@ export default function App() {
     if (confirm('คุณต้องการเลื่อนชั้นนักเรียนทั้งหมดใช่หรือไม่?')) {
       try {
         const studentIds = students.map(s => s.id);
-        const res = await fetch('/api/api.php?action=promote_students', {
+        const res = await fetch('/api/students/promote', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -158,7 +158,7 @@ export default function App() {
           })
         });
         if (res.ok) {
-          const refreshRes = await fetch('/api/api.php?action=get_students');
+          const refreshRes = await fetch('/api/students');
           const refreshData = await refreshRes.json();
           setStudents(refreshData);
         }
