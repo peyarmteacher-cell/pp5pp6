@@ -1,9 +1,11 @@
 # คำแนะนำการติดตั้งและอัพโหลดไปยัง Hosting (Lotus)
 
 ## 1. การเตรียมฐานข้อมูล (MySQL)
-- เข้าไปที่ Control Panel ของ Hosting (เช่น DirectAdmin หรือ cPanel)
-- สร้างฐานข้อมูลใหม่ (Database Name, Username, Password)
-- นำคำสั่ง SQL จากไฟล์ `database.sql` ไปรันใน phpMyAdmin เพื่อสร้างตารางข้อมูล
+- เข้าไปที่ Control Panel ของ Hosting (เช่น DirectAdmin, cPanel หรือ Plesk)
+- สร้างฐานข้อมูลใหม่ (Database Name, Username, Password) ผ่านเมนู "MySQL Management"
+- **สำคัญ:** Hosting ส่วนใหญ่ไม่อนุญาตให้รันคำสั่ง `CREATE DATABASE` ใน phpMyAdmin
+- หลังจากสร้างฐานข้อมูลแล้ว ให้คลิกเข้า phpMyAdmin ของฐานข้อมูลนั้น
+- นำคำสั่ง SQL จากไฟล์ `database.sql` (ที่ไม่มีคำสั่ง CREATE DATABASE) ไปรันเพื่อสร้างตารางข้อมูล
 
 ## 2. การตั้งค่า Environment Variables
 - สร้างไฟล์ `.env` บน Server (หรือตั้งค่าผ่านเมนู Environment Variables ใน Hosting)

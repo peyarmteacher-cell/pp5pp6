@@ -1,8 +1,6 @@
--- คำสั่งสร้างฐานข้อมูลสำหรับระบบบริหารจัดการสถานศึกษา
+-- คำสั่งสร้างตารางข้อมูลสำหรับระบบบริหารจัดการสถานศึกษา
 -- MySQL Database Schema
-
-CREATE DATABASE IF NOT EXISTS school_db;
-USE school_db;
+-- หมายเหตุ: กรุณาสร้างฐานข้อมูลผ่าน Control Panel ของ Hosting ก่อน แล้วจึงนำคำสั่งด้านล่างนี้ไปรันใน phpMyAdmin
 
 -- 1. ตารางโรงเรียน (Schools)
 CREATE TABLE IF NOT EXISTS schools (
