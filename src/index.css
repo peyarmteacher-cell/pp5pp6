@@ -1,90 +1,14 @@
-@import "bootstrap/dist/css/bootstrap.min.css";
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-@theme {
-  --font-sans: "Inter", "Sarabun", ui-sans-serif, system-ui, sans-serif;
-  --color-primary-dark: #1e293b;
-  --color-accent-blue: #0ea5e9;
-  --color-accent-green: #10b981;
-  --color-accent-purple: #8b5cf6;
-  --color-accent-orange: #f59e0b;
-}
-
-@layer base {
-  body {
-    @apply bg-[#f8fafc] text-slate-900;
-  }
-}
-
-@layer components {
-  .sidebar-item {
-    @apply flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors rounded-lg mx-2 mb-1;
-  }
-  
-  .sidebar-item.active {
-    @apply bg-blue-600 text-white shadow-lg shadow-blue-900/20;
-  }
-
-  .stat-card {
-    @apply rounded-2xl p-4 text-white shadow-sm flex items-center justify-between overflow-hidden relative;
-  }
-
-  .stat-card-icon {
-    @apply opacity-20 absolute -right-2 -bottom-2;
-  }
-
-  .glass-card {
-    @apply bg-white border border-slate-100 shadow-sm rounded-2xl p-5;
-  }
-
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-
-  .no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-}
-
-/* Global scrollbar hide */
-html, body {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-html::-webkit-scrollbar, body::-webkit-scrollbar {
-  display: none;
-}
-
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-}
-::-webkit-scrollbar-track {
-  @apply bg-slate-100;
-}
-::-webkit-scrollbar-thumb {
-  @apply bg-slate-300 rounded-full;
+:root {
+  font-family: 'Sarabun', sans-serif;
 }
 
 body {
-  font-family: 'Sarabun', sans-serif;
-  background-color: #f8f9fa;
-}
-
-.card {
-  transition: transform 0.2s ease;
-}
-
-.table input[type="number"]::-webkit-inner-spin-button,
-.table input[type="number"]::-webkit-outer-spin-button {
-  -webkit-appearance: none;
   margin: 0;
-}
-
-.table input:focus {
-  background-color: #fff !important;
-  outline: 2px solid #0d6efd;
-  border-radius: 4px;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: #f8fafc;
 }

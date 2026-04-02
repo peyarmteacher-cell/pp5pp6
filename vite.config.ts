@@ -1,4 +1,3 @@
-import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -15,7 +14,6 @@ export default defineConfig(({ mode }) => {
     cacheDir: path.resolve(__dirname, 'node_modules/.vite'),
     plugins: [
       react(),
-      tailwindcss(),
     ],
     resolve: {
       alias: {
