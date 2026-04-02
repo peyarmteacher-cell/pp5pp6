@@ -17,9 +17,10 @@ async function startServer() {
   const PORT = 3000;
 
   app.use(cors());
-  app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-  // --- API Routes with MySQL ---
+// --- API Routes with MySQL ---
   
   // 1. Super Admin: จัดการโรงเรียน
   app.get('/api/schools', async (req, res) => {
@@ -141,7 +142,12 @@ async function startServer() {
     // Production: Serve static files from dist
     const distPath = path.join(__dirname, 'dist');
     app.use(express.static(distPath));
-    app.get('*', (req, res) => {
+    
+    // SPA Fallback - only for non-API routes
+    app.get('*all', (req, res, next) => {
+      if (req.path.startsWith('/api')) {
+        return next();
+      }
       res.sendFile(path.join(distPath, 'index.html'));
     });
   }

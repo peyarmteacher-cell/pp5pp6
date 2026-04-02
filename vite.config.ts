@@ -4,39 +4,37 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { defineConfig, loadEnv } from 'vite';
 
-// Get absolute path of current directory
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig(({ mode }) => {
-  // Use absolute path for root to prevent esbuild from walking up to restricted directories
-  const rootPath = __dirname;
-  const env = loadEnv(mode, rootPath, '');
+  const env = loadEnv(mode, __dirname, '');
   
   return {
-    root: rootPath,
+    root: __dirname,
     base: './',
-    // Explicitly set cache directory inside the project
-    cacheDir: path.resolve(rootPath, 'node_modules/.vite'),
-    plugins: [react(), tailwindcss()],
-    build: {
-      outDir: path.resolve(rootPath, 'dist'),
-      emptyOutDir: true,
-      // Ensure rollup doesn't try to access external files
-      rollupOptions: {
-        input: path.resolve(rootPath, 'index.html'),
+    cacheDir: path.resolve(__dirname, 'node_modules/.vite'),
+    plugins: [
+      react(),
+      tailwindcss(),
+    ],
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, 'src'),
       },
     },
     define: {
       'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
     },
-    resolve: {
-      alias: {
-        '@': path.resolve(rootPath, 'src'),
-      },
+    build: {
+      outDir: 'dist',
+      emptyOutDir: true,
+      rollupOptions: {
+        input: path.resolve(__dirname, 'index.html'),
+      }
     },
     server: {
+      // HMR is disabled in AI Studio via DISABLE_HMR env var.
       hmr: process.env.DISABLE_HMR !== 'true',
-    },
+    }
   };
 });
