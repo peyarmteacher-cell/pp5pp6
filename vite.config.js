@@ -1,27 +1,15 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import path from 'path'
-import { fileURLToPath } from 'url'
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
+import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vite';
 
 export default defineConfig({
-  root: __dirname,
+  // Use relative paths to avoid Windows absolute path issues on Shared Hosting
   base: './',
-  cacheDir: path.resolve(__dirname, 'node_modules/.vite'),
-  plugins: [
-    react(),
-  ],
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, 'src'),
-    },
-  },
+  plugins: [react()],
   build: {
     outDir: 'dist',
     emptyOutDir: true,
-    rollupOptions: {
-      input: path.resolve(__dirname, 'index.html'),
-    }
-  }
-})
+  },
+  server: {
+    hmr: false,
+  },
+});
