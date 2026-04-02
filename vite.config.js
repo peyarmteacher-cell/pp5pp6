@@ -1,25 +1,26 @@
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
-  // Strictly set root to current directory to stop esbuild from scanning parents
-  root: './',
+  root: __dirname,
   base: './',
-  // Use a local cache directory instead of node_modules to avoid permission issues
-  cacheDir: './.vite_cache',
+  cacheDir: path.resolve(__dirname, '.vite_cache'),
   plugins: [react()],
   resolve: {
     alias: {
-      '@': '/src',
+      '@': path.resolve(__dirname, 'src'),
     },
   },
   build: {
     outDir: 'dist',
     emptyOutDir: true,
-    // Disable minification if it causes issues, or use 'esbuild'
     minify: 'esbuild',
     rollupOptions: {
-      input: './index.html',
+      input: path.resolve(__dirname, 'index.html'),
     }
   },
 });
