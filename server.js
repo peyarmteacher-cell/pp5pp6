@@ -30,6 +30,17 @@ async function startServer() {
 
   // --- API Routes with MySQL ---
   
+  // Test Database Connection
+  pool.getConnection()
+    .then(conn => {
+      console.log('✅ Database Connected Successfully!');
+      conn.release();
+    })
+    .catch(err => {
+      console.error('❌ Database Connection Failed:', err.message);
+      console.log('App will continue to run, but database features will be unavailable.');
+    });
+
   // --- Authentication API ---
   
   app.post('/api/login', async (req, res) => {
