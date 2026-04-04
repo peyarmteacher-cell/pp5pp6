@@ -53,6 +53,7 @@ try {
     $_SESSION['user_id'] = $user['id'];
     $_SESSION['username'] = $user['username'];
     $_SESSION['role'] = $user['role'];
+    $_SESSION['is_academic'] = (bool)$user['is_academic']; // เพิ่มสถานะงานวิชาการ
     $_SESSION['name'] = $user['name'];
     $_SESSION['affiliation'] = $user['affiliation'];
     $_SESSION['school_id'] = $user['school_id'];

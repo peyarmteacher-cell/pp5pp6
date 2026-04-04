@@ -122,7 +122,7 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
             <div class="bg-white rounded-3xl w-full max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
                 <div class="p-6 border-b border-slate-100 flex justify-between items-center">
                     <h3 id="modalSchoolName" class="text-xl font-bold text-slate-800">รายชื่อคุณครู</h3>
-                    <button onclick="closeTeacherModal()" class="text-slate-400 hover:text-slate-600">
+                    <button onclick="closeModal('teacherModal')" class="text-slate-400 hover:text-slate-600 cursor-pointer">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                     </button>
                 </div>
@@ -137,6 +137,48 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                         </thead>
                         <tbody id="modalTeacherTableBody"></tbody>
                     </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal: แก้ไขโรงเรียน -->
+        <div id="editSchoolModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center p-4 z-50">
+            <div class="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl">
+                <div class="p-6 border-b border-slate-100 flex justify-between items-center">
+                    <h3 class="text-xl font-bold text-slate-800">แก้ไขข้อมูลโรงเรียน</h3>
+                    <button onclick="closeModal('editSchoolModal')" class="text-slate-400 hover:text-slate-600 cursor-pointer">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                </div>
+                <form id="editSchoolForm" class="p-6 space-y-4">
+                    <input type="hidden" id="edit_school_id">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">ชื่อโรงเรียน</label>
+                        <input type="text" id="edit_school_name" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">จังหวัด</label>
+                        <input type="text" id="edit_school_province" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none">
+                    </div>
+                    <div class="pt-2 flex gap-3">
+                        <button type="button" onclick="closeModal('editSchoolModal')" class="flex-1 px-4 py-2 border border-slate-200 text-slate-600 rounded-xl font-semibold hover:bg-slate-50 cursor-pointer transition-all">ยกเลิก</button>
+                        <button type="submit" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-xl font-semibold hover:bg-blue-700 cursor-pointer transition-all">บันทึกการแก้ไข</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Modal: ยืนยันการลบ -->
+        <div id="confirmDeleteModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center p-4 z-50">
+            <div class="bg-white rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl p-8 text-center">
+                <div class="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                </div>
+                <h3 class="text-xl font-bold text-slate-800 mb-2">ยืนยันการลบ?</h3>
+                <p class="text-slate-500 mb-6">คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลโรงเรียนนี้? การดำเนินการนี้ไม่สามารถย้อนกลับได้</p>
+                <div class="flex gap-3">
+                    <button onclick="closeModal('confirmDeleteModal')" class="flex-1 px-4 py-2 border border-slate-200 text-slate-600 rounded-xl font-semibold hover:bg-slate-50 cursor-pointer transition-all">ยกเลิก</button>
+                    <button id="confirmDeleteBtn" class="flex-1 bg-red-600 text-white px-4 py-2 rounded-xl font-semibold hover:bg-red-700 cursor-pointer transition-all">ลบข้อมูล</button>
                 </div>
             </div>
         </div>
@@ -287,47 +329,73 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                     <td class="py-3 font-medium text-slate-800 cursor-pointer hover:text-blue-600" onclick="viewTeachers(${s.id}, '${s.name}')">${s.name}</td>
                     <td class="py-3 text-slate-500">${s.province || '-'}</td>
                     <td class="py-3 flex gap-2">
-                        <button onclick="editSchool(${s.id}, '${s.name}', '${s.province || ''}')" class="text-blue-600 hover:text-blue-800 text-sm font-medium">แก้ไข</button>
-                        <button onclick="deleteSchool(${s.id})" class="text-red-600 hover:text-red-800 text-sm font-medium">ลบ</button>
+                        <button onclick="editSchool(${s.id}, '${s.name}', '${s.province || ''}')" class="text-blue-600 hover:text-blue-800 text-sm font-medium cursor-pointer">แก้ไข</button>
+                        <button onclick="deleteSchool(${s.id})" class="text-red-600 hover:text-red-800 text-sm font-medium cursor-pointer">ลบ</button>
                     </td>
                 </tr>
             `).join('');
         }
 
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
         async function editSchool(id, currentName, currentProvince) {
-            const newName = prompt('แก้ไขชื่อโรงเรียน:', currentName);
-            if (newName === null) return;
-            const newProvince = prompt('แก้ไขจังหวัด:', currentProvince);
-            if (newProvince === null) return;
+            document.getElementById('edit_school_id').value = id;
+            document.getElementById('edit_school_name').value = currentName;
+            document.getElementById('edit_school_province').value = currentProvince;
+            openModal('editSchoolModal');
+        }
+
+        document.getElementById('editSchoolForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('edit_school_id').value;
+            const name = document.getElementById('edit_school_name').value;
+            const province = document.getElementById('edit_school_province').value;
+
+            if (!confirm('ยืนยันการบันทึกการแก้ไขข้อมูลโรงเรียน?')) return;
 
             const res = await fetch('api/update_school.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id, name: newName, province: newProvince })
+                body: JSON.stringify({ id, name, province })
             });
             const result = await res.json();
             if (result.message) {
                 alert(result.message);
+                closeModal('editSchoolModal');
                 loadSchools();
             } else {
                 alert(result.error);
             }
-        }
+        };
 
         async function deleteSchool(id) {
-            if (!confirm('คุณแน่ใจหรือไม่ว่าต้องการลบโรงเรียนนี้?')) return;
-            const res = await fetch('api/delete_school.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id })
-            });
-            const result = await res.json();
-            if (result.message) {
-                alert(result.message);
-                loadSchools();
-            } else {
-                alert(result.error);
-            }
+            openModal('confirmDeleteModal');
+            document.getElementById('confirmDeleteBtn').onclick = async () => {
+                const res = await fetch('api/delete_school.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id })
+                });
+                const result = await res.json();
+                if (result.message) {
+                    alert(result.message);
+                    closeModal('confirmDeleteModal');
+                    loadSchools();
+                } else {
+                    alert(result.error);
+                    closeModal('confirmDeleteModal');
+                }
+            };
         }
 
         async function viewTeachers(schoolId, schoolName) {
@@ -352,13 +420,7 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                 `).join('');
             }
             
-            document.getElementById('teacherModal').classList.remove('hidden');
-            document.getElementById('teacherModal').classList.add('flex');
-        }
-
-        function closeTeacherModal() {
-            document.getElementById('teacherModal').classList.add('hidden');
-            document.getElementById('teacherModal').classList.remove('flex');
+            openModal('teacherModal');
         }
 
         async function loadPendingUsers() {
