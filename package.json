@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "tsx server.ts",
     "build": "node build.js",
-    "start": "node server.js",
+    "start": "node startup.cjs",
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "lint": "echo \"Skipping lint due to tsconfig removal for Plesk compatibility\""
