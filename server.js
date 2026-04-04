@@ -22,6 +22,100 @@ async function startServer() {
 
   // --- API Routes with MySQL ---
   
+  // --- Authentication API ---
+  
+  app.post('/api/login', async (req, res) => {
+    const { username, password } = req.body;
+    try {
+      const [rows] = await pool.query(
+        'SELECT u.*, s.name as school_name FROM users u LEFT JOIN schools s ON u.school_id = s.id WHERE u.username = ? AND u.password = ?',
+        [username, password]
+      );
+      
+      if (rows.length === 0) {
+        return res.status(401).json({ error: 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง' });
+      }
+      
+      const user = rows[0];
+      if (!user.is_approved) {
+        return res.status(403).json({ error: 'บัญชีของคุณยังไม่ได้รับการอนุมัติ กรุณารอการตรวจสอบ' });
+      }
+      
+      res.json(user);
+    } catch (error) {
+      console.error('Login Error:', error);
+      res.status(500).json({ error: 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ' });
+    }
+  });
+
+  app.post('/api/register', async (req, res) => {
+    const { smissCode, nationalId, name, position, role } = req.body;
+    try {
+      // Find school by SMISS code
+      const [schools] = await pool.query('SELECT id FROM schools WHERE code = ?', [smissCode]);
+      if (schools.length === 0) {
+        return res.status(404).json({ error: 'ไม่พบรหัสโรงเรียนนี้ในระบบ' });
+      }
+      
+      const schoolId = schools[0].id;
+      const defaultPassword = '123456';
+      
+      await pool.query(
+        'INSERT INTO users (username, password, name, role, school_id, national_id, position, is_approved, is_first_login) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        [nationalId, defaultPassword, name, role, schoolId, nationalId, position, false, true]
+      );
+      
+      res.json({ status: 'success', message: 'ส่งคำขอสมัครสมาชิกเรียบร้อยแล้ว กรุณารอการอนุมัติ' });
+    } catch (error) {
+      console.error('Register Error:', error);
+      if (error.code === 'ER_DUP_ENTRY') {
+        res.status(400).json({ error: 'เลขประจำตัวประชาชนนี้มีการสมัครใช้งานแล้ว' });
+      } else {
+        res.status(500).json({ error: 'ไม่สามารถสมัครสมาชิกได้' });
+      }
+    }
+  });
+
+  app.post('/api/change-password', async (req, res) => {
+    const { userId, newPassword } = req.body;
+    try {
+      await pool.query('UPDATE users SET password = ?, is_first_login = FALSE WHERE id = ?', [newPassword, userId]);
+      res.json({ status: 'success' });
+    } catch (error) {
+      res.status(500).json({ error: 'ไม่สามารถเปลี่ยนรหัสผ่านได้' });
+    }
+  });
+
+  app.get('/api/admin/pending-users', async (req, res) => {
+    const { schoolId, role } = req.query;
+    try {
+      let query = 'SELECT u.*, s.name as school_name FROM users u LEFT JOIN schools s ON u.school_id = s.id WHERE u.is_approved = FALSE';
+      let params = [];
+      
+      if (role === 'admin') {
+        query += ' AND u.school_id = ? AND u.role = "teacher"';
+        params.push(schoolId);
+      } else if (role === 'super_admin') {
+        query += ' AND u.role = "admin"';
+      }
+      
+      const [rows] = await pool.query(query, params);
+      res.json(rows);
+    } catch (error) {
+      res.status(500).json({ error: 'ไม่สามารถดึงข้อมูลคำขอได้' });
+    }
+  });
+
+  app.post('/api/admin/approve-user', async (req, res) => {
+    const { userId } = req.body;
+    try {
+      await pool.query('UPDATE users SET is_approved = TRUE WHERE id = ?', [userId]);
+      res.json({ status: 'success' });
+    } catch (error) {
+      res.status(500).json({ error: 'ไม่สามารถอนุมัติได้' });
+    }
+  });
+
   app.get('/api/schools', async (req, res) => {
     try {
       const [rows] = await pool.query('SELECT * FROM schools ORDER BY created_at DESC');

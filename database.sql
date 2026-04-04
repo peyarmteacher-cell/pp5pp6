@@ -26,7 +26,9 @@ CREATE TABLE users (
     name VARCHAR(255) NOT NULL,
     role ENUM('super_admin', 'admin', 'teacher', 'student') NOT NULL,
     school_id INT,
-    national_id VARCHAR(13),
+    national_id VARCHAR(13) UNIQUE,
+    position VARCHAR(100),
+    is_approved BOOLEAN DEFAULT FALSE,
     is_first_login BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (school_id) REFERENCES schools(id) ON DELETE SET NULL
@@ -67,8 +69,8 @@ INSERT INTO schools (id, code, name, province) VALUES (1, '10203040', 'โรง
 INSERT INTO schools (id, code, name, province) VALUES (2, '50607080', 'โรงเรียนบ้านหนองบัว', 'เลย');
 
 -- ใส่ข้อมูลผู้ใช้
-INSERT INTO users (username, password, name, role, school_id) 
-VALUES ('admin', '123456', 'Super Administrator', 'super_admin', NULL);
+INSERT INTO users (username, password, name, role, school_id, is_approved, is_first_login) 
+VALUES ('admin', '123456', 'Super Administrator', 'super_admin', NULL, TRUE, FALSE);
 
 -- ใส่ข้อมูลนักเรียน (อ้างอิง school_id = 1)
 INSERT INTO students (student_code, name, level, school_id) 

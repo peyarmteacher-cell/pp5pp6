@@ -61,38 +61,122 @@ export default function App() {
   const [newSchool, setNewSchool] = useState({ code: '', name: '', province: '' });
   const [newStudent, setNewStudent] = useState({ id: '', name: '', level: 'ป.1', photo: null });
 
-  // ฟังก์ชัน Login (จำลอง)
-  const handleLogin = async (role: string) => {
+  const [loginData, setLoginData] = useState({ username: '', password: '' });
+  const [regData, setRegData] = useState({ smissCode: '', nationalId: '', name: '', position: '', role: 'teacher' });
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [pendingUsers, setPendingUsers] = useState<any[]>([]);
+
+  // ฟังก์ชัน Login จริง
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
     setLoading(true);
     try {
-      const mockUser = { 
-        name: role === 'super_admin' ? 'Super Administrator' : (role === 'teacher' ? 'นายธีรวัฒน์ นามปะเส' : (role === 'admin' ? 'Admin โรงเรียนบ้านเลยเลย' : 'เด็กชายจำลอง 1 นามจำลอง 1')),
-        role: role,
-        isFirstLogin: role === 'teacher' && false,
-        schoolName: 'โรงเรียนบ้านเลยเลย',
-        avatar: 'https://i.pravatar.cc/150?u=' + role
-      };
-      setUser(mockUser);
-      
-      // Fetch real data from MySQL API
-      if (role === 'super_admin') {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(loginData)
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setUser(data);
+        if (data.is_first_login) {
+          setShowPasswordChange(true);
+        }
+        fetchInitialData(data);
+      } else {
+        alert(data.error);
+      }
+    } catch (err) {
+      alert('เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const res = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(regData)
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert(data.message);
+        setIsRegistering(false);
+      } else {
+        alert(data.error);
+      }
+    } catch (err) {
+      alert('เกิดข้อผิดพลาดในการสมัครสมาชิก');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword.length < 6) {
+      alert('รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร');
+      return;
+    }
+    try {
+      const res = await fetch('/api/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id, newPassword })
+      });
+      if (res.ok) {
+        alert('เปลี่ยนรหัสผ่านเรียบร้อยแล้ว');
+        setShowPasswordChange(false);
+        setUser({ ...user, is_first_login: false });
+      }
+    } catch (err) {
+      alert('ไม่สามารถเปลี่ยนรหัสผ่านได้');
+    }
+  };
+
+  const fetchInitialData = async (currentUser: any) => {
+    try {
+      if (currentUser.role === 'super_admin') {
         const res = await fetch('/api/schools');
-        const data = await res.json();
-        setSchools(data);
+        setSchools(await res.json());
+        
+        const pendingRes = await fetch('/api/admin/pending-users?role=super_admin');
+        setPendingUsers(await pendingRes.json());
       }
       
+      if (currentUser.role === 'admin') {
+        const pendingRes = await fetch(`/api/admin/pending-users?role=admin&schoolId=${currentUser.school_id}`);
+        setPendingUsers(await pendingRes.json());
+      }
+
       const teacherRes = await fetch('/api/teachers');
-      const teacherData = await teacherRes.json();
-      setTeachers(teacherData);
+      setTeachers(await teacherRes.json());
 
       const studentRes = await fetch('/api/students');
-      const studentData = await studentRes.json();
-      setStudents(studentData);
-      
-      setLoading(false);
+      setStudents(await studentRes.json());
     } catch (err) {
-      console.error('Login Error:', err);
-      setLoading(false);
+      console.error('Fetch Error:', err);
+    }
+  };
+
+  const handleApprove = async (userId: number) => {
+    try {
+      const res = await fetch('/api/admin/approve-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId })
+      });
+      if (res.ok) {
+        alert('อนุมัติเรียบร้อย');
+        fetchInitialData(user);
+      }
+    } catch (err) {
+      alert('เกิดข้อผิดพลาดในการอนุมัติ');
     }
   };
 
@@ -194,25 +278,147 @@ export default function App() {
               <GraduationCap size={40} className="text-white" />
             </div>
             <h2 className="text-3xl font-bold text-white mb-2">ระบบวัดผล ปพ.</h2>
-            <p className="text-slate-400">เข้าสู่ระบบเพื่อจัดการข้อมูลการเรียน</p>
+            <p className="text-slate-400">{isRegistering ? 'สมัครขอใช้งานระบบ' : 'เข้าสู่ระบบเพื่อจัดการข้อมูลการเรียน'}</p>
           </div>
           
           <div className="bg-white rounded-3xl p-8 shadow-2xl">
-            <div className="space-y-3">
-              <button onClick={() => handleLogin('super_admin')} className="w-full py-3 px-4 bg-slate-900 hover:bg-black text-white rounded-xl font-semibold transition-all flex items-center justify-center">
-                <Settings className="me-2" size={18} /> Super Admin
-              </button>
-              <button onClick={() => handleLogin('admin')} className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold transition-all flex items-center justify-center">
-                <School className="me-2" size={18} /> Admin โรงเรียน
-              </button>
-              <button onClick={() => handleLogin('teacher')} className="w-full py-3 px-4 border-2 border-slate-100 hover:bg-slate-50 text-slate-700 rounded-xl font-semibold transition-all flex items-center justify-center">
-                <User className="me-2" size={18} /> ครูผู้สอน
-              </button>
-              <button onClick={() => handleLogin('student')} className="w-full py-3 px-4 border-2 border-slate-100 hover:bg-slate-50 text-slate-700 rounded-xl font-semibold transition-all flex items-center justify-center">
-                <GraduationCap className="me-2" size={18} /> นักเรียน/ผู้ปกครอง
-              </button>
-            </div>
+            {!isRegistering ? (
+              <form onSubmit={handleLogin} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">ชื่อผู้ใช้งาน (เลขบัตรประชาชน)</label>
+                  <input 
+                    type="text" 
+                    required
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
+                    placeholder="กรอกชื่อผู้ใช้งาน"
+                    value={loginData.username}
+                    onChange={(e) => setLoginData({...loginData, username: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">รหัสผ่าน</label>
+                  <input 
+                    type="password" 
+                    required
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
+                    placeholder="กรอกรหัสผ่าน"
+                    value={loginData.password}
+                    onChange={(e) => setLoginData({...loginData, password: e.target.value})}
+                  />
+                </div>
+                <button type="submit" className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold transition-all flex items-center justify-center">
+                  เข้าสู่ระบบ
+                </button>
+                <div className="text-center pt-4">
+                  <button type="button" onClick={() => setIsRegistering(true)} className="text-blue-600 font-medium hover:underline">
+                    สมัครขอใช้งานระบบ
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <form onSubmit={handleRegister} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">รหัส SMISS 8 หลัก</label>
+                  <input 
+                    type="text" 
+                    maxLength={8}
+                    required
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
+                    placeholder="รหัสโรงเรียน"
+                    value={regData.smissCode}
+                    onChange={(e) => setRegData({...regData, smissCode: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">เลขประจำตัวประชาชน</label>
+                  <input 
+                    type="text" 
+                    maxLength={13}
+                    required
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
+                    placeholder="เลข 13 หลัก"
+                    value={regData.nationalId}
+                    onChange={(e) => setRegData({...regData, nationalId: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">ชื่อ-นามสกุล</label>
+                  <input 
+                    type="text" 
+                    required
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
+                    placeholder="ชื่อ-นามสกุล"
+                    value={regData.name}
+                    onChange={(e) => setRegData({...regData, name: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">ตำแหน่ง</label>
+                  <input 
+                    type="text" 
+                    required
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
+                    placeholder="เช่น ครูผู้ช่วย, ผู้อำนวยการ"
+                    value={regData.position}
+                    onChange={(e) => setRegData({...regData, position: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">ประเภทการสมัคร</label>
+                  <select 
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
+                    value={regData.role}
+                    onChange={(e) => setRegData({...regData, role: e.target.value})}
+                  >
+                    <option value="teacher">คุณครูผู้สอน</option>
+                    <option value="admin">ตัวแทนโรงเรียน (Admin)</option>
+                  </select>
+                </div>
+                <button type="submit" className="w-full py-3 px-4 bg-green-600 hover:bg-green-700 text-white rounded-xl font-semibold transition-all flex items-center justify-center">
+                  ส่งคำขอสมัครสมาชิก
+                </button>
+                <div className="text-center pt-4">
+                  <button type="button" onClick={() => setIsRegistering(false)} className="text-slate-500 font-medium hover:underline">
+                    กลับไปหน้าเข้าสู่ระบบ
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  // --- Password Change Modal ---
+  if (showPasswordChange) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 z-[100] fixed inset-0">
+        <div className="bg-white rounded-3xl p-8 shadow-2xl w-full max-w-md">
+          <div className="text-center mb-6">
+            <div className="w-16 h-16 bg-orange-100 rounded-2xl flex items-center justify-center mx-auto mb-4 text-orange-600">
+              <Lock size={32} />
+            </div>
+            <h3 className="text-2xl font-bold text-slate-900">เปลี่ยนรหัสผ่านใหม่</h3>
+            <p className="text-slate-500">เนื่องจากเป็นการเข้าใช้งานครั้งแรก กรุณาตั้งรหัสผ่านใหม่เพื่อความปลอดภัย</p>
+          </div>
+          <form onSubmit={handleChangePassword} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">รหัสผ่านใหม่</label>
+              <input 
+                type="password" 
+                required
+                minLength={6}
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
+                placeholder="อย่างน้อย 6 ตัวอักษร"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+              />
+            </div>
+            <button type="submit" className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold transition-all">
+              ยืนยันการเปลี่ยนรหัสผ่าน
+            </button>
+          </form>
         </div>
       </div>
     );
@@ -352,6 +558,33 @@ export default function App() {
         <div className="p-6 lg:p-8 flex-1">
           {activeTab === 'dashboard' && (
             <div className="space-y-8">
+              {/* Approval Section for Admins */}
+              {pendingUsers.length > 0 && (
+                <div className="bg-orange-50 border border-orange-200 rounded-3xl p-6 shadow-sm">
+                  <div className="flex items-center mb-4">
+                    <AlertCircle className="text-orange-500 me-2" />
+                    <h5 className="font-bold text-orange-900">มีคำขอสมัครสมาชิกใหม่ ({pendingUsers.length})</h5>
+                  </div>
+                  <div className="space-y-3">
+                    {pendingUsers.map(u => (
+                      <div key={u.id} className="bg-white p-4 rounded-2xl flex items-center justify-between shadow-sm border border-orange-100">
+                        <div>
+                          <p className="font-bold text-slate-900">{u.name}</p>
+                          <p className="text-xs text-slate-500">{u.position} • {u.school_name || 'ไม่ระบุโรงเรียน'}</p>
+                          <p className="text-[10px] text-slate-400">เลขบัตร: {u.national_id}</p>
+                        </div>
+                        <button 
+                          onClick={() => handleApprove(u.id)}
+                          className="px-4 py-2 bg-green-600 text-white rounded-xl text-xs font-bold hover:bg-green-700 transition-all"
+                        >
+                          อนุมัติการใช้งาน
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Welcome Banner */}
               <div className="bg-blue-600 rounded-3xl p-8 text-white relative overflow-hidden shadow-xl shadow-blue-900/20">
                 <div className="relative z-10">
