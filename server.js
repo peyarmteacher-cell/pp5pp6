@@ -17,12 +17,11 @@ async function startServer() {
   const PORT = process.env.PORT || 3000;
 
   app.use(cors());
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+  app.use(express.json({ limit: '50mb' }));
+  app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-// --- API Routes with MySQL ---
+  // --- API Routes with MySQL ---
   
-  // 1. Super Admin: จัดการโรงเรียน
   app.get('/api/schools', async (req, res) => {
     try {
       const [rows] = await pool.query('SELECT * FROM schools ORDER BY created_at DESC');
@@ -47,7 +46,6 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
     }
   });
 
-  // 2. Admin: จัดการครู
   app.get('/api/teachers', async (req, res) => {
     try {
       const [rows] = await pool.query('SELECT * FROM users WHERE role = "teacher"');
@@ -58,7 +56,6 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
     }
   });
 
-  // 3. Admin: จัดการนักเรียน
   app.get('/api/students', async (req, res) => {
     try {
       const [rows] = await pool.query('SELECT * FROM students ORDER BY student_code ASC');
@@ -84,7 +81,6 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
   app.post('/api/students/promote', async (req, res) => {
     const { studentIds, nextLevel } = req.body;
     try {
-      // Simple promotion logic
       await pool.query('UPDATE students SET level = ? WHERE id IN (?)', [nextLevel, studentIds]);
       res.json({ status: 'success', message: `เลื่อนชั้นนักเรียนเป็น ${nextLevel} เรียบร้อย` });
     } catch (error) {
@@ -93,7 +89,6 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
     }
   });
 
-  // 4. บันทึกข้อมูล ปพ. ต่างๆ
   app.post('/api/save-record', async (req, res) => {
     const { studentId, subjectCode, subjectName, k, p, a, midterm, final, year, semester } = req.body;
     try {
@@ -108,17 +103,13 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
     }
   });
 
-  // 3. API สำหรับสร้าง PDF ปพ.5
   app.get('/api/export-pdf/:studentId', async (req, res) => {
     const { studentId } = req.params;
-    
     try {
       const PDFDocument = (await import('pdfkit')).default;
       const doc = new PDFDocument();
-      
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', `attachment; filename=PAPOR5_${studentId}.pdf`);
-      
       doc.pipe(res);
       doc.fontSize(20).text('แบบรายงานผลการพัฒนาคุณภาพผู้เรียน (ปพ.5)', { align: 'center' });
       doc.moveDown();
@@ -139,11 +130,8 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
     });
     app.use(vite.middlewares);
   } else {
-    // Production: Serve static files from dist
     const distPath = path.join(__dirname, 'dist');
     app.use(express.static(distPath));
-    
-    // SPA Fallback - only for non-API routes
     app.get('*', (req, res, next) => {
       if (req.path.startsWith('/api')) {
         return next();
@@ -154,7 +142,6 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running at http://localhost:${PORT}`);
-    console.log(`Node.js Version: ${process.version}`);
   });
 }
 
