@@ -1,46 +1,20 @@
 {
-  "name": "react-example",
+  "name": "ระบบบริหารจัดการสถานศึกษา-(mysql-&-hosting-ready)",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "tsx server.ts",
-    "build": "node build.js",
-    "start": "node startup.cjs",
-    "check-db": "node check-db.cjs",
-    "preview": "vite preview",
-    "clean": "rm -rf dist",
-    "lint": "echo \"Skipping lint due to tsconfig removal for Plesk compatibility\""
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "dependencies": {
-    "@google/genai": "1.2.0",
-    "@types/cors": "^2.8.17",
-    "@types/pdfkit": "^0.13.4",
-    "bootstrap": "^5.3.3",
-    "clsx": "^2.1.1",
-    "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
-    "express": "^4.19.2",
-    "lucide-react": "^0.400.0",
-    "motion": "^11.1.7",
-    "mysql2": "^3.9.7",
-    "pdfkit": "^0.15.0",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "tailwind-merge": "^2.3.0"
+
   },
   "devDependencies": {
-    "@types/express": "^4.17.21",
-    "@types/node": "^18.19.31",
-    "@types/react": "^18.3.1",
-    "@types/react-dom": "^18.3.1",
-    "@vitejs/plugin-react": "^4.2.1",
-    "autoprefixer": "^10.4.19",
-    "postcss": "^8.4.38",
-    "tailwindcss": "^3.4.3",
-    "tsx": "^4.7.2",
-    "typescript": "^5.5.0",
-    "vite": "^5.4.14",
-    "esbuild": "^0.21.5"
+    "@types/node": "^22.14.0",
+    
+    "typescript": "~5.8.2",
+    "vite": "^6.2.0"
   }
 }
