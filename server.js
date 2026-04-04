@@ -1,7 +1,6 @@
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { createServer as createViteServer } from 'vite';
 import cors from 'cors';
 import dotenv from 'dotenv';
 
@@ -12,6 +11,10 @@ dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+console.log('--- APPLICATION STARTING ---');
+console.log('Node Version:', process.version);
+console.log('Directory:', __dirname);
+
 async function startServer() {
   const app = express();
   const PORT = process.env.PORT || 3000;
@@ -19,6 +22,11 @@ async function startServer() {
   app.use(cors());
   app.use(express.json({ limit: '50mb' }));
   app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
+  // Health check for debugging
+  app.get('/api/health', (req, res) => {
+    res.json({ status: 'ok', time: new Date().toISOString(), node: process.version });
+  });
 
   // --- API Routes with MySQL ---
   
@@ -222,6 +230,7 @@ async function startServer() {
   
   if (!isProduction) {
     try {
+      const { createServer: createViteServer } = await import('vite');
       const vite = await createViteServer({
         server: { middlewareMode: true },
         appType: 'spa',
@@ -233,6 +242,7 @@ async function startServer() {
       serveStatic();
     }
   } else {
+    console.log('Production Mode: Serving Static Files');
     serveStatic();
   }
 
