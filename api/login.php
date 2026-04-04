@@ -1,9 +1,9 @@
 <?php
+session_start();
 require_once 'config.php';
 
 header('Content-Type: application/json');
 
-// รับข้อมูล JSON จากการ POST
 $data = json_decode(file_get_contents('php://input'), true);
 $username = $data['username'] ?? '';
 $password = $data['password'] ?? '';
@@ -14,7 +14,6 @@ if (empty($username) || empty($password)) {
 }
 
 try {
-    // ค้นหาผู้ใช้
     $stmt = $pdo->prepare('
         SELECT u.*, s.name as school_name 
         FROM users u 
@@ -36,11 +35,16 @@ try {
         exit;
     }
 
-    // ส่งข้อมูลผู้ใช้กลับไป
+    // เก็บข้อมูลใน Session
+    $_SESSION['user_id'] = $user['id'];
+    $_SESSION['role'] = $user['role'];
+    $_SESSION['name'] = $user['name'];
+    $_SESSION['school_id'] = $user['school_id'];
+
     echo json_encode($user);
 
 } catch (PDOException $e) {
     http_response_code(500);
-    echo json_encode(['error' => 'เกิดข้อผิดพลาดในระบบฐานข้อมูล: ' . $e->getMessage()]);
+    echo json_encode(['error' => 'เกิดข้อผิดพลาด: ' . $e->getMessage()]);
 }
 ?>

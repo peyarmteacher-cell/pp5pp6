@@ -1,79 +1,68 @@
--- คำสั่งสร้างตารางข้อมูลสำหรับระบบบริหารจัดการสถานศึกษา
--- MySQL Database Schema
-
--- ลบตารางเก่าออกก่อนเพื่อป้องกันความสับสน (ระวัง: ข้อมูลเก่าจะหายหมด)
-SET FOREIGN_KEY_CHECKS = 0;
-DROP TABLE IF EXISTS grades;
-DROP TABLE IF EXISTS students;
-DROP TABLE IF EXISTS users;
-DROP TABLE IF EXISTS schools;
-SET FOREIGN_KEY_CHECKS = 1;
-
--- 1. ตารางโรงเรียน (Schools)
-CREATE TABLE schools (
+-- ตารางโรงเรียน
+CREATE TABLE IF NOT EXISTS schools (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    code VARCHAR(8) NOT NULL UNIQUE,
+    code VARCHAR(8) UNIQUE NOT NULL, -- รหัส 8 หลัก
     name VARCHAR(255) NOT NULL,
     province VARCHAR(100),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 2. ตารางผู้ใช้งาน (Users/Teachers)
-CREATE TABLE users (
+-- ตารางผู้ใช้งาน (ครู/Admin)
+CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(50) NOT NULL UNIQUE,
+    username VARCHAR(13) UNIQUE NOT NULL, -- เลขบัตรประชาชน
     password VARCHAR(255) NOT NULL,
     name VARCHAR(255) NOT NULL,
-    role ENUM('super_admin', 'admin', 'teacher', 'student') NOT NULL,
+    role ENUM('super_admin', 'admin', 'teacher') DEFAULT 'teacher',
     school_id INT,
-    national_id VARCHAR(13) UNIQUE,
-    position VARCHAR(100),
+    position VARCHAR(100), -- ตำแหน่ง (ครู คศ.1, ผอ. ฯลฯ)
     is_approved BOOLEAN DEFAULT FALSE,
-    is_first_login BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (school_id) REFERENCES schools(id) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 3. ตารางนักเรียน (Students)
-CREATE TABLE students (
+-- ตารางนักเรียน
+CREATE TABLE IF NOT EXISTS students (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    student_code VARCHAR(20) NOT NULL UNIQUE,
+    student_code VARCHAR(20) NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    level VARCHAR(20) NOT NULL, -- ระดับชั้น เช่น ป.1
+    school_id INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (school_id) REFERENCES schools(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ตารางรายวิชา
+CREATE TABLE IF NOT EXISTS subjects (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    code VARCHAR(20) NOT NULL,
     name VARCHAR(255) NOT NULL,
     level VARCHAR(20) NOT NULL,
     school_id INT,
-    status ENUM('active', 'graduated', 'transferred') DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (school_id) REFERENCES schools(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 4. ตารางคะแนน (Grades/Records)
-CREATE TABLE grades (
+-- ตารางคะแนน (ปพ.5)
+CREATE TABLE IF NOT EXISTS grades (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    student_id INT NOT NULL,
-    subject_code VARCHAR(20) NOT NULL,
-    subject_name VARCHAR(255) NOT NULL,
-    k_score INT DEFAULT 0,
-    p_score INT DEFAULT 0,
-    a_score INT DEFAULT 0,
-    midterm_score INT DEFAULT 0,
-    final_score INT DEFAULT 0,
-    academic_year INT NOT NULL,
-    semester INT NOT NULL,
+    student_id INT,
+    subject_id INT,
+    k_score FLOAT DEFAULT 0, -- คะแนน K
+    p_score FLOAT DEFAULT 0, -- คะแนน P
+    a_score FLOAT DEFAULT 0, -- คะแนน A
+    midterm_score FLOAT DEFAULT 0,
+    final_score FLOAT DEFAULT 0,
+    total_score FLOAT DEFAULT 0,
+    grade_point FLOAT DEFAULT 0,
+    academic_year VARCHAR(4),
+    semester INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+    FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- ข้อมูลตัวอย่าง (Seed Data)
--- ใส่ข้อมูลโรงเรียนก่อน
-INSERT INTO schools (id, code, name, province) VALUES (1, '10203040', 'โรงเรียนบ้านเลยเลย', 'เลย');
-INSERT INTO schools (id, code, name, province) VALUES (2, '50607080', 'โรงเรียนบ้านหนองบัว', 'เลย');
-
--- ใส่ข้อมูลผู้ใช้
-INSERT INTO users (username, password, name, role, school_id, is_approved, is_first_login) 
-VALUES ('admin', '123456', 'Super Administrator', 'super_admin', NULL, TRUE, FALSE);
-
--- ใส่ข้อมูลนักเรียน (อ้างอิง school_id = 1)
-INSERT INTO students (student_code, name, level, school_id) 
-VALUES ('64001', 'เด็กชายจำลอง 1 นามจำลอง 1', 'ป.1', 1);
-INSERT INTO students (student_code, name, level, school_id) 
-VALUES ('64002', 'เด็กหญิงสมใจ 2 นามสมใจ 2', 'ป.1', 1);
+-- เพิ่มข้อมูล Super Admin เริ่มต้น (รหัสผ่าน: 123456)
+-- หมายเหตุ: ในระบบจริงควรใช้ password_hash
+INSERT IGNORE INTO users (username, password, name, role, is_approved) 
+VALUES ('0000000000000', '123456', 'Super Admin System', 'super_admin', TRUE);
