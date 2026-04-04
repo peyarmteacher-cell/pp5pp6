@@ -1,13 +1,13 @@
 <?php
 session_start();
-// ตรวจสอบว่า Login หรือยัง
 if (!isset($_SESSION['user_id'])) {
     header('Location: index.php');
     exit;
 }
 
+$username = $_SESSION['username'];
 $role = $_SESSION['role'];
-$name = $_SESSION['name'];
+$school_name = $_SESSION['school_name'] ?? 'ไม่มีสังกัด';
 ?>
 <!DOCTYPE html>
 <html lang="th">
@@ -15,132 +15,218 @@ $name = $_SESSION['name'];
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - ระบบบริหารจัดการสถานศึกษา</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <style>body { font-family: 'Sarabun', sans-serif; }</style>
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sarabun:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Sarabun', sans-serif; }
+    </style>
 </head>
 <body class="bg-slate-50 min-h-screen flex">
 
     <!-- Sidebar -->
-    <aside class="w-64 bg-[#0f172a] text-white flex flex-col">
-        <div class="p-6 text-center border-b border-slate-800">
-            <div class="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center mx-auto mb-2">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
-            </div>
-            <h1 class="font-bold text-lg">ระบบวัดผล ปพ.</h1>
-            <p class="text-xs text-slate-400"><?php echo strtoupper($role); ?></p>
+    <aside class="w-64 bg-slate-900 text-white flex flex-col">
+        <div class="p-6 border-b border-slate-800">
+            <h1 class="text-xl font-bold text-blue-400">SchoolOS</h1>
+            <p class="text-xs text-slate-400 mt-1">ระบบบริหารจัดการสถานศึกษา</p>
         </div>
-
+        
         <nav class="flex-1 p-4 space-y-2">
-            <!-- เมนูพื้นฐานสำหรับทุกคน -->
-            <a href="#" class="flex items-center space-x-3 p-3 rounded-lg bg-blue-600 text-white">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
-                <span>หน้าแรก</span>
-            </a>
-
+            <a href="#" onclick="showSection('overview')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">ภาพรวม</a>
+            
             <?php if ($role === 'super_admin'): ?>
-                <!-- เมนู Super Admin -->
-                <div class="pt-4 pb-2 px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Super Admin</div>
-                <a href="#" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-slate-800 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                    <span>จัดการโรงเรียน</span>
-                </a>
-                <a href="#" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-slate-800 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                    <span>อนุมัติ Admin โรงเรียน</span>
-                </a>
+                <div class="pt-4 pb-2 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Super Admin</div>
+                <a href="#" onclick="showSection('manage-schools')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">จัดการโรงเรียน</a>
+                <a href="#" onclick="showSection('approve-admins')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">อนุมัติ Admin โรงเรียน</a>
             <?php endif; ?>
 
-            <?php if ($role === 'admin' || $role === 'super_admin'): ?>
-                <!-- เมนู Admin โรงเรียน -->
-                <div class="pt-4 pb-2 px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">School Admin</div>
-                <a href="#" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-slate-800 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="16" x2="22" y1="11" y2="11"/></svg>
-                    <span>อนุมัติครูในโรงเรียน</span>
-                </a>
+            <?php if ($role === 'admin'): ?>
+                <div class="pt-4 pb-2 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">School Admin</div>
+                <a href="#" onclick="showSection('approve-teachers')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">อนุมัติครู</a>
+                <a href="#" onclick="showSection('manage-students')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">จัดการนักเรียน</a>
+                <a href="#" onclick="showSection('manage-subjects')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">จัดการรายวิชา</a>
             <?php endif; ?>
 
-            <!-- เมนูสำหรับครู (Teacher) -->
-            <div class="pt-4 pb-2 px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Teacher Menu</div>
-            <a href="#" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-slate-800 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/></svg>
-                <span>บันทึกผลการเรียน ปพ.5</span>
-            </a>
-            <a href="#" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-slate-800 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
-                <span>บันทึกผลการเรียน ปพ.6</span>
-            </a>
-            <a href="#" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-slate-800 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                <span>จัดการข้อมูลนักเรียน</span>
-            </a>
+            <?php if ($role === 'teacher' || $role === 'admin'): ?>
+                <div class="pt-4 pb-2 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">เมนูครู</div>
+                <a href="#" onclick="showSection('record-grades')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">บันทึกผลการเรียน (ปพ.5/6)</a>
+            <?php endif; ?>
         </nav>
 
         <div class="p-4 border-t border-slate-800">
-            <a href="logout.php" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-red-600/20 text-red-400 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
-                <span>ออกจากระบบ</span>
-            </a>
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center font-bold">
+                    <?= mb_substr($username, 0, 1) ?>
+                </div>
+                <div class="overflow-hidden">
+                    <p class="text-sm font-medium truncate"><?= $username ?></p>
+                    <p class="text-xs text-slate-400 truncate"><?= $role ?></p>
+                </div>
+            </div>
+            <a href="logout.php" class="block w-full text-center py-2 bg-red-600/20 text-red-400 hover:bg-red-600/30 rounded-lg text-sm font-medium transition-all">ออกจากระบบ</a>
         </div>
     </aside>
 
     <!-- Main Content -->
-    <main class="flex-1 overflow-y-auto">
-        <!-- Header -->
-        <header class="bg-white border-b border-slate-200 p-4 flex justify-between items-center sticky top-0 z-10">
-            <div class="flex items-center space-x-4">
-                <h2 class="text-xl font-semibold text-slate-800">ยินดีต้อนรับคุณ <?php echo htmlspecialchars($name); ?></h2>
-            </div>
-            <div class="flex items-center space-x-4">
-                <div class="text-right">
-                    <p class="text-sm font-medium text-slate-900"><?php echo htmlspecialchars($name); ?></p>
-                    <p class="text-xs text-slate-500"><?php echo htmlspecialchars($_SESSION['role']); ?></p>
-                </div>
-                <div class="w-10 h-10 bg-slate-200 rounded-full flex items-center justify-center text-slate-500 font-bold">
-                    <?php echo mb_substr($name, 0, 1, 'UTF-8'); ?>
-                </div>
-            </div>
+    <main class="flex-1 p-8 overflow-y-auto">
+        <header class="flex justify-between items-center mb-8">
+            <h2 id="section-title" class="text-2xl font-bold text-slate-800">ภาพรวมระบบ</h2>
+            <div class="text-sm text-slate-500">สังกัด: <span class="font-semibold text-blue-600"><?= $school_name ?></span></div>
         </header>
 
-        <!-- Content Area -->
-        <div class="p-8">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <!-- Stats Cards -->
+        <!-- Sections -->
+        <div id="overview" class="section space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                    <p class="text-slate-500 text-sm mb-1">จำนวนนักเรียนทั้งหมด</p>
-                    <h3 class="text-3xl font-bold text-slate-900">0</h3>
-                </div>
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                    <p class="text-slate-500 text-sm mb-1">รายวิชาที่สอน</p>
-                    <h3 class="text-3xl font-bold text-slate-900">0</h3>
-                </div>
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                    <p class="text-slate-500 text-sm mb-1">สถานะระบบ</p>
-                    <h3 class="text-3xl font-bold text-green-600">พร้อมใช้งาน</h3>
-                </div>
-            </div>
-
-            <!-- Role Specific Content -->
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                <div class="p-6 border-b border-slate-200">
-                    <h3 class="text-lg font-semibold text-slate-800">
-                        <?php 
-                            if($role === 'super_admin') echo "การจัดการระบบส่วนกลาง (Super Admin)";
-                            else if($role === 'admin') echo "การจัดการภายในโรงเรียน (School Admin)";
-                            else echo "รายการบันทึกผลการเรียนของคุณ (Teacher)";
-                        ?>
-                    </h3>
-                </div>
-                <div class="p-12 text-center text-slate-400">
-                    <div class="mb-4">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="mx-auto opacity-20"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
-                    </div>
-                    <p>ยังไม่มีข้อมูลที่จะแสดงในขณะนี้</p>
-                    <p class="text-sm">กรุณาเลือกเมนูจากแถบด้านซ้ายเพื่อเริ่มต้นใช้งาน</p>
+                    <p class="text-sm text-slate-500 mb-1">ยินดีต้อนรับ</p>
+                    <h3 class="text-xl font-bold text-slate-800"><?= $username ?></h3>
+                    <p class="text-xs text-slate-400 mt-2">คุณกำลังใช้งานในสิทธิ์: <span class="text-blue-600 font-semibold"><?= $role ?></span></p>
                 </div>
             </div>
         </div>
+
+        <!-- Super Admin: Manage Schools -->
+        <?php if ($role === 'super_admin'): ?>
+        <div id="manage-schools" class="section hidden space-y-6">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <h3 class="text-lg font-bold mb-4">สร้างโรงเรียนใหม่</h3>
+                <form id="createSchoolForm" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <input type="text" id="schoolCode" placeholder="รหัสโรงเรียน 8 หลัก" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none">
+                    <input type="text" id="schoolName" placeholder="ชื่อโรงเรียน" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none">
+                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-xl font-semibold hover:bg-blue-700 transition-all">บันทึก</button>
+                </form>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <h3 class="text-lg font-bold mb-4">รายชื่อโรงเรียน</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="text-slate-500 border-b border-slate-100">
+                                <th class="pb-3 font-medium">รหัส</th>
+                                <th class="pb-3 font-medium">ชื่อโรงเรียน</th>
+                                <th class="pb-3 font-medium">จังหวัด</th>
+                            </tr>
+                        </thead>
+                        <tbody id="schoolTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <?php endif; ?>
+
+        <!-- Approve Users Section -->
+        <div id="approve-section" class="section hidden space-y-6">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <h3 class="text-lg font-bold mb-4">ผู้ใช้งานรอการอนุมัติ</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="text-slate-500 border-b border-slate-100">
+                                <th class="pb-3 font-medium">ชื่อ-นามสกุล</th>
+                                <th class="pb-3 font-medium">โรงเรียน</th>
+                                <th class="pb-3 font-medium">ตำแหน่ง</th>
+                                <th class="pb-3 font-medium">การจัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pendingUsersTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
     </main>
 
+    <script>
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
+            
+            let targetId = sectionId;
+            if (sectionId === 'approve-admins' || sectionId === 'approve-teachers') {
+                targetId = 'approve-section';
+                loadPendingUsers();
+            } else if (sectionId === 'manage-schools') {
+                loadSchools();
+            }
+            
+            const target = document.getElementById(targetId);
+            if (target) target.classList.remove('hidden');
+            
+            const titles = {
+                'overview': 'ภาพรวมระบบ',
+                'manage-schools': 'จัดการโรงเรียน',
+                'approve-section': 'อนุมัติผู้ใช้งาน',
+                'manage-students': 'จัดการนักเรียน',
+                'manage-subjects': 'จัดการรายวิชา',
+                'record-grades': 'บันทึกผลการเรียน'
+            };
+            document.getElementById('section-title').innerText = titles[targetId] || 'ระบบบริหารจัดการ';
+        }
+
+        async function loadSchools() {
+            const res = await fetch('api/get_schools.php');
+            const schools = await res.json();
+            const tbody = document.getElementById('schoolTableBody');
+            tbody.innerHTML = schools.map(s => `
+                <tr class="border-b border-slate-50 hover:bg-slate-50/50">
+                    <td class="py-3 text-slate-600 font-mono">${s.code}</td>
+                    <td class="py-3 font-medium text-slate-800">${s.name}</td>
+                    <td class="py-3 text-slate-500">${s.province || '-'}</td>
+                </tr>
+            `).join('');
+        }
+
+        async function loadPendingUsers() {
+            const res = await fetch('api/get_pending_users.php');
+            const users = await res.json();
+            const tbody = document.getElementById('pendingUsersTableBody');
+            tbody.innerHTML = users.map(u => `
+                <tr class="border-b border-slate-50 hover:bg-slate-50/50">
+                    <td class="py-3 font-medium text-slate-800">${u.full_name}</td>
+                    <td class="py-3 text-slate-500">${u.school_name || 'ไม่มีสังกัด'}</td>
+                    <td class="py-3 text-slate-500">${u.position}</td>
+                    <td class="py-3">
+                        <button onclick="approveUser(${u.id}, '${u.role === 'super_admin' ? 'admin' : 'teacher'}')" class="bg-green-600 text-white px-3 py-1 rounded-lg text-xs font-semibold hover:bg-green-700">อนุมัติ</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function approveUser(userId, role) {
+            const res = await fetch('api/approve_user.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: userId, role: role })
+            });
+            const result = await res.json();
+            if (result.message) {
+                alert(result.message);
+                loadPendingUsers();
+            } else {
+                alert(result.error);
+            }
+        }
+
+        const createSchoolForm = document.getElementById('createSchoolForm');
+        if (createSchoolForm) {
+            createSchoolForm.onsubmit = async (e) => {
+                e.preventDefault();
+                const res = await fetch('api/create_school.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        code: document.getElementById('schoolCode').value,
+                        name: document.getElementById('schoolName').value
+                    })
+                });
+                const result = await res.json();
+                if (result.message) {
+                    alert(result.message);
+                    createSchoolForm.reset();
+                    loadSchools();
+                } else {
+                    alert(result.error);
+                }
+            };
+        }
+    </script>
 </body>
 </html>
