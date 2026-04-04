@@ -241,18 +241,21 @@ async function startServer() {
     }
   });
 
-  // --- Static File Serving (Production Only for Plesk) ---
+  // --- Static File Serving (Preview Bridge) ---
   const distPath = path.join(__dirname, 'dist');
-  const indexPath = path.join(distPath, 'index.html');
+  const indexPath = path.join(__dirname, 'index.php'); // Serve index.php as the main entry point
   
-  console.log(`Serving static files from: ${distPath}`);
+  console.log(`Serving preview from: ${indexPath}`);
   
-  if (fs.existsSync(distPath)) {
-    app.use(express.static(distPath));
-    console.log('✅ Static middleware configured');
-  } else {
-    console.warn('⚠️ Warning: dist directory not found');
-  }
+  app.use(express.static(__dirname)); // Serve root files as static for preview
+
+  app.get('/', (req, res) => {
+    if (fs.existsSync(indexPath)) {
+      res.sendFile(indexPath);
+    } else {
+      res.status(404).send('index.php not found.');
+    }
+  });
 
   app.get('*', (req, res, next) => {
     if (req.path.startsWith('/api')) {
