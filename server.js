@@ -123,20 +123,45 @@ async function startServer() {
   });
 
   // --- Vite Middleware for Development ---
-  if (process.env.NODE_ENV !== 'production') {
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: 'spa',
-    });
-    app.use(vite.middlewares);
+  const isProduction = process.env.NODE_ENV === 'production' || process.env.PLESK_REVISION;
+  
+  if (!isProduction) {
+    try {
+      const vite = await createViteServer({
+        server: { middlewareMode: true },
+        appType: 'spa',
+      });
+      app.use(vite.middlewares);
+      console.log('Vite middleware enabled (Development Mode)');
+    } catch (e) {
+      console.warn('Vite not found or failed to start, falling back to static mode.');
+      serveStatic();
+    }
   } else {
+    serveStatic();
+  }
+
+  function serveStatic() {
     const distPath = path.join(__dirname, 'dist');
+    const indexPath = path.join(distPath, 'index.html');
+    
+    console.log(`Serving static files from: ${distPath}`);
+    
+    // Check if dist/index.html exists
+    import('fs').then(fs => {
+      if (fs.existsSync(indexPath)) {
+        console.log('Found index.html in dist folder.');
+      } else {
+        console.error('CRITICAL: index.html NOT FOUND in dist folder! Did you run "npm run build"?');
+      }
+    });
+
     app.use(express.static(distPath));
     app.get('*', (req, res, next) => {
       if (req.path.startsWith('/api')) {
         return next();
       }
-      res.sendFile(path.join(distPath, 'index.html'));
+      res.sendFile(indexPath);
     });
   }
 
