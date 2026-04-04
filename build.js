@@ -12,8 +12,11 @@ async function runBuild() {
       // Disable loading external config files to avoid "Access is denied"
       configFile: false,
       root: __dirname,
-      base: '/',
+      base: '',
       plugins: [react()],
+      define: {
+        'process.env': {}
+      },
       resolve: {
         alias: {
           '@': path.resolve(__dirname, 'src'),

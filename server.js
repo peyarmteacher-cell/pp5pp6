@@ -217,7 +217,8 @@ async function startServer() {
   });
 
   // --- Vite Middleware for Development ---
-  const isProduction = process.env.NODE_ENV === 'production' || process.env.PLESK_REVISION;
+  // Force production mode if on Plesk or if NODE_ENV is production
+  const isProduction = process.env.NODE_ENV === 'production' || process.env.PLESK_REVISION || process.env.IISNODE_VERSION;
   
   if (!isProduction) {
     try {
