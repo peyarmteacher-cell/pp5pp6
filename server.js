@@ -28,6 +28,14 @@ async function startServer() {
     res.json({ status: 'ok', time: new Date().toISOString(), node: process.version });
   });
 
+  // Global Error Handlers
+  process.on('uncaughtException', (err) => {
+    console.error('❌ Uncaught Exception:', err);
+  });
+  process.on('unhandledRejection', (reason, promise) => {
+    console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
+  });
+
   // --- API Routes with MySQL ---
   
   // Test Database Connection
