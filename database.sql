@@ -64,7 +64,9 @@ CREATE TABLE IF NOT EXISTS grades (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- เพิ่มข้อมูล Super Admin เริ่มต้น (รหัสผ่าน: 123456)
--- หมายเหตุ: ในระบบจริงใช้ password_hash
--- สำหรับการทดสอบเบื้องต้น เราจะใช้ '123456' แต่ในโค้ด login.php รองรับทั้งสองแบบ
-INSERT IGNORE INTO users (username, password, name, role, affiliation, is_approved) 
-VALUES ('0000000000000', '$2y$10$8W8.e.q.q.q.q.q.q.q.q.q.q.q.q.q.q.q.q.q.q.q.q.q.q.q', 'Super Admin System', 'super_admin', 'สำนักงานเขตพื้นที่การศึกษาประถมศึกษาบุรีรัมย์เขต 3', TRUE);
+-- ลบข้อมูลเดิมออกก่อน (ถ้ามี) เพื่อป้องกัน Error เรื่องชื่อซ้ำ
+DELETE FROM users WHERE username = '0000000000000';
+
+-- เพิ่มข้อมูล Super Admin ใหม่
+INSERT INTO users (username, password, name, role, affiliation, is_approved) 
+VALUES ('0000000000000', '123456', 'Super Admin System', 'super_admin', 'สำนักงานเขตพื้นที่การศึกษาประถมศึกษาบุรีรัมย์เขต 3', TRUE);

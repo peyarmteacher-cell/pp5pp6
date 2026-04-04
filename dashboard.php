@@ -92,9 +92,10 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
         <div id="manage-schools" class="section hidden space-y-6">
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                 <h3 class="text-lg font-bold mb-4">สร้างโรงเรียนใหม่</h3>
-                <form id="createSchoolForm" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <form id="createSchoolForm" class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <input type="text" id="schoolCode" placeholder="รหัสโรงเรียน 8 หลัก" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none">
                     <input type="text" id="schoolName" placeholder="ชื่อโรงเรียน" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none">
+                    <input type="text" id="schoolProvince" placeholder="จังหวัด" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none">
                     <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-xl font-semibold hover:bg-blue-700 transition-all">บันทึก</button>
                 </form>
             </div>
@@ -107,9 +108,34 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                                 <th class="pb-3 font-medium">รหัส</th>
                                 <th class="pb-3 font-medium">ชื่อโรงเรียน</th>
                                 <th class="pb-3 font-medium">จังหวัด</th>
+                                <th class="pb-3 font-medium">การจัดการ</th>
                             </tr>
                         </thead>
                         <tbody id="schoolTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal: รายชื่อคุณครู -->
+        <div id="teacherModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center p-4 z-50">
+            <div class="bg-white rounded-3xl w-full max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
+                <div class="p-6 border-b border-slate-100 flex justify-between items-center">
+                    <h3 id="modalSchoolName" class="text-xl font-bold text-slate-800">รายชื่อคุณครู</h3>
+                    <button onclick="closeTeacherModal()" class="text-slate-400 hover:text-slate-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                </div>
+                <div class="p-6 overflow-y-auto flex-1">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="text-slate-500 border-b border-slate-100">
+                                <th class="pb-3 font-medium">ชื่อ-นามสกุล</th>
+                                <th class="pb-3 font-medium">ตำแหน่ง</th>
+                                <th class="pb-3 font-medium">สถานะ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="modalTeacherTableBody"></tbody>
                     </table>
                 </div>
             </div>
@@ -258,10 +284,81 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
             tbody.innerHTML = schools.map(s => `
                 <tr class="border-b border-slate-50 hover:bg-slate-50/50">
                     <td class="py-3 text-slate-600 font-mono">${s.code}</td>
-                    <td class="py-3 font-medium text-slate-800">${s.name}</td>
+                    <td class="py-3 font-medium text-slate-800 cursor-pointer hover:text-blue-600" onclick="viewTeachers(${s.id}, '${s.name}')">${s.name}</td>
                     <td class="py-3 text-slate-500">${s.province || '-'}</td>
+                    <td class="py-3 flex gap-2">
+                        <button onclick="editSchool(${s.id}, '${s.name}', '${s.province || ''}')" class="text-blue-600 hover:text-blue-800 text-sm font-medium">แก้ไข</button>
+                        <button onclick="deleteSchool(${s.id})" class="text-red-600 hover:text-red-800 text-sm font-medium">ลบ</button>
+                    </td>
                 </tr>
             `).join('');
+        }
+
+        async function editSchool(id, currentName, currentProvince) {
+            const newName = prompt('แก้ไขชื่อโรงเรียน:', currentName);
+            if (newName === null) return;
+            const newProvince = prompt('แก้ไขจังหวัด:', currentProvince);
+            if (newProvince === null) return;
+
+            const res = await fetch('api/update_school.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, name: newName, province: newProvince })
+            });
+            const result = await res.json();
+            if (result.message) {
+                alert(result.message);
+                loadSchools();
+            } else {
+                alert(result.error);
+            }
+        }
+
+        async function deleteSchool(id) {
+            if (!confirm('คุณแน่ใจหรือไม่ว่าต้องการลบโรงเรียนนี้?')) return;
+            const res = await fetch('api/delete_school.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id })
+            });
+            const result = await res.json();
+            if (result.message) {
+                alert(result.message);
+                loadSchools();
+            } else {
+                alert(result.error);
+            }
+        }
+
+        async function viewTeachers(schoolId, schoolName) {
+            document.getElementById('modalSchoolName').innerText = `รายชื่อคุณครู - ${schoolName}`;
+            const res = await fetch(`api/get_school_teachers.php?school_id=${schoolId}`);
+            const teachers = await res.json();
+            const tbody = document.getElementById('modalTeacherTableBody');
+            
+            if (teachers.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" class="py-4 text-center text-slate-400">ไม่พบรายชื่อคุณครูในโรงเรียนนี้</td></tr>';
+            } else {
+                tbody.innerHTML = teachers.map(t => `
+                    <tr class="border-b border-slate-50">
+                        <td class="py-3 font-medium text-slate-800">${t.name}</td>
+                        <td class="py-3 text-slate-500">${t.position}</td>
+                        <td class="py-3">
+                            <span class="px-2 py-1 rounded-full text-[10px] font-bold ${t.is_approved ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">
+                                ${t.is_approved ? 'อนุมัติแล้ว' : 'รออนุมัติ'}
+                            </span>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+            
+            document.getElementById('teacherModal').classList.remove('hidden');
+            document.getElementById('teacherModal').classList.add('flex');
+        }
+
+        function closeTeacherModal() {
+            document.getElementById('teacherModal').classList.add('hidden');
+            document.getElementById('teacherModal').classList.remove('flex');
         }
 
         async function loadPendingUsers() {
@@ -304,7 +401,8 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         code: document.getElementById('schoolCode').value,
-                        name: document.getElementById('schoolName').value
+                        name: document.getElementById('schoolName').value,
+                        province: document.getElementById('schoolProvince').value
                     })
                 });
                 const result = await res.json();
