@@ -54,6 +54,7 @@ try {
     $_SESSION['username'] = $user['username'];
     $_SESSION['role'] = $user['role'];
     $_SESSION['name'] = $user['name'];
+    $_SESSION['affiliation'] = $user['affiliation'];
     $_SESSION['school_id'] = $user['school_id'];
     $_SESSION['school_name'] = $user['school_name'];
 

@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS users (
     role ENUM('super_admin', 'admin', 'teacher') DEFAULT 'teacher',
     school_id INT,
     position VARCHAR(100), -- ตำแหน่ง (ครู คศ.1, ผอ. ฯลฯ)
+    affiliation VARCHAR(255), -- สังกัด (เช่น สพป.บุรีรัมย์ เขต 3)
     is_approved BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (school_id) REFERENCES schools(id) ON DELETE SET NULL

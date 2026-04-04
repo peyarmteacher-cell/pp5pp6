@@ -34,18 +34,33 @@
                 <div id="loginError" class="text-red-500 text-sm hidden"></div>
                 <button type="submit" id="loginBtn" class="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold transition-all">เข้าสู่ระบบ</button>
                 <div class="text-center pt-4">
-                    <button type="button" onclick="toggleForm('register')" class="text-blue-600 font-medium hover:underline">สมัครขอใช้งานระบบ</button>
+                    <button type="button" onclick="toggleForm('check_school')" class="text-blue-600 font-medium hover:underline">สมัครขอใช้งานระบบ</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- ฟอร์ม ตรวจสอบรหัสโรงเรียน -->
+        <div id="schoolCheckSection" class="bg-white rounded-3xl p-8 shadow-2xl hidden transition-all">
+            <h3 class="text-xl font-bold text-slate-800 mb-4">ตรวจสอบสิทธิ์การสมัคร</h3>
+            <p class="text-sm text-slate-500 mb-6">กรุณากรอกรหัสโรงเรียน 8 หลัก เพื่อตรวจสอบข้อมูลในระบบก่อนสมัครสมาชิก</p>
+            <form id="schoolCheckForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">รหัสโรงเรียน 8 หลัก</label>
+                    <input type="text" id="check_school_code" maxlength="8" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all" placeholder="กรอกรหัสโรงเรียน 8 หลัก">
+                </div>
+                <div id="schoolCheckError" class="text-red-500 text-sm hidden"></div>
+                <button type="submit" id="checkSchoolBtn" class="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold transition-all">ตรวจสอบรหัสโรงเรียน</button>
+                <div class="text-center pt-4">
+                    <button type="button" onclick="toggleForm('login')" class="text-slate-500 font-medium hover:underline">ยกเลิก</button>
                 </div>
             </form>
         </div>
 
         <!-- ฟอร์ม Register -->
         <div id="registerSection" class="bg-white rounded-3xl p-8 shadow-2xl hidden transition-all">
+            <div id="reg_school_name_display" class="mb-4 p-3 bg-blue-50 text-blue-700 rounded-xl text-sm font-semibold"></div>
             <form id="registerForm" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">รหัสโรงเรียน 8 หลัก</label>
-                    <input type="text" id="reg_school_code" maxlength="8" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all" placeholder="กรอกรหัสโรงเรียน 8 หลัก">
-                </div>
+                <input type="hidden" id="reg_school_code">
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">เลขบัตรประชาชน 13 หลัก</label>
                     <input type="text" id="reg_username" maxlength="13" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all" placeholder="กรอกเลขบัตรประชาชน">
@@ -77,28 +92,64 @@
                 <div id="registerSuccess" class="text-green-500 text-sm hidden"></div>
                 <button type="submit" id="registerBtn" class="w-full py-3 px-4 bg-green-600 hover:bg-green-700 text-white rounded-xl font-semibold transition-all">ส่งข้อมูลสมัครสมาชิก</button>
                 <div class="text-center pt-4">
-                    <button type="button" onclick="toggleForm('login')" class="text-blue-600 font-medium hover:underline">มีบัญชีแล้ว? เข้าสู่ระบบ</button>
+                    <button type="button" onclick="toggleForm('login')" class="text-blue-600 font-medium hover:underline">ยกเลิก</button>
                 </div>
             </form>
         </div>
     </div>
 
     <script>
-        function toggleForm(form) {
+        function toggleForm(type) {
             const loginSection = document.getElementById('loginSection');
             const registerSection = document.getElementById('registerSection');
+            const schoolCheckSection = document.getElementById('schoolCheckSection');
             const formTitle = document.getElementById('formTitle');
+            
+            loginSection.classList.add('hidden');
+            registerSection.classList.add('hidden');
+            schoolCheckSection.classList.add('hidden');
 
-            if (form === 'register') {
-                loginSection.classList.add('hidden');
-                registerSection.classList.remove('hidden');
-                formTitle.innerText = 'สมัครขอใช้งานระบบโรงเรียน';
-            } else {
-                registerSection.classList.add('hidden');
+            if (type === 'login') {
                 loginSection.classList.remove('hidden');
                 formTitle.innerText = 'เข้าสู่ระบบเพื่อจัดการข้อมูลการเรียน';
+            } else if (type === 'check_school') {
+                schoolCheckSection.classList.remove('hidden');
+                formTitle.innerText = 'ตรวจสอบรหัสโรงเรียน';
+            } else if (type === 'register') {
+                registerSection.classList.remove('hidden');
+                formTitle.innerText = 'สมัครสมาชิก';
             }
         }
+
+        // Check School Code Logic
+        document.getElementById('schoolCheckForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const code = document.getElementById('check_school_code').value;
+            const error = document.getElementById('schoolCheckError');
+            const btn = document.getElementById('checkSchoolBtn');
+            error.classList.add('hidden');
+            btn.disabled = true;
+            btn.innerHTML = 'กำลังตรวจสอบ...';
+
+            try {
+                const res = await fetch(`api/check_school.php?code=${code}`);
+                const data = await res.json();
+                if (data.exists) {
+                    document.getElementById('reg_school_code').value = code;
+                    document.getElementById('reg_school_name_display').innerText = `โรงเรียน: ${data.name}`;
+                    toggleForm('register');
+                } else {
+                    error.innerText = data.error || 'ไม่พบรหัสโรงเรียนนี้ในระบบ';
+                    error.classList.remove('hidden');
+                }
+            } catch (err) {
+                error.innerText = 'เกิดข้อผิดพลาดในการตรวจสอบ';
+                error.classList.remove('hidden');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'ตรวจสอบรหัสโรงเรียน';
+            }
+        });
 
         // Login Logic
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
@@ -113,7 +164,6 @@
             const password = document.getElementById('login_password').value;
 
             try {
-                console.log('Attempting login for:', username);
                 const res = await fetch('api/login.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -121,8 +171,6 @@
                 });
                 
                 const data = await res.json();
-                console.log('Response data:', data);
-
                 if (res.ok) {
                     localStorage.setItem('user', JSON.stringify(data));
                     window.location.href = 'dashboard.php';
@@ -131,8 +179,7 @@
                     error.classList.remove('hidden');
                 }
             } catch (err) {
-                console.error('Login error:', err);
-                error.innerText = 'ไม่สามารถเชื่อมต่อกับ API ได้ (ตรวจสอบไฟล์ api/login.php)';
+                error.innerText = 'ไม่สามารถเชื่อมต่อกับ API ได้';
                 error.classList.remove('hidden');
             } finally {
                 btn.disabled = false;
@@ -145,8 +192,10 @@
             e.preventDefault();
             const error = document.getElementById('registerError');
             const success = document.getElementById('registerSuccess');
+            const btn = document.getElementById('registerBtn');
             error.classList.add('hidden');
             success.classList.add('hidden');
+            btn.disabled = true;
 
             const payload = {
                 school_code: document.getElementById('reg_school_code').value,
@@ -175,6 +224,8 @@
             } catch (err) {
                 error.innerText = 'เกิดข้อผิดพลาดในการเชื่อมต่อ';
                 error.classList.remove('hidden');
+            } finally {
+                btn.disabled = false;
             }
         });
     </script>
