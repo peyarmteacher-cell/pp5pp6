@@ -7,26 +7,13 @@ import fs from 'fs';
 
 import pool from './src/db.js';
 
-// Global Error Handlers - Move to top
+// Global Error Handlers
 process.on('uncaughtException', (err) => {
-  console.error('❌ CRITICAL: Uncaught Exception:', err);
-  // Log to file if possible
-  try {
-    fs.appendFileSync('startup-debug.log', `[${new Date().toISOString()}] UNCAUGHT EXCEPTION: ${err.stack}\n`);
-  } catch (e) {}
+  console.error('❌ Uncaught Exception:', err);
 });
-
 process.on('unhandledRejection', (reason, promise) => {
-  console.error('❌ CRITICAL: Unhandled Rejection at:', promise, 'reason:', reason);
-  try {
-    fs.appendFileSync('startup-debug.log', `[${new Date().toISOString()}] UNHANDLED REJECTION: ${reason}\n`);
-  } catch (e) {}
+  console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
 });
-
-const result = dotenv.config();
-if (result.error) {
-  console.warn('⚠️ .env file not found or could not be loaded. Using system environment variables.');
-}
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -34,6 +21,7 @@ const __dirname = path.dirname(__filename);
 console.log('--- APPLICATION STARTING ---');
 console.log('Node Version:', process.version);
 console.log('Directory:', __dirname);
+console.log('CWD:', process.cwd());
 
 async function startServer() {
   const app = express();
@@ -50,32 +38,14 @@ async function startServer() {
       time: new Date().toISOString(), 
       node: process.version,
       env: process.env.NODE_ENV,
-      cwd: process.cwd(),
       port: PORT
     });
   });
 
-  app.get('/api/test-db', async (req, res) => {
-    try {
-      const [rows] = await pool.query('SELECT 1 + 1 AS result');
-      res.json({ status: 'connected', result: rows[0].result });
-    } catch (err) {
-      res.status(500).json({ status: 'error', message: err.message });
-    }
-  });
-
-  // --- API Routes with MySQL ---
-  
-  // Test Database Connection
-  pool.getConnection()
-    .then(conn => {
-      console.log('✅ Database Connected Successfully!');
-      conn.release();
-    })
-    .catch(err => {
-      console.error('❌ Database Connection Failed:', err.message);
-      console.log('App will continue to run, but database features will be unavailable.');
-    });
+  // Test Database Connection (Non-blocking)
+  pool.query('SELECT 1 + 1 AS result')
+    .then(() => console.log('✅ Database Connection Verified'))
+    .catch(err => console.error('❌ Database Connection Warning:', err.message));
 
   // --- Authentication API ---
   
@@ -271,66 +241,33 @@ async function startServer() {
     }
   });
 
-  // --- Vite Middleware for Development ---
-  // Force production mode if on Plesk or if NODE_ENV is production
-  const isProduction = process.env.NODE_ENV === 'production' || 
-                       process.env.PLESK_REVISION || 
-                       process.env.IISNODE_VERSION ||
-                       fs.existsSync(path.join(__dirname, 'dist'));
+  // --- Static File Serving (Production Only for Plesk) ---
+  const distPath = path.join(__dirname, 'dist');
+  const indexPath = path.join(distPath, 'index.html');
   
-  console.log(`Mode Detected: ${isProduction ? 'PRODUCTION' : 'DEVELOPMENT'}`);
+  console.log(`Serving static files from: ${distPath}`);
   
-  if (!isProduction) {
-    try {
-      console.log('Attempting to start Vite middleware...');
-      const { createServer: createViteServer } = await import('vite');
-      const vite = await createViteServer({
-        server: { middlewareMode: true },
-        appType: 'spa',
-      });
-      app.use(vite.middlewares);
-      console.log('✅ Vite middleware enabled');
-    } catch (e) {
-      console.warn('⚠️ Vite not found or failed to start, falling back to static mode.');
-      serveStatic();
-    }
-  } else {
-    console.log('🚀 Production Mode: Serving Static Files');
-    serveStatic();
-  }
-
-  function serveStatic() {
-    const distPath = path.resolve(__dirname, 'dist');
-    const indexPath = path.resolve(distPath, 'index.html');
-    
-    console.log(`Static path: ${distPath}`);
-    
-    if (!fs.existsSync(distPath)) {
-      console.error('❌ ERROR: "dist" directory not found!');
-    } else if (!fs.existsSync(indexPath)) {
-      console.error('❌ ERROR: "dist/index.html" not found!');
-    } else {
-      console.log('✅ index.html found, ready to serve.');
-    }
-
+  if (fs.existsSync(distPath)) {
     app.use(express.static(distPath));
-    
-    app.get('*', (req, res, next) => {
-      // Don't intercept API calls
-      if (req.path.startsWith('/api')) {
-        return next();
-      }
-      
-      if (fs.existsSync(indexPath)) {
-        res.sendFile(indexPath);
-      } else {
-        res.status(404).send('Application build not found. Please run "npm run build".');
-      }
-    });
+    console.log('✅ Static middleware configured');
+  } else {
+    console.warn('⚠️ Warning: dist directory not found');
   }
+
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api')) {
+      return next();
+    }
+    
+    if (fs.existsSync(indexPath)) {
+      res.sendFile(indexPath);
+    } else {
+      res.status(404).send('Application not built. Please run npm run build.');
+    }
+  });
 
   app.listen(PORT, () => {
-    console.log(`✅ Server is listening on: ${PORT}`);
+    console.log(`✅ Server running on port: ${PORT}`);
   });
 }
 
