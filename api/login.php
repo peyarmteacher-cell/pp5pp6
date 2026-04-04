@@ -18,14 +18,28 @@ try {
         SELECT u.*, s.name as school_name 
         FROM users u 
         LEFT JOIN schools s ON u.school_id = s.id 
-        WHERE u.username = ? AND u.password = ?
+        WHERE u.username = ?
     ');
-    $stmt->execute([$username, $password]);
+    $stmt->execute([$username]);
     $user = $stmt->fetch();
 
     if (!$user) {
         http_response_code(401);
-        echo json_encode(['error' => 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง']);
+        echo json_encode(['error' => 'ไม่พบชื่อผู้ใช้นี้ในระบบ (' . $username . ')']);
+        exit;
+    }
+
+    // ตรวจสอบรหัสผ่าน (รองรับทั้งแบบ Plain Text และ Hashed)
+    $isPasswordCorrect = false;
+    if ($password === $user['password']) {
+        $isPasswordCorrect = true;
+    } else if (password_verify($password, $user['password'])) {
+        $isPasswordCorrect = true;
+    }
+
+    if (!$isPasswordCorrect) {
+        http_response_code(401);
+        echo json_encode(['error' => 'รหัสผ่านไม่ถูกต้อง']);
         exit;
     }
 

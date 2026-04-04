@@ -104,28 +104,39 @@
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const error = document.getElementById('loginError');
+            const btn = document.getElementById('loginBtn');
             error.classList.add('hidden');
+            btn.disabled = true;
+            btn.innerHTML = 'กำลังตรวจสอบ...';
             
             const username = document.getElementById('login_username').value;
             const password = document.getElementById('login_password').value;
 
             try {
+                console.log('Attempting login for:', username);
                 const res = await fetch('api/login.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, password })
                 });
+                
                 const data = await res.json();
+                console.log('Response data:', data);
+
                 if (res.ok) {
                     localStorage.setItem('user', JSON.stringify(data));
                     window.location.href = 'dashboard.php';
                 } else {
-                    error.innerText = data.error;
+                    error.innerText = data.error || 'เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ';
                     error.classList.remove('hidden');
                 }
             } catch (err) {
-                error.innerText = 'เกิดข้อผิดพลาดในการเชื่อมต่อ';
+                console.error('Login error:', err);
+                error.innerText = 'ไม่สามารถเชื่อมต่อกับ API ได้ (ตรวจสอบไฟล์ api/login.php)';
                 error.classList.remove('hidden');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'เข้าสู่ระบบ';
             }
         });
 
