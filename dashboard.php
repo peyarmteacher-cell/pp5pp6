@@ -5,7 +5,7 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-$username = $_SESSION['username'];
+$username = $_SESSION['name']; // ใช้ชื่อเต็มจาก Session
 $role = $_SESSION['role'];
 $school_name = $_SESSION['school_name'] ?? 'ไม่มีสังกัด';
 ?>

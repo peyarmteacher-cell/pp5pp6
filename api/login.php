@@ -37,9 +37,11 @@ try {
 
     // เก็บข้อมูลใน Session
     $_SESSION['user_id'] = $user['id'];
+    $_SESSION['username'] = $user['username'];
     $_SESSION['role'] = $user['role'];
     $_SESSION['name'] = $user['name'];
     $_SESSION['school_id'] = $user['school_id'];
+    $_SESSION['school_name'] = $user['school_name'];
 
     echo json_encode($user);
 
