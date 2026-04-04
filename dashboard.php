@@ -7,7 +7,8 @@ if (!isset($_SESSION['user_id'])) {
 
 $username = $_SESSION['name']; // ใช้ชื่อเต็มจาก Session
 $role = $_SESSION['role'];
-$school_name = $_SESSION['school_name'] ?? 'ไม่มีสังกัด';
+$affiliation = $_SESSION['affiliation'] ?? 'ไม่มีสังกัด';
+$school_name = $_SESSION['school_name'] ?? $affiliation;
 ?>
 <!DOCTYPE html>
 <html lang="th">
@@ -37,6 +38,8 @@ $school_name = $_SESSION['school_name'] ?? 'ไม่มีสังกัด';
                 <div class="pt-4 pb-2 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Super Admin</div>
                 <a href="#" onclick="showSection('manage-schools')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">จัดการโรงเรียน</a>
                 <a href="#" onclick="showSection('approve-admins')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">อนุมัติ Admin โรงเรียน</a>
+                <a href="#" onclick="showSection('manage-super-admins')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">จัดการ Super Admin</a>
+                <a href="#" onclick="showSection('profile')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">แก้ไขโปรไฟล์</a>
             <?php endif; ?>
 
             <?php if ($role === 'admin'): ?>
@@ -113,6 +116,43 @@ $school_name = $_SESSION['school_name'] ?? 'ไม่มีสังกัด';
         </div>
         <?php endif; ?>
 
+        <!-- Super Admin: Manage Super Admins -->
+        <?php if ($role === 'super_admin'): ?>
+        <div id="manage-super-admins" class="section hidden space-y-6">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <h3 class="text-lg font-bold mb-4">เพิ่ม Super Admin ใหม่</h3>
+                <form id="createSuperAdminForm" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input type="text" id="sa_username" placeholder="เลขบัตรประชาชน (13 หลัก)" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none">
+                        <input type="password" id="sa_password" placeholder="รหัสผ่าน" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none">
+                        <input type="text" id="sa_name" placeholder="ชื่อ-นามสกุล" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none">
+                        <input type="text" id="sa_affiliation" placeholder="สังกัด (เช่น สพป.บุรีรัมย์ เขต 3)" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none">
+                    </div>
+                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-xl font-semibold hover:bg-blue-700 transition-all">เพิ่มผู้ช่วย</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="profile" class="section hidden space-y-6">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <h3 class="text-lg font-bold mb-4">แก้ไขโปรไฟล์</h3>
+                <form id="updateProfileForm" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">ชื่อ-นามสกุล</label>
+                            <input type="text" id="prof_name" value="<?= $username ?>" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">สังกัด</label>
+                            <input type="text" id="prof_affiliation" value="<?= $affiliation ?>" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none">
+                        </div>
+                    </div>
+                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-xl font-semibold hover:bg-blue-700 transition-all">บันทึกการเปลี่ยนแปลง</button>
+                </form>
+            </div>
+        </div>
+        <?php endif; ?>
+
         <!-- Approve Users Section -->
         <div id="approve-section" class="section hidden space-y-6">
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
@@ -156,9 +196,59 @@ $school_name = $_SESSION['school_name'] ?? 'ไม่มีสังกัด';
                 'approve-section': 'อนุมัติผู้ใช้งาน',
                 'manage-students': 'จัดการนักเรียน',
                 'manage-subjects': 'จัดการรายวิชา',
-                'record-grades': 'บันทึกผลการเรียน'
+                'record-grades': 'บันทึกผลการเรียน',
+                'manage-super-admins': 'จัดการ Super Admin',
+                'profile': 'แก้ไขโปรไฟล์'
             };
             document.getElementById('section-title').innerText = titles[targetId] || 'ระบบบริหารจัดการ';
+        }
+
+        // Create Super Admin Logic
+        const createSuperAdminForm = document.getElementById('createSuperAdminForm');
+        if (createSuperAdminForm) {
+            createSuperAdminForm.onsubmit = async (e) => {
+                e.preventDefault();
+                const res = await fetch('api/create_super_admin.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: document.getElementById('sa_username').value,
+                        password: document.getElementById('sa_password').value,
+                        name: document.getElementById('sa_name').value,
+                        affiliation: document.getElementById('sa_affiliation').value
+                    })
+                });
+                const result = await res.json();
+                if (result.message) {
+                    alert(result.message);
+                    createSuperAdminForm.reset();
+                } else {
+                    alert(result.error);
+                }
+            };
+        }
+
+        // Update Profile Logic
+        const updateProfileForm = document.getElementById('updateProfileForm');
+        if (updateProfileForm) {
+            updateProfileForm.onsubmit = async (e) => {
+                e.preventDefault();
+                const res = await fetch('api/update_profile.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: document.getElementById('prof_name').value,
+                        affiliation: document.getElementById('prof_affiliation').value
+                    })
+                });
+                const result = await res.json();
+                if (result.message) {
+                    alert(result.message);
+                    location.reload();
+                } else {
+                    alert(result.error);
+                }
+            };
         }
 
         async function loadSchools() {
