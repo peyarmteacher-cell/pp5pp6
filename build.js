@@ -12,7 +12,7 @@ async function runBuild() {
       // Disable loading external config files to avoid "Access is denied"
       configFile: false,
       root: __dirname,
-      base: '',
+      base: '/',
       plugins: [react()],
       define: {
         'process.env': {}
@@ -27,8 +27,10 @@ async function runBuild() {
         emptyOutDir: true,
         minify: 'esbuild',
         rollupOptions: {
-          input: path.resolve(__dirname, 'index.html'),
-        }
+          input: {
+            main: path.resolve(__dirname, 'index.html'),
+          },
+        },
       },
       // Provide raw compiler options to esbuild directly
       esbuild: {
