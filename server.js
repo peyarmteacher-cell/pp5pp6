@@ -171,28 +171,44 @@ const servePhpAsHtml = (filePath, res) => {
         content = content.replace(/<\?=\s*mb_substr\(\$username,\s*0,\s*1\)\s*\?>/g, mockSession.name.charAt(0));
 
         // แทนที่เงื่อนไข <?php if ($role === '...'): ?> ... <?php endif; ?>
-        // แบบง่ายๆ สำหรับการทดสอบ
-        const role = mockSession.role;
-        const is_academic = mockSession.is_academic;
+        // แบบที่รองรับการซ้อนกัน (Nesting)
+        const evaluateCondition = (cond, session) => {
+            const role = session.role;
+            const is_academic = session.is_academic;
+            
+            // ทำความสะอาดเงื่อนไข
+            let c = cond.trim();
+            
+            // จัดการ ||
+            if (c.includes('||')) {
+                return c.split('||').some(part => evaluateCondition(part, session));
+            }
+            
+            // จัดการ &&
+            if (c.includes('&&')) {
+                return c.split('&&').every(part => evaluateCondition(part, session));
+            }
 
-        // จัดการบล็อก if/endif
+            if (c.includes("$role === 'super_admin'")) return role === 'super_admin';
+            if (c.includes("$role === 'admin'")) return role === 'admin';
+            if (c.includes("$role === 'teacher'")) return role === 'teacher';
+            if (c.includes("$_SESSION['is_academic']")) return is_academic === 1;
+            if (c.includes("isset($_SESSION['is_academic'])")) return true;
+            
+            return false;
+        };
+
         const processIfBlocks = (text) => {
-            // Super Admin
-            text = text.replace(/<\?php\s*if\s*\(\$role\s*===\s*'super_admin'\):\s*\?>(.*?)<\?php\s*endif;\s*\?>/gs, (match, inner) => {
-                return role === 'super_admin' ? inner : '';
-            });
-            // Admin
-            text = text.replace(/<\?php\s*if\s*\(\$role\s*===\s*'admin'\):\s*\?>(.*?)<\?php\s*endif;\s*\?>/gs, (match, inner) => {
-                return role === 'admin' ? inner : '';
-            });
-            // Teacher
-            text = text.replace(/<\?php\s*if\s*\(\$role\s*===\s*'teacher'.*?\):\s*\?>(.*?)<\?php\s*endif;\s*\?>/gs, (match, inner) => {
-                return role === 'teacher' ? inner : '';
-            });
-            // Teacher or Admin
-            text = text.replace(/<\?php\s*if\s*\(\$role\s*===\s*'teacher'\s*\|\|\s*\$role\s*===\s*'admin'\):\s*\?>(.*?)<\?php\s*endif;\s*\?>/gs, (match, inner) => {
-                return (role === 'teacher' || role === 'admin') ? inner : '';
-            });
+            let oldText;
+            do {
+                oldText = text;
+                // ค้นหาบล็อก if/endif ที่อยู่ชั้นในสุด (Innermost)
+                // ใช้ Negative Lookahead เพื่อให้แน่ใจว่าไม่มี if ซ้อนอยู่ข้างใน
+                text = text.replace(/<\?php\s*if\s*\((.*?)\):\s*\?>(?!.*?<\?php\s*if\s*\(.*?\):\s*\?>)(.*?)<\?php\s*endif;\s*\?>/gs, (match, condition, inner) => {
+                    const result = evaluateCondition(condition, mockSession);
+                    return result ? inner : '';
+                });
+            } while (text !== oldText);
             return text;
         };
 

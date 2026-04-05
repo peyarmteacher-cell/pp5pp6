@@ -32,33 +32,33 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
         </div>
         
         <nav class="flex-1 p-4 space-y-2">
-            <a href="#" onclick="showSection('overview')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">ภาพรวม</a>
+            <a href="javascript:void(0)" onclick="showSection('overview')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">ภาพรวม</a>
             
             <?php if ($role === 'super_admin'): ?>
                 <div class="pt-4 pb-2 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Super Admin</div>
-                <a href="#" onclick="showSection('manage-schools')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">จัดการโรงเรียน</a>
-                <a href="#" onclick="showSection('approve-admins')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">อนุมัติ Admin โรงเรียน</a>
-                <a href="#" onclick="showSection('manage-super-admins')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">จัดการ Super Admin</a>
-                <a href="#" onclick="showSection('profile')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">แก้ไขโปรไฟล์</a>
+                <a href="javascript:void(0)" onclick="showSection('manage-schools')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">จัดการโรงเรียน</a>
+                <a href="javascript:void(0)" onclick="showSection('approve-admins')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">อนุมัติ Admin โรงเรียน</a>
+                <a href="javascript:void(0)" onclick="showSection('manage-super-admins')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">จัดการ Super Admin</a>
+                <a href="javascript:void(0)" onclick="showSection('profile')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">แก้ไขโปรไฟล์</a>
             <?php endif; ?>
 
             <?php if ($role === 'admin'): ?>
                 <div class="pt-4 pb-2 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">School Admin</div>
-                <a href="#" onclick="showSection('manage-teachers')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">จัดการข้อมูลครู</a>
-                <a href="#" onclick="showSection('approve-teachers')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">อนุมัติครู</a>
-                <a href="#" onclick="showSection('manage-students')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">จัดการนักเรียน</a>
-                <a href="#" onclick="showSection('manage-subjects')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">จัดการรายวิชา</a>
+                <a href="javascript:void(0)" onclick="showSection('manage-teachers')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">จัดการข้อมูลครู</a>
+                <a href="javascript:void(0)" onclick="showSection('approve-teachers')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">อนุมัติครู</a>
+                <a href="javascript:void(0)" onclick="showSection('manage-students')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">จัดการนักเรียน</a>
+                <a href="javascript:void(0)" onclick="showSection('manage-subjects')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">จัดการรายวิชา</a>
             <?php endif; ?>
 
             <?php if ($role === 'teacher' && $_SESSION['is_academic']): ?>
                 <div class="pt-4 pb-2 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">งานวิชาการ</div>
-                <a href="#" onclick="showSection('manage-students')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">จัดการนักเรียน</a>
-                <a href="#" onclick="showSection('manage-subjects')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">จัดการรายวิชา</a>
+                <a href="javascript:void(0)" onclick="showSection('manage-students')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">จัดการนักเรียน</a>
+                <a href="javascript:void(0)" onclick="showSection('manage-subjects')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">จัดการรายวิชา</a>
             <?php endif; ?>
 
             <?php if ($role === 'teacher' || $role === 'admin'): ?>
                 <div class="pt-4 pb-2 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">เมนูครู</div>
-                <a href="#" onclick="showSection('record-grades')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">บันทึกผลการเรียน (ปพ.5/6)</a>
+                <a href="javascript:void(0)" onclick="showSection('record-grades')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">บันทึกผลการเรียน (ปพ.5/6)</a>
             <?php endif; ?>
         </nav>
 
@@ -137,12 +137,10 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                     <table class="w-full text-left">
                         <thead>
                             <tr class="text-slate-500 border-b border-slate-100">
-                                <th class="pb-3 font-medium">ชื่อ-นามสกุล</th>
-                                <th class="pb-3 font-medium">ตำแหน่ง</th>
-                                <th class="pb-3 font-medium">สถานะ</th>
-                                <?php if ($role === 'super_admin'): ?>
-                                <th class="pb-3 font-medium text-right">การจัดการ</th>
-                                <?php endif; ?>
+                                <th class="pb-3 font-medium text-slate-800">ชื่อ-นามสกุล</th>
+                                <th class="pb-3 font-medium text-slate-800">ตำแหน่ง</th>
+                                <th class="pb-3 font-medium text-slate-800">สถานะ</th>
+                                <th class="pb-3 font-medium text-right text-slate-800">การจัดการ</th>
                             </tr>
                         </thead>
                         <tbody id="modalTeacherTableBody"></tbody>
@@ -491,20 +489,25 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
         }
 
         async function loadSchools() {
-            const res = await fetch('api/get_schools.php');
-            const schools = await res.json();
-            const tbody = document.getElementById('schoolTableBody');
-            tbody.innerHTML = schools.map(s => `
-                <tr class="border-b border-slate-50 hover:bg-slate-50/50">
-                    <td class="py-3 text-slate-600 font-mono">${s.code}</td>
-                    <td class="py-3 font-medium text-slate-800 cursor-pointer hover:text-blue-600" onclick="viewTeachers(${s.id}, '${s.name}')">${s.name}</td>
-                    <td class="py-3 text-slate-500">${s.province || '-'}</td>
-                    <td class="py-3 flex gap-2">
-                        <button onclick="editSchool(${s.id}, '${s.name}', '${s.province || ''}')" class="text-blue-600 hover:text-blue-800 text-sm font-medium cursor-pointer">แก้ไข</button>
-                        <button onclick="deleteSchool(${s.id})" class="text-red-600 hover:text-red-800 text-sm font-medium cursor-pointer">ลบ</button>
-                    </td>
-                </tr>
-            `).join('');
+            try {
+                const res = await fetch('api/get_schools.php');
+                const schools = await res.json();
+                const tbody = document.getElementById('schoolTableBody');
+                if (!tbody) return;
+                tbody.innerHTML = schools.map(s => `
+                    <tr class="border-b border-slate-50 hover:bg-slate-50/50">
+                        <td class="py-3 text-slate-600 font-mono">${s.code}</td>
+                        <td class="py-3 font-medium text-slate-800 cursor-pointer hover:text-blue-600" onclick="viewTeachers(${s.id}, '${s.name}')">${s.name}</td>
+                        <td class="py-3 text-slate-500">${s.province || '-'}</td>
+                        <td class="py-3 flex gap-2">
+                            <button onclick="editSchool(${s.id}, '${s.name}', '${s.province || ''}')" class="text-blue-600 hover:text-blue-800 text-sm font-medium cursor-pointer">แก้ไข</button>
+                            <button onclick="deleteSchool(${s.id})" class="text-red-600 hover:text-red-800 text-sm font-medium cursor-pointer">ลบ</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (e) {
+                console.error('Error in loadSchools:', e);
+            }
         }
 
         function openModal(modalId) {
@@ -704,36 +707,46 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
         }
 
         async function loadStudents() {
-            const res = await fetch('api/academic/get_students.php');
-            const students = await res.json();
-            const tbody = document.getElementById('studentsTableBody');
-            tbody.innerHTML = students.map(s => `
-                <tr class="border-b border-slate-50 hover:bg-slate-50/50">
-                    <td class="py-3 text-slate-600 font-mono">${s.student_code}</td>
-                    <td class="py-3 font-medium text-slate-800">${s.name}</td>
-                    <td class="py-3 text-slate-500">${s.level}</td>
-                    <td class="py-3">
-                        <button onclick="deleteStudent(${s.id})" class="text-red-600 hover:text-red-800 text-xs font-bold cursor-pointer">ลบ</button>
-                    </td>
-                </tr>
-            `).join('');
+            try {
+                const res = await fetch('api/academic/get_students.php');
+                const students = await res.json();
+                const tbody = document.getElementById('studentsTableBody');
+                if (!tbody) return;
+                tbody.innerHTML = students.map(s => `
+                    <tr class="border-b border-slate-50 hover:bg-slate-50/50">
+                        <td class="py-3 text-slate-600 font-mono">${s.student_code}</td>
+                        <td class="py-3 font-medium text-slate-800">${s.name}</td>
+                        <td class="py-3 text-slate-500">${s.level}</td>
+                        <td class="py-3">
+                            <button onclick="deleteStudent(${s.id})" class="text-red-600 hover:text-red-800 text-xs font-bold cursor-pointer">ลบ</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (e) {
+                console.error('Error in loadStudents:', e);
+            }
         }
 
         async function loadSubjects() {
-            const res = await fetch('api/academic/get_subjects.php');
-            const subjects = await res.json();
-            const tbody = document.getElementById('subjectsTableBody');
-            tbody.innerHTML = subjects.map(s => `
-                <tr class="border-b border-slate-50 hover:bg-slate-50/50">
-                    <td class="py-3 text-slate-600 font-mono">${s.code}</td>
-                    <td class="py-3 font-medium text-slate-800">${s.name}</td>
-                    <td class="py-3 text-slate-500">${s.level}</td>
-                    <td class="py-3 text-slate-500">${s.hours} ชม. / ${s.credits} นก.</td>
-                    <td class="py-3">
-                        <button onclick="deleteSubject(${s.id})" class="text-red-600 hover:text-red-800 text-xs font-bold cursor-pointer">ลบ</button>
-                    </td>
-                </tr>
-            `).join('');
+            try {
+                const res = await fetch('api/academic/get_subjects.php');
+                const subjects = await res.json();
+                const tbody = document.getElementById('subjectsTableBody');
+                if (!tbody) return;
+                tbody.innerHTML = subjects.map(s => `
+                    <tr class="border-b border-slate-50 hover:bg-slate-50/50">
+                        <td class="py-3 text-slate-600 font-mono">${s.code}</td>
+                        <td class="py-3 font-medium text-slate-800">${s.name}</td>
+                        <td class="py-3 text-slate-500">${s.level}</td>
+                        <td class="py-3 text-slate-500">${s.hours} ชม. / ${s.credits} นก.</td>
+                        <td class="py-3">
+                            <button onclick="deleteSubject(${s.id})" class="text-red-600 hover:text-red-800 text-xs font-bold cursor-pointer">ลบ</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (e) {
+                console.error('Error in loadSubjects:', e);
+            }
         }
 
         const addStudentForm = document.getElementById('addStudentForm');
@@ -828,23 +841,28 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
         }
 
         async function loadPendingUsers() {
-            const mockRole = new URLSearchParams(window.location.search).get('mock_role') || '';
-            const res = await fetch(`api/get_pending_users.php?mock_role=${mockRole}`);
-            const users = await res.json();
-            const tbody = document.getElementById('pendingUsersTableBody');
-            tbody.innerHTML = users.map(u => `
-                <tr class="border-b border-slate-50 hover:bg-slate-50/50">
-                    <td class="py-3 font-medium text-slate-800">${u.name}</td>
-                    <td class="py-3 text-slate-500">${u.school_name || 'ไม่มีสังกัด'}</td>
-                    <td class="py-3 text-slate-500">${u.position}</td>
-                    <td class="py-3">
-                        <div class="flex gap-2">
-                            <button onclick="approveUser(${u.id}, '${u.role === 'super_admin' ? 'admin' : 'teacher'}')" class="bg-green-600 text-white px-3 py-1 rounded-lg text-xs font-semibold hover:bg-green-700 cursor-pointer">อนุมัติ</button>
-                            <button onclick="rejectUser(${u.id})" class="bg-red-600 text-white px-3 py-1 rounded-lg text-xs font-semibold hover:bg-red-700 cursor-pointer">ไม่อนุมัติ</button>
-                        </div>
-                    </td>
-                </tr>
-            `).join('');
+            try {
+                const mockRole = new URLSearchParams(window.location.search).get('mock_role') || '';
+                const res = await fetch(`api/get_pending_users.php?mock_role=${mockRole}`);
+                const users = await res.json();
+                const tbody = document.getElementById('pendingUsersTableBody');
+                if (!tbody) return;
+                tbody.innerHTML = users.map(u => `
+                    <tr class="border-b border-slate-50 hover:bg-slate-50/50">
+                        <td class="py-3 font-medium text-slate-800">${u.name}</td>
+                        <td class="py-3 text-slate-500">${u.school_name || 'ไม่มีสังกัด'}</td>
+                        <td class="py-3 text-slate-500">${u.position}</td>
+                        <td class="py-3">
+                            <div class="flex gap-2">
+                                <button onclick="approveUser(${u.id}, '${u.role === 'super_admin' ? 'admin' : 'teacher'}')" class="bg-green-600 text-white px-3 py-1 rounded-lg text-xs font-semibold hover:bg-green-700 cursor-pointer">อนุมัติ</button>
+                                <button onclick="rejectUser(${u.id})" class="bg-red-600 text-white px-3 py-1 rounded-lg text-xs font-semibold hover:bg-red-700 cursor-pointer">ไม่อนุมัติ</button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (e) {
+                console.error('Error in loadPendingUsers:', e);
+            }
         }
 
         async function rejectUser(userId) {
