@@ -39,8 +39,9 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                 <a href="javascript:void(0)" onclick="showSection('manage-schools')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">จัดการโรงเรียน</a>
                 <a href="javascript:void(0)" onclick="showSection('approve-admins')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">อนุมัติ Admin โรงเรียน</a>
                 <a href="javascript:void(0)" onclick="showSection('manage-super-admins')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">จัดการ Super Admin</a>
+                <a href="javascript:void(0)" onclick="fixDatabase()" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors text-yellow-400">ปรับปรุงฐานข้อมูล</a>
                 <a href="javascript:void(0)" onclick="showSection('profile')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">แก้ไขโปรไฟล์</a>
-            <?php endif; ?>
+<?php endif; ?>
 
             <?php if ($role === 'admin'): ?>
                 <div class="pt-4 pb-2 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">School Admin</div>
@@ -944,6 +945,23 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                 loadTeacherAssignments(teacherId);
             } else {
                 alert(result.error);
+            }
+        }
+
+        async function fixDatabase() {
+            if (!confirm('คุณต้องการปรับปรุงโครงสร้างฐานข้อมูลหรือไม่?')) return;
+            try {
+                const res = await fetch('api/admin/fix_database.php');
+                const result = await res.json();
+                if (result.status === 'success') {
+                    alert(result.message + '\n\n' + result.details.join('\n'));
+                    location.reload();
+                } else {
+                    alert(result.message + '\n\n' + result.error);
+                }
+            } catch (e) {
+                console.error('Error in fixDatabase:', e);
+                alert('เกิดข้อผิดพลาดในการเชื่อมต่อ');
             }
         }
 

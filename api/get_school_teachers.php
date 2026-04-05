@@ -47,6 +47,10 @@ try {
     echo json_encode($teachers);
 } catch (PDOException $e) {
     http_response_code(500);
-    echo json_encode(['error' => 'ไม่สามารถดึงข้อมูลคุณครูได้: ' . $e->getMessage()]);
+    $error_message = $e->getMessage();
+    if (strpos($error_message, 'Unknown column \'is_academic\'') !== false) {
+        $error_message .= " (กรุณาแจ้ง Super Admin ให้ทำการปรับปรุงฐานข้อมูล)";
+    }
+    echo json_encode(['error' => 'ไม่สามารถดึงข้อมูลคุณครูได้: ' . $error_message]);
 }
 ?>
