@@ -14,6 +14,7 @@ $data = json_decode(file_get_contents('php://input'), true);
 $teacher_id = $data['teacher_id'] ?? '';
 $type = $data['type'] ?? 'individual'; // 'individual' or 'bulk_level'
 $subject_ids = $data['subject_ids'] ?? []; // for individual
+$classroom_id = $data['classroom_id'] ?? null; // for individual
 $level = $data['level'] ?? ''; // for bulk_level
 $academic_year = $data['academic_year'] ?? date('Y');
 $semester = $data['semester'] ?? 1;
@@ -52,11 +53,11 @@ try {
     // มอบหมายงานสอน (ข้ามวิชาที่มอบหมายไปแล้ว)
     $pdo->beginTransaction();
     foreach ($subject_ids as $sid) {
-        $stmt = $pdo->prepare('SELECT id FROM teacher_assignments WHERE teacher_id = ? AND subject_id = ? AND academic_year = ? AND semester = ?');
-        $stmt->execute([$teacher_id, $sid, $academic_year, $semester]);
+        $stmt = $pdo->prepare('SELECT id FROM teacher_assignments WHERE teacher_id = ? AND subject_id = ? AND classroom_id <=> ? AND academic_year = ? AND semester = ?');
+        $stmt->execute([$teacher_id, $sid, $classroom_id, $academic_year, $semester]);
         if (!$stmt->fetch()) {
-            $stmt = $pdo->prepare('INSERT INTO teacher_assignments (teacher_id, subject_id, academic_year, semester) VALUES (?, ?, ?, ?)');
-            $stmt->execute([$teacher_id, $sid, $academic_year, $semester]);
+            $stmt = $pdo->prepare('INSERT INTO teacher_assignments (teacher_id, subject_id, classroom_id, academic_year, semester) VALUES (?, ?, ?, ?, ?)');
+            $stmt->execute([$teacher_id, $sid, $classroom_id, $academic_year, $semester]);
         }
     }
     $pdo->commit();

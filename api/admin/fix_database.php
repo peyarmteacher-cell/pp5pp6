@@ -76,6 +76,14 @@ try {
         $results[] = "เพิ่มคอลัมน์ classroom_id และ Foreign Key ในตาราง students สำเร็จ";
     }
 
+    // 7. ตรวจสอบและเพิ่มคอลัมน์ classroom_id ในตาราง teacher_assignments
+    $stmt = $pdo->query("SHOW COLUMNS FROM teacher_assignments LIKE 'classroom_id'");
+    if (!$stmt->fetch()) {
+        $pdo->exec("ALTER TABLE teacher_assignments ADD COLUMN classroom_id INT AFTER subject_id");
+        $pdo->exec("ALTER TABLE teacher_assignments ADD FOREIGN KEY (classroom_id) REFERENCES classrooms(id) ON DELETE CASCADE");
+        $results[] = "เพิ่มคอลัมน์ classroom_id ในตาราง teacher_assignments สำเร็จ";
+    }
+
     echo json_encode([
         'status' => 'success',
         'message' => 'ตรวจสอบและปรับปรุงฐานข้อมูลเรียบร้อยแล้ว',

@@ -21,11 +21,12 @@ if (empty($teacher_id)) {
 
 try {
     $stmt = $pdo->prepare('
-        SELECT ta.id as assignment_id, s.code, s.name, s.level, s.hours, s.credits
+        SELECT ta.id as assignment_id, s.code, s.name, s.level, s.hours, s.credits, c.room
         FROM teacher_assignments ta
         JOIN subjects s ON ta.subject_id = s.id
+        LEFT JOIN classrooms c ON ta.classroom_id = c.id
         WHERE ta.teacher_id = ? AND ta.academic_year = ? AND ta.semester = ?
-        ORDER BY s.level ASC, s.code ASC
+        ORDER BY s.level ASC, s.code ASC, c.room ASC
     ');
     $stmt->execute([$teacher_id, $academic_year, $semester]);
     $assignments = $stmt->fetchAll();

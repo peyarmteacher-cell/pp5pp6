@@ -87,6 +87,51 @@
     </div>
 </div>
 
+<!-- Edit Subject Modal -->
+<div id="editSubjectModal" class="fixed inset-0 bg-slate-900/50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden">
+        <div class="p-6 border-b border-slate-100 flex justify-between items-center">
+            <h3 class="text-xl font-bold text-slate-800">แก้ไขข้อมูลรายวิชา</h3>
+            <button onclick="closeModal('editSubjectModal')" class="text-slate-400 hover:text-slate-600 cursor-pointer">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+        <form id="editSubjectForm" class="p-6 space-y-4">
+            <input type="hidden" id="edit_sub_id">
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">รหัสวิชา</label>
+                <input type="text" id="edit_sub_code" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">ชื่อวิชา</label>
+                <input type="text" id="edit_sub_name" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">ระดับชั้น</label>
+                <select id="edit_sub_level" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
+                    <option value="ป.1">ป.1</option><option value="ป.2">ป.2</option><option value="ป.3">ป.3</option>
+                    <option value="ป.4">ป.4</option><option value="ป.5">ป.5</option><option value="ป.6">ป.6</option>
+                    <option value="ม.1">ม.1</option><option value="ม.2">ม.2</option><option value="ม.3">ม.3</option>
+                </select>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">ชั่วโมง</label>
+                    <input type="number" id="edit_sub_hours" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">หน่วยกิต</label>
+                    <input type="number" step="0.5" id="edit_sub_credits" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
+                </div>
+            </div>
+            <div class="pt-2 flex gap-3">
+                <button type="button" onclick="closeModal('editSubjectModal')" class="flex-1 px-4 py-2 border border-slate-200 text-slate-600 rounded-xl font-semibold hover:bg-slate-50 cursor-pointer transition-all">ยกเลิก</button>
+                <button type="submit" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-xl font-semibold hover:bg-blue-700 cursor-pointer transition-all">บันทึกการแก้ไข</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
     function downloadSubjectTemplate() {
         const data = [
@@ -212,7 +257,10 @@
                 <td class="py-3 text-slate-500">${s.level}</td>
                 <td class="py-3 text-slate-500">${s.hours} ชม. / ${s.credits} นก.</td>
                 <td class="py-3">
-                    <button onclick="deleteSubject(${s.id})" class="text-red-600 hover:text-red-800 text-xs font-bold cursor-pointer">ลบ</button>
+                    <div class="flex gap-2">
+                        <button onclick="editSubject(${s.id}, '${s.code}', '${s.name}', '${s.level}', ${s.hours}, ${s.credits})" class="text-blue-600 hover:text-blue-800 text-xs font-bold cursor-pointer">แก้ไข</button>
+                        <button onclick="deleteSubject(${s.id})" class="text-red-600 hover:text-red-800 text-xs font-bold cursor-pointer">ลบ</button>
+                    </div>
                 </td>
             </tr>
         `).join('');
@@ -269,7 +317,43 @@
         }
     }
 
+    function editSubject(id, code, name, level, hours, credits) {
+        document.getElementById('edit_sub_id').value = id;
+        document.getElementById('edit_sub_code').value = code;
+        document.getElementById('edit_sub_name').value = name;
+        document.getElementById('edit_sub_level').value = level;
+        document.getElementById('edit_sub_hours').value = hours;
+        document.getElementById('edit_sub_credits').value = credits;
+        openModal('editSubjectModal');
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
+        const editSubjectForm = document.getElementById('editSubjectForm');
+        if (editSubjectForm) {
+            editSubjectForm.onsubmit = async (e) => {
+                e.preventDefault();
+                const res = await fetch('api/academic/update_subject.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        id: document.getElementById('edit_sub_id').value,
+                        code: document.getElementById('edit_sub_code').value,
+                        name: document.getElementById('edit_sub_name').value,
+                        level: document.getElementById('edit_sub_level').value,
+                        hours: document.getElementById('edit_sub_hours').value,
+                        credits: document.getElementById('edit_sub_credits').value
+                    })
+                });
+                const result = await res.json();
+                if (result.message) {
+                    alert(result.message);
+                    closeModal('editSubjectModal');
+                    loadSubjects();
+                } else {
+                    alert(result.error);
+                }
+            };
+        }
         const addSubjectForm = document.getElementById('addSubjectForm');
         if (addSubjectForm) {
             addSubjectForm.onsubmit = async (e) => {
