@@ -607,6 +607,10 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                         <?php endif; ?>
                     </tr>
                 `).join('');
+                }
+            } catch (e) {
+                console.error('Error in viewTeachers:', e);
+                alert('เกิดข้อผิดพลาดในการดึงข้อมูลคุณครู');
             }
             
             openModal('teacherModal');
@@ -680,6 +684,10 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                     </td>
                 </tr>
             `).join('');
+            } catch (e) {
+                console.error('Error in loadSchoolTeachers:', e);
+                alert('เกิดข้อผิดพลาดในการโหลดข้อมูลคุณครู');
+            }
         }
 
         async function toggleAcademic(userId, isAcademic) {
