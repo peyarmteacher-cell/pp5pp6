@@ -41,12 +41,34 @@ app.get('/api/get_schools.php', (req, res) => {
 
 app.get('/api/get_school_teachers.php', (req, res) => {
     const schoolId = parseInt(req.query.school_id);
-    const teachers = mockUsers.filter(u => u.school_id === schoolId && u.is_approved === 1);
+    const mockRole = req.query.mock_role || 'admin';
+    const currentSchoolId = 1;
+
+    let targetSchoolId = schoolId;
+    if (isNaN(targetSchoolId) && mockRole === 'admin') {
+        targetSchoolId = currentSchoolId;
+    }
+
+    let teachers = mockUsers.filter(u => u.school_id === targetSchoolId);
+    
+    // ถ้าไม่ใช่ Super Admin ให้แสดงเฉพาะคนที่อนุมัติแล้ว
+    if (mockRole !== 'super_admin') {
+        teachers = teachers.filter(u => u.is_approved === 1);
+    }
+    
     res.json(teachers);
 });
 
 app.get('/api/get_pending_users.php', (req, res) => {
-    const pending = mockUsers.filter(u => u.is_approved === 0);
+    const mockRole = req.query.mock_role || 'admin';
+    const currentSchoolId = 1;
+    
+    let pending = mockUsers.filter(u => u.is_approved === 0);
+    
+    if (mockRole === 'admin') {
+        pending = pending.filter(u => u.school_id === currentSchoolId);
+    }
+    
     res.json(pending);
 });
 
@@ -127,12 +149,13 @@ const servePhpAsHtml = (filePath, res) => {
         
         // จำลองการแทนที่ตัวแปร PHP พื้นฐานสำหรับหน้า Preview
         // ในระบบจริง PHP จะจัดการส่วนนี้เอง
+        const mockRole = req.query.mock_role || 'admin';
         const mockSession = {
-            user_id: 2,
-            name: 'School Admin',
-            role: 'admin',
-            school_id: 1,
-            school_name: 'โรงเรียนบ้านหนองบัว',
+            user_id: mockRole === 'super_admin' ? 1 : 2,
+            name: mockRole === 'super_admin' ? 'Super Admin System' : 'School Admin',
+            role: mockRole,
+            school_id: mockRole === 'super_admin' ? null : 1,
+            school_name: mockRole === 'super_admin' ? null : 'โรงเรียนบ้านหนองบัว',
             affiliation: 'สพป.บุรีรัมย์ เขต 3',
             is_academic: 0
         };

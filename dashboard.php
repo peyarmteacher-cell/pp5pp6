@@ -571,14 +571,22 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
 
         async function viewTeachers(schoolId, schoolName) {
             document.getElementById('modalSchoolName').innerText = `รายชื่อคุณครู - ${schoolName}`;
-            const res = await fetch(`api/get_school_teachers.php?school_id=${schoolId}`);
-            const teachers = await res.json();
-            const tbody = document.getElementById('modalTeacherTableBody');
-            
-            if (teachers.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="${'<?= $role ?>' === 'super_admin' ? 4 : 3}" class="py-4 text-center text-slate-400">ไม่พบรายชื่อคุณครูในโรงเรียนนี้</td></tr>`;
-            } else {
-                tbody.innerHTML = teachers.map(t => `
+            const mockRole = new URLSearchParams(window.location.search).get('mock_role') || '';
+            try {
+                const res = await fetch(`api/get_school_teachers.php?school_id=${schoolId}&mock_role=${mockRole}`);
+                const teachers = await res.json();
+                
+                if (teachers.error) {
+                    alert(teachers.error);
+                    return;
+                }
+
+                const tbody = document.getElementById('modalTeacherTableBody');
+                
+                if (teachers.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="${'<?= $role ?>' === 'super_admin' ? 4 : 3}" class="py-4 text-center text-slate-400">ไม่พบรายชื่อคุณครูในโรงเรียนนี้</td></tr>`;
+                } else {
+                    tbody.innerHTML = teachers.map(t => `
                     <tr class="border-b border-slate-50">
                         <td class="py-3 font-medium text-slate-800">${t.name}</td>
                         <td class="py-3 text-slate-500">${t.position}</td>
@@ -626,19 +634,28 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
 
         async function loadSchoolTeachers() {
             const schoolId = '<?= $_SESSION['school_id'] ?>';
+            const mockRole = new URLSearchParams(window.location.search).get('mock_role') || '';
             console.log('Loading teachers for school_id:', schoolId);
-            const res = await fetch(`api/get_school_teachers.php?school_id=${schoolId}`);
-            const teachers = await res.json();
-            console.log('Teachers loaded:', teachers);
-            const tbody = document.getElementById('schoolTeachersTableBody');
-            if (!tbody) return;
-            
-            if (teachers.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="py-8 text-center text-slate-400">ยังไม่มีข้อมูลคุณครูในโรงเรียนนี้</td></tr>`;
-                return;
-            }
+            try {
+                const res = await fetch(`api/get_school_teachers.php?school_id=${schoolId}&mock_role=${mockRole}`);
+                const teachers = await res.json();
+                console.log('Teachers loaded:', teachers);
+                
+                if (teachers.error) {
+                    console.error('API Error:', teachers.error);
+                    alert(teachers.error);
+                    return;
+                }
 
-            tbody.innerHTML = teachers.map(t => `
+                const tbody = document.getElementById('schoolTeachersTableBody');
+                if (!tbody) return;
+                
+                if (teachers.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="4" class="py-8 text-center text-slate-400">ยังไม่มีข้อมูลคุณครูในโรงเรียนนี้</td></tr>`;
+                    return;
+                }
+
+                tbody.innerHTML = teachers.map(t => `
                 <tr class="border-b border-slate-50 hover:bg-slate-50/50">
                     <td class="py-3 font-medium text-slate-800">${t.name}</td>
                     <td class="py-3 text-slate-500">${t.position}</td>
@@ -803,7 +820,8 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
         }
 
         async function loadPendingUsers() {
-            const res = await fetch('api/get_pending_users.php');
+            const mockRole = new URLSearchParams(window.location.search).get('mock_role') || '';
+            const res = await fetch(`api/get_pending_users.php?mock_role=${mockRole}`);
             const users = await res.json();
             const tbody = document.getElementById('pendingUsersTableBody');
             tbody.innerHTML = users.map(u => `
