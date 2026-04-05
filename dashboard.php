@@ -276,6 +276,10 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-lg font-bold">รายชื่อนักเรียน</h3>
                     <div class="flex gap-2">
+                        <button onclick="downloadStudentTemplate()" class="bg-slate-100 text-slate-600 px-4 py-2 rounded-xl text-sm font-semibold hover:bg-slate-200 cursor-pointer transition-all flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                            ดาวน์โหลด Template
+                        </button>
                         <input type="file" id="importExcel" accept=".xlsx, .xls" class="hidden" onchange="handleExcelImport(event)">
                         <button onclick="document.getElementById('importExcel').click()" class="bg-green-600 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-green-700 cursor-pointer transition-all">นำเข้าจาก Excel</button>
                         <button onclick="promoteStudents()" class="bg-amber-600 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-amber-700 cursor-pointer transition-all">เลื่อนระดับชั้น</button>
@@ -764,6 +768,18 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
         }
 
         let studentsToImport = [];
+
+        function downloadStudentTemplate() {
+            const data = [
+                ['รหัสประจำตัว', 'เลขบัตรประชาชน', 'ชื่อ-นามสกุล', 'ระดับชั้น', 'ห้อง'],
+                ['67001', '1234567890123', 'เด็กชายสมชาย ใจดี', 'ป.1', '1'],
+                ['67002', '9876543210987', 'เด็กหญิงสมศรี รักเรียน', 'ป.1', '2']
+            ];
+            const worksheet = XLSX.utils.aoa_to_sheet(data);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Template");
+            XLSX.writeFile(workbook, "student_template.xlsx");
+        }
 
         function handleExcelImport(event) {
             const file = event.target.files[0];
