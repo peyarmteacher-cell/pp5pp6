@@ -471,6 +471,8 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
     </div>
 
     <script>
+        var studentsToImport = [];
+
         function showSection(sectionId) {
             document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
             
@@ -769,8 +771,6 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                 loadSchoolTeachers(); // Revert UI
             }
         }
-
-        let studentsToImport = [];
 
         function downloadStudentTemplate() {
             const data = [
