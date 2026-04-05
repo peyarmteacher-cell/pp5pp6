@@ -441,7 +441,10 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
     <div id="importPreviewModal" class="fixed inset-0 bg-slate-900/50 hidden items-center justify-center z-50 p-4">
         <div class="bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
             <div class="p-6 border-b border-slate-100 flex justify-between items-center">
-                <h3 class="text-xl font-bold text-slate-800">ตรวจสอบข้อมูลก่อนนำเข้า</h3>
+                <div>
+                    <h3 class="text-xl font-bold text-slate-800">ตรวจสอบข้อมูลก่อนนำเข้า</h3>
+                    <p id="importSummaryText" class="text-sm text-slate-500 mt-1"></p>
+                </div>
                 <button onclick="closeModal('importPreviewModal')" class="text-slate-400 hover:text-slate-600 cursor-pointer">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
@@ -782,34 +785,47 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
         }
 
         function handleExcelImport(event) {
+            console.log('File selected:', event.target.files[0]);
             const file = event.target.files[0];
             if (!file) return;
 
             const reader = new FileReader();
+            reader.onerror = (err) => {
+                console.error('FileReader error:', err);
+                alert('ไม่สามารถอ่านไฟล์ได้');
+            };
             reader.onload = (e) => {
-                const data = new Uint8Array(e.target.result);
-                const workbook = XLSX.read(data, { type: 'array' });
-                const firstSheetName = workbook.SheetNames[0];
-                const worksheet = workbook.Sheets[firstSheetName];
-                const json = XLSX.utils.sheet_to_json(worksheet);
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    const json = XLSX.utils.sheet_to_json(worksheet);
+                    console.log('Excel JSON:', json);
 
-                // คาดหวังคอลัมน์: student_code, national_id, name, level, room
-                // หรือภาษาไทย: รหัสประจำตัว, เลขบัตรประชาชน, ชื่อ-นามสกุล, ระดับชั้น, ห้อง
-                studentsToImport = json.map(row => ({
-                    student_code: String(row['รหัสประจำตัว'] || row['student_code'] || ''),
-                    national_id: String(row['เลขบัตรประชาชน'] || row['national_id'] || ''),
-                    name: String(row['ชื่อ-นามสกุล'] || row['name'] || ''),
-                    level: String(row['ระดับชั้น'] || row['level'] || ''),
-                    room: String(row['ห้อง'] || row['room'] || '1')
-                })).filter(s => s.student_code && s.name && s.level);
+                    // คาดหวังคอลัมน์: student_code, national_id, name, level, room
+                    // หรือภาษาไทย: รหัสประจำตัว, เลขบัตรประชาชน, ชื่อ-นามสกุล, ระดับชั้น, ห้อง
+                    studentsToImport = json.map(row => ({
+                        student_code: String(row['รหัสประจำตัว'] || row['student_code'] || row['รหัส'] || ''),
+                        national_id: String(row['เลขบัตรประชาชน'] || row['national_id'] || row['เลขบัตร'] || ''),
+                        name: String(row['ชื่อ-นามสกุล'] || row['name'] || row['ชื่อ'] || ''),
+                        level: String(row['ระดับชั้น'] || row['level'] || row['ชั้น'] || ''),
+                        room: String(row['ห้อง'] || row['room'] || '1')
+                    })).filter(s => s.student_code && s.name && s.level);
 
-                if (studentsToImport.length === 0) {
-                    alert('ไม่พบข้อมูลนักเรียนที่ถูกต้องในไฟล์ Excel');
-                    return;
+                    console.log('Filtered students:', studentsToImport);
+
+                    if (studentsToImport.length === 0) {
+                        alert('ไม่พบข้อมูลนักเรียนที่ถูกต้องในไฟล์ Excel (กรุณาตรวจสอบหัวคอลัมน์)');
+                        return;
+                    }
+
+                    renderImportPreview();
+                    openModal('importPreviewModal');
+                } catch (err) {
+                    console.error('Excel processing error:', err);
+                    alert('เกิดข้อผิดพลาดในการประมวลผลไฟล์ Excel: ' + err.message);
                 }
-
-                renderImportPreview();
-                openModal('importPreviewModal');
             };
             reader.readAsArrayBuffer(file);
             event.target.value = ''; // Reset input
@@ -817,6 +833,12 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
 
         function renderImportPreview() {
             const tbody = document.getElementById('importPreviewTableBody');
+            const summary = document.getElementById('importSummaryText');
+            
+            if (summary) {
+                summary.innerText = `พบข้อมูลนักเรียนทั้งหมด ${studentsToImport.length} รายการ`;
+            }
+
             tbody.innerHTML = studentsToImport.map(s => `
                 <tr class="border-b border-slate-50">
                     <td class="py-2">${s.student_code}</td>
