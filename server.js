@@ -108,16 +108,29 @@ app.post('/api/admin/set_academic_role.php', (req, res) => {
 
 app.get('/api/academic/get_students.php', (req, res) => {
     res.json([
-        { id: 1, student_code: '66001', name: 'เด็กชายกอไก่ ใจดี', level: 'ป.1' },
-        { id: 2, student_code: '66002', name: 'เด็กหญิงขอไข่ ใฝ่เรียน', level: 'ป.1' }
+        { id: 1, student_code: '66001', name: 'เด็กชายกอไก่ ใจดี', level: 'ป.1', room: '1' },
+        { id: 2, student_code: '66002', name: 'เด็กหญิงขอไข่ ใฝ่เรียน', level: 'ป.1', room: '1' },
+        { id: 3, student_code: '66003', name: 'เด็กชายคอควาย คึกคัก', level: 'ป.1', room: '2' },
+        { id: 4, student_code: '66004', name: 'เด็กหญิงงองู เงียบเหงา', level: 'ป.2', room: '1' },
+        { id: 5, student_code: '66005', name: 'เด็กชายจจาน จริงใจ', level: 'ป.2', room: '2' }
     ]);
 });
 
 app.get('/api/academic/get_subjects.php', (req, res) => {
     res.json([
         { id: 1, code: 'ท11101', name: 'ภาษาไทย', level: 'ป.1', hours: 200, credits: 5.0 },
-        { id: 2, code: 'ค11101', name: 'คณิตศาสตร์', level: 'ป.1', hours: 200, credits: 5.0 }
+        { id: 2, code: 'ค11101', name: 'คณิตศาสตร์', level: 'ป.1', hours: 200, credits: 5.0 },
+        { id: 3, code: 'ท12101', name: 'ภาษาไทย', level: 'ป.2', hours: 200, credits: 5.0 },
+        { id: 4, code: 'ค12101', name: 'คณิตศาสตร์', level: 'ป.2', hours: 200, credits: 5.0 }
     ]);
+});
+
+app.post('/api/academic/import_students.php', (req, res) => {
+    res.json({ message: 'นำเข้าข้อมูลนักเรียนสำเร็จแล้ว (Mock)' });
+});
+
+app.post('/api/academic/import_subjects.php', (req, res) => {
+    res.json({ message: 'นำเข้าข้อมูลรายวิชาสำเร็จแล้ว (Mock)' });
 });
 
 app.post('/api/reject_user.php', (req, res) => {
@@ -143,7 +156,7 @@ app.post('/api/register.php', (req, res) => {
 });
 
 // --- Static File Serving with Mock PHP Replacement ---
-const servePhpAsHtml = (filePath, res) => {
+const servePhpAsHtml = (filePath, req, res) => {
     if (fs.existsSync(filePath)) {
         let content = fs.readFileSync(filePath, 'utf8');
         
@@ -225,11 +238,11 @@ const servePhpAsHtml = (filePath, res) => {
 };
 
 app.get('/', (req, res) => {
-    servePhpAsHtml(path.join(__dirname, 'index.php'), res);
+    servePhpAsHtml(path.join(__dirname, 'index.php'), req, res);
 });
 
 app.get('/dashboard.php', (req, res) => {
-    servePhpAsHtml(path.join(__dirname, 'dashboard.php'), res);
+    servePhpAsHtml(path.join(__dirname, 'dashboard.php'), req, res);
 });
 
 app.listen(PORT, '0.0.0.0', () => {

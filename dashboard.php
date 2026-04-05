@@ -285,6 +285,19 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                         <button onclick="promoteStudents()" class="bg-amber-600 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-amber-700 cursor-pointer transition-all">เลื่อนระดับชั้น</button>
                     </div>
                 </div>
+                
+                <!-- Student Filters -->
+                <div id="studentFilters" class="mb-6 space-y-4 border-b border-slate-100 pb-6">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">เลือกระดับชั้น</p>
+                        <div id="studentLevelButtons" class="flex flex-wrap gap-2"></div>
+                    </div>
+                    <div id="studentRoomContainer" class="hidden">
+                        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">เลือกห้องเรียน</p>
+                        <div id="studentRoomButtons" class="flex flex-wrap gap-2"></div>
+                    </div>
+                </div>
+
                 <div id="studentsContainer" class="space-y-8">
                     <!-- จะถูกเติมด้วย JavaScript แยกตามห้องเรียน -->
                 </div>
@@ -321,6 +334,13 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
             </div>
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                 <h3 class="text-lg font-bold mb-4">รายชื่อวิชา</h3>
+                
+                <!-- Subject Filters -->
+                <div id="subjectFilters" class="mb-6 border-b border-slate-100 pb-6">
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">เลือกระดับชั้น</p>
+                    <div id="subjectLevelButtons" class="flex flex-wrap gap-2"></div>
+                </div>
+
                 <div class="overflow-x-auto">
                     <table class="w-full text-left">
                         <thead>
@@ -515,6 +535,11 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
     <script>
         var studentsToImport = [];
         var subjectsToImport = [];
+        var allStudents = [];
+        var allSubjects = [];
+        var selectedStudentLevel = null;
+        var selectedStudentRoom = null;
+        var selectedSubjectLevel = null;
 
         function showSection(sectionId) {
             document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
@@ -897,10 +922,8 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
 
         // Initialize Event Listeners
         async function confirmStudentImport() {
-            console.log('confirmStudentImport called');
             const confirmBtn = document.getElementById('confirmImportBtn');
-            console.log('confirmBtn:', confirmBtn);
-            console.log('studentsToImport:', studentsToImport);
+            if (!confirmBtn) return;
             
             if (!studentsToImport || studentsToImport.length === 0) {
                 alert('ไม่พบข้อมูลที่จะนำเข้า กรุณาเลือกไฟล์ใหม่อีกครั้ง');
@@ -916,6 +939,7 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ students: studentsToImport })
                 });
+                
                 const result = await res.json();
                 if (result.message) {
                     alert(result.message);
@@ -935,6 +959,8 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
 
         async function confirmSubjectImport() {
             const confirmSubBtn = document.getElementById('confirmSubjectImportBtn');
+            if (!confirmSubBtn) return;
+
             if (!subjectsToImport || subjectsToImport.length === 0) {
                 alert('ไม่พบข้อมูลที่จะนำเข้า กรุณาเลือกไฟล์ใหม่อีกครั้ง');
                 return;
@@ -971,9 +997,7 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
         });
 
         function handleExcelImport(event) {
-            console.log('handleExcelImport triggered');
             const file = event.target.files[0];
-            console.log('File selected:', file);
             if (!file) return;
 
             const reader = new FileReader();
@@ -988,7 +1012,6 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                     const firstSheetName = workbook.SheetNames[0];
                     const worksheet = workbook.Sheets[firstSheetName];
                     const json = XLSX.utils.sheet_to_json(worksheet);
-                    console.log('Excel JSON:', json);
 
                     // คาดหวังคอลัมน์: student_code, national_id, name, level, room
                     // หรือภาษาไทย: รหัสประจำตัว, เลขบัตรประชาชน, ชื่อ-นามสกุล, ระดับชั้น, ห้อง
@@ -999,8 +1022,6 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                         level: String(row['ระดับชั้น'] || row['level'] || row['ชั้น'] || ''),
                         room: String(row['ห้อง'] || row['room'] || '1')
                     })).filter(s => s.student_code && s.name && s.level);
-
-                    console.log('Filtered students:', studentsToImport);
 
                     if (studentsToImport.length === 0) {
                         alert('ไม่พบข้อมูลนักเรียนที่ถูกต้องในไฟล์ Excel (กรุณาตรวจสอบหัวคอลัมน์)');
@@ -1040,83 +1061,180 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
         async function loadStudents() {
             try {
                 const res = await fetch('api/academic/get_students.php');
-                const students = await res.json();
-                const container = document.getElementById('studentsContainer');
-                if (!container) return;
+                allStudents = await res.json();
                 
-                if (students.length === 0) {
-                    container.innerHTML = '<div class="text-center py-8 text-slate-400">ไม่พบข้อมูลนักเรียน</div>';
-                    return;
+                // Extract unique levels
+                const levels = [...new Set(allStudents.map(s => s.level))].sort();
+                renderStudentLevelButtons(levels);
+                
+                // If we have a selected level, update rooms and display
+                if (selectedStudentLevel) {
+                    filterStudentsByLevel(selectedStudentLevel);
+                } else {
+                    const container = document.getElementById('studentsContainer');
+                    if (container) container.innerHTML = '<div class="text-center py-8 text-slate-400">กรุณาเลือกระดับชั้นเพื่อดูข้อมูล</div>';
                 }
-
-                // จัดกลุ่มตาม ระดับชั้น และ ห้อง
-                const groups = {};
-                students.forEach(s => {
-                    const key = `${s.level}/${s.room || '1'}`;
-                    if (!groups[key]) groups[key] = [];
-                    groups[key].push(s);
-                });
-
-                container.innerHTML = Object.keys(groups).sort().map(key => {
-                    const [level, room] = key.split('/');
-                    const groupStudents = groups[key];
-                    return `
-                        <div class="space-y-4">
-                            <div class="flex items-center gap-2">
-                                <div class="h-8 w-1 bg-blue-600 rounded-full"></div>
-                                <h4 class="font-bold text-slate-800">ชั้น${level} ห้อง ${room} (${groupStudents.length} คน)</h4>
-                            </div>
-                            <div class="overflow-x-auto">
-                                <table class="w-full text-left">
-                                    <thead>
-                                        <tr class="text-slate-500 border-b border-slate-100">
-                                            <th class="pb-3 font-medium">รหัส</th>
-                                            <th class="pb-3 font-medium">ชื่อ-นามสกุล</th>
-                                            <th class="pb-3 font-medium text-right">การจัดการ</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        ${groupStudents.map(s => `
-                                            <tr class="border-b border-slate-50 hover:bg-slate-50/50">
-                                                <td class="py-3 text-slate-600 font-mono">${s.student_code}</td>
-                                                <td class="py-3 font-medium text-slate-800">${s.name}</td>
-                                                <td class="py-3 text-right flex gap-2 justify-end">
-                                                    <button onclick='editStudent(${JSON.stringify(s)})' class="text-blue-600 hover:text-blue-800 text-xs font-bold cursor-pointer">แก้ไข</button>
-                                                    <button onclick="deleteStudent(${s.id})" class="text-red-600 hover:text-red-800 text-xs font-bold cursor-pointer">ลบ</button>
-                                                </td>
-                                            </tr>
-                                        `).join('')}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
             } catch (e) {
                 console.error('Error in loadStudents:', e);
             }
         }
 
+        function renderStudentLevelButtons(levels) {
+            const container = document.getElementById('studentLevelButtons');
+            if (!container) return;
+            
+            container.innerHTML = levels.map(level => `
+                <button onclick="filterStudentsByLevel('${level}')" 
+                    class="px-4 py-2 rounded-xl text-sm font-semibold transition-all cursor-pointer ${selectedStudentLevel === level ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">
+                    ${level}
+                </button>
+            `).join('');
+        }
+
+        function filterStudentsByLevel(level) {
+            selectedStudentLevel = level;
+            selectedStudentRoom = null; // Reset room when level changes
+            
+            // Update level buttons UI
+            const levels = [...new Set(allStudents.map(s => s.level))].sort();
+            renderStudentLevelButtons(levels);
+            
+            // Show room container
+            const roomContainer = document.getElementById('studentRoomContainer');
+            if (roomContainer) roomContainer.classList.remove('hidden');
+            
+            // Extract unique rooms for this level
+            const rooms = [...new Set(allStudents.filter(s => s.level === level).map(s => s.room || '1'))].sort();
+            renderStudentRoomButtons(rooms);
+            
+            const container = document.getElementById('studentsContainer');
+            if (container) container.innerHTML = '<div class="text-center py-8 text-slate-400">กรุณาเลือกห้องเรียนเพื่อดูข้อมูล</div>';
+        }
+
+        function renderStudentRoomButtons(rooms) {
+            const container = document.getElementById('studentRoomButtons');
+            if (!container) return;
+            
+            container.innerHTML = rooms.map(room => `
+                <button onclick="filterStudentsByRoom('${room}')" 
+                    class="px-4 py-2 rounded-xl text-sm font-semibold transition-all cursor-pointer ${selectedStudentRoom === room ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">
+                    ห้อง ${room}
+                </button>
+            `).join('');
+        }
+
+        function filterStudentsByRoom(room) {
+            selectedStudentRoom = room;
+            
+            // Update room buttons UI
+            const rooms = [...new Set(allStudents.filter(s => s.level === selectedStudentLevel).map(s => s.room || '1'))].sort();
+            renderStudentRoomButtons(rooms);
+            
+            const container = document.getElementById('studentsContainer');
+            if (!container) return;
+            
+            const filtered = allStudents.filter(s => s.level === selectedStudentLevel && (s.room || '1') === room);
+            
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="text-center py-8 text-slate-400">ไม่พบข้อมูลนักเรียนในห้องนี้</div>';
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <div class="h-8 w-1 bg-blue-600 rounded-full"></div>
+                            <h4 class="font-bold text-slate-800">ชั้น${selectedStudentLevel} ห้อง ${room} (${filtered.length} คน)</h4>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr class="text-slate-500 border-b border-slate-100">
+                                    <th class="pb-3 font-medium">รหัส</th>
+                                    <th class="pb-3 font-medium">ชื่อ-นามสกุล</th>
+                                    <th class="pb-3 font-medium text-right">การจัดการ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${filtered.map(s => `
+                                    <tr class="border-b border-slate-50 hover:bg-slate-50/50">
+                                        <td class="py-3 text-slate-600 font-mono">${s.student_code}</td>
+                                        <td class="py-3 font-medium text-slate-800">${s.name}</td>
+                                        <td class="py-3 text-right flex gap-2 justify-end">
+                                            <button onclick='editStudent(${JSON.stringify(s)})' class="text-blue-600 hover:text-blue-800 text-xs font-bold cursor-pointer">แก้ไข</button>
+                                            <button onclick="deleteStudent(${s.id})" class="text-red-600 hover:text-red-800 text-xs font-bold cursor-pointer">ลบ</button>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
         async function loadSubjects() {
             try {
                 const res = await fetch('api/academic/get_subjects.php');
-                const subjects = await res.json();
-                const tbody = document.getElementById('subjectsTableBody');
-                if (!tbody) return;
-                tbody.innerHTML = subjects.map(s => `
-                    <tr class="border-b border-slate-50 hover:bg-slate-50/50">
-                        <td class="py-3 text-slate-600 font-mono">${s.code}</td>
-                        <td class="py-3 font-medium text-slate-800">${s.name}</td>
-                        <td class="py-3 text-slate-500">${s.level}</td>
-                        <td class="py-3 text-slate-500">${s.hours} ชม. / ${s.credits} นก.</td>
-                        <td class="py-3">
-                            <button onclick="deleteSubject(${s.id})" class="text-red-600 hover:text-red-800 text-xs font-bold cursor-pointer">ลบ</button>
-                        </td>
-                    </tr>
-                `).join('');
+                allSubjects = await res.json();
+                
+                // Extract unique levels
+                const levels = [...new Set(allSubjects.map(s => s.level))].sort();
+                renderSubjectLevelButtons(levels);
+                
+                if (selectedSubjectLevel) {
+                    filterSubjectsByLevel(selectedSubjectLevel);
+                } else {
+                    const tbody = document.getElementById('subjectsTableBody');
+                    if (tbody) tbody.innerHTML = '<tr><td colspan="5" class="py-8 text-center text-slate-400">กรุณาเลือกระดับชั้นเพื่อดูข้อมูลรายวิชา</td></tr>';
+                }
             } catch (e) {
                 console.error('Error in loadSubjects:', e);
             }
+        }
+
+        function renderSubjectLevelButtons(levels) {
+            const container = document.getElementById('subjectLevelButtons');
+            if (!container) return;
+            
+            container.innerHTML = levels.map(level => `
+                <button onclick="filterSubjectsByLevel('${level}')" 
+                    class="px-4 py-2 rounded-xl text-sm font-semibold transition-all cursor-pointer ${selectedSubjectLevel === level ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">
+                    ${level}
+                </button>
+            `).join('');
+        }
+
+        function filterSubjectsByLevel(level) {
+            selectedSubjectLevel = level;
+            
+            // Update UI
+            const levels = [...new Set(allSubjects.map(s => s.level))].sort();
+            renderSubjectLevelButtons(levels);
+            
+            const tbody = document.getElementById('subjectsTableBody');
+            if (!tbody) return;
+            
+            const filtered = allSubjects.filter(s => s.level === level);
+            
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="py-8 text-center text-slate-400">ไม่พบข้อมูลรายวิชาในระดับชั้นนี้</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(s => `
+                <tr class="border-b border-slate-50 hover:bg-slate-50/50">
+                    <td class="py-3 text-slate-600 font-mono">${s.code}</td>
+                    <td class="py-3 font-medium text-slate-800">${s.name}</td>
+                    <td class="py-3 text-slate-500">${s.level}</td>
+                    <td class="py-3 text-slate-500">${s.hours} ชม. / ${s.credits} นก.</td>
+                    <td class="py-3">
+                        <button onclick="deleteSubject(${s.id})" class="text-red-600 hover:text-red-800 text-xs font-bold cursor-pointer">ลบ</button>
+                    </td>
+                </tr>
+            `).join('');
         }
 
         const addStudentForm = document.getElementById('addStudentForm');
