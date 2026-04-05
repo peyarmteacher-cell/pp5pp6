@@ -350,6 +350,62 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
             </div>
         </div>
 
+        <!-- Modal: มอบหมายงานสอน -->
+        <div id="assignSubjectsModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center p-4 z-50">
+            <div class="bg-white rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
+                <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                    <div>
+                        <h3 id="assignTeacherName" class="text-xl font-bold text-slate-800">มอบหมายงานสอน</h3>
+                        <p class="text-xs text-slate-500 mt-1">กำหนดรายวิชาที่คุณครูรับผิดชอบ</p>
+                    </div>
+                    <button onclick="closeModal('assignSubjectsModal')" class="text-slate-400 hover:text-slate-600 cursor-pointer p-2 hover:bg-slate-200 rounded-full transition-all">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                </div>
+                <div class="p-6 overflow-y-auto flex-1 space-y-8">
+                    <!-- ส่วนที่ 1: มอบหมายแบบเหมาจ่าย (ตามระดับชั้น) -->
+                    <div class="bg-blue-50 p-6 rounded-2xl border border-blue-100">
+                        <h4 class="text-sm font-bold text-blue-800 mb-4 flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                            มอบหมายงานสอนแบบเหมาตามระดับชั้น (สำหรับครูประจำชั้น)
+                        </h4>
+                        <div class="flex flex-wrap gap-2">
+                            <?php foreach(['ป.1', 'ป.2', 'ป.3', 'ป.4', 'ป.5', 'ป.6', 'ม.1', 'ม.2', 'ม.3'] as $l): ?>
+                                <button onclick="assignSubjectsBulk(currentAssignTeacherId, '<?= $l ?>')" class="px-4 py-2 bg-white border border-blue-200 text-blue-700 rounded-xl text-sm font-semibold hover:bg-blue-600 hover:text-white transition-all shadow-sm">
+                                    มอบหมาย <?= $l ?> ทั้งหมด
+                                </button>
+                            <?php endforeach; ?>
+                        </div>
+                        <p class="text-[10px] text-blue-500 mt-3">* ระบบจะดึงรายวิชาทั้งหมดในระดับชั้นที่เลือกมามอบหมายให้คุณครูทันที</p>
+                    </div>
+
+                    <!-- ส่วนที่ 2: รายการที่มอบหมายแล้ว -->
+                    <div>
+                        <h4 class="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                            รายวิชาที่รับผิดชอบในปัจจุบัน
+                        </h4>
+                        <div class="overflow-x-auto border border-slate-100 rounded-2xl">
+                            <table class="w-full text-left">
+                                <thead class="bg-slate-50">
+                                    <tr class="text-slate-500 text-xs uppercase tracking-wider">
+                                        <th class="px-4 py-3 font-medium">รหัสวิชา</th>
+                                        <th class="px-4 py-3 font-medium">ชื่อวิชา</th>
+                                        <th class="px-4 py-3 font-medium">ระดับชั้น</th>
+                                        <th class="px-4 py-3 font-medium">ชั่วโมง/หน่วยกิต</th>
+                                        <th class="px-4 py-3 font-medium text-right">การจัดการ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="teacherAssignmentsTableBody" class="text-sm">
+                                    <tr><td colspan="5" class="py-8 text-center text-slate-400">กำลังโหลดข้อมูล...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </main>
 
     <script>
@@ -580,9 +636,17 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                         </label>
                     </td>
                     <td class="py-3">
-                        <span class="px-2 py-1 rounded-full text-[10px] font-bold ${t.is_approved ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">
-                            ${t.is_approved ? 'อนุมัติแล้ว' : 'รออนุมัติ'}
-                        </span>
+                        <div class="flex items-center gap-3">
+                            <span class="px-2 py-1 rounded-full text-[10px] font-bold ${t.is_approved ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">
+                                ${t.is_approved ? 'อนุมัติแล้ว' : 'รออนุมัติ'}
+                            </span>
+                            ${t.is_approved ? `
+                                <button onclick="openAssignSubjectsModal(${t.id}, '${t.name}')" class="text-blue-600 hover:text-blue-800 text-xs font-bold cursor-pointer flex items-center gap-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                    มอบหมายงานสอน
+                                </button>
+                            ` : ''}
+                        </div>
                     </td>
                 </tr>
             `).join('');
@@ -735,10 +799,95 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                     <td class="py-3 text-slate-500">${u.school_name || 'ไม่มีสังกัด'}</td>
                     <td class="py-3 text-slate-500">${u.position}</td>
                     <td class="py-3">
-                        <button onclick="approveUser(${u.id}, '${u.role === 'super_admin' ? 'admin' : 'teacher'}')" class="bg-green-600 text-white px-3 py-1 rounded-lg text-xs font-semibold hover:bg-green-700 cursor-pointer">อนุมัติ</button>
+                        <div class="flex gap-2">
+                            <button onclick="approveUser(${u.id}, '${u.role === 'super_admin' ? 'admin' : 'teacher'}')" class="bg-green-600 text-white px-3 py-1 rounded-lg text-xs font-semibold hover:bg-green-700 cursor-pointer">อนุมัติ</button>
+                            <button onclick="rejectUser(${u.id})" class="bg-red-600 text-white px-3 py-1 rounded-lg text-xs font-semibold hover:bg-red-700 cursor-pointer">ไม่อนุมัติ</button>
+                        </div>
                     </td>
                 </tr>
             `).join('');
+        }
+
+        async function rejectUser(userId) {
+            if (!confirm('ยืนยันการปฏิเสธการสมัครและลบข้อมูลผู้ใช้งานนี้?')) return;
+            const res = await fetch('api/reject_user.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: userId })
+            });
+            const result = await res.json();
+            if (result.message) {
+                alert(result.message);
+                loadPendingUsers();
+            } else {
+                alert(result.error);
+            }
+        }
+
+        let currentAssignTeacherId = null;
+        async function openAssignSubjectsModal(teacherId, teacherName) {
+            currentAssignTeacherId = teacherId;
+            document.getElementById('assignTeacherName').innerText = `มอบหมายงานสอน - ${teacherName}`;
+            openModal('assignSubjectsModal');
+            loadTeacherAssignments(teacherId);
+        }
+
+        async function loadTeacherAssignments(teacherId) {
+            const tbody = document.getElementById('teacherAssignmentsTableBody');
+            const res = await fetch(`api/admin/get_teacher_assignments.php?teacher_id=${teacherId}`);
+            const assignments = await res.json();
+            
+            if (assignments.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-400">ยังไม่มีงานสอนที่มอบหมาย</td></tr>`;
+            } else {
+                tbody.innerHTML = assignments.map(a => `
+                    <tr class="border-b border-slate-50 hover:bg-slate-50/50">
+                        <td class="px-4 py-3 font-mono text-slate-600">${a.code}</td>
+                        <td class="px-4 py-3 font-medium text-slate-800">${a.name}</td>
+                        <td class="px-4 py-3 text-slate-500">${a.level}</td>
+                        <td class="px-4 py-3 text-slate-500">${a.hours} ชม. / ${a.credits} นก.</td>
+                        <td class="px-4 py-3 text-right">
+                            <button onclick="removeAssignment(${a.assignment_id}, ${teacherId})" class="text-red-600 hover:text-red-800 font-bold cursor-pointer">ยกเลิก</button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+        }
+
+        async function assignSubjectsBulk(teacherId, level) {
+            if (!confirm(`ยืนยันการมอบหมายรายวิชาทั้งหมดในระดับชั้น ${level} ให้คุณครูท่านนี้?`)) return;
+            const res = await fetch('api/admin/assign_subjects.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    teacher_id: teacherId,
+                    type: 'bulk_level',
+                    level: level
+                })
+            });
+            const result = await res.json();
+            if (result.message) {
+                alert(result.message);
+                loadTeacherAssignments(teacherId);
+            } else {
+                alert(result.error);
+            }
+        }
+
+        async function removeAssignment(assignmentId, teacherId) {
+            if (!confirm('ยืนยันการยกเลิกงานสอนนี้?')) return;
+            const res = await fetch('api/admin/remove_assignment.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ assignment_id: assignmentId })
+            });
+            const result = await res.json();
+            if (result.message) {
+                alert(result.message);
+                loadTeacherAssignments(teacherId);
+            } else {
+                alert(result.error);
+            }
         }
 
         async function approveUser(userId, role) {

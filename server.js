@@ -89,6 +89,24 @@ app.get('/api/academic/get_subjects.php', (req, res) => {
     ]);
 });
 
+app.post('/api/reject_user.php', (req, res) => {
+    res.json({ message: 'ปฏิเสธการสมัครและลบข้อมูลสำเร็จแล้ว (Mock)' });
+});
+
+app.get('/api/admin/get_teacher_assignments.php', (req, res) => {
+    res.json([
+        { assignment_id: 1, code: 'ท11101', name: 'ภาษาไทย', level: 'ป.1', hours: 200, credits: 5.0 }
+    ]);
+});
+
+app.post('/api/admin/assign_subjects.php', (req, res) => {
+    res.json({ message: 'มอบหมายงานสอนสำเร็จแล้ว (Mock)' });
+});
+
+app.post('/api/admin/remove_assignment.php', (req, res) => {
+    res.json({ message: 'ยกเลิกงานสอนสำเร็จแล้ว (Mock)' });
+});
+
 app.post('/api/register.php', (req, res) => {
     res.json({ message: 'จำลองการสมัครสมาชิกสำเร็จ! (ในระบบจริงจะตรวจสอบรหัสโรงเรียน 8 หลัก)' });
 });
