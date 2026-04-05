@@ -475,7 +475,7 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
             </div>
             <div class="p-6 border-t border-slate-100 flex justify-end gap-3">
                 <button onclick="closeModal('importPreviewModal')" class="px-6 py-2 rounded-xl font-semibold text-slate-600 hover:bg-slate-50 transition-all cursor-pointer">ยกเลิก</button>
-                <button id="confirmImportBtn" class="bg-blue-600 text-white px-8 py-2 rounded-xl font-semibold hover:bg-blue-700 transition-all cursor-pointer">ยืนยันการนำเข้า</button>
+                <button id="confirmImportBtn" onclick="confirmStudentImport()" class="bg-blue-600 text-white px-8 py-2 rounded-xl font-semibold hover:bg-blue-700 transition-all cursor-pointer">ยืนยันการนำเข้า</button>
             </div>
         </div>
     </div>
@@ -507,7 +507,7 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
             </div>
             <div class="p-6 border-t border-slate-100 flex justify-end gap-3">
                 <button onclick="closeModal('importSubjectPreviewModal')" class="px-6 py-2 rounded-xl font-semibold text-slate-600 hover:bg-slate-50 transition-all cursor-pointer">ยกเลิก</button>
-                <button id="confirmSubjectImportBtn" class="bg-blue-600 text-white px-8 py-2 rounded-xl font-semibold hover:bg-blue-700 transition-all cursor-pointer">ยืนยันการนำเข้า</button>
+                <button id="confirmSubjectImportBtn" onclick="confirmSubjectImport()" class="bg-blue-600 text-white px-8 py-2 rounded-xl font-semibold hover:bg-blue-700 transition-all cursor-pointer">ยืนยันการนำเข้า</button>
             </div>
         </div>
     </div>
@@ -896,81 +896,84 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
         }
 
         // Initialize Event Listeners
-        document.addEventListener('DOMContentLoaded', () => {
+        async function confirmStudentImport() {
+            console.log('confirmStudentImport called');
             const confirmBtn = document.getElementById('confirmImportBtn');
-            if (confirmBtn) {
-                confirmBtn.addEventListener('click', async () => {
-                    if (!studentsToImport || studentsToImport.length === 0) {
-                        alert('ไม่พบข้อมูลที่จะนำเข้า กรุณาเลือกไฟล์ใหม่อีกครั้ง');
-                        return;
-                    }
-
-                    confirmBtn.disabled = true;
-                    confirmBtn.innerText = 'กำลังนำเข้า...';
-
-                    try {
-                        const res = await fetch('api/academic/import_students.php', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ students: studentsToImport })
-                        });
-                        const result = await res.json();
-                        if (result.message) {
-                            alert(result.message);
-                            closeModal('importPreviewModal');
-                            loadStudents();
-                        } else {
-                            alert(result.error || 'เกิดข้อผิดพลาดในการนำเข้า');
-                        }
-                    } catch (e) {
-                        console.error('Error in import:', e);
-                        alert('เกิดข้อผิดพลาดในการนำเข้าข้อมูล');
-                    } finally {
-                        confirmBtn.disabled = false;
-                        confirmBtn.innerText = 'ยืนยันการนำเข้า';
-                    }
-                });
+            console.log('confirmBtn:', confirmBtn);
+            console.log('studentsToImport:', studentsToImport);
+            
+            if (!studentsToImport || studentsToImport.length === 0) {
+                alert('ไม่พบข้อมูลที่จะนำเข้า กรุณาเลือกไฟล์ใหม่อีกครั้ง');
+                return;
             }
 
+            confirmBtn.disabled = true;
+            confirmBtn.innerText = 'กำลังนำเข้า...';
+
+            try {
+                const res = await fetch('api/academic/import_students.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ students: studentsToImport })
+                });
+                const result = await res.json();
+                if (result.message) {
+                    alert(result.message);
+                    closeModal('importPreviewModal');
+                    loadStudents();
+                } else {
+                    alert(result.error || 'เกิดข้อผิดพลาดในการนำเข้า');
+                }
+            } catch (e) {
+                console.error('Error in import:', e);
+                alert('เกิดข้อผิดพลาดในการนำเข้าข้อมูล');
+            } finally {
+                confirmBtn.disabled = false;
+                confirmBtn.innerText = 'ยืนยันการนำเข้า';
+            }
+        }
+
+        async function confirmSubjectImport() {
             const confirmSubBtn = document.getElementById('confirmSubjectImportBtn');
-            if (confirmSubBtn) {
-                confirmSubBtn.addEventListener('click', async () => {
-                    if (!subjectsToImport || subjectsToImport.length === 0) {
-                        alert('ไม่พบข้อมูลที่จะนำเข้า กรุณาเลือกไฟล์ใหม่อีกครั้ง');
-                        return;
-                    }
-
-                    confirmSubBtn.disabled = true;
-                    confirmSubBtn.innerText = 'กำลังนำเข้า...';
-
-                    try {
-                        const res = await fetch('api/academic/import_subjects.php', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ subjects: subjectsToImport })
-                        });
-                        const result = await res.json();
-                        if (result.message) {
-                            alert(result.message);
-                            closeModal('importSubjectPreviewModal');
-                            loadSubjects();
-                        } else {
-                            alert(result.error || 'เกิดข้อผิดพลาดในการนำเข้า');
-                        }
-                    } catch (e) {
-                        console.error('Error in subject import:', e);
-                        alert('เกิดข้อผิดพลาดในการนำเข้าข้อมูลรายวิชา');
-                    } finally {
-                        confirmSubBtn.disabled = false;
-                        confirmSubBtn.innerText = 'ยืนยันการนำเข้า';
-                    }
-                });
+            if (!subjectsToImport || subjectsToImport.length === 0) {
+                alert('ไม่พบข้อมูลที่จะนำเข้า กรุณาเลือกไฟล์ใหม่อีกครั้ง');
+                return;
             }
+
+            confirmSubBtn.disabled = true;
+            confirmSubBtn.innerText = 'กำลังนำเข้า...';
+
+            try {
+                const res = await fetch('api/academic/import_subjects.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ subjects: subjectsToImport })
+                });
+                const result = await res.json();
+                if (result.message) {
+                    alert(result.message);
+                    closeModal('importSubjectPreviewModal');
+                    loadSubjects();
+                } else {
+                    alert(result.error || 'เกิดข้อผิดพลาดในการนำเข้า');
+                }
+            } catch (e) {
+                console.error('Error in subject import:', e);
+                alert('เกิดข้อผิดพลาดในการนำเข้าข้อมูล');
+            } finally {
+                confirmSubBtn.disabled = false;
+                confirmSubBtn.innerText = 'ยืนยันการนำเข้า';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Other initialization if needed
         });
 
         function handleExcelImport(event) {
-            console.log('File selected:', event.target.files[0]);
+            console.log('handleExcelImport triggered');
             const file = event.target.files[0];
+            console.log('File selected:', file);
             if (!file) return;
 
             const reader = new FileReader();
