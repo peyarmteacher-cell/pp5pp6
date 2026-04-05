@@ -625,9 +625,19 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
         }
 
         async function loadSchoolTeachers() {
-            const res = await fetch(`api/get_school_teachers.php?school_id=<?= $_SESSION['school_id'] ?>`);
+            const schoolId = '<?= $_SESSION['school_id'] ?>';
+            console.log('Loading teachers for school_id:', schoolId);
+            const res = await fetch(`api/get_school_teachers.php?school_id=${schoolId}`);
             const teachers = await res.json();
+            console.log('Teachers loaded:', teachers);
             const tbody = document.getElementById('schoolTeachersTableBody');
+            if (!tbody) return;
+            
+            if (teachers.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="py-8 text-center text-slate-400">ยังไม่มีข้อมูลคุณครูในโรงเรียนนี้</td></tr>`;
+                return;
+            }
+
             tbody.innerHTML = teachers.map(t => `
                 <tr class="border-b border-slate-50 hover:bg-slate-50/50">
                     <td class="py-3 font-medium text-slate-800">${t.name}</td>
@@ -903,6 +913,9 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
             if (result.message) {
                 alert(result.message);
                 loadPendingUsers();
+                if (typeof loadSchoolTeachers === 'function') {
+                    loadSchoolTeachers();
+                }
             } else {
                 alert(result.error);
             }

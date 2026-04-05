@@ -26,7 +26,7 @@ if (empty($school_id)) {
 }
 
 try {
-    $stmt = $pdo->prepare('SELECT id, name, position, role, is_approved, is_academic FROM users WHERE school_id = ? ORDER BY name ASC');
+    $stmt = $pdo->prepare('SELECT id, name, position, role, is_approved, is_academic FROM users WHERE school_id = ? AND is_approved = 1 ORDER BY name ASC');
     $stmt->execute([$school_id]);
     $teachers = $stmt->fetchAll();
     echo json_encode($teachers);
