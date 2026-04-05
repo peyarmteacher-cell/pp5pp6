@@ -294,7 +294,17 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
         <!-- Academic/Admin: Manage Subjects -->
         <div id="manage-subjects" class="section hidden space-y-6">
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                <h3 class="text-lg font-bold mb-4">เพิ่มรายวิชา</h3>
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-bold">เพิ่มรายวิชา</h3>
+                    <div class="flex gap-2">
+                        <button onclick="downloadSubjectTemplate()" class="bg-slate-100 text-slate-600 px-4 py-2 rounded-xl text-sm font-semibold hover:bg-slate-200 cursor-pointer transition-all flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                            ดาวน์โหลด Template
+                        </button>
+                        <input type="file" id="importSubjectExcel" accept=".xlsx, .xls" class="hidden" onchange="handleSubjectExcelImport(event)">
+                        <button onclick="document.getElementById('importSubjectExcel').click()" class="bg-green-600 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-green-700 cursor-pointer transition-all">นำเข้าจาก Excel</button>
+                    </div>
+                </div>
                 <form id="addSubjectForm" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
                     <input type="text" id="sub_code" placeholder="รหัสวิชา" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
                     <input type="text" id="sub_name" placeholder="ชื่อวิชา" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
@@ -470,8 +480,41 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
         </div>
     </div>
 
+    <div id="importSubjectPreviewModal" class="fixed inset-0 bg-slate-900/50 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center">
+                <div>
+                    <h3 class="text-xl font-bold text-slate-800">ตรวจสอบข้อมูลรายวิชาก่อนนำเข้า</h3>
+                    <p id="importSubjectSummaryText" class="text-sm text-slate-500 mt-1"></p>
+                </div>
+                <button onclick="closeModal('importSubjectPreviewModal')" class="text-slate-400 hover:text-slate-600 cursor-pointer">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div class="p-6 overflow-y-auto flex-1">
+                <table class="w-full text-left text-sm">
+                    <thead>
+                        <tr class="text-slate-500 border-b border-slate-100">
+                            <th class="pb-3 font-medium">รหัสวิชา</th>
+                            <th class="pb-3 font-medium">ชื่อวิชา</th>
+                            <th class="pb-3 font-medium">ระดับชั้น</th>
+                            <th class="pb-3 font-medium">ชั่วโมง</th>
+                            <th class="pb-3 font-medium">หน่วยกิต</th>
+                        </tr>
+                    </thead>
+                    <tbody id="importSubjectPreviewTableBody"></tbody>
+                </table>
+            </div>
+            <div class="p-6 border-t border-slate-100 flex justify-end gap-3">
+                <button onclick="closeModal('importSubjectPreviewModal')" class="px-6 py-2 rounded-xl font-semibold text-slate-600 hover:bg-slate-50 transition-all cursor-pointer">ยกเลิก</button>
+                <button id="confirmSubjectImportBtn" class="bg-blue-600 text-white px-8 py-2 rounded-xl font-semibold hover:bg-blue-700 transition-all cursor-pointer">ยืนยันการนำเข้า</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         var studentsToImport = [];
+        var subjectsToImport = [];
 
         function showSection(sectionId) {
             document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
@@ -784,6 +827,147 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
             XLSX.writeFile(workbook, "student_template.xlsx");
         }
 
+        function downloadSubjectTemplate() {
+            const data = [
+                ["รหัสวิชา", "ชื่อวิชา", "ระดับชั้น", "ชั่วโมง", "หน่วยกิต"],
+                ["ท11101", "ภาษาไทย 1", "ป.1", "200", "5.0"],
+                ["ค11101", "คณิตศาสตร์ 1", "ป.1", "200", "5.0"]
+            ];
+            const worksheet = XLSX.utils.aoa_to_sheet(data);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Template");
+            XLSX.writeFile(workbook, "subject_template.xlsx");
+        }
+
+        function handleSubjectExcelImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    const json = XLSX.utils.sheet_to_json(worksheet);
+
+                    subjectsToImport = json.map(row => ({
+                        code: String(row['รหัสวิชา'] || row['code'] || ''),
+                        name: String(row['ชื่อวิชา'] || row['name'] || ''),
+                        level: String(row['ระดับชั้น'] || row['level'] || ''),
+                        hours: parseInt(row['ชั่วโมง'] || row['hours'] || '40'),
+                        credits: parseFloat(row['หน่วยกิต'] || row['credits'] || '1.0')
+                    })).filter(s => s.code && s.name && s.level);
+
+                    if (subjectsToImport.length === 0) {
+                        alert('ไม่พบข้อมูลรายวิชาที่ถูกต้องในไฟล์ Excel');
+                        return;
+                    }
+
+                    renderSubjectImportPreview();
+                    openModal('importSubjectPreviewModal');
+                } catch (err) {
+                    console.error('Excel processing error:', err);
+                    alert('เกิดข้อผิดพลาดในการประมวลผลไฟล์ Excel: ' + err.message);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+            event.target.value = '';
+        }
+
+        function renderSubjectImportPreview() {
+            const tbody = document.getElementById('importSubjectPreviewTableBody');
+            const summary = document.getElementById('importSubjectSummaryText');
+            
+            if (summary) {
+                summary.innerText = `พบข้อมูลรายวิชาทั้งหมด ${subjectsToImport.length} รายการ`;
+            }
+
+            tbody.innerHTML = subjectsToImport.map(s => `
+                <tr class="border-b border-slate-50">
+                    <td class="py-2">${s.code}</td>
+                    <td class="py-2">${s.name}</td>
+                    <td class="py-2">${s.level}</td>
+                    <td class="py-2">${s.hours}</td>
+                    <td class="py-2">${s.credits}</td>
+                </tr>
+            `).join('');
+        }
+
+        // Initialize Event Listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            const confirmBtn = document.getElementById('confirmImportBtn');
+            if (confirmBtn) {
+                confirmBtn.addEventListener('click', async () => {
+                    if (!studentsToImport || studentsToImport.length === 0) {
+                        alert('ไม่พบข้อมูลที่จะนำเข้า กรุณาเลือกไฟล์ใหม่อีกครั้ง');
+                        return;
+                    }
+
+                    confirmBtn.disabled = true;
+                    confirmBtn.innerText = 'กำลังนำเข้า...';
+
+                    try {
+                        const res = await fetch('api/academic/import_students.php', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ students: studentsToImport })
+                        });
+                        const result = await res.json();
+                        if (result.message) {
+                            alert(result.message);
+                            closeModal('importPreviewModal');
+                            loadStudents();
+                        } else {
+                            alert(result.error || 'เกิดข้อผิดพลาดในการนำเข้า');
+                        }
+                    } catch (e) {
+                        console.error('Error in import:', e);
+                        alert('เกิดข้อผิดพลาดในการนำเข้าข้อมูล');
+                    } finally {
+                        confirmBtn.disabled = false;
+                        confirmBtn.innerText = 'ยืนยันการนำเข้า';
+                    }
+                });
+            }
+
+            const confirmSubBtn = document.getElementById('confirmSubjectImportBtn');
+            if (confirmSubBtn) {
+                confirmSubBtn.addEventListener('click', async () => {
+                    if (!subjectsToImport || subjectsToImport.length === 0) {
+                        alert('ไม่พบข้อมูลที่จะนำเข้า กรุณาเลือกไฟล์ใหม่อีกครั้ง');
+                        return;
+                    }
+
+                    confirmSubBtn.disabled = true;
+                    confirmSubBtn.innerText = 'กำลังนำเข้า...';
+
+                    try {
+                        const res = await fetch('api/academic/import_subjects.php', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ subjects: subjectsToImport })
+                        });
+                        const result = await res.json();
+                        if (result.message) {
+                            alert(result.message);
+                            closeModal('importSubjectPreviewModal');
+                            loadSubjects();
+                        } else {
+                            alert(result.error || 'เกิดข้อผิดพลาดในการนำเข้า');
+                        }
+                    } catch (e) {
+                        console.error('Error in subject import:', e);
+                        alert('เกิดข้อผิดพลาดในการนำเข้าข้อมูลรายวิชา');
+                    } finally {
+                        confirmSubBtn.disabled = false;
+                        confirmSubBtn.innerText = 'ยืนยันการนำเข้า';
+                    }
+                });
+            }
+        });
+
         function handleExcelImport(event) {
             console.log('File selected:', event.target.files[0]);
             const file = event.target.files[0];
@@ -848,42 +1032,6 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                     <td class="py-2">${s.room}</td>
                 </tr>
             `).join('');
-        }
-
-        const confirmBtn = document.getElementById('confirmImportBtn');
-        if (confirmBtn) {
-            confirmBtn.addEventListener('click', async () => {
-                if (!studentsToImport || studentsToImport.length === 0) {
-                    alert('ไม่พบข้อมูลที่จะนำเข้า กรุณาเลือกไฟล์ใหม่อีกครั้ง');
-                    return;
-                }
-
-                const btn = document.getElementById('confirmImportBtn');
-                btn.disabled = true;
-                btn.innerText = 'กำลังนำเข้า...';
-
-                try {
-                    const res = await fetch('api/academic/import_students.php', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ students: studentsToImport })
-                    });
-                    const result = await res.json();
-                    if (result.message) {
-                        alert(result.message);
-                        closeModal('importPreviewModal');
-                        loadStudents();
-                    } else {
-                        alert(result.error || 'เกิดข้อผิดพลาดในการนำเข้า');
-                    }
-                } catch (e) {
-                    console.error('Error in import:', e);
-                    alert('เกิดข้อผิดพลาดในการนำเข้าข้อมูล');
-                } finally {
-                    btn.disabled = false;
-                    btn.innerText = 'ยืนยันการนำเข้า';
-                }
-            });
         }
 
         async function loadStudents() {
@@ -1258,6 +1406,9 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                 }
             };
         }
+        
+        // Show default section
+        showSection('overview');
     </script>
 </body>
 </html>
