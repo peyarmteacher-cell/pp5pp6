@@ -17,6 +17,7 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - ระบบบริหารจัดการสถานศึกษา</title>
     <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sarabun:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Sarabun', sans-serif; }
@@ -267,26 +268,21 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                         <option value="ป.4">ป.4</option><option value="ป.5">ป.5</option><option value="ป.6">ป.6</option>
                         <option value="ม.1">ม.1</option><option value="ม.2">ม.2</option><option value="ม.3">ม.3</option>
                     </select>
+                    <input type="text" id="std_room" placeholder="ห้อง (เช่น 1)" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
                     <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-xl font-semibold hover:bg-blue-700 cursor-pointer transition-all">บันทึก</button>
                 </form>
             </div>
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-lg font-bold">รายชื่อนักเรียน</h3>
-                    <button onclick="promoteStudents()" class="bg-amber-600 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-amber-700 cursor-pointer transition-all">เลื่อนระดับชั้น (สิ้นปีการศึกษา)</button>
+                    <div class="flex gap-2">
+                        <input type="file" id="importExcel" accept=".xlsx, .xls" class="hidden" onchange="handleExcelImport(event)">
+                        <button onclick="document.getElementById('importExcel').click()" class="bg-green-600 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-green-700 cursor-pointer transition-all">นำเข้าจาก Excel</button>
+                        <button onclick="promoteStudents()" class="bg-amber-600 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-amber-700 cursor-pointer transition-all">เลื่อนระดับชั้น</button>
+                    </div>
                 </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left">
-                        <thead>
-                            <tr class="text-slate-500 border-b border-slate-100">
-                                <th class="pb-3 font-medium">รหัส</th>
-                                <th class="pb-3 font-medium">ชื่อ-นามสกุล</th>
-                                <th class="pb-3 font-medium">ระดับชั้น</th>
-                                <th class="pb-3 font-medium">การจัดการ</th>
-                            </tr>
-                        </thead>
-                        <tbody id="studentsTableBody"></tbody>
-                    </table>
+                <div id="studentsContainer" class="space-y-8">
+                    <!-- จะถูกเติมด้วย JavaScript แยกตามห้องเรียน -->
                 </div>
             </div>
         </div>
@@ -406,6 +402,66 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
         </div>
 
     </main>
+
+    <!-- Edit Student Modal -->
+    <div id="editStudentModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl">
+            <h3 class="text-xl font-bold mb-4 text-slate-800">แก้ไขข้อมูลนักเรียน</h3>
+            <form id="editStudentForm" class="space-y-4">
+                <input type="hidden" id="edit_std_id">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">ชื่อ-นามสกุล</label>
+                    <input type="text" id="edit_std_name" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">ระดับชั้น</label>
+                        <select id="edit_std_level" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+                            <option value="ป.1">ป.1</option><option value="ป.2">ป.2</option><option value="ป.3">ป.3</option>
+                            <option value="ป.4">ป.4</option><option value="ป.5">ป.5</option><option value="ป.6">ป.6</option>
+                            <option value="ม.1">ม.1</option><option value="ม.2">ม.2</option><option value="ม.3">ม.3</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">ห้อง</label>
+                        <input type="text" id="edit_std_room" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+                    </div>
+                </div>
+                <div class="flex gap-3 pt-4">
+                    <button type="button" onclick="closeModal('editStudentModal')" class="flex-1 px-4 py-2 border border-slate-200 rounded-xl font-semibold text-slate-600 hover:bg-slate-50 cursor-pointer transition-all">ยกเลิก</button>
+                    <button type="submit" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-xl font-semibold hover:bg-blue-700 cursor-pointer transition-all shadow-lg shadow-blue-600/20">บันทึก</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div id="importPreviewModal" class="fixed inset-0 bg-slate-900/50 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center">
+                <h3 class="text-xl font-bold text-slate-800">ตรวจสอบข้อมูลก่อนนำเข้า</h3>
+                <button onclick="closeModal('importPreviewModal')" class="text-slate-400 hover:text-slate-600 cursor-pointer">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div class="p-6 overflow-y-auto flex-1">
+                <table class="w-full text-left text-sm">
+                    <thead>
+                        <tr class="text-slate-500 border-b border-slate-100">
+                            <th class="pb-3 font-medium">รหัส</th>
+                            <th class="pb-3 font-medium">เลขบัตรฯ</th>
+                            <th class="pb-3 font-medium">ชื่อ-นามสกุล</th>
+                            <th class="pb-3 font-medium">ระดับชั้น</th>
+                            <th class="pb-3 font-medium">ห้อง</th>
+                        </tr>
+                    </thead>
+                    <tbody id="importPreviewTableBody"></tbody>
+                </table>
+            </div>
+            <div class="p-6 border-t border-slate-100 flex justify-end gap-3">
+                <button onclick="closeModal('importPreviewModal')" class="px-6 py-2 rounded-xl font-semibold text-slate-600 hover:bg-slate-50 transition-all">ยกเลิก</button>
+                <button id="confirmImportBtn" class="bg-blue-600 text-white px-8 py-2 rounded-xl font-semibold hover:bg-blue-700 transition-all">ยืนยันการนำเข้า</button>
+            </div>
+        </div>
+    </div>
 
     <script>
         function showSection(sectionId) {
@@ -707,22 +763,138 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
             }
         }
 
+        let studentsToImport = [];
+
+        function handleExcelImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                const json = XLSX.utils.sheet_to_json(worksheet);
+
+                // คาดหวังคอลัมน์: student_code, national_id, name, level, room
+                // หรือภาษาไทย: รหัสประจำตัว, เลขบัตรประชาชน, ชื่อ-นามสกุล, ระดับชั้น, ห้อง
+                studentsToImport = json.map(row => ({
+                    student_code: String(row['รหัสประจำตัว'] || row['student_code'] || ''),
+                    national_id: String(row['เลขบัตรประชาชน'] || row['national_id'] || ''),
+                    name: String(row['ชื่อ-นามสกุล'] || row['name'] || ''),
+                    level: String(row['ระดับชั้น'] || row['level'] || ''),
+                    room: String(row['ห้อง'] || row['room'] || '1')
+                })).filter(s => s.student_code && s.name && s.level);
+
+                if (studentsToImport.length === 0) {
+                    alert('ไม่พบข้อมูลนักเรียนที่ถูกต้องในไฟล์ Excel');
+                    return;
+                }
+
+                renderImportPreview();
+                openModal('importPreviewModal');
+            };
+            reader.readAsArrayBuffer(file);
+            event.target.value = ''; // Reset input
+        }
+
+        function renderImportPreview() {
+            const tbody = document.getElementById('importPreviewTableBody');
+            tbody.innerHTML = studentsToImport.map(s => `
+                <tr class="border-b border-slate-50">
+                    <td class="py-2">${s.student_code}</td>
+                    <td class="py-2">${s.national_id}</td>
+                    <td class="py-2">${s.name}</td>
+                    <td class="py-2">${s.level}</td>
+                    <td class="py-2">${s.room}</td>
+                </tr>
+            `).join('');
+        }
+
+        document.getElementById('confirmImportBtn').onclick = async () => {
+            const btn = document.getElementById('confirmImportBtn');
+            btn.disabled = true;
+            btn.innerText = 'กำลังนำเข้า...';
+
+            try {
+                const res = await fetch('api/academic/import_students.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ students: studentsToImport })
+                });
+                const result = await res.json();
+                if (result.message) {
+                    alert(result.message);
+                    closeModal('importPreviewModal');
+                    loadStudents();
+                } else {
+                    alert(result.error);
+                }
+            } catch (e) {
+                console.error('Error in import:', e);
+                alert('เกิดข้อผิดพลาดในการนำเข้าข้อมูล');
+            } finally {
+                btn.disabled = false;
+                btn.innerText = 'ยืนยันการนำเข้า';
+            }
+        };
+
         async function loadStudents() {
             try {
                 const res = await fetch('api/academic/get_students.php');
                 const students = await res.json();
-                const tbody = document.getElementById('studentsTableBody');
-                if (!tbody) return;
-                tbody.innerHTML = students.map(s => `
-                    <tr class="border-b border-slate-50 hover:bg-slate-50/50">
-                        <td class="py-3 text-slate-600 font-mono">${s.student_code}</td>
-                        <td class="py-3 font-medium text-slate-800">${s.name}</td>
-                        <td class="py-3 text-slate-500">${s.level}</td>
-                        <td class="py-3">
-                            <button onclick="deleteStudent(${s.id})" class="text-red-600 hover:text-red-800 text-xs font-bold cursor-pointer">ลบ</button>
-                        </td>
-                    </tr>
-                `).join('');
+                const container = document.getElementById('studentsContainer');
+                if (!container) return;
+                
+                if (students.length === 0) {
+                    container.innerHTML = '<div class="text-center py-8 text-slate-400">ไม่พบข้อมูลนักเรียน</div>';
+                    return;
+                }
+
+                // จัดกลุ่มตาม ระดับชั้น และ ห้อง
+                const groups = {};
+                students.forEach(s => {
+                    const key = `${s.level}/${s.room || '1'}`;
+                    if (!groups[key]) groups[key] = [];
+                    groups[key].push(s);
+                });
+
+                container.innerHTML = Object.keys(groups).sort().map(key => {
+                    const [level, room] = key.split('/');
+                    const groupStudents = groups[key];
+                    return `
+                        <div class="space-y-4">
+                            <div class="flex items-center gap-2">
+                                <div class="h-8 w-1 bg-blue-600 rounded-full"></div>
+                                <h4 class="font-bold text-slate-800">ชั้น${level} ห้อง ${room} (${groupStudents.length} คน)</h4>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left">
+                                    <thead>
+                                        <tr class="text-slate-500 border-b border-slate-100">
+                                            <th class="pb-3 font-medium">รหัส</th>
+                                            <th class="pb-3 font-medium">ชื่อ-นามสกุล</th>
+                                            <th class="pb-3 font-medium text-right">การจัดการ</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${groupStudents.map(s => `
+                                            <tr class="border-b border-slate-50 hover:bg-slate-50/50">
+                                                <td class="py-3 text-slate-600 font-mono">${s.student_code}</td>
+                                                <td class="py-3 font-medium text-slate-800">${s.name}</td>
+                                                <td class="py-3 text-right flex gap-2 justify-end">
+                                                    <button onclick='editStudent(${JSON.stringify(s)})' class="text-blue-600 hover:text-blue-800 text-xs font-bold cursor-pointer">แก้ไข</button>
+                                                    <button onclick="deleteStudent(${s.id})" class="text-red-600 hover:text-red-800 text-xs font-bold cursor-pointer">ลบ</button>
+                                                </td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
             } catch (e) {
                 console.error('Error in loadStudents:', e);
             }
@@ -761,7 +933,8 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                         student_code: document.getElementById('std_code').value,
                         national_id: document.getElementById('std_national_id').value,
                         name: document.getElementById('std_name').value,
-                        level: document.getElementById('std_level').value
+                        level: document.getElementById('std_level').value,
+                        room: document.getElementById('std_room').value
                     })
                 });
                 const result = await res.json();
@@ -823,6 +996,39 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
             } else {
                 alert(result.error);
             }
+        }
+
+        function editStudent(s) {
+            document.getElementById('edit_std_id').value = s.id;
+            document.getElementById('edit_std_name').value = s.name;
+            document.getElementById('edit_std_level').value = s.level;
+            document.getElementById('edit_std_room').value = s.room || '1';
+            openModal('editStudentModal');
+        }
+
+        const editStudentForm = document.getElementById('editStudentForm');
+        if (editStudentForm) {
+            editStudentForm.onsubmit = async (e) => {
+                e.preventDefault();
+                const res = await fetch('api/academic/update_student.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        id: document.getElementById('edit_std_id').value,
+                        name: document.getElementById('edit_std_name').value,
+                        level: document.getElementById('edit_std_level').value,
+                        room: document.getElementById('edit_std_room').value
+                    })
+                });
+                const result = await res.json();
+                if (result.message) {
+                    alert(result.message);
+                    closeModal('editStudentModal');
+                    loadStudents();
+                } else {
+                    alert(result.error);
+                }
+            };
         }
 
         async function deleteSubject(id) {

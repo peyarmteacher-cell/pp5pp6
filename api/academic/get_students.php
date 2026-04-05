@@ -10,7 +10,7 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 try {
-    $stmt = $pdo->prepare('SELECT * FROM students WHERE school_id = ? ORDER BY level ASC, name ASC');
+    $stmt = $pdo->prepare('SELECT * FROM students WHERE school_id = ? ORDER BY level ASC, room ASC, name ASC');
     $stmt->execute([$_SESSION['school_id']]);
     $students = $stmt->fetchAll();
     echo json_encode($students);

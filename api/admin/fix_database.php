@@ -50,6 +50,32 @@ try {
         $results[] = "ตาราง subjects มีคอลัมน์ credits อยู่แล้ว";
     }
 
+    // 5. เพิ่มตาราง classrooms
+    $pdo->exec("CREATE TABLE IF NOT EXISTS classrooms (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        school_id INT,
+        level VARCHAR(50) NOT NULL,
+        room VARCHAR(10) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (school_id) REFERENCES schools(id) ON DELETE CASCADE,
+        UNIQUE KEY unique_classroom (school_id, level, room)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    $results[] = "ตรวจสอบ/สร้างตาราง classrooms สำเร็จ";
+
+    // 6. เพิ่มคอลัมน์ room และ classroom_id ในตาราง students
+    $stmt = $pdo->query("SHOW COLUMNS FROM students LIKE 'room'");
+    if (!$stmt->fetch()) {
+        $pdo->exec("ALTER TABLE students ADD COLUMN room VARCHAR(10) AFTER level");
+        $results[] = "เพิ่มคอลัมน์ room ในตาราง students สำเร็จ";
+    }
+
+    $stmt = $pdo->query("SHOW COLUMNS FROM students LIKE 'classroom_id'");
+    if (!$stmt->fetch()) {
+        $pdo->exec("ALTER TABLE students ADD COLUMN classroom_id INT AFTER room");
+        $pdo->exec("ALTER TABLE students ADD FOREIGN KEY (classroom_id) REFERENCES classrooms(id) ON DELETE SET NULL");
+        $results[] = "เพิ่มคอลัมน์ classroom_id และ Foreign Key ในตาราง students สำเร็จ";
+    }
+
     echo json_encode([
         'status' => 'success',
         'message' => 'ตรวจสอบและปรับปรุงฐานข้อมูลเรียบร้อยแล้ว',
