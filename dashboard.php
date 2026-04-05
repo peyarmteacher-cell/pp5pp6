@@ -464,8 +464,8 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                 </table>
             </div>
             <div class="p-6 border-t border-slate-100 flex justify-end gap-3">
-                <button onclick="closeModal('importPreviewModal')" class="px-6 py-2 rounded-xl font-semibold text-slate-600 hover:bg-slate-50 transition-all">ยกเลิก</button>
-                <button id="confirmImportBtn" class="bg-blue-600 text-white px-8 py-2 rounded-xl font-semibold hover:bg-blue-700 transition-all">ยืนยันการนำเข้า</button>
+                <button onclick="closeModal('importPreviewModal')" class="px-6 py-2 rounded-xl font-semibold text-slate-600 hover:bg-slate-50 transition-all cursor-pointer">ยกเลิก</button>
+                <button id="confirmImportBtn" class="bg-blue-600 text-white px-8 py-2 rounded-xl font-semibold hover:bg-blue-700 transition-all cursor-pointer">ยืนยันการนำเข้า</button>
             </div>
         </div>
     </div>
@@ -850,33 +850,41 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
             `).join('');
         }
 
-        document.getElementById('confirmImportBtn').onclick = async () => {
-            const btn = document.getElementById('confirmImportBtn');
-            btn.disabled = true;
-            btn.innerText = 'กำลังนำเข้า...';
-
-            try {
-                const res = await fetch('api/academic/import_students.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ students: studentsToImport })
-                });
-                const result = await res.json();
-                if (result.message) {
-                    alert(result.message);
-                    closeModal('importPreviewModal');
-                    loadStudents();
-                } else {
-                    alert(result.error);
+        const confirmBtn = document.getElementById('confirmImportBtn');
+        if (confirmBtn) {
+            confirmBtn.addEventListener('click', async () => {
+                if (!studentsToImport || studentsToImport.length === 0) {
+                    alert('ไม่พบข้อมูลที่จะนำเข้า กรุณาเลือกไฟล์ใหม่อีกครั้ง');
+                    return;
                 }
-            } catch (e) {
-                console.error('Error in import:', e);
-                alert('เกิดข้อผิดพลาดในการนำเข้าข้อมูล');
-            } finally {
-                btn.disabled = false;
-                btn.innerText = 'ยืนยันการนำเข้า';
-            }
-        };
+
+                const btn = document.getElementById('confirmImportBtn');
+                btn.disabled = true;
+                btn.innerText = 'กำลังนำเข้า...';
+
+                try {
+                    const res = await fetch('api/academic/import_students.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ students: studentsToImport })
+                    });
+                    const result = await res.json();
+                    if (result.message) {
+                        alert(result.message);
+                        closeModal('importPreviewModal');
+                        loadStudents();
+                    } else {
+                        alert(result.error || 'เกิดข้อผิดพลาดในการนำเข้า');
+                    }
+                } catch (e) {
+                    console.error('Error in import:', e);
+                    alert('เกิดข้อผิดพลาดในการนำเข้าข้อมูล');
+                } finally {
+                    btn.disabled = false;
+                    btn.innerText = 'ยืนยันการนำเข้า';
+                }
+            });
+        }
 
         async function loadStudents() {
             try {
