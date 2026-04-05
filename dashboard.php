@@ -583,9 +583,12 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                         <td class="py-3 font-medium text-slate-800">${t.name}</td>
                         <td class="py-3 text-slate-500">${t.position}</td>
                         <td class="py-3">
-                            <span class="px-2 py-1 rounded-full text-[10px] font-bold ${t.is_approved ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">
-                                ${t.is_approved ? 'อนุมัติแล้ว' : 'รออนุมัติ'}
-                            </span>
+                            <div class="flex flex-col gap-1">
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold w-fit ${t.is_approved ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">
+                                    ${t.is_approved ? 'อนุมัติแล้ว' : 'รออนุมัติ'}
+                                </span>
+                                ${t.is_academic ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-700 w-fit">งานวิชาการ</span>' : ''}
+                            </div>
                         </td>
                         <?php if ($role === 'super_admin'): ?>
                         <td class="py-3 text-right">
