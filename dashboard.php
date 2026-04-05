@@ -44,7 +44,14 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
 
             <?php if ($role === 'admin'): ?>
                 <div class="pt-4 pb-2 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">School Admin</div>
+                <a href="#" onclick="showSection('manage-teachers')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">จัดการข้อมูลครู</a>
                 <a href="#" onclick="showSection('approve-teachers')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">อนุมัติครู</a>
+                <a href="#" onclick="showSection('manage-students')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">จัดการนักเรียน</a>
+                <a href="#" onclick="showSection('manage-subjects')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">จัดการรายวิชา</a>
+            <?php endif; ?>
+
+            <?php if ($role === 'teacher' && $_SESSION['is_academic']): ?>
+                <div class="pt-4 pb-2 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">งานวิชาการ</div>
                 <a href="#" onclick="showSection('manage-students')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">จัดการนักเรียน</a>
                 <a href="#" onclick="showSection('manage-subjects')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">จัดการรายวิชา</a>
             <?php endif; ?>
@@ -133,6 +140,9 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                                 <th class="pb-3 font-medium">ชื่อ-นามสกุล</th>
                                 <th class="pb-3 font-medium">ตำแหน่ง</th>
                                 <th class="pb-3 font-medium">สถานะ</th>
+                                <?php if ($role === 'super_admin'): ?>
+                                <th class="pb-3 font-medium text-right">การจัดการ</th>
+                                <?php endif; ?>
                             </tr>
                         </thead>
                         <tbody id="modalTeacherTableBody"></tbody>
@@ -221,6 +231,105 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
         </div>
         <?php endif; ?>
 
+        <!-- School Admin: Manage Teachers -->
+        <?php if ($role === 'admin'): ?>
+        <div id="manage-teachers" class="section hidden space-y-6">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <h3 class="text-lg font-bold mb-4">ข้อมูลคุณครูในโรงเรียน</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="text-slate-500 border-b border-slate-100">
+                                <th class="pb-3 font-medium">ชื่อ-นามสกุล</th>
+                                <th class="pb-3 font-medium">ตำแหน่ง</th>
+                                <th class="pb-3 font-medium">งานวิชาการ</th>
+                                <th class="pb-3 font-medium">สถานะ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="schoolTeachersTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <?php endif; ?>
+
+        <!-- Academic/Admin: Manage Students -->
+        <?php if ($role === 'admin' || (isset($_SESSION['is_academic']) && $_SESSION['is_academic'])): ?>
+        <div id="manage-students" class="section hidden space-y-6">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <h3 class="text-lg font-bold mb-4">เพิ่มนักเรียนใหม่</h3>
+                <form id="addStudentForm" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <input type="text" id="std_code" placeholder="รหัสประจำตัวนักเรียน" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
+                    <input type="text" id="std_national_id" placeholder="เลขบัตรประชาชน (13 หลัก)" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
+                    <input type="text" id="std_name" placeholder="ชื่อ-นามสกุล" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
+                    <select id="std_level" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
+                        <option value="">เลือกระดับชั้น</option>
+                        <option value="ป.1">ป.1</option><option value="ป.2">ป.2</option><option value="ป.3">ป.3</option>
+                        <option value="ป.4">ป.4</option><option value="ป.5">ป.5</option><option value="ป.6">ป.6</option>
+                        <option value="ม.1">ม.1</option><option value="ม.2">ม.2</option><option value="ม.3">ม.3</option>
+                    </select>
+                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-xl font-semibold hover:bg-blue-700 cursor-pointer transition-all">บันทึก</button>
+                </form>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-bold">รายชื่อนักเรียน</h3>
+                    <button onclick="promoteStudents()" class="bg-amber-600 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-amber-700 cursor-pointer transition-all">เลื่อนระดับชั้น (สิ้นปีการศึกษา)</button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="text-slate-500 border-b border-slate-100">
+                                <th class="pb-3 font-medium">รหัส</th>
+                                <th class="pb-3 font-medium">ชื่อ-นามสกุล</th>
+                                <th class="pb-3 font-medium">ระดับชั้น</th>
+                                <th class="pb-3 font-medium">การจัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentsTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Academic/Admin: Manage Subjects -->
+        <div id="manage-subjects" class="section hidden space-y-6">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <h3 class="text-lg font-bold mb-4">เพิ่มรายวิชา</h3>
+                <form id="addSubjectForm" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                    <input type="text" id="sub_code" placeholder="รหัสวิชา" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
+                    <input type="text" id="sub_name" placeholder="ชื่อวิชา" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
+                    <select id="sub_level" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
+                        <option value="">ระดับชั้น</option>
+                        <option value="ป.1">ป.1</option><option value="ป.2">ป.2</option><option value="ป.3">ป.3</option>
+                        <option value="ป.4">ป.4</option><option value="ป.5">ป.5</option><option value="ป.6">ป.6</option>
+                        <option value="ม.1">ม.1</option><option value="ม.2">ม.2</option><option value="ม.3">ม.3</option>
+                    </select>
+                    <input type="number" id="sub_hours" placeholder="ชั่วโมง" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
+                    <input type="number" step="0.5" id="sub_credits" placeholder="หน่วยกิต" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
+                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-xl font-semibold hover:bg-blue-700 cursor-pointer transition-all">บันทึก</button>
+                </form>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <h3 class="text-lg font-bold mb-4">รายชื่อวิชา</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="text-slate-500 border-b border-slate-100">
+                                <th class="pb-3 font-medium">รหัสวิชา</th>
+                                <th class="pb-3 font-medium">ชื่อวิชา</th>
+                                <th class="pb-3 font-medium">ระดับชั้น</th>
+                                <th class="pb-3 font-medium">ชั่วโมง/หน่วยกิต</th>
+                                <th class="pb-3 font-medium">การจัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="subjectsTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <?php endif; ?>
+
         <!-- Approve Users Section -->
         <div id="approve-section" class="section hidden space-y-6">
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
@@ -253,6 +362,12 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                 loadPendingUsers();
             } else if (sectionId === 'manage-schools') {
                 loadSchools();
+            } else if (sectionId === 'manage-teachers') {
+                loadSchoolTeachers();
+            } else if (sectionId === 'manage-students') {
+                loadStudents();
+            } else if (sectionId === 'manage-subjects') {
+                loadSubjects();
             }
             
             const target = document.getElementById(targetId);
@@ -405,7 +520,7 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
             const tbody = document.getElementById('modalTeacherTableBody');
             
             if (teachers.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="3" class="py-4 text-center text-slate-400">ไม่พบรายชื่อคุณครูในโรงเรียนนี้</td></tr>';
+                tbody.innerHTML = `<tr><td colspan="${'<?= $role ?>' === 'super_admin' ? 4 : 3}" class="py-4 text-center text-slate-400">ไม่พบรายชื่อคุณครูในโรงเรียนนี้</td></tr>`;
             } else {
                 tbody.innerHTML = teachers.map(t => `
                     <tr class="border-b border-slate-50">
@@ -416,11 +531,198 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                                 ${t.is_approved ? 'อนุมัติแล้ว' : 'รออนุมัติ'}
                             </span>
                         </td>
+                        <?php if ($role === 'super_admin'): ?>
+                        <td class="py-3 text-right">
+                            ${t.role !== 'admin' ? `
+                                <button onclick="promoteToAdmin(${t.id}, '${schoolName}')" class="text-blue-600 hover:text-blue-800 text-xs font-bold cursor-pointer">กำหนดเป็น Admin</button>
+                            ` : '<span class="text-slate-400 text-xs">เป็น Admin แล้ว</span>'}
+                        </td>
+                        <?php endif; ?>
                     </tr>
                 `).join('');
             }
             
             openModal('teacherModal');
+        }
+
+        async function promoteToAdmin(userId, schoolName) {
+            if (!confirm(`ยืนยันการกำหนดให้คุณครูท่านนี้เป็น Admin ของโรงเรียน ${schoolName}?`)) return;
+            
+            const res = await fetch('api/admin/promote_to_admin.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: userId })
+            });
+            const result = await res.json();
+            if (result.message) {
+                alert(result.message);
+                // Refresh modal content - we need schoolId, but we don't have it here easily
+                // Let's just reload the whole school list and close modal for simplicity
+                closeModal('teacherModal');
+                loadSchools();
+            } else {
+                alert(result.error);
+            }
+        }
+
+        async function loadSchoolTeachers() {
+            const res = await fetch(`api/get_school_teachers.php?school_id=<?= $_SESSION['school_id'] ?>`);
+            const teachers = await res.json();
+            const tbody = document.getElementById('schoolTeachersTableBody');
+            tbody.innerHTML = teachers.map(t => `
+                <tr class="border-b border-slate-50 hover:bg-slate-50/50">
+                    <td class="py-3 font-medium text-slate-800">${t.name}</td>
+                    <td class="py-3 text-slate-500">${t.position}</td>
+                    <td class="py-3">
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" class="sr-only peer" ${t.is_academic ? 'checked' : ''} onchange="toggleAcademic(${t.id}, this.checked)">
+                            <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        </label>
+                    </td>
+                    <td class="py-3">
+                        <span class="px-2 py-1 rounded-full text-[10px] font-bold ${t.is_approved ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">
+                            ${t.is_approved ? 'อนุมัติแล้ว' : 'รออนุมัติ'}
+                        </span>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function toggleAcademic(userId, isAcademic) {
+            const res = await fetch('api/admin/set_academic_role.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: userId, is_academic: isAcademic })
+            });
+            const result = await res.json();
+            if (!result.message) {
+                alert(result.error);
+                loadSchoolTeachers(); // Revert UI
+            }
+        }
+
+        async function loadStudents() {
+            const res = await fetch('api/academic/get_students.php');
+            const students = await res.json();
+            const tbody = document.getElementById('studentsTableBody');
+            tbody.innerHTML = students.map(s => `
+                <tr class="border-b border-slate-50 hover:bg-slate-50/50">
+                    <td class="py-3 text-slate-600 font-mono">${s.student_code}</td>
+                    <td class="py-3 font-medium text-slate-800">${s.name}</td>
+                    <td class="py-3 text-slate-500">${s.level}</td>
+                    <td class="py-3">
+                        <button onclick="deleteStudent(${s.id})" class="text-red-600 hover:text-red-800 text-xs font-bold cursor-pointer">ลบ</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function loadSubjects() {
+            const res = await fetch('api/academic/get_subjects.php');
+            const subjects = await res.json();
+            const tbody = document.getElementById('subjectsTableBody');
+            tbody.innerHTML = subjects.map(s => `
+                <tr class="border-b border-slate-50 hover:bg-slate-50/50">
+                    <td class="py-3 text-slate-600 font-mono">${s.code}</td>
+                    <td class="py-3 font-medium text-slate-800">${s.name}</td>
+                    <td class="py-3 text-slate-500">${s.level}</td>
+                    <td class="py-3 text-slate-500">${s.hours} ชม. / ${s.credits} นก.</td>
+                    <td class="py-3">
+                        <button onclick="deleteSubject(${s.id})" class="text-red-600 hover:text-red-800 text-xs font-bold cursor-pointer">ลบ</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        const addStudentForm = document.getElementById('addStudentForm');
+        if (addStudentForm) {
+            addStudentForm.onsubmit = async (e) => {
+                e.preventDefault();
+                const res = await fetch('api/academic/add_student.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        student_code: document.getElementById('std_code').value,
+                        national_id: document.getElementById('std_national_id').value,
+                        name: document.getElementById('std_name').value,
+                        level: document.getElementById('std_level').value
+                    })
+                });
+                const result = await res.json();
+                if (result.message) {
+                    alert(result.message);
+                    addStudentForm.reset();
+                    loadStudents();
+                } else {
+                    alert(result.error);
+                }
+            };
+        }
+
+        const addSubjectForm = document.getElementById('addSubjectForm');
+        if (addSubjectForm) {
+            addSubjectForm.onsubmit = async (e) => {
+                e.preventDefault();
+                const res = await fetch('api/academic/add_subject.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        code: document.getElementById('sub_code').value,
+                        name: document.getElementById('sub_name').value,
+                        level: document.getElementById('sub_level').value,
+                        hours: document.getElementById('sub_hours').value,
+                        credits: document.getElementById('sub_credits').value
+                    })
+                });
+                const result = await res.json();
+                if (result.message) {
+                    alert(result.message);
+                    addSubjectForm.reset();
+                    loadSubjects();
+                } else {
+                    alert(result.error);
+                }
+            };
+        }
+
+        async function promoteStudents() {
+            if (!confirm('ยืนยันการเลื่อนระดับชั้นนักเรียนทั้งหมด? (ป.1 -> ป.2, ป.6 -> จบการศึกษา)')) return;
+            const res = await fetch('api/academic/promote_students.php', { method: 'POST' });
+            const result = await res.json();
+            alert(result.message || result.error);
+            loadStudents();
+        }
+
+        async function deleteStudent(id) {
+            if (!confirm('ยืนยันการลบข้อมูลนักเรียน?')) return;
+            const res = await fetch('api/academic/delete_student.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id })
+            });
+            const result = await res.json();
+            if (result.message) {
+                alert(result.message);
+                loadStudents();
+            } else {
+                alert(result.error);
+            }
+        }
+
+        async function deleteSubject(id) {
+            if (!confirm('ยืนยันการลบรายวิชา?')) return;
+            const res = await fetch('api/academic/delete_subject.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id })
+            });
+            const result = await res.json();
+            if (result.message) {
+                alert(result.message);
+                loadSubjects();
+            } else {
+                alert(result.error);
+            }
         }
 
         async function loadPendingUsers() {
@@ -429,11 +731,11 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
             const tbody = document.getElementById('pendingUsersTableBody');
             tbody.innerHTML = users.map(u => `
                 <tr class="border-b border-slate-50 hover:bg-slate-50/50">
-                    <td class="py-3 font-medium text-slate-800">${u.full_name}</td>
+                    <td class="py-3 font-medium text-slate-800">${u.name}</td>
                     <td class="py-3 text-slate-500">${u.school_name || 'ไม่มีสังกัด'}</td>
                     <td class="py-3 text-slate-500">${u.position}</td>
                     <td class="py-3">
-                        <button onclick="approveUser(${u.id}, '${u.role === 'super_admin' ? 'admin' : 'teacher'}')" class="bg-green-600 text-white px-3 py-1 rounded-lg text-xs font-semibold hover:bg-green-700">อนุมัติ</button>
+                        <button onclick="approveUser(${u.id}, '${u.role === 'super_admin' ? 'admin' : 'teacher'}')" class="bg-green-600 text-white px-3 py-1 rounded-lg text-xs font-semibold hover:bg-green-700 cursor-pointer">อนุมัติ</button>
                     </td>
                 </tr>
             `).join('');
