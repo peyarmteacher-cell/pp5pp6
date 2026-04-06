@@ -33,7 +33,9 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
         </div>
         
         <nav class="flex-1 p-4 space-y-2">
-            <a href="javascript:void(0)" onclick="showSection('overview')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">ภาพรวม</a>
+            <?php if ($role !== 'teacher' || $_SESSION['is_academic']): ?>
+                <a href="javascript:void(0)" onclick="showSection('overview')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">ภาพรวม</a>
+            <?php endif; ?>
             
             <?php if ($role === 'super_admin'): ?>
                 <div class="pt-4 pb-2 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Super Admin</div>
@@ -215,6 +217,9 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
         <!-- Academic/Admin: Manage Subjects -->
         <?php include 'includes/dashboard/subjects.php'; ?>
 
+        <!-- Teacher: Record Grades -->
+        <?php include 'includes/dashboard/grading.php'; ?>
+
         <!-- Approve Users Section -->
         <div id="approve-section" class="section hidden space-y-6">
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
@@ -260,6 +265,8 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                 loadStudents();
             } else if (sectionId === 'manage-subjects') {
                 loadSubjects();
+            } else if (sectionId === 'record-grades') {
+                loadMyAssignments();
             }
             
             const target = document.getElementById(targetId);
@@ -583,7 +590,11 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
         }
         
         // Show default section
-        showSection('overview');
+        <?php if ($role === 'teacher' && !$_SESSION['is_academic']): ?>
+            showSection('record-grades');
+        <?php else: ?>
+            showSection('overview');
+        <?php endif; ?>
     </script>
 </body>
 </html>

@@ -84,6 +84,75 @@ try {
         $results[] = "เพิ่มคอลัมน์ classroom_id ในตาราง teacher_assignments สำเร็จ";
     }
 
+    // 8. เพิ่มตารางบันทึกคะแนน
+    $pdo->exec("CREATE TABLE IF NOT EXISTS grades (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        student_id INT,
+        subject_id INT,
+        classroom_id INT,
+        teacher_id INT,
+        academic_year VARCHAR(4),
+        semester INT,
+        score_midterm FLOAT DEFAULT 0,
+        score_final FLOAT DEFAULT 0,
+        score_total FLOAT DEFAULT 0,
+        grade VARCHAR(5),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+        FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE CASCADE,
+        FOREIGN KEY (classroom_id) REFERENCES classrooms(id) ON DELETE CASCADE,
+        FOREIGN KEY (teacher_id) REFERENCES users(id) ON DELETE CASCADE,
+        UNIQUE KEY unique_grade (student_id, subject_id, classroom_id, academic_year, semester)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    $results[] = "ตรวจสอบ/สร้างตาราง grades สำเร็จ";
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS characteristics_scores (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        student_id INT,
+        subject_id INT,
+        classroom_id INT,
+        teacher_id INT,
+        academic_year VARCHAR(4),
+        semester INT,
+        item1 INT DEFAULT 0,
+        item2 INT DEFAULT 0,
+        item3 INT DEFAULT 0,
+        item4 INT DEFAULT 0,
+        item5 INT DEFAULT 0,
+        item6 INT DEFAULT 0,
+        item7 INT DEFAULT 0,
+        item8 INT DEFAULT 0,
+        average_score FLOAT DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+        FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE CASCADE,
+        FOREIGN KEY (classroom_id) REFERENCES classrooms(id) ON DELETE CASCADE,
+        FOREIGN KEY (teacher_id) REFERENCES users(id) ON DELETE CASCADE,
+        UNIQUE KEY unique_char (student_id, subject_id, classroom_id, academic_year, semester)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    $results[] = "ตรวจสอบ/สร้างตาราง characteristics_scores สำเร็จ";
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS analytical_scores (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        student_id INT,
+        subject_id INT,
+        classroom_id INT,
+        teacher_id INT,
+        academic_year VARCHAR(4),
+        semester INT,
+        score INT DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+        FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE CASCADE,
+        FOREIGN KEY (classroom_id) REFERENCES classrooms(id) ON DELETE CASCADE,
+        FOREIGN KEY (teacher_id) REFERENCES users(id) ON DELETE CASCADE,
+        UNIQUE KEY unique_analytical (student_id, subject_id, classroom_id, academic_year, semester)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    $results[] = "ตรวจสอบ/สร้างตาราง analytical_scores สำเร็จ";
+
     echo json_encode([
         'status' => 'success',
         'message' => 'ตรวจสอบและปรับปรุงฐานข้อมูลเรียบร้อยแล้ว',
