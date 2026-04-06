@@ -12,9 +12,11 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && !$_SESSION
 
 $data = json_decode(file_get_contents('php://input'), true);
 $id = $data['id'] ?? '';
+$prefix = $data['prefix'] ?? '';
 $name = $data['name'] ?? '';
 $level = $data['level'] ?? '';
 $room = $data['room'] ?? '1';
+$academic_year = $data['academic_year'] ?? '2567';
 $school_id = $_SESSION['school_id'];
 
 if (empty($id) || empty($name) || empty($level)) {
@@ -37,8 +39,8 @@ try {
         $classroom_id = $classroom['id'];
     }
 
-    $stmt = $pdo->prepare('UPDATE students SET name = ?, level = ?, room = ?, classroom_id = ? WHERE id = ? AND school_id = ?');
-    $stmt->execute([$name, $level, $room, $classroom_id, $id, $school_id]);
+    $stmt = $pdo->prepare('UPDATE students SET prefix = ?, name = ?, level = ?, room = ?, classroom_id = ?, academic_year = ? WHERE id = ? AND school_id = ?');
+    $stmt->execute([$prefix, $name, $level, $room, $classroom_id, $academic_year, $id, $school_id]);
     echo json_encode(['message' => 'อัปเดตข้อมูลนักเรียนสำเร็จแล้ว']);
 } catch (PDOException $e) {
     http_response_code(500);

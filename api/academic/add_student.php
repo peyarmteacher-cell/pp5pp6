@@ -12,10 +12,12 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && !$_SESSION
 
 $data = json_decode(file_get_contents('php://input'), true);
 $student_code = $data['student_code'] ?? '';
+$prefix = $data['prefix'] ?? '';
 $national_id = $data['national_id'] ?? '';
 $name = $data['name'] ?? '';
 $level = $data['level'] ?? '';
 $room = $data['room'] ?? '1';
+$academic_year = $data['academic_year'] ?? '2567';
 $school_id = $_SESSION['school_id'];
 
 if (empty($student_code) || empty($national_id) || empty($name) || empty($level)) {
@@ -38,8 +40,8 @@ try {
         $classroom_id = $classroom['id'];
     }
 
-    $stmt = $pdo->prepare('INSERT INTO students (student_code, national_id, name, level, room, classroom_id, school_id) VALUES (?, ?, ?, ?, ?, ?, ?)');
-    $stmt->execute([$student_code, $national_id, $name, $level, $room, $classroom_id, $school_id]);
+    $stmt = $pdo->prepare('INSERT INTO students (student_code, prefix, national_id, name, level, room, classroom_id, academic_year, school_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
+    $stmt->execute([$student_code, $prefix, $national_id, $name, $level, $room, $classroom_id, $academic_year, $school_id]);
     echo json_encode(['message' => 'เพิ่มข้อมูลนักเรียนสำเร็จแล้ว']);
 } catch (PDOException $e) {
     http_response_code(500);

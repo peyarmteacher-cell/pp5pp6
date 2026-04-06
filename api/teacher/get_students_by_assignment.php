@@ -24,6 +24,7 @@ try {
     $stmt = $pdo->prepare('
         SELECT s.id, s.student_code, s.name, s.prefix,
                g.score_midterm, g.score_final, g.score_total, g.grade,
+               g.score_semester1, g.score_semester2, g.score_annual_avg,
                cs.item1, cs.item2, cs.item3, cs.item4, cs.item5, cs.item6, cs.item7, cs.item8, cs.average_score,
                ascore.score as analytical_score
         FROM students s
@@ -40,6 +41,19 @@ try {
         $classroom_id
     ]);
     $students = $stmt->fetchAll();
+
+    // ดึงคะแนนหน่วยการเรียนรู้ของนักเรียนแต่ละคน
+    foreach ($students as &$student) {
+        $stmt = $pdo->prepare('
+            SELECT us.learning_unit_id, us.score
+            FROM unit_scores us
+            JOIN learning_units lu ON us.learning_unit_id = lu.id
+            WHERE us.student_id = ? AND lu.subject_id = ? AND lu.classroom_id = ? AND lu.academic_year = ? AND lu.semester = ?
+        ');
+        $stmt->execute([$student['id'], $subject_id, $classroom_id, $academic_year, $semester]);
+        $unit_scores = $stmt->fetchAll();
+        $student['unit_scores'] = $unit_scores;
+    }
 
     echo json_encode($students);
 } catch (PDOException $e) {

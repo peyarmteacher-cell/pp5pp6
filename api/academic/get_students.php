@@ -10,8 +10,9 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 try {
-    $stmt = $pdo->prepare('SELECT * FROM students WHERE school_id = ? ORDER BY level ASC, room ASC, name ASC');
-    $stmt->execute([$_SESSION['school_id']]);
+    $academic_year = $_GET['academic_year'] ?? '2567';
+    $stmt = $pdo->prepare('SELECT * FROM students WHERE school_id = ? AND academic_year = ? ORDER BY level ASC, room ASC, name ASC');
+    $stmt->execute([$_SESSION['school_id'], $academic_year]);
     $students = $stmt->fetchAll();
     echo json_encode($students);
 } catch (PDOException $e) {

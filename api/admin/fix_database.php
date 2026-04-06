@@ -76,6 +76,18 @@ try {
         $results[] = "เพิ่มคอลัมน์ classroom_id และ Foreign Key ในตาราง students สำเร็จ";
     }
 
+    $stmt = $pdo->query("SHOW COLUMNS FROM students LIKE 'academic_year'");
+    if (!$stmt->fetch()) {
+        $pdo->exec("ALTER TABLE students ADD COLUMN academic_year VARCHAR(4) DEFAULT '2567' AFTER school_id");
+        $results[] = "เพิ่มคอลัมน์ academic_year ในตาราง students สำเร็จ";
+    }
+
+    $stmt = $pdo->query("SHOW COLUMNS FROM students LIKE 'prefix'");
+    if (!$stmt->fetch()) {
+        $pdo->exec("ALTER TABLE students ADD COLUMN prefix VARCHAR(20) AFTER student_code");
+        $results[] = "เพิ่มคอลัมน์ prefix ในตาราง students สำเร็จ";
+    }
+
     // 7. ตรวจสอบและเพิ่มคอลัมน์ classroom_id ในตาราง teacher_assignments
     $stmt = $pdo->query("SHOW COLUMNS FROM teacher_assignments LIKE 'classroom_id'");
     if (!$stmt->fetch()) {
@@ -152,6 +164,40 @@ try {
         UNIQUE KEY unique_analytical (student_id, subject_id, classroom_id, academic_year, semester)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
     $results[] = "ตรวจสอบ/สร้างตาราง analytical_scores สำเร็จ";
+
+    // 9. ปรับปรุงตาราง learning_units และเพิ่ม unit_scores
+    $pdo->exec("CREATE TABLE IF NOT EXISTS learning_units (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        subject_id INT,
+        classroom_id INT,
+        academic_year VARCHAR(4),
+        semester INT,
+        unit_name VARCHAR(255) NOT NULL,
+        max_score FLOAT DEFAULT 10,
+        FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE CASCADE,
+        FOREIGN KEY (classroom_id) REFERENCES classrooms(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    $results[] = "ตรวจสอบ/สร้างตาราง learning_units สำเร็จ";
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS unit_scores (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        student_id INT,
+        learning_unit_id INT,
+        score FLOAT DEFAULT 0,
+        FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+        FOREIGN KEY (learning_unit_id) REFERENCES learning_units(id) ON DELETE CASCADE,
+        UNIQUE KEY unique_unit_score (student_id, learning_unit_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    $results[] = "ตรวจสอบ/สร้างตาราง unit_scores สำเร็จ";
+
+    // 10. ปรับปรุงตาราง grades ให้รองรับคะแนนรายปี
+    $stmt = $pdo->query("SHOW COLUMNS FROM grades LIKE 'score_semester1'");
+    if (!$stmt->fetch()) {
+        $pdo->exec("ALTER TABLE grades ADD COLUMN score_semester1 FLOAT DEFAULT 0 AFTER semester");
+        $pdo->exec("ALTER TABLE grades ADD COLUMN score_semester2 FLOAT DEFAULT 0 AFTER score_semester1");
+        $pdo->exec("ALTER TABLE grades ADD COLUMN score_annual_avg FLOAT DEFAULT 0 AFTER score_semester2");
+        $results[] = "เพิ่มคอลัมน์คะแนนรายปีในตาราง grades สำเร็จ";
+    }
 
     echo json_encode([
         'status' => 'success',

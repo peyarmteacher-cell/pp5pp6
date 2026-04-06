@@ -4,6 +4,13 @@
     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
         <h3 class="text-lg font-bold mb-4">เพิ่มนักเรียนใหม่</h3>
         <form id="addStudentForm" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <select id="std_prefix" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
+                <option value="">คำนำหน้า</option>
+                <option value="เด็กชาย">เด็กชาย</option>
+                <option value="เด็กหญิง">เด็กหญิง</option>
+                <option value="นาย">นาย</option>
+                <option value="นางสาว">นางสาว</option>
+            </select>
             <input type="text" id="std_code" placeholder="รหัสประจำตัวนักเรียน" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
             <input type="text" id="std_national_id" placeholder="เลขบัตรประชาชน (13 หลัก)" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
             <input type="text" id="std_name" placeholder="ชื่อ-นามสกุล" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
@@ -14,6 +21,10 @@
                 <option value="ม.1">ม.1</option><option value="ม.2">ม.2</option><option value="ม.3">ม.3</option>
             </select>
             <input type="text" id="std_room" placeholder="ห้อง (เช่น 1)" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
+            <select id="std_academic_year" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
+                <option value="2567">ปีการศึกษา 2567</option>
+                <option value="2566">ปีการศึกษา 2566</option>
+            </select>
             <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-xl font-semibold hover:bg-blue-700 cursor-pointer transition-all">บันทึก</button>
         </form>
     </div>
@@ -56,6 +67,24 @@
         <h3 class="text-xl font-bold mb-4 text-slate-800">แก้ไขข้อมูลนักเรียน</h3>
         <form id="editStudentForm" class="space-y-4">
             <input type="hidden" id="edit_std_id">
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">คำนำหน้า</label>
+                    <select id="edit_std_prefix" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+                        <option value="เด็กชาย">เด็กชาย</option>
+                        <option value="เด็กหญิง">เด็กหญิง</option>
+                        <option value="นาย">นาย</option>
+                        <option value="นางสาว">นางสาว</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">ปีการศึกษา</label>
+                    <select id="edit_std_academic_year" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+                        <option value="2567">2567</option>
+                        <option value="2566">2566</option>
+                    </select>
+                </div>
+            </div>
             <div>
                 <label class="block text-sm font-medium text-slate-700 mb-1">ชื่อ-นามสกุล</label>
                 <input type="text" id="edit_std_name" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
@@ -189,8 +218,9 @@
     }
 
     async function loadStudents() {
+        const year = document.getElementById('std_academic_year')?.value || '2567';
         try {
-            const res = await fetch('api/academic/get_students.php');
+            const res = await fetch(`api/academic/get_students.php?academic_year=${year}`);
             allStudents = await res.json();
             
             // Extract unique levels
@@ -291,7 +321,7 @@
                             ${filtered.map(s => `
                                 <tr class="border-b border-slate-50 hover:bg-slate-50/50">
                                     <td class="py-3 text-slate-600 font-mono">${s.student_code}</td>
-                                    <td class="py-3 font-medium text-slate-800">${s.name}</td>
+                                    <td class="py-3 font-medium text-slate-800">${s.prefix || ''}${s.name}</td>
                                     <td class="py-3 text-right flex gap-2 justify-end">
                                         <button onclick='editStudent(${JSON.stringify(s)})' class="text-blue-600 hover:text-blue-800 text-xs font-bold cursor-pointer">แก้ไข</button>
                                         <button onclick="deleteStudent(${s.id})" class="text-red-600 hover:text-red-800 text-xs font-bold cursor-pointer">ลบ</button>
@@ -367,6 +397,8 @@
 
     function editStudent(s) {
         document.getElementById('edit_std_id').value = s.id;
+        document.getElementById('edit_std_prefix').value = s.prefix || 'เด็กชาย';
+        document.getElementById('edit_std_academic_year').value = s.academic_year || '2567';
         document.getElementById('edit_std_name').value = s.name;
         document.getElementById('edit_std_level').value = s.level;
         document.getElementById('edit_std_room').value = s.room || '1';
@@ -383,10 +415,12 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         student_code: document.getElementById('std_code').value,
+                        prefix: document.getElementById('std_prefix').value,
                         national_id: document.getElementById('std_national_id').value,
                         name: document.getElementById('std_name').value,
                         level: document.getElementById('std_level').value,
-                        room: document.getElementById('std_room').value
+                        room: document.getElementById('std_room').value,
+                        academic_year: document.getElementById('std_academic_year').value
                     })
                 });
                 const result = await res.json();
@@ -409,6 +443,8 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         id: document.getElementById('edit_std_id').value,
+                        prefix: document.getElementById('edit_std_prefix').value,
+                        academic_year: document.getElementById('edit_std_academic_year').value,
                         name: document.getElementById('edit_std_name').value,
                         level: document.getElementById('edit_std_level').value,
                         room: document.getElementById('edit_std_room').value

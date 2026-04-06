@@ -121,7 +121,13 @@
             const res = await fetch(`api/teacher/get_students_by_assignment.php?classroom_id=${currentAssignment.classroom_id}&subject_id=${currentAssignment.subject_id}&academic_year=${year}&semester=${semester}`);
             currentStudents = await res.json();
             
-            renderAcademicTable();
+            // Load Learning Units for Academic Tab
+            if (typeof loadLearningUnits === 'function') {
+                await loadLearningUnits();
+            } else {
+                renderAcademicTable();
+            }
+            
             renderCharacteristicsTable();
             renderAnalyticalTable();
         } catch (e) {

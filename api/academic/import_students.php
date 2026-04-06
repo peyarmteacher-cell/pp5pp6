@@ -25,10 +25,12 @@ try {
 
     foreach ($students as $s) {
         $student_code = trim($s['student_code'] ?? '');
+        $prefix = trim($s['prefix'] ?? '');
         $national_id = trim($s['national_id'] ?? '');
         $name = trim($s['name'] ?? '');
         $level = trim($s['level'] ?? '');
         $room = trim($s['room'] ?? '');
+        $academic_year = trim($s['academic_year'] ?? '2567');
 
         if (empty($student_code) || empty($name) || empty($level)) continue;
 
@@ -53,12 +55,12 @@ try {
 
         if ($existing) {
             // อัปเดต
-            $stmt = $pdo->prepare('UPDATE students SET name = ?, level = ?, room = ?, classroom_id = ?, national_id = ? WHERE id = ?');
-            $stmt->execute([$name, $level, $room, $classroom_id, $national_id, $existing['id']]);
+            $stmt = $pdo->prepare('UPDATE students SET prefix = ?, name = ?, level = ?, room = ?, classroom_id = ?, national_id = ?, academic_year = ? WHERE id = ?');
+            $stmt->execute([$prefix, $name, $level, $room, $classroom_id, $national_id, $academic_year, $existing['id']]);
         } else {
             // เพิ่มใหม่
-            $stmt = $pdo->prepare('INSERT INTO students (student_code, national_id, name, level, room, classroom_id, school_id) VALUES (?, ?, ?, ?, ?, ?, ?)');
-            $stmt->execute([$student_code, $national_id, $name, $level, $room, $classroom_id, $school_id]);
+            $stmt = $pdo->prepare('INSERT INTO students (student_code, prefix, national_id, name, level, room, classroom_id, academic_year, school_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
+            $stmt->execute([$student_code, $prefix, $national_id, $name, $level, $room, $classroom_id, $academic_year, $school_id]);
         }
     }
 
