@@ -1,18 +1,4 @@
 <div class="space-y-6">
-    <!-- Learning Units Management -->
-    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200">
-        <div class="flex justify-between items-center mb-4">
-            <h4 class="text-sm font-bold text-slate-700">จัดการหน่วยการเรียนรู้</h4>
-            <button onclick="openAddUnitModal()" class="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-blue-700 transition-all flex items-center gap-1 cursor-pointer">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                เพิ่มหน่วยการเรียนรู้
-            </button>
-        </div>
-        <div id="units-list" class="flex flex-wrap gap-2">
-            <!-- Units will be loaded here -->
-        </div>
-    </div>
-
     <!-- Grading Table -->
     <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse min-w-[1000px]">
@@ -34,6 +20,20 @@
                 <!-- Students will be loaded here -->
             </tbody>
         </table>
+    </div>
+
+    <!-- Learning Units Management (Moved to bottom) -->
+    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 mt-6">
+        <div class="flex justify-between items-center mb-4">
+            <h4 class="text-sm font-bold text-slate-700">จัดการหน่วยการเรียนรู้</h4>
+            <button onclick="openAddUnitModal()" class="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-blue-700 transition-all flex items-center gap-1 cursor-pointer">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                เพิ่มหน่วยการเรียนรู้
+            </button>
+        </div>
+        <div id="units-list" class="flex flex-wrap gap-2">
+            <!-- Units will be loaded here -->
+        </div>
     </div>
 
     <!-- Unit Details Note -->

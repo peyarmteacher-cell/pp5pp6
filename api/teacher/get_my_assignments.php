@@ -18,7 +18,7 @@ try {
         SELECT ta.id as assignment_id, s.id as subject_id, s.code, s.name as subject_name, s.level, c.id as classroom_id, c.room
         FROM teacher_assignments ta
         JOIN subjects s ON ta.subject_id = s.id
-        JOIN classrooms c ON ta.classroom_id = c.id
+        LEFT JOIN classrooms c ON ta.classroom_id = c.id
         WHERE ta.teacher_id = ? AND ta.academic_year = ? AND ta.semester = ?
         ORDER BY s.level ASC, c.room ASC
     ');

@@ -43,6 +43,32 @@ try {
         $stmt->execute([$level, $_SESSION['school_id']]);
         $subjects = $stmt->fetchAll();
         $subject_ids = array_column($subjects, 'id');
+
+        // ดึงห้องเรียนทั้งหมดในระดับชั้นนั้น
+        $stmt = $pdo->prepare('SELECT id FROM classrooms WHERE level = ? AND school_id = ?');
+        $stmt->execute([$level, $_SESSION['school_id']]);
+        $classrooms = $stmt->fetchAll();
+        $classroom_ids = array_column($classrooms, 'id');
+
+        if (empty($subject_ids) || empty($classroom_ids)) {
+            echo json_encode(['error' => 'ไม่พบรายวิชาหรือห้องเรียนในระดับชั้นที่เลือก']);
+            exit;
+        }
+
+        $pdo->beginTransaction();
+        foreach ($subject_ids as $sid) {
+            foreach ($classroom_ids as $cid) {
+                $stmt = $pdo->prepare('SELECT id FROM teacher_assignments WHERE teacher_id = ? AND subject_id = ? AND classroom_id = ? AND academic_year = ? AND semester = ?');
+                $stmt->execute([$teacher_id, $sid, $cid, $academic_year, $semester]);
+                if (!$stmt->fetch()) {
+                    $stmt = $pdo->prepare('INSERT INTO teacher_assignments (teacher_id, subject_id, classroom_id, academic_year, semester) VALUES (?, ?, ?, ?, ?)');
+                    $stmt->execute([$teacher_id, $sid, $cid, $academic_year, $semester]);
+                }
+            }
+        }
+        $pdo->commit();
+        echo json_encode(['message' => 'มอบหมายงานสอนระดับชั้นสำเร็จแล้ว']);
+        exit;
     }
 
     if (empty($subject_ids)) {

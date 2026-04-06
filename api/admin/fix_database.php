@@ -95,6 +95,33 @@ try {
                 WHERE s.classroom_id IS NULL");
     $results[] = "ซิงค์ข้อมูลห้องเรียนให้นักเรียนสำเร็จ";
 
+    // แก้ไข teacher_assignments ที่ไม่มี classroom_id (ขยายให้ครบทุกห้องในระดับชั้นนั้น)
+    $stmt = $pdo->query("SELECT ta.*, s.level, s.school_id FROM teacher_assignments ta JOIN subjects s ON ta.subject_id = s.id WHERE ta.classroom_id IS NULL");
+    $null_assignments = $stmt->fetchAll();
+    if (count($null_assignments) > 0) {
+        $pdo->beginTransaction();
+        foreach ($null_assignments as $ta) {
+            // หาห้องเรียนทั้งหมดในระดับชั้นนั้น
+            $stmt_rooms = $pdo->prepare("SELECT id FROM classrooms WHERE level = ? AND school_id = ?");
+            $stmt_rooms->execute([$ta['level'], $ta['school_id']]);
+            $rooms = $stmt_rooms->fetchAll();
+            
+            foreach ($rooms as $r) {
+                // ตรวจสอบว่ามีอยู่แล้วหรือไม่
+                $stmt_check = $pdo->prepare("SELECT id FROM teacher_assignments WHERE teacher_id = ? AND subject_id = ? AND classroom_id = ? AND academic_year = ? AND semester = ?");
+                $stmt_check->execute([$ta['teacher_id'], $ta['subject_id'], $r['id'], $ta['academic_year'], $ta['semester']]);
+                if (!$stmt_check->fetch()) {
+                    $stmt_ins = $pdo->prepare("INSERT INTO teacher_assignments (teacher_id, subject_id, classroom_id, academic_year, semester) VALUES (?, ?, ?, ?, ?)");
+                    $stmt_ins->execute([$ta['teacher_id'], $ta['subject_id'], $r['id'], $ta['academic_year'], $ta['semester']]);
+                }
+            }
+            // ลบตัวที่ไม่มี classroom_id ออก
+            $pdo->prepare("DELETE FROM teacher_assignments WHERE id = ?")->execute([$ta['id']]);
+        }
+        $pdo->commit();
+        $results[] = "ขยายงานสอนที่ไม่มีห้องเรียนให้ครบทุกห้องสำเร็จ (" . count($null_assignments) . " รายการ)";
+    }
+
     // 7. ตรวจสอบและเพิ่มคอลัมน์ classroom_id ในตาราง teacher_assignments
     $stmt = $pdo->query("SHOW COLUMNS FROM teacher_assignments LIKE 'classroom_id'");
     if (!$stmt->fetch()) {
