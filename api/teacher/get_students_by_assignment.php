@@ -104,19 +104,29 @@ try {
     $students = $stmt->fetchAll();
     
     // Fetch Unit Scores
-    foreach ($students as &$student) {
-        $stmt = $pdo->prepare('
-            SELECT us.learning_unit_id, us.score
-            FROM unit_scores us
-            JOIN learning_units lu ON us.learning_unit_id = lu.id
-            WHERE us.student_id = ? AND lu.subject_id = ? AND lu.academic_year = ? AND lu.semester = ?
-        ');
-        $stmt->execute([$student['id'], $subject_id, $academic_year, $semester]);
-        $student['unit_scores'] = $stmt->fetchAll();
+    if ($semester !== 'annual') {
+        foreach ($students as &$student) {
+            $stmt = $pdo->prepare('
+                SELECT us.learning_unit_id, us.score
+                FROM unit_scores us
+                JOIN learning_units lu ON us.learning_unit_id = lu.id
+                WHERE us.student_id = ? AND lu.subject_id = ? AND lu.academic_year = ? AND lu.semester = ?
+            ');
+            $stmt->execute([$student['id'], $subject_id, $academic_year, (int)$semester]);
+            $student['unit_scores'] = $stmt->fetchAll();
+        }
+    } else {
+        foreach ($students as &$student) {
+            $student['unit_scores'] = [];
+        }
     }
 
-    echo json_encode($students);
-} catch (PDOException $e) {
+    $json = json_encode($students);
+    if ($json === false) {
+        throw new Exception('JSON encoding failed: ' . json_last_error_msg());
+    }
+    echo $json;
+} catch (Exception $e) {
     http_response_code(500);
     echo json_encode(['error' => $e->getMessage()]);
 }

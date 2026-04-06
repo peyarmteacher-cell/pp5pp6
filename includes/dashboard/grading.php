@@ -138,7 +138,14 @@
         
         try {
             const res = await fetch(`api/teacher/get_students_by_assignment.php?classroom_id=${currentAssignment.classroom_id}&subject_id=${currentAssignment.subject_id}&academic_year=${year}&semester=${semester}`);
-            currentStudents = await res.json();
+            const data = await res.json();
+            
+            if (data.error) {
+                console.error('API Error:', data.error);
+                currentStudents = [];
+            } else {
+                currentStudents = data;
+            }
             
             if (semester === 'annual') {
                 if (typeof renderAnnualTable === 'function') renderAnnualTable();

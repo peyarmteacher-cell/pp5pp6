@@ -136,31 +136,34 @@
         openModal('unitModal');
     }
 
-    document.getElementById('unitForm').onsubmit = async (e) => {
-        e.preventDefault();
-        const payload = {
-            id: document.getElementById('unit_id').value,
-            subject_id: currentAssignment.subject_id,
-            classroom_id: currentAssignment.classroom_id,
-            academic_year: document.getElementById('grade_academic_year').value,
-            semester: document.getElementById('grade_semester').value,
-            unit_name: document.getElementById('unit_name').value,
-            max_score: document.getElementById('unit_max_score').value
-        };
+    const unitForm = document.getElementById('unitForm');
+    if (unitForm) {
+        unitForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const payload = {
+                id: document.getElementById('unit_id').value,
+                subject_id: currentAssignment.subject_id,
+                classroom_id: currentAssignment.classroom_id,
+                academic_year: document.getElementById('grade_academic_year').value,
+                semester: document.getElementById('grade_semester').value,
+                unit_name: document.getElementById('unit_name').value,
+                max_score: document.getElementById('unit_max_score').value
+            };
 
-        const res = await fetch('api/teacher/save_learning_unit.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-        const result = await res.json();
-        if (result.message) {
-            closeModal('unitModal');
-            loadLearningUnits();
-        } else {
-            alert(result.error);
-        }
-    };
+            const res = await fetch('api/teacher/save_learning_unit.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const result = await res.json();
+            if (result.message) {
+                closeModal('unitModal');
+                loadLearningUnits();
+            } else {
+                alert(result.error);
+            }
+        };
+    }
 
     async function deleteUnit(id) {
         if (!confirm('ยืนยันการลบหน่วยการเรียนรู้นี้? คะแนนที่บันทึกไว้จะถูกลบด้วย')) return;
