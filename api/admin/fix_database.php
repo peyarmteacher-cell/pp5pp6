@@ -199,6 +199,30 @@ try {
         $results[] = "เพิ่มคอลัมน์คะแนนรายปีในตาราง grades สำเร็จ";
     }
 
+    // 11. เพิ่มตาราง academic_years และคอลัมน์สถานะนักเรียน
+    $pdo->exec("CREATE TABLE IF NOT EXISTS academic_years (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        school_id INT,
+        year VARCHAR(4) NOT NULL,
+        is_current BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (school_id) REFERENCES schools(id) ON DELETE CASCADE,
+        UNIQUE KEY unique_year (school_id, year)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    $results[] = "ตรวจสอบ/สร้างตาราง academic_years สำเร็จ";
+
+    $stmt = $pdo->query("SHOW COLUMNS FROM students LIKE 'status'");
+    if (!$stmt->fetch()) {
+        $pdo->exec("ALTER TABLE students ADD COLUMN status ENUM('studying', 'graduated', 'transferred', 'quit') DEFAULT 'studying' AFTER academic_year");
+        $results[] = "เพิ่มคอลัมน์ status ในตาราง students สำเร็จ";
+    }
+
+    $stmt = $pdo->query("SHOW COLUMNS FROM students LIKE 'generation'");
+    if (!$stmt->fetch()) {
+        $pdo->exec("ALTER TABLE students ADD COLUMN generation VARCHAR(50) AFTER status");
+        $results[] = "เพิ่มคอลัมน์ generation ในตาราง students สำเร็จ";
+    }
+
     echo json_encode([
         'status' => 'success',
         'message' => 'ตรวจสอบและปรับปรุงฐานข้อมูลเรียบร้อยแล้ว',

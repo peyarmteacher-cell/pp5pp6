@@ -52,12 +52,14 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                 <a href="javascript:void(0)" onclick="showSection('approve-teachers')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">อนุมัติครู</a>
                 <a href="javascript:void(0)" onclick="showSection('manage-students')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">จัดการนักเรียน</a>
                 <a href="javascript:void(0)" onclick="showSection('manage-subjects')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">จัดการรายวิชา</a>
+                <a href="javascript:void(0)" onclick="showSection('academic-management')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">จัดการปีการศึกษา/จบการศึกษา</a>
             <?php endif; ?>
 
             <?php if ($role === 'teacher' && $_SESSION['is_academic']): ?>
                 <div class="pt-4 pb-2 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">งานวิชาการ</div>
                 <a href="javascript:void(0)" onclick="showSection('manage-students')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">จัดการนักเรียน</a>
                 <a href="javascript:void(0)" onclick="showSection('manage-subjects')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">จัดการรายวิชา</a>
+                <a href="javascript:void(0)" onclick="showSection('academic-management')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">จัดการปีการศึกษา/จบการศึกษา</a>
             <?php endif; ?>
 
             <?php if ($role === 'teacher' || $role === 'admin'): ?>
@@ -216,6 +218,9 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
 
         <!-- Academic/Admin: Manage Subjects -->
         <?php include 'includes/dashboard/subjects.php'; ?>
+
+        <!-- Academic Management -->
+        <?php include 'includes/dashboard/academic_management.php'; ?>
 
         <!-- Teacher: Record Grades -->
         <?php include 'includes/dashboard/grading.php'; ?>

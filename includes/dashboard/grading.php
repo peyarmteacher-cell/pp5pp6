@@ -7,8 +7,7 @@
             </div>
             <div class="flex gap-2">
                 <select id="grade_academic_year" class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none text-sm" onchange="loadMyAssignments()">
-                    <option value="2567">ปีการศึกษา 2567</option>
-                    <option value="2566">ปีการศึกษา 2566</option>
+                    <!-- จะถูกเติมด้วย JavaScript -->
                 </select>
                 <select id="grade_semester" class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none text-sm" onchange="loadMyAssignments()">
                     <option value="1">ภาคเรียนที่ 1</option>

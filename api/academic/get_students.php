@@ -11,8 +11,9 @@ if (!isset($_SESSION['user_id'])) {
 
 try {
     $academic_year = $_GET['academic_year'] ?? '2567';
-    $stmt = $pdo->prepare('SELECT * FROM students WHERE school_id = ? AND academic_year = ? ORDER BY level ASC, room ASC, name ASC');
-    $stmt->execute([$_SESSION['school_id'], $academic_year]);
+    $status = $_GET['status'] ?? 'studying';
+    $stmt = $pdo->prepare('SELECT * FROM students WHERE school_id = ? AND academic_year = ? AND status = ? ORDER BY level ASC, room ASC, name ASC');
+    $stmt->execute([$_SESSION['school_id'], $academic_year, $status]);
     $students = $stmt->fetchAll();
     echo json_encode($students);
 } catch (PDOException $e) {

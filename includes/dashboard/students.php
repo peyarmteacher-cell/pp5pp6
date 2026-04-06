@@ -22,8 +22,7 @@
             </select>
             <input type="text" id="std_room" placeholder="ห้อง (เช่น 1)" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
             <select id="std_academic_year" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
-                <option value="2567">ปีการศึกษา 2567</option>
-                <option value="2566">ปีการศึกษา 2566</option>
+                <!-- จะถูกเติมด้วย JavaScript -->
             </select>
             <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-xl font-semibold hover:bg-blue-700 cursor-pointer transition-all">บันทึก</button>
         </form>
@@ -44,6 +43,23 @@
         
         <!-- Student Filters -->
         <div id="studentFilters" class="mb-6 space-y-4 border-b border-slate-100 pb-6">
+            <div class="flex gap-4">
+                <div class="flex-1">
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">ปีการศึกษา</p>
+                    <select id="filter_academic_year" onchange="loadStudents()" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+                        <!-- จะถูกเติมด้วย JavaScript -->
+                    </select>
+                </div>
+                <div class="flex-1">
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">สถานะ</p>
+                    <select id="filter_status" onchange="loadStudents()" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+                        <option value="studying">กำลังศึกษา</option>
+                        <option value="graduated">จบการศึกษา</option>
+                        <option value="transferred">ย้ายสถานศึกษา</option>
+                        <option value="quit">ลาออก</option>
+                    </select>
+                </div>
+            </div>
             <div>
                 <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">เลือกระดับชั้น</p>
                 <div id="studentLevelButtons" class="flex flex-wrap gap-2"></div>
@@ -80,8 +96,7 @@
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">ปีการศึกษา</label>
                     <select id="edit_std_academic_year" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
-                        <option value="2567">2567</option>
-                        <option value="2566">2566</option>
+                        <!-- จะถูกเติมด้วย JavaScript -->
                     </select>
                 </div>
             </div>
@@ -218,9 +233,10 @@
     }
 
     async function loadStudents() {
-        const year = document.getElementById('std_academic_year')?.value || '2567';
+        const year = document.getElementById('filter_academic_year')?.value || '2567';
+        const status = document.getElementById('filter_status')?.value || 'studying';
         try {
-            const res = await fetch(`api/academic/get_students.php?academic_year=${year}`);
+            const res = await fetch(`api/academic/get_students.php?academic_year=${year}&status=${status}`);
             allStudents = await res.json();
             
             // Extract unique levels
@@ -228,9 +244,11 @@
             renderStudentLevelButtons(levels);
             
             // If we have a selected level, update rooms and display
-            if (selectedStudentLevel) {
+            if (selectedStudentLevel && levels.includes(selectedStudentLevel)) {
                 filterStudentsByLevel(selectedStudentLevel);
             } else {
+                selectedStudentLevel = null;
+                selectedStudentRoom = null;
                 const container = document.getElementById('studentsContainer');
                 if (container) container.innerHTML = '<div class="text-center py-8 text-slate-400">กรุณาเลือกระดับชั้นเพื่อดูข้อมูล</div>';
             }
@@ -321,7 +339,10 @@
                             ${filtered.map(s => `
                                 <tr class="border-b border-slate-50 hover:bg-slate-50/50">
                                     <td class="py-3 text-slate-600 font-mono">${s.student_code}</td>
-                                    <td class="py-3 font-medium text-slate-800">${s.prefix || ''}${s.name}</td>
+                                    <td class="py-3 font-medium text-slate-800">
+                                        ${s.prefix || ''}${s.name}
+                                        ${s.status === 'graduated' ? `<span class="ml-2 text-[10px] bg-amber-100 text-amber-600 px-1.5 py-0.5 rounded-full font-bold">${s.generation || 'ไม่ระบุรุ่น'}</span>` : ''}
+                                    </td>
                                     <td class="py-3 text-right flex gap-2 justify-end">
                                         <button onclick='editStudent(${JSON.stringify(s)})' class="text-blue-600 hover:text-blue-800 text-xs font-bold cursor-pointer">แก้ไข</button>
                                         <button onclick="deleteStudent(${s.id})" class="text-red-600 hover:text-red-800 text-xs font-bold cursor-pointer">ลบ</button>
