@@ -195,6 +195,9 @@
     }
 
     let currentAssignTeacherId = null;
+    let currentAcademicYear = '2567';
+    let currentSemester = 1;
+
     async function openAssignSubjectsModal(teacherId, teacherName) {
         currentAssignTeacherId = teacherId;
         const nameEl = document.getElementById('assignTeacherName');
@@ -292,8 +295,8 @@
                 type: 'individual',
                 subject_ids: selectedSubjectIds,
                 classroom_id: roomId || null,
-                academic_year: '2567', // Mock year
-                semester: 1
+                academic_year: currentAcademicYear,
+                semester: currentSemester
             })
         });
 
@@ -312,7 +315,7 @@
         const tbody = document.getElementById('teacherAssignmentsTableBody');
         if (!tbody) return;
         
-        const res = await fetch(`api/admin/get_teacher_assignments.php?teacher_id=${teacherId}`);
+        const res = await fetch(`api/admin/get_teacher_assignments.php?teacher_id=${teacherId}&academic_year=${currentAcademicYear}&semester=${currentSemester}`);
         const assignments = await res.json();
         
         if (assignments.length === 0) {
@@ -329,26 +332,6 @@
                     </td>
                 </tr>
             `).join('');
-        }
-    }
-
-    async function assignSubjectsBulk(teacherId, level) {
-        if (!confirm(`ยืนยันการมอบหมายรายวิชาทั้งหมดในระดับชั้น ${level} ให้คุณครูท่านนี้?`)) return;
-        const res = await fetch('api/admin/assign_subjects.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                teacher_id: teacherId,
-                type: 'bulk_level',
-                level: level
-            })
-        });
-        const result = await res.json();
-        if (result.message) {
-            alert(result.message);
-            loadTeacherAssignments(teacherId);
-        } else {
-            alert(result.error);
         }
     }
 

@@ -20,6 +20,14 @@ if (empty($teacher_id)) {
 }
 
 try {
+    // ตรวจสอบว่าครูอยู่ในโรงเรียนเดียวกัน
+    $stmt = $pdo->prepare('SELECT id FROM users WHERE id = ? AND school_id = ?');
+    $stmt->execute([$teacher_id, $_SESSION['school_id']]);
+    if (!$stmt->fetch()) {
+        echo json_encode(['error' => 'คุณครูไม่ได้อยู่ในโรงเรียนของคุณ']);
+        exit;
+    }
+
     $stmt = $pdo->prepare('
         SELECT ta.id as assignment_id, s.code, s.name, s.level, s.hours, s.credits, c.room
         FROM teacher_assignments ta
