@@ -89,11 +89,17 @@ try {
     }
 
     // ซิงค์ classroom_id ให้กับนักเรียนที่ยังไม่มี (อิงตาม level และ room)
-    $pdo->exec("UPDATE students s 
+    $stmt = $pdo->query("SELECT year FROM academic_years WHERE is_current = 1 LIMIT 1");
+    $current_year_row = $stmt->fetch();
+    $current_year = $current_year_row ? $current_year_row['year'] : '2567';
+    
+    $pdo->prepare("UPDATE students SET academic_year = ? WHERE academic_year IS NULL OR academic_year = ''")->execute([$current_year]);
+    
+    $stmt_sync = $pdo->exec("UPDATE students s 
                 JOIN classrooms c ON s.school_id = c.school_id AND s.level = c.level AND s.room = c.room
                 SET s.classroom_id = c.id
-                WHERE s.classroom_id IS NULL");
-    $results[] = "ซิงค์ข้อมูลห้องเรียนให้นักเรียนสำเร็จ";
+                WHERE s.classroom_id IS NULL OR s.classroom_id = 0");
+    $results[] = "ซิงค์ข้อมูลห้องเรียนให้นักเรียนสำเร็จ ($stmt_sync ราย) และตั้งปีการศึกษาเป็น $current_year";
 
     // แก้ไข teacher_assignments ที่ไม่มี classroom_id (ขยายให้ครบทุกห้องในระดับชั้นนั้น)
     $stmt = $pdo->query("SELECT ta.*, s.level, s.school_id FROM teacher_assignments ta JOIN subjects s ON ta.subject_id = s.id WHERE ta.classroom_id IS NULL");

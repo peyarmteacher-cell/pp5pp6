@@ -31,7 +31,11 @@
                         กลับไปหน้ารายวิชา
                     </button>
                     <h3 id="selected-subject-title" class="text-xl font-bold text-slate-800">รายวิชา: -</h3>
-                    <p id="selected-classroom-title" class="text-sm text-slate-500">ชั้น: - ห้อง: -</p>
+                    <div class="flex items-center gap-3 mt-1">
+                        <p id="selected-classroom-title" class="text-sm text-slate-500">ชั้น: - ห้อง: -</p>
+                        <span class="text-slate-300">|</span>
+                        <p id="selected-year-title" class="text-sm font-bold text-blue-600">ปีการศึกษา: -</p>
+                    </div>
                 </div>
             </div>
 
@@ -115,6 +119,7 @@
         
         document.getElementById('selected-subject-title').innerText = `รายวิชา: ${assignment.code} ${assignment.subject_name}`;
         document.getElementById('selected-classroom-title').innerText = `ชั้น: ${assignment.level} ห้อง: ${assignment.room}`;
+        document.getElementById('selected-year-title').innerText = `ปีการศึกษา: ${document.getElementById('grade_academic_year').value}`;
         
         loadStudentsByAssignment();
     }

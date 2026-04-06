@@ -181,6 +181,21 @@
         const tbody = document.getElementById('academic-table-body');
         const headerContainer = document.getElementById('unit-headers');
         
+        if (currentStudents.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="100%" class="py-12 text-center text-slate-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                        <div class="flex flex-col items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="text-slate-300"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                            <p class="font-medium">ไม่พบรายชื่อนักเรียนในห้องเรียนนี้</p>
+                            <p class="text-xs">กรุณาตรวจสอบว่าเลือก "ปีการศึกษา" ถูกต้อง หรือได้นำเข้านักเรียนในปีการศึกษานี้แล้วหรือไม่</p>
+                        </div>
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
         // Render headers
         headerContainer.innerHTML = currentUnits.map((u, i) => `
             <div class="inline-block w-16 text-center px-1">

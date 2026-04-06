@@ -45,14 +45,15 @@ try {
                 JOIN classrooms c_target ON c_target.id = ?
                 LEFT JOIN grades g1 ON s.id = g1.student_id AND g1.subject_id = ? AND g1.classroom_id = c_target.id AND g1.academic_year = ? AND g1.semester = 1
                 LEFT JOIN grades g2 ON s.id = g2.student_id AND g2.subject_id = ? AND g2.classroom_id = c_target.id AND g2.academic_year = ? AND g2.semester = 2
-                WHERE s.classroom_id = c_target.id 
-                   OR (s.classroom_id IS NULL AND s.level = c_target.level AND s.room = c_target.room AND s.school_id = c_target.school_id)
+                WHERE (s.classroom_id = c_target.id OR (s.level = c_target.level AND s.room = c_target.room AND s.school_id = c_target.school_id))
+                  AND s.academic_year = ?
                 ORDER BY s.student_code ASC
             ');
             $stmt->execute([
                 $classroom_id,
                 $subject_id, $academic_year,
-                $subject_id, $academic_year
+                $subject_id, $academic_year,
+                $academic_year
             ]);
         } else {
             $stmt = $pdo->prepare('
@@ -63,13 +64,13 @@ try {
                 FROM students s
                 LEFT JOIN grades g1 ON s.id = g1.student_id AND g1.subject_id = ? AND g1.academic_year = ? AND g1.semester = 1
                 LEFT JOIN grades g2 ON s.id = g2.student_id AND g2.subject_id = ? AND g2.academic_year = ? AND g2.semester = 2
-                WHERE s.level = ? AND s.school_id = ?
+                WHERE s.level = ? AND s.school_id = ? AND s.academic_year = ?
                 ORDER BY s.student_code ASC
             ');
             $stmt->execute([
                 $subject_id, $academic_year,
                 $subject_id, $academic_year,
-                $level, $school_id
+                $level, $school_id, $academic_year
             ]);
         }
         $students = $stmt->fetchAll();
@@ -86,15 +87,16 @@ try {
                 LEFT JOIN grades g ON s.id = g.student_id AND g.subject_id = ? AND g.classroom_id = c_target.id AND g.academic_year = ? AND g.semester = ?
                 LEFT JOIN characteristics_scores cs ON s.id = cs.student_id AND cs.subject_id = ? AND cs.classroom_id = c_target.id AND cs.academic_year = ? AND cs.semester = ?
                 LEFT JOIN analytical_scores ascore ON s.id = ascore.student_id AND ascore.subject_id = ? AND ascore.classroom_id = c_target.id AND ascore.academic_year = ? AND ascore.semester = ?
-                WHERE s.classroom_id = c_target.id 
-                   OR (s.classroom_id IS NULL AND s.level = c_target.level AND s.room = c_target.room AND s.school_id = c_target.school_id)
+                WHERE (s.classroom_id = c_target.id OR (s.level = c_target.level AND s.room = c_target.room AND s.school_id = c_target.school_id))
+                  AND s.academic_year = ?
                 ORDER BY s.student_code ASC
             ');
             $stmt->execute([
                 $classroom_id,
                 $subject_id, $academic_year, $semester,
                 $subject_id, $academic_year, $semester,
-                $subject_id, $academic_year, $semester
+                $subject_id, $academic_year, $semester,
+                $academic_year
             ]);
         } else {
             $stmt = $pdo->prepare('
@@ -106,14 +108,14 @@ try {
                 LEFT JOIN grades g ON s.id = g.student_id AND g.subject_id = ? AND g.academic_year = ? AND g.semester = ?
                 LEFT JOIN characteristics_scores cs ON s.id = cs.student_id AND cs.subject_id = ? AND cs.academic_year = ? AND cs.semester = ?
                 LEFT JOIN analytical_scores ascore ON s.id = ascore.student_id AND ascore.subject_id = ? AND ascore.academic_year = ? AND ascore.semester = ?
-                WHERE s.level = ? AND s.school_id = ?
+                WHERE s.level = ? AND s.school_id = ? AND s.academic_year = ?
                 ORDER BY s.student_code ASC
             ');
             $stmt->execute([
                 $subject_id, $academic_year, $semester,
                 $subject_id, $academic_year, $semester,
                 $subject_id, $academic_year, $semester,
-                $level, $school_id
+                $level, $school_id, $academic_year
             ]);
         }
         $students = $stmt->fetchAll();
