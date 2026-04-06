@@ -181,15 +181,29 @@
     }
 
     let unlockedUnitId = null;
+    let isFinalUnlocked = false;
 
     function toggleUnitLock(unitId) {
         unlockedUnitId = (unlockedUnitId === unitId) ? null : unitId;
+        isFinalUnlocked = false;
         renderAcademicTable();
+    }
+
+    function toggleFinalLock() {
+        isFinalUnlocked = !isFinalUnlocked;
+        unlockedUnitId = null;
+        renderAcademicTable();
+    }
+
+    function calculateAll() {
+        currentStudents.forEach(s => recalculateRow(s.id));
+        renderAcademicTable();
+        alert('คำนวณคะแนนและเกรดเฉลี่ยทั้งหมดเรียบร้อยแล้ว');
     }
 
     function renderAcademicTable() {
         const tbody = document.getElementById('academic-table-body');
-        const headerContainer = document.getElementById('unit-headers');
+        const headerRow = document.querySelector('thead tr');
         
         if (currentStudents.length === 0) {
             tbody.innerHTML = `
@@ -206,11 +220,16 @@
             return;
         }
 
-        // Render headers with click-to-unlock functionality
-        headerContainer.innerHTML = currentUnits.map((u, i) => {
+        // Rebuild Header Row
+        let headerHtml = `
+            <th class="pb-3 font-medium w-10">เลขที่</th>
+            <th class="pb-3 font-medium w-40">ชื่อ-นามสกุล</th>
+        `;
+
+        currentUnits.forEach((u, i) => {
             const isUnlocked = unlockedUnitId == u.id;
-            return `
-                <div onclick="toggleUnitLock(${u.id})" class="inline-block w-16 text-center px-1 cursor-pointer group transition-all">
+            headerHtml += `
+                <th onclick="toggleUnitLock(${u.id})" class="pb-3 font-medium w-16 text-center cursor-pointer group transition-all">
                     <div class="text-[10px] font-bold ${isUnlocked ? 'text-green-600' : 'text-slate-700'} group-hover:text-blue-600">หน่วยที่ ${i + 1}</div>
                     <div class="text-[9px] ${isUnlocked ? 'text-green-500' : 'text-slate-400'}">เต็ม ${u.max_score}</div>
                     <div class="mt-1">
@@ -218,19 +237,47 @@
                             ${isUnlocked ? 'กำลังแก้ไข' : 'ล็อคอยู่'}
                         </span>
                     </div>
-                </div>
+                </th>
             `;
-        }).join('');
+        });
+
+        headerHtml += `
+            <th class="pb-3 font-medium w-16 text-center">
+                <div class="flex flex-col items-center">
+                    <span class="text-[10px]">รวมหน่วย</span>
+                    <button onclick="calculateAll()" class="mt-1 text-[8px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded hover:bg-blue-200 transition-colors cursor-pointer">คำนวณ</button>
+                </div>
+            </th>
+            <th onclick="toggleFinalLock()" class="pb-3 font-medium w-16 text-center cursor-pointer group transition-all">
+                <div class="text-[10px] font-bold ${isFinalUnlocked ? 'text-green-600' : 'text-slate-700'} group-hover:text-blue-600">ปลายภาค</div>
+                <div class="text-[9px] ${isFinalUnlocked ? 'text-green-500' : 'text-slate-400'}">เต็ม 30</div>
+                <div class="mt-1">
+                    <span class="px-1.5 py-0.5 rounded-full text-[8px] font-bold ${isFinalUnlocked ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}">
+                        ${isFinalUnlocked ? 'กำลังแก้ไข' : 'ล็อคอยู่'}
+                    </span>
+                </div>
+            </th>
+            <th class="pb-3 font-medium w-16 text-center">คะแนนรวม</th>
+            <th class="pb-3 font-medium w-16 text-center">ร้อยละ</th>
+            <th class="pb-3 font-medium w-16 text-center">ผลการเรียน</th>
+        `;
+        headerRow.innerHTML = headerHtml;
 
         tbody.innerHTML = currentStudents.map((s, index) => {
             const totalMax = currentUnits.reduce((sum, u) => sum + parseFloat(u.max_score), 0);
+            
             let currentTotal = 0;
+            if (s.unit_scores) {
+                s.unit_scores.forEach(us => {
+                    if (currentUnits.find(u => u.id == us.learning_unit_id)) {
+                        currentTotal += parseFloat(us.score) || 0;
+                    }
+                });
+            }
             
             const unitInputs = currentUnits.map(u => {
                 const scoreObj = s.unit_scores ? s.unit_scores.find(us => us.learning_unit_id == u.id) : null;
                 const score = scoreObj ? parseFloat(scoreObj.score) : 0;
-                currentTotal += score;
-                
                 const isUnlocked = unlockedUnitId == u.id;
                 
                 return `
@@ -245,7 +292,7 @@
 
             const scoreFinal = parseFloat(s.score_final) || 0;
             const totalScore = currentTotal + scoreFinal;
-            const totalMaxWithFinal = totalMax + 30; // สมมติคะแนนเต็มปลายภาคคือ 30
+            const totalMaxWithFinal = totalMax + 30;
             const percent = totalMaxWithFinal > 0 ? (totalScore / totalMaxWithFinal) * 100 : 0;
 
             return `
@@ -257,7 +304,8 @@
                     <td class="py-3 text-center">
                         <input type="number" step="0.1" value="${scoreFinal}" 
                             onchange="updateFinalScore(${s.id}, this.value)"
-                            class="w-14 px-1 py-1 bg-blue-50 border border-blue-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500/20 text-center text-xs">
+                            ${!isFinalUnlocked ? 'disabled' : ''}
+                            class="w-14 px-1 py-1 ${isFinalUnlocked ? 'bg-white border-green-300 ring-2 ring-green-500/10' : 'bg-slate-50 border-slate-200 opacity-60'} border rounded-lg outline-none focus:ring-2 focus:ring-blue-500/20 text-center text-xs transition-all">
                     </td>
                     <td class="py-3 text-center font-bold text-slate-800 text-xs" id="total-${s.id}">${totalScore.toFixed(1)}</td>
                     <td class="py-3 text-center font-bold text-blue-600 text-xs" id="percent-${s.id}">${percent.toFixed(1)}%</td>
