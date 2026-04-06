@@ -144,9 +144,11 @@
                     <tr class="text-slate-500 border-b border-slate-100">
                         <th class="pb-3 font-medium">รหัส</th>
                         <th class="pb-3 font-medium">เลขบัตรฯ</th>
+                        <th class="pb-3 font-medium">คำนำหน้า</th>
                         <th class="pb-3 font-medium">ชื่อ-นามสกุล</th>
                         <th class="pb-3 font-medium">ระดับชั้น</th>
                         <th class="pb-3 font-medium">ห้อง</th>
+                        <th class="pb-3 font-medium">ปีการศึกษา</th>
                     </tr>
                 </thead>
                 <tbody id="importPreviewTableBody"></tbody>
@@ -162,9 +164,9 @@
 <script>
     function downloadStudentTemplate() {
         const data = [
-            ['รหัสประจำตัว', 'เลขบัตรประชาชน', 'ชื่อ-นามสกุล', 'ระดับชั้น', 'ห้อง'],
-            ['67001', '1234567890123', 'เด็กชายสมชาย ใจดี', 'ป.1', '1'],
-            ['67002', '9876543210987', 'เด็กหญิงสมศรี รักเรียน', 'ป.1', '2']
+            ['รหัสประจำตัว', 'เลขบัตรประชาชน', 'คำนำหน้า', 'ชื่อ-นามสกุล', 'ระดับชั้น', 'ห้อง', 'ปีการศึกษา'],
+            ['67001', '1234567890123', 'เด็กชาย', 'สมชาย ใจดี', 'ป.1', '1', '2567'],
+            ['67002', '9876543210987', 'เด็กหญิง', 'สมศรี รักเรียน', 'ป.1', '2', '2567']
         ];
         const worksheet = XLSX.utils.aoa_to_sheet(data);
         const workbook = XLSX.utils.book_new();
@@ -192,9 +194,11 @@
                 studentsToImport = json.map(row => ({
                     student_code: String(row['รหัสประจำตัว'] || row['student_code'] || row['รหัส'] || ''),
                     national_id: String(row['เลขบัตรประชาชน'] || row['national_id'] || row['เลขบัตร'] || ''),
+                    prefix: String(row['คำนำหน้า'] || row['prefix'] || ''),
                     name: String(row['ชื่อ-นามสกุล'] || row['name'] || row['ชื่อ'] || ''),
                     level: String(row['ระดับชั้น'] || row['level'] || row['ชั้น'] || ''),
-                    room: String(row['ห้อง'] || row['room'] || '1')
+                    room: String(row['ห้อง'] || row['room'] || '1'),
+                    academic_year: String(row['ปีการศึกษา'] || row['academic_year'] || '2567')
                 })).filter(s => s.student_code && s.name && s.level);
 
                 if (studentsToImport.length === 0) {
@@ -225,9 +229,11 @@
             <tr class="border-b border-slate-50">
                 <td class="py-2">${s.student_code}</td>
                 <td class="py-2">${s.national_id}</td>
+                <td class="py-2">${s.prefix}</td>
                 <td class="py-2">${s.name}</td>
                 <td class="py-2">${s.level}</td>
                 <td class="py-2">${s.room}</td>
+                <td class="py-2">${s.academic_year}</td>
             </tr>
         `).join('');
     }
