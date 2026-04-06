@@ -255,6 +255,11 @@ try {
     if (!$stmt->fetch()) {
         $pdo->exec("ALTER TABLE grades ADD COLUMN score_percent FLOAT DEFAULT 0 AFTER score_total");
     }
+    
+    $stmt = $pdo->query("SHOW COLUMNS FROM grades LIKE 'grade'");
+    if (!$stmt->fetch()) {
+        $pdo->exec("ALTER TABLE grades ADD COLUMN grade VARCHAR(5) AFTER score_percent");
+    }
     $results[] = "ตรวจสอบ/ปรับปรุงตาราง grades สำเร็จ";
 
     $pdo->exec("CREATE TABLE IF NOT EXISTS unit_scores (

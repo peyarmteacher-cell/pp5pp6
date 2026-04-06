@@ -392,28 +392,31 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
             openModal('editSchoolModal');
         }
 
-        document.getElementById('editSchoolForm').onsubmit = async (e) => {
-            e.preventDefault();
-            const id = document.getElementById('edit_school_id').value;
-            const name = document.getElementById('edit_school_name').value;
-            const province = document.getElementById('edit_school_province').value;
+        const editSchoolForm = document.getElementById('editSchoolForm');
+        if (editSchoolForm) {
+            editSchoolForm.onsubmit = async (e) => {
+                e.preventDefault();
+                const id = document.getElementById('edit_school_id').value;
+                const name = document.getElementById('edit_school_name').value;
+                const province = document.getElementById('edit_school_province').value;
 
-            if (!confirm('ยืนยันการบันทึกการแก้ไขข้อมูลโรงเรียน?')) return;
+                if (!confirm('ยืนยันการบันทึกการแก้ไขข้อมูลโรงเรียน?')) return;
 
-            const res = await fetch('api/update_school.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id, name, province })
-            });
-            const result = await res.json();
-            if (result.message) {
-                alert(result.message);
-                closeModal('editSchoolModal');
-                loadSchools();
-            } else {
-                alert(result.error);
-            }
-        };
+                const res = await fetch('api/update_school.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id, name, province })
+                });
+                const result = await res.json();
+                if (result.message) {
+                    alert(result.message);
+                    closeModal('editSchoolModal');
+                    loadSchools();
+                } else {
+                    alert(result.error);
+                }
+            };
+        }
 
         async function deleteSchool(id) {
             openModal('confirmDeleteModal');
