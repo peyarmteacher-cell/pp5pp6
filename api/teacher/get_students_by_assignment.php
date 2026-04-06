@@ -10,9 +10,11 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $classroom_id = $_GET['classroom_id'] ?? '';
+if ($classroom_id === 'null' || $classroom_id === 'undefined') $classroom_id = '';
 $subject_id = $_GET['subject_id'] ?? '';
 $academic_year = $_GET['academic_year'] ?? '2567';
 $semester = $_GET['semester'] ?? 1;
+$school_id = $_SESSION['school_id'];
 
 if (empty($subject_id)) {
     echo json_encode(['error' => 'Missing subject_id']);
@@ -20,18 +22,16 @@ if (empty($subject_id)) {
 }
 
 try {
-    // If classroom_id is missing, try to find it or fetch by level
-    if (empty($classroom_id)) {
-        $stmt = $pdo->prepare('SELECT level, school_id FROM subjects WHERE id = ?');
-        $stmt->execute([$subject_id]);
-        $subj = $stmt->fetch();
-        if (!$subj) {
-            echo json_encode(['error' => 'Subject not found']);
-            exit;
-        }
-        $level = $subj['level'];
-        $school_id = $subj['school_id'];
+    // Fetch subject details to get level and school_id as fallback
+    $stmt = $pdo->prepare('SELECT level, school_id FROM subjects WHERE id = ?');
+    $stmt->execute([$subject_id]);
+    $subj = $stmt->fetch();
+    if (!$subj) {
+        echo json_encode(['error' => 'Subject not found']);
+        exit;
     }
+    $subject_level = $subj['level'];
+    $subject_school_id = $subj['school_id'];
 
     if ($semester === 'annual') {
         // ดึงข้อมูลรายปี (รวมทั้ง 2 ภาคเรียน)
@@ -47,13 +47,16 @@ try {
                 LEFT JOIN grades g2 ON s.id = g2.student_id AND g2.subject_id = ? AND g2.classroom_id = c_target.id AND g2.academic_year = ? AND g2.semester = 2
                 WHERE (s.classroom_id = c_target.id OR (s.level = c_target.level AND s.room = c_target.room AND s.school_id = c_target.school_id))
                   AND s.academic_year = ?
+                  AND s.school_id = ?
+                  AND s.status = "studying"
                 ORDER BY s.student_code ASC
             ');
             $stmt->execute([
                 $classroom_id,
                 $subject_id, $academic_year,
                 $subject_id, $academic_year,
-                $academic_year
+                $academic_year,
+                $school_id
             ]);
         } else {
             $stmt = $pdo->prepare('
@@ -65,12 +68,13 @@ try {
                 LEFT JOIN grades g1 ON s.id = g1.student_id AND g1.subject_id = ? AND g1.academic_year = ? AND g1.semester = 1
                 LEFT JOIN grades g2 ON s.id = g2.student_id AND g2.subject_id = ? AND g2.academic_year = ? AND g2.semester = 2
                 WHERE s.level = ? AND s.school_id = ? AND s.academic_year = ?
+                  AND s.status = "studying"
                 ORDER BY s.student_code ASC
             ');
             $stmt->execute([
                 $subject_id, $academic_year,
                 $subject_id, $academic_year,
-                $level, $school_id, $academic_year
+                $subject_level, $school_id, $academic_year
             ]);
         }
         $students = $stmt->fetchAll();
@@ -89,6 +93,8 @@ try {
                 LEFT JOIN analytical_scores ascore ON s.id = ascore.student_id AND ascore.subject_id = ? AND ascore.classroom_id = c_target.id AND ascore.academic_year = ? AND ascore.semester = ?
                 WHERE (s.classroom_id = c_target.id OR (s.level = c_target.level AND s.room = c_target.room AND s.school_id = c_target.school_id))
                   AND s.academic_year = ?
+                  AND s.school_id = ?
+                  AND s.status = "studying"
                 ORDER BY s.student_code ASC
             ');
             $stmt->execute([
@@ -96,7 +102,8 @@ try {
                 $subject_id, $academic_year, $semester,
                 $subject_id, $academic_year, $semester,
                 $subject_id, $academic_year, $semester,
-                $academic_year
+                $academic_year,
+                $school_id
             ]);
         } else {
             $stmt = $pdo->prepare('
@@ -109,13 +116,14 @@ try {
                 LEFT JOIN characteristics_scores cs ON s.id = cs.student_id AND cs.subject_id = ? AND cs.academic_year = ? AND cs.semester = ?
                 LEFT JOIN analytical_scores ascore ON s.id = ascore.student_id AND ascore.subject_id = ? AND ascore.academic_year = ? AND ascore.semester = ?
                 WHERE s.level = ? AND s.school_id = ? AND s.academic_year = ?
+                  AND s.status = "studying"
                 ORDER BY s.student_code ASC
             ');
             $stmt->execute([
                 $subject_id, $academic_year, $semester,
                 $subject_id, $academic_year, $semester,
                 $subject_id, $academic_year, $semester,
-                $level, $school_id, $academic_year
+                $subject_level, $school_id, $academic_year
             ]);
         }
         $students = $stmt->fetchAll();
@@ -126,7 +134,7 @@ try {
                 SELECT us.learning_unit_id, us.score
                 FROM unit_scores us
                 JOIN learning_units lu ON us.learning_unit_id = lu.id
-                WHERE us.student_id = ? AND lu.subject_id = ? AND lu.classroom_id = ? AND lu.academic_year = ? AND lu.semester = ?
+                WHERE us.student_id = ? AND lu.subject_id = ? AND (lu.classroom_id = ? OR lu.classroom_id IS NULL OR lu.classroom_id = 0) AND lu.academic_year = ? AND lu.semester = ?
             ');
             $stmt->execute([$student['id'], $subject_id, $classroom_id, $academic_year, $semester]);
             $unit_scores = $stmt->fetchAll();

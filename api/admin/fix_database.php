@@ -102,7 +102,7 @@ try {
     $results[] = "ซิงค์ข้อมูลห้องเรียนให้นักเรียนสำเร็จ ($stmt_sync ราย) และตั้งปีการศึกษาเป็น $current_year";
 
     // แก้ไข teacher_assignments ที่ไม่มี classroom_id (ขยายให้ครบทุกห้องในระดับชั้นนั้น)
-    $stmt = $pdo->query("SELECT ta.*, s.level, s.school_id FROM teacher_assignments ta JOIN subjects s ON ta.subject_id = s.id WHERE ta.classroom_id IS NULL");
+    $stmt = $pdo->query("SELECT ta.*, s.level, s.school_id FROM teacher_assignments ta JOIN subjects s ON ta.subject_id = s.id WHERE ta.classroom_id IS NULL OR ta.classroom_id = 0");
     $null_assignments = $stmt->fetchAll();
     if (count($null_assignments) > 0) {
         $pdo->beginTransaction();
@@ -121,7 +121,7 @@ try {
                     $stmt_ins->execute([$ta['teacher_id'], $ta['subject_id'], $r['id'], $ta['academic_year'], $ta['semester']]);
                 }
             }
-            // ลบตัวที่ไม่มี classroom_id ออก
+            // ลบตัวที่ไม่มี classroom_id หรือ classroom_id = 0 ออก
             $pdo->prepare("DELETE FROM teacher_assignments WHERE id = ?")->execute([$ta['id']]);
         }
         $pdo->commit();
