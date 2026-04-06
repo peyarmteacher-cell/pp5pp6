@@ -177,7 +177,25 @@ try {
         FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE CASCADE,
         FOREIGN KEY (classroom_id) REFERENCES classrooms(id) ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+    // ตรวจสอบและเพิ่มคอลัมน์ classroom_id ใน learning_units หากไม่มี
+    $stmt = $pdo->query("SHOW COLUMNS FROM learning_units LIKE 'classroom_id'");
+    if (!$stmt->fetch()) {
+        $pdo->exec("ALTER TABLE learning_units ADD COLUMN classroom_id INT AFTER subject_id");
+        $pdo->exec("ALTER TABLE learning_units ADD FOREIGN KEY (classroom_id) REFERENCES classrooms(id) ON DELETE CASCADE");
+    }
     $results[] = "ตรวจสอบ/สร้างตาราง learning_units สำเร็จ";
+
+    // ปรับปรุงตาราง grades ให้รองรับคะแนนหน่วยและร้อยละ
+    $stmt = $pdo->query("SHOW COLUMNS FROM grades LIKE 'score_units'");
+    if (!$stmt->fetch()) {
+        $pdo->exec("ALTER TABLE grades ADD COLUMN score_units FLOAT DEFAULT 0 AFTER semester");
+    }
+    $stmt = $pdo->query("SHOW COLUMNS FROM grades LIKE 'score_percent'");
+    if (!$stmt->fetch()) {
+        $pdo->exec("ALTER TABLE grades ADD COLUMN score_percent FLOAT DEFAULT 0 AFTER score_total");
+    }
+    $results[] = "ตรวจสอบ/ปรับปรุงตาราง grades สำเร็จ";
 
     $pdo->exec("CREATE TABLE IF NOT EXISTS unit_scores (
         id INT AUTO_INCREMENT PRIMARY KEY,

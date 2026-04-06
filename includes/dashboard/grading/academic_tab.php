@@ -15,25 +15,33 @@
 
     <!-- Grading Table -->
     <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse min-w-[800px]">
+        <table class="w-full text-left border-collapse min-w-[1000px]">
             <thead>
-                <tr class="text-slate-500 border-b border-slate-100">
-                    <th class="pb-3 font-medium w-12">เลขที่</th>
-                    <th class="pb-3 font-medium w-48">ชื่อ-นามสกุล</th>
+                <tr class="text-slate-500 border-b border-slate-100 text-xs">
+                    <th class="pb-3 font-medium w-10">เลขที่</th>
+                    <th class="pb-3 font-medium w-40">ชื่อ-นามสกุล</th>
                     <th id="unit-headers" class="pb-3 font-medium">
                         <!-- Unit headers will be injected here -->
                     </th>
-                    <th class="pb-3 font-medium w-20 text-center">รวม (%)</th>
-                    <th class="pb-3 font-medium w-20 text-center">เทอม 1</th>
-                    <th class="pb-3 font-medium w-20 text-center">เทอม 2</th>
-                    <th class="pb-3 font-medium w-20 text-center">เฉลี่ย</th>
-                    <th class="pb-3 font-medium w-16 text-center">เกรด</th>
+                    <th class="pb-3 font-medium w-16 text-center">รวมหน่วย</th>
+                    <th class="pb-3 font-medium w-16 text-center">ปลายภาค</th>
+                    <th class="pb-3 font-medium w-16 text-center">คะแนนรวม</th>
+                    <th class="pb-3 font-medium w-16 text-center">ร้อยละ</th>
+                    <th class="pb-3 font-medium w-16 text-center">ผลการเรียน</th>
                 </tr>
             </thead>
             <tbody id="academic-table-body">
                 <!-- Students will be loaded here -->
             </tbody>
         </table>
+    </div>
+
+    <!-- Unit Details Note -->
+    <div id="unit-details-note" class="bg-amber-50 p-4 rounded-xl border border-amber-100 text-xs text-amber-800 space-y-1">
+        <p class="font-bold mb-1">รายละเอียดหน่วยการเรียนรู้:</p>
+        <div id="unit-details-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-1">
+            <!-- Unit details will be loaded here -->
+        </div>
     </div>
     <div class="flex justify-end pt-4">
         <button onclick="saveUnitScores()" class="bg-blue-600 text-white px-8 py-2 rounded-xl font-semibold hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20">บันทึกคะแนนหน่วยการเรียนรู้</button>
@@ -87,9 +95,11 @@
 
     function renderUnitsList() {
         const container = document.getElementById('units-list');
-        container.innerHTML = currentUnits.map(u => `
+        const noteList = document.getElementById('unit-details-list');
+        
+        container.innerHTML = currentUnits.map((u, i) => `
             <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-slate-200 text-xs shadow-sm">
-                <span class="font-bold text-slate-700">${u.unit_name}</span>
+                <span class="font-bold text-slate-700">หน่วยที่ ${i + 1}</span>
                 <span class="text-slate-400">(${u.max_score} ค.)</span>
                 <div class="flex gap-1 ml-2">
                     <button onclick="editUnit(${JSON.stringify(u).replace(/"/g, '&quot;')})" class="text-blue-600 hover:text-blue-800">
@@ -99,6 +109,13 @@
                         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                     </button>
                 </div>
+            </div>
+        `).join('');
+
+        noteList.innerHTML = currentUnits.map((u, i) => `
+            <div class="flex gap-2">
+                <span class="font-bold">หน่วยที่ ${i + 1}:</span>
+                <span>${u.unit_name} (${u.max_score} คะแนน)</span>
             </div>
         `).join('');
     }
@@ -165,14 +182,12 @@
         const headerContainer = document.getElementById('unit-headers');
         
         // Render headers
-        headerContainer.innerHTML = currentUnits.map(u => `
-            <div class="inline-block w-20 text-center px-1">
-                <div class="text-[10px] truncate" title="${u.unit_name}">${u.unit_name}</div>
+        headerContainer.innerHTML = currentUnits.map((u, i) => `
+            <div class="inline-block w-16 text-center px-1">
+                <div class="text-[10px] font-bold">หน่วยที่ ${i + 1}</div>
                 <div class="text-[9px] text-slate-400">เต็ม ${u.max_score}</div>
             </div>
         `).join('');
-
-        const semester = document.getElementById('grade_semester').value;
 
         tbody.innerHTML = currentStudents.map((s, index) => {
             const totalMax = currentUnits.reduce((sum, u) => sum + parseFloat(u.max_score), 0);
@@ -187,31 +202,75 @@
                     <td class="py-3 text-center">
                         <input type="number" step="0.1" max="${u.max_score}" value="${score}" 
                             onchange="updateUnitScore(${s.id}, ${u.id}, this.value)"
-                            class="w-16 px-1 py-1 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500/20 text-center text-sm">
+                            class="w-14 px-1 py-1 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500/20 text-center text-xs">
                     </td>
                 `;
             }).join('');
 
-            const percent = totalMax > 0 ? (currentTotal / totalMax) * 100 : 0;
-            
-            // ใช้คะแนนจากฐานข้อมูลถ้ามี
-            const s1 = s.score_semester1 || (semester == 1 ? percent : 0);
-            const s2 = s.score_semester2 || (semester == 2 ? percent : 0);
-            const annualAvg = s.score_annual_avg || (s1 + s2) / 2;
+            const scoreFinal = parseFloat(s.score_final) || 0;
+            const totalScore = currentTotal + scoreFinal;
+            const totalMaxWithFinal = totalMax + 30; // สมมติคะแนนเต็มปลายภาคคือ 30
+            const percent = totalMaxWithFinal > 0 ? (totalScore / totalMaxWithFinal) * 100 : 0;
 
             return `
                 <tr class="border-b border-slate-50 hover:bg-slate-50/50">
-                    <td class="py-3 text-slate-600 font-mono">${index + 1}</td>
-                    <td class="py-3 font-medium text-slate-800">${s.prefix}${s.name}</td>
+                    <td class="py-3 text-slate-600 font-mono text-xs">${index + 1}</td>
+                    <td class="py-3 font-medium text-slate-800 text-xs">${s.prefix}${s.name}</td>
                     ${unitInputs}
-                    <td class="py-3 text-center font-bold text-blue-600" id="percent-${s.id}">${percent.toFixed(1)}%</td>
-                    <td class="py-3 text-center text-slate-500 text-sm">${(s.score_semester1 || 0).toFixed(1)}</td>
-                    <td class="py-3 text-center text-slate-500 text-sm">${(s.score_semester2 || 0).toFixed(1)}</td>
-                    <td class="py-3 text-center font-bold text-slate-800">${(s.score_annual_avg || 0).toFixed(1)}</td>
-                    <td class="py-3 text-center font-bold text-slate-800">${s.grade || '0'}</td>
+                    <td class="py-3 text-center font-bold text-slate-700 text-xs" id="units-total-${s.id}">${currentTotal.toFixed(1)}</td>
+                    <td class="py-3 text-center">
+                        <input type="number" step="0.1" value="${scoreFinal}" 
+                            onchange="updateFinalScore(${s.id}, this.value)"
+                            class="w-14 px-1 py-1 bg-blue-50 border border-blue-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500/20 text-center text-xs">
+                    </td>
+                    <td class="py-3 text-center font-bold text-slate-800 text-xs" id="total-${s.id}">${totalScore.toFixed(1)}</td>
+                    <td class="py-3 text-center font-bold text-blue-600 text-xs" id="percent-${s.id}">${percent.toFixed(1)}%</td>
+                    <td class="py-3 text-center font-bold text-slate-800 text-xs" id="grade-${s.id}">${s.grade || '-'}</td>
                 </tr>
             `;
         }).join('');
+    }
+
+    function updateFinalScore(studentId, value) {
+        const student = currentStudents.find(s => s.id == studentId);
+        student.score_final = parseFloat(value) || 0;
+        recalculateRow(studentId);
+    }
+
+    function recalculateRow(studentId) {
+        const student = currentStudents.find(s => s.id == studentId);
+        const totalMax = currentUnits.reduce((sum, u) => sum + parseFloat(u.max_score), 0);
+        const currentTotal = student.unit_scores ? student.unit_scores.reduce((sum, us) => {
+            if (currentUnits.find(u => u.id == us.learning_unit_id)) {
+                return sum + parseFloat(us.score);
+            }
+            return sum;
+        }, 0) : 0;
+        
+        const scoreFinal = parseFloat(student.score_final) || 0;
+        const totalScore = currentTotal + scoreFinal;
+        const totalMaxWithFinal = totalMax + 30; // ปลายภาค 30
+        const percent = totalMaxWithFinal > 0 ? (totalScore / totalMaxWithFinal) * 100 : 0;
+        
+        document.getElementById(`units-total-${studentId}`).innerText = currentTotal.toFixed(1);
+        document.getElementById(`total-${studentId}`).innerText = totalScore.toFixed(1);
+        document.getElementById(`percent-${studentId}`).innerText = percent.toFixed(1) + '%';
+        
+        // คำนวณเกรดเบื้องต้น
+        let grade = '0';
+        if (percent >= 80) grade = '4';
+        else if (percent >= 75) grade = '3.5';
+        else if (percent >= 70) grade = '3';
+        else if (percent >= 65) grade = '2.5';
+        else if (percent >= 60) grade = '2';
+        else if (percent >= 55) grade = '1.5';
+        else if (percent >= 50) grade = '1';
+        
+        document.getElementById(`grade-${studentId}`).innerText = grade;
+        student.grade = grade;
+        student.score_total = totalScore;
+        student.score_percent = percent;
+        student.score_units = currentTotal;
     }
 
     function updateUnitScore(studentId, unitId, value) {
@@ -225,24 +284,15 @@
         }
         scoreObj.score = parseFloat(value) || 0;
         
-        // Update percent display
-        const totalMax = currentUnits.reduce((sum, u) => sum + parseFloat(u.max_score), 0);
-        const currentTotal = student.unit_scores.reduce((sum, us) => {
-            // Only sum scores for units that exist in currentUnits
-            if (currentUnits.find(u => u.id == us.learning_unit_id)) {
-                return sum + parseFloat(us.score);
-            }
-            return sum;
-        }, 0);
-        
-        const percent = totalMax > 0 ? (currentTotal / totalMax) * 100 : 0;
-        document.getElementById(`percent-${studentId}`).innerText = percent.toFixed(1) + '%';
+        recalculateRow(studentId);
     }
 
     async function saveUnitScores() {
         if (!currentAssignment) return;
         
         const scores = [];
+        const grades = [];
+
         currentStudents.forEach(s => {
             if (s.unit_scores) {
                 s.unit_scores.forEach(us => {
@@ -253,6 +303,14 @@
                     });
                 });
             }
+            grades.push({
+                student_id: s.id,
+                score_units: s.score_units || 0,
+                score_final: s.score_final || 0,
+                score_total: s.score_total || 0,
+                score_percent: s.score_percent || 0,
+                grade: s.grade || '0'
+            });
         });
 
         const payload = {
@@ -260,7 +318,8 @@
             classroom_id: currentAssignment.classroom_id,
             academic_year: document.getElementById('grade_academic_year').value,
             semester: document.getElementById('grade_semester').value,
-            scores: scores
+            scores: scores,
+            grades: grades
         };
 
         try {

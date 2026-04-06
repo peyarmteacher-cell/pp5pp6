@@ -37,8 +37,9 @@
 
             <!-- Tabs -->
             <div class="flex border-b border-slate-100 mb-6 overflow-x-auto">
-                <button onclick="switchGradingTab('academic')" id="tab-academic" class="px-6 py-3 text-sm font-medium border-b-2 border-blue-600 text-blue-600 whitespace-nowrap">คะแนนผลการเรียน</button>
-                <button onclick="switchGradingTab('characteristics')" id="tab-characteristics" class="px-6 py-3 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-700 whitespace-nowrap">คุณลักษณะอันพึงประสงค์ (8 ข้อ)</button>
+                <button onclick="switchSemester(1)" id="tab-semester1" class="px-6 py-3 text-sm font-medium border-b-2 border-blue-600 text-blue-600 whitespace-nowrap">ภาคเรียนที่ 1</button>
+                <button onclick="switchSemester(2)" id="tab-semester2" class="px-6 py-3 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-700 whitespace-nowrap">ภาคเรียนที่ 2</button>
+                <button onclick="switchGradingTab('characteristics')" id="tab-characteristics" class="px-6 py-3 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-700 whitespace-nowrap">คุณลักษณะอันพึงประสงค์</button>
                 <button onclick="switchGradingTab('analytical')" id="tab-analytical" class="px-6 py-3 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-700 whitespace-nowrap">อ่าน คิดวิเคราะห์ และเขียน</button>
             </div>
 
@@ -59,6 +60,24 @@
 <script>
     let currentAssignment = null;
     let currentStudents = [];
+
+    function switchSemester(sem) {
+        document.getElementById('grade_semester').value = sem;
+        
+        // Update UI Tabs
+        document.querySelectorAll('[id^="tab-semester"]').forEach(t => {
+            t.classList.remove('border-blue-600', 'text-blue-600');
+            t.classList.add('border-transparent', 'text-slate-500');
+        });
+        
+        const activeTab = document.getElementById(`tab-semester${sem}`);
+        activeTab.classList.remove('border-transparent', 'text-slate-500');
+        activeTab.classList.add('border-blue-600', 'text-blue-600');
+
+        // If we are in academic tab, reload
+        switchGradingTab('academic');
+        loadStudentsByAssignment();
+    }
 
     async function loadMyAssignments() {
         const year = document.getElementById('grade_academic_year').value;
