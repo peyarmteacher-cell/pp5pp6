@@ -180,6 +180,13 @@
         }
     }
 
+    let unlockedUnitId = null;
+
+    function toggleUnitLock(unitId) {
+        unlockedUnitId = (unlockedUnitId === unitId) ? null : unitId;
+        renderAcademicTable();
+    }
+
     function renderAcademicTable() {
         const tbody = document.getElementById('academic-table-body');
         const headerContainer = document.getElementById('unit-headers');
@@ -199,13 +206,21 @@
             return;
         }
 
-        // Render headers
-        headerContainer.innerHTML = currentUnits.map((u, i) => `
-            <div class="inline-block w-16 text-center px-1">
-                <div class="text-[10px] font-bold">หน่วยที่ ${i + 1}</div>
-                <div class="text-[9px] text-slate-400">เต็ม ${u.max_score}</div>
-            </div>
-        `).join('');
+        // Render headers with click-to-unlock functionality
+        headerContainer.innerHTML = currentUnits.map((u, i) => {
+            const isUnlocked = unlockedUnitId == u.id;
+            return `
+                <div onclick="toggleUnitLock(${u.id})" class="inline-block w-16 text-center px-1 cursor-pointer group transition-all">
+                    <div class="text-[10px] font-bold ${isUnlocked ? 'text-green-600' : 'text-slate-700'} group-hover:text-blue-600">หน่วยที่ ${i + 1}</div>
+                    <div class="text-[9px] ${isUnlocked ? 'text-green-500' : 'text-slate-400'}">เต็ม ${u.max_score}</div>
+                    <div class="mt-1">
+                        <span class="px-1.5 py-0.5 rounded-full text-[8px] font-bold ${isUnlocked ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}">
+                            ${isUnlocked ? 'กำลังแก้ไข' : 'ล็อคอยู่'}
+                        </span>
+                    </div>
+                </div>
+            `;
+        }).join('');
 
         tbody.innerHTML = currentStudents.map((s, index) => {
             const totalMax = currentUnits.reduce((sum, u) => sum + parseFloat(u.max_score), 0);
@@ -216,11 +231,14 @@
                 const score = scoreObj ? parseFloat(scoreObj.score) : 0;
                 currentTotal += score;
                 
+                const isUnlocked = unlockedUnitId == u.id;
+                
                 return `
                     <td class="py-3 text-center">
                         <input type="number" step="0.1" max="${u.max_score}" value="${score}" 
                             onchange="updateUnitScore(${s.id}, ${u.id}, this.value)"
-                            class="w-14 px-1 py-1 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500/20 text-center text-xs">
+                            ${!isUnlocked ? 'disabled' : ''}
+                            class="w-14 px-1 py-1 ${isUnlocked ? 'bg-white border-green-300 ring-2 ring-green-500/10' : 'bg-slate-50 border-slate-200 opacity-60'} border rounded-lg outline-none focus:ring-2 focus:ring-blue-500/20 text-center text-xs transition-all">
                     </td>
                 `;
             }).join('');
