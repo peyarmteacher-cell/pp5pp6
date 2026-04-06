@@ -3,12 +3,10 @@
     <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse min-w-[1000px]">
             <thead>
-                <tr class="text-slate-500 border-b border-slate-100 text-xs">
+                <tr id="academic-header-row" class="text-slate-500 border-b border-slate-100 text-xs">
                     <th class="pb-3 font-medium w-10">เลขที่</th>
                     <th class="pb-3 font-medium w-40">ชื่อ-นามสกุล</th>
-                    <th id="unit-headers" class="pb-3 font-medium">
-                        <!-- Unit headers will be injected here -->
-                    </th>
+                    <th class="pb-3 font-medium">หน่วยการเรียนรู้</th>
                     <th class="pb-3 font-medium w-16 text-center">รวมหน่วย</th>
                     <th class="pb-3 font-medium w-16 text-center">ปลายภาค</th>
                     <th class="pb-3 font-medium w-16 text-center">คะแนนรวม</th>
@@ -203,8 +201,10 @@
 
     function renderAcademicTable() {
         const tbody = document.getElementById('academic-table-body');
-        const headerRow = document.querySelector('thead tr');
+        const headerRow = document.getElementById('academic-header-row');
         
+        if (!tbody || !headerRow) return;
+
         if (currentStudents.length === 0) {
             tbody.innerHTML = `
                 <tr>
