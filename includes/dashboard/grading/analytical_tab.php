@@ -47,13 +47,17 @@
     }
 
     async function saveAnalytical() {
-        if (!currentAssignment) return;
+        const assignment = currentAnalAssignment || currentAssignment;
+        if (!assignment) return;
+        
+        const yearEl = document.getElementById('anal_academic_year') || document.getElementById('grade_academic_year');
+        const semEl = document.getElementById('anal_semester') || document.getElementById('grade_semester');
         
         const payload = {
-            subject_id: currentAssignment.subject_id,
-            classroom_id: currentAssignment.classroom_id,
-            academic_year: document.getElementById('grade_academic_year').value,
-            semester: document.getElementById('grade_semester').value,
+            subject_id: assignment.subject_id,
+            classroom_id: assignment.classroom_id,
+            academic_year: yearEl.value,
+            semester: semEl.value,
             scores: currentStudents.map(s => ({
                 student_id: s.id,
                 score: s.analytical_score || 0
@@ -69,7 +73,11 @@
             const result = await res.json();
             if (result.message) {
                 alert(result.message);
-                loadStudentsByAssignment();
+                if (typeof loadAnalStudents === 'function') {
+                    loadAnalStudents();
+                } else {
+                    loadStudentsByAssignment();
+                }
             } else {
                 alert(result.error);
             }

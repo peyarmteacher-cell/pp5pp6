@@ -67,13 +67,17 @@
     }
 
     async function saveCharacteristics() {
-        if (!currentAssignment) return;
+        const assignment = currentCharAssignment || currentAssignment;
+        if (!assignment) return;
+        
+        const yearEl = document.getElementById('char_academic_year') || document.getElementById('grade_academic_year');
+        const semEl = document.getElementById('char_semester') || document.getElementById('grade_semester');
         
         const payload = {
-            subject_id: currentAssignment.subject_id,
-            classroom_id: currentAssignment.classroom_id,
-            academic_year: document.getElementById('grade_academic_year').value,
-            semester: document.getElementById('grade_semester').value,
+            subject_id: assignment.subject_id,
+            classroom_id: assignment.classroom_id,
+            academic_year: yearEl.value,
+            semester: semEl.value,
             scores: currentStudents.map(s => ({
                 student_id: s.id,
                 items: [s.item1||0, s.item2||0, s.item3||0, s.item4||0, s.item5||0, s.item6||0, s.item7||0, s.item8||0]
@@ -89,7 +93,11 @@
             const result = await res.json();
             if (result.message) {
                 alert(result.message);
-                loadStudentsByAssignment();
+                if (typeof loadCharStudents === 'function') {
+                    loadCharStudents();
+                } else {
+                    loadStudentsByAssignment();
+                }
             } else {
                 alert(result.error);
             }

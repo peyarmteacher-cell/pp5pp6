@@ -20,39 +20,60 @@ if (empty($classroom_id) || empty($subject_id)) {
 }
 
 try {
-    // ดึงรายชื่อนักเรียนในห้องเรียนนั้น
-    $stmt = $pdo->prepare('
-        SELECT s.id, s.student_code, s.name, s.prefix,
-               g.score_units, g.score_midterm, g.score_final, g.score_total, g.score_percent, g.grade,
-               g.score_semester1, g.score_semester2, g.score_annual_avg,
-               cs.item1, cs.item2, cs.item3, cs.item4, cs.item5, cs.item6, cs.item7, cs.item8, cs.average_score,
-               ascore.score as analytical_score
-        FROM students s
-        LEFT JOIN grades g ON s.id = g.student_id AND g.subject_id = ? AND g.classroom_id = ? AND g.academic_year = ? AND g.semester = ?
-        LEFT JOIN characteristics_scores cs ON s.id = cs.student_id AND cs.subject_id = ? AND cs.classroom_id = ? AND cs.academic_year = ? AND cs.semester = ?
-        LEFT JOIN analytical_scores ascore ON s.id = ascore.student_id AND ascore.subject_id = ? AND ascore.classroom_id = ? AND ascore.academic_year = ? AND ascore.semester = ?
-        WHERE s.classroom_id = ?
-        ORDER BY s.student_code ASC
-    ');
-    $stmt->execute([
-        $subject_id, $classroom_id, $academic_year, $semester,
-        $subject_id, $classroom_id, $academic_year, $semester,
-        $subject_id, $classroom_id, $academic_year, $semester,
-        $classroom_id
-    ]);
-    $students = $stmt->fetchAll();
-
-    // ดึงคะแนนหน่วยการเรียนรู้ของนักเรียนแต่ละคน
-    foreach ($students as &$student) {
+    if ($semester === 'annual') {
+        // ดึงข้อมูลรายปี (รวมทั้ง 2 ภาคเรียน)
         $stmt = $pdo->prepare('
-            SELECT us.learning_unit_id, us.score
-            FROM unit_scores us
-            JOIN learning_units lu ON us.learning_unit_id = lu.id
-            WHERE us.student_id = ? AND lu.subject_id = ? AND lu.classroom_id = ? AND lu.academic_year = ? AND lu.semester = ?
+            SELECT s.id, s.student_code, s.name, s.prefix,
+                   g1.score_units as sem1_units, g1.score_percent as sem1_percent, g1.grade as sem1_grade,
+                   g2.score_units as sem2_units, g2.score_percent as sem2_percent, g2.grade as sem2_grade,
+                   ((IFNULL(g1.score_percent, 0) + IFNULL(g2.score_percent, 0)) / 2) as annual_percent
+            FROM students s
+            LEFT JOIN grades g1 ON s.id = g1.student_id AND g1.subject_id = ? AND g1.classroom_id = ? AND g1.academic_year = ? AND g1.semester = 1
+            LEFT JOIN grades g2 ON s.id = g2.student_id AND g2.subject_id = ? AND g2.classroom_id = ? AND g2.academic_year = ? AND g2.semester = 2
+            WHERE s.classroom_id = ?
+            ORDER BY s.student_code ASC
         ');
-        $stmt->execute([$student['id'], $subject_id, $classroom_id, $academic_year, $semester]);
-        $unit_scores = $stmt->fetchAll();
-        $student['unit_scores'] = $unit_scores;
+        $stmt->execute([
+            $subject_id, $classroom_id, $academic_year,
+            $subject_id, $classroom_id, $academic_year,
+            $classroom_id
+        ]);
+        $students = $stmt->fetchAll();
+    } else {
+        // ดึงรายชื่อนักเรียนในห้องเรียนนั้น (รายภาคเรียน)
+        $stmt = $pdo->prepare('
+            SELECT s.id, s.student_code, s.name, s.prefix,
+                   g.score_units, g.score_midterm, g.score_final, g.score_total, g.score_percent, g.grade,
+                   g.score_semester1, g.score_semester2, g.score_annual_avg,
+                   cs.item1, cs.item2, cs.item3, cs.item4, cs.item5, cs.item6, cs.item7, cs.item8, cs.average_score,
+                   ascore.score as analytical_score
+            FROM students s
+            LEFT JOIN grades g ON s.id = g.student_id AND g.subject_id = ? AND g.classroom_id = ? AND g.academic_year = ? AND g.semester = ?
+            LEFT JOIN characteristics_scores cs ON s.id = cs.student_id AND cs.subject_id = ? AND cs.classroom_id = ? AND cs.academic_year = ? AND cs.semester = ?
+            LEFT JOIN analytical_scores ascore ON s.id = ascore.student_id AND ascore.subject_id = ? AND ascore.classroom_id = ? AND ascore.academic_year = ? AND ascore.semester = ?
+            WHERE s.classroom_id = ?
+            ORDER BY s.student_code ASC
+        ');
+        $stmt->execute([
+            $subject_id, $classroom_id, $academic_year, $semester,
+            $subject_id, $classroom_id, $academic_year, $semester,
+            $subject_id, $classroom_id, $academic_year, $semester,
+            $classroom_id
+        ]);
+        $students = $stmt->fetchAll();
+
+        // ดึงคะแนนหน่วยการเรียนรู้ของนักเรียนแต่ละคน
+        foreach ($students as &$student) {
+            $stmt = $pdo->prepare('
+                SELECT us.learning_unit_id, us.score
+                FROM unit_scores us
+                JOIN learning_units lu ON us.learning_unit_id = lu.id
+                WHERE us.student_id = ? AND lu.subject_id = ? AND lu.classroom_id = ? AND lu.academic_year = ? AND lu.semester = ?
+            ');
+            $stmt->execute([$student['id'], $subject_id, $classroom_id, $academic_year, $semester]);
+            $unit_scores = $stmt->fetchAll();
+            $student['unit_scores'] = $unit_scores;
+        }
     }
 
     echo json_encode($students);

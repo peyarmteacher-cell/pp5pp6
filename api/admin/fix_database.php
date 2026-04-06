@@ -191,6 +191,18 @@ try {
     if (!$stmt->fetch()) {
         $pdo->exec("ALTER TABLE grades ADD COLUMN score_units FLOAT DEFAULT 0 AFTER semester");
     }
+    $stmt = $pdo->query("SHOW COLUMNS FROM grades LIKE 'score_midterm'");
+    if (!$stmt->fetch()) {
+        $pdo->exec("ALTER TABLE grades ADD COLUMN score_midterm FLOAT DEFAULT 0 AFTER score_units");
+    }
+    $stmt = $pdo->query("SHOW COLUMNS FROM grades LIKE 'score_final'");
+    if (!$stmt->fetch()) {
+        $pdo->exec("ALTER TABLE grades ADD COLUMN score_final FLOAT DEFAULT 0 AFTER score_midterm");
+    }
+    $stmt = $pdo->query("SHOW COLUMNS FROM grades LIKE 'score_total'");
+    if (!$stmt->fetch()) {
+        $pdo->exec("ALTER TABLE grades ADD COLUMN score_total FLOAT DEFAULT 0 AFTER score_final");
+    }
     $stmt = $pdo->query("SHOW COLUMNS FROM grades LIKE 'score_percent'");
     if (!$stmt->fetch()) {
         $pdo->exec("ALTER TABLE grades ADD COLUMN score_percent FLOAT DEFAULT 0 AFTER score_total");

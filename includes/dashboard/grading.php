@@ -39,19 +39,15 @@
             <div class="flex border-b border-slate-100 mb-6 overflow-x-auto">
                 <button onclick="switchSemester(1)" id="tab-semester1" class="px-6 py-3 text-sm font-medium border-b-2 border-blue-600 text-blue-600 whitespace-nowrap">ภาคเรียนที่ 1</button>
                 <button onclick="switchSemester(2)" id="tab-semester2" class="px-6 py-3 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-700 whitespace-nowrap">ภาคเรียนที่ 2</button>
-                <button onclick="switchGradingTab('characteristics')" id="tab-characteristics" class="px-6 py-3 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-700 whitespace-nowrap">คุณลักษณะอันพึงประสงค์</button>
-                <button onclick="switchGradingTab('analytical')" id="tab-analytical" class="px-6 py-3 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-700 whitespace-nowrap">อ่าน คิดวิเคราะห์ และเขียน</button>
+                <button onclick="switchGradingTab('annual')" id="tab-annual" class="px-6 py-3 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-700 whitespace-nowrap">รวมทั้งปีการศึกษา</button>
             </div>
 
             <!-- Tab Contents -->
             <div id="academic-content" class="grading-tab-content">
                 <?php include 'includes/dashboard/grading/academic_tab.php'; ?>
             </div>
-            <div id="characteristics-content" class="grading-tab-content hidden">
-                <?php include 'includes/dashboard/grading/characteristics_tab.php'; ?>
-            </div>
-            <div id="analytical-content" class="grading-tab-content hidden">
-                <?php include 'includes/dashboard/grading/analytical_tab.php'; ?>
+            <div id="annual-content" class="grading-tab-content hidden">
+                <?php include 'includes/dashboard/grading/annual_tab.php'; ?>
             </div>
         </div>
     </div>
@@ -129,25 +125,29 @@
         currentAssignment = null;
     }
 
-    async function loadStudentsByAssignment() {
+    async function loadStudentsByAssignment(mode = null) {
         if (!currentAssignment) return;
         
         const year = document.getElementById('grade_academic_year').value;
-        const semester = document.getElementById('grade_semester').value;
+        const semester = mode === 'annual' ? 'annual' : document.getElementById('grade_semester').value;
         
         try {
             const res = await fetch(`api/teacher/get_students_by_assignment.php?classroom_id=${currentAssignment.classroom_id}&subject_id=${currentAssignment.subject_id}&academic_year=${year}&semester=${semester}`);
             currentStudents = await res.json();
             
-            // Load Learning Units for Academic Tab
-            if (typeof loadLearningUnits === 'function') {
-                await loadLearningUnits();
+            if (semester === 'annual') {
+                if (typeof renderAnnualTable === 'function') renderAnnualTable();
             } else {
-                renderAcademicTable();
+                // Load Learning Units for Academic Tab
+                if (typeof loadLearningUnits === 'function') {
+                    await loadLearningUnits();
+                } else {
+                    if (typeof renderAcademicTable === 'function') renderAcademicTable();
+                }
+                
+                if (typeof renderCharacteristicsTable === 'function') renderCharacteristicsTable();
+                if (typeof renderAnalyticalTable === 'function') renderAnalyticalTable();
             }
-            
-            renderCharacteristicsTable();
-            renderAnalyticalTable();
         } catch (e) {
             console.error('Error loading students:', e);
         }
@@ -163,7 +163,15 @@
         });
         
         const activeTab = document.getElementById(`tab-${tab}`);
-        activeTab.classList.remove('border-transparent', 'text-slate-500');
-        activeTab.classList.add('border-blue-600', 'text-blue-600');
+        if (activeTab) {
+            activeTab.classList.remove('border-transparent', 'text-slate-500');
+            activeTab.classList.add('border-blue-600', 'text-blue-600');
+        }
+
+        if (tab === 'annual') {
+            loadStudentsByAssignment('annual');
+        } else {
+            loadStudentsByAssignment();
+        }
     }
 </script>
