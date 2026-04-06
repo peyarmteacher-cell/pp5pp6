@@ -48,25 +48,25 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
 
             <?php if ($role === 'admin'): ?>
                 <div class="pt-4 pb-2 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">School Admin</div>
-                <a href="javascript:void(0)" onclick="showSection('manage-teachers')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">จัดการข้อมูลครู</a>
-                <a href="javascript:void(0)" onclick="showSection('approve-teachers')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">อนุมัติครู</a>
-                <a href="javascript:void(0)" onclick="showSection('manage-students')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">จัดการนักเรียน</a>
-                <a href="javascript:void(0)" onclick="showSection('manage-subjects')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">จัดการรายวิชา</a>
-                <a href="javascript:void(0)" onclick="showSection('academic-management')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">จัดการปีการศึกษา/จบการศึกษา</a>
+                <a href="javascript:void(0)" onclick="showSection('manage-teachers')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">จัดการข้อมูลครู</a>
+                <a href="javascript:void(0)" onclick="showSection('approve-teachers')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">อนุมัติครู</a>
+                <a href="javascript:void(0)" onclick="showSection('manage-students')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">จัดการนักเรียน</a>
+                <a href="javascript:void(0)" onclick="showSection('manage-subjects')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">จัดการรายวิชา</a>
+                <a href="javascript:void(0)" onclick="showSection('academic-management')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">จัดการปีการศึกษา/จบการศึกษา</a>
             <?php endif; ?>
 
             <?php if ($role === 'teacher' && $_SESSION['is_academic']): ?>
                 <div class="pt-4 pb-2 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">งานวิชาการ</div>
-                <a href="javascript:void(0)" onclick="showSection('manage-students')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">จัดการนักเรียน</a>
-                <a href="javascript:void(0)" onclick="showSection('manage-subjects')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">จัดการรายวิชา</a>
-                <a href="javascript:void(0)" onclick="showSection('academic-management')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">จัดการปีการศึกษา/จบการศึกษา</a>
+                <a href="javascript:void(0)" onclick="showSection('manage-students')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">จัดการนักเรียน</a>
+                <a href="javascript:void(0)" onclick="showSection('manage-subjects')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">จัดการรายวิชา</a>
+                <a href="javascript:void(0)" onclick="showSection('academic-management')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">จัดการปีการศึกษา/จบการศึกษา</a>
             <?php endif; ?>
 
             <?php if ($role === 'teacher' || $role === 'admin'): ?>
                 <div class="pt-4 pb-2 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">เมนูครู</div>
-                <a href="javascript:void(0)" onclick="showSection('record-grades')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">บันทึกผลการเรียน (ปพ.5/6)</a>
-                <a href="javascript:void(0)" onclick="showSection('record-characteristics')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">คุณลักษณะอันพึงประสงค์</a>
-                <a href="javascript:void(0)" onclick="showSection('record-analytical')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">อ่าน คิดวิเคราะห์ และเขียน</a>
+                <a href="javascript:void(0)" onclick="showSection('record-grades')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">บันทึกผลการเรียน (ปพ.5/6)</a>
+                <a href="javascript:void(0)" onclick="showSection('record-characteristics')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">คุณลักษณะอันพึงประสงค์</a>
+                <a href="javascript:void(0)" onclick="showSection('record-analytical')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">อ่าน คิดวิเคราะห์ และเขียน</a>
             <?php endif; ?>
         </nav>
 

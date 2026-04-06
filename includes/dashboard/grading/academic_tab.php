@@ -3,7 +3,7 @@
     <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200">
         <div class="flex justify-between items-center mb-4">
             <h4 class="text-sm font-bold text-slate-700">จัดการหน่วยการเรียนรู้</h4>
-            <button onclick="openAddUnitModal()" class="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-blue-700 transition-all flex items-center gap-1">
+            <button onclick="openAddUnitModal()" class="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-blue-700 transition-all flex items-center gap-1 cursor-pointer">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                 เพิ่มหน่วยการเรียนรู้
             </button>
@@ -44,7 +44,7 @@
         </div>
     </div>
     <div class="flex justify-end pt-4">
-        <button onclick="saveUnitScores()" class="bg-blue-600 text-white px-8 py-2 rounded-xl font-semibold hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20">บันทึกคะแนนหน่วยการเรียนรู้</button>
+        <button onclick="saveUnitScores()" class="bg-blue-600 text-white px-8 py-2 rounded-xl font-semibold hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20 cursor-pointer">บันทึกคะแนนหน่วยการเรียนรู้</button>
     </div>
 </div>
 

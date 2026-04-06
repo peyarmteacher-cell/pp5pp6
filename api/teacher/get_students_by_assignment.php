@@ -44,7 +44,6 @@ try {
         $stmt = $pdo->prepare('
             SELECT s.id, s.student_code, s.name, s.prefix,
                    g.score_units, g.score_midterm, g.score_final, g.score_total, g.score_percent, g.grade,
-                   g.score_semester1, g.score_semester2, g.score_annual_avg,
                    cs.item1, cs.item2, cs.item3, cs.item4, cs.item5, cs.item6, cs.item7, cs.item8, cs.average_score,
                    ascore.score as analytical_score
             FROM students s

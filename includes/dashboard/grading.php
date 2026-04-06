@@ -26,7 +26,7 @@
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
             <div class="flex justify-between items-center mb-6">
                 <div>
-                    <button onclick="backToAssignments()" class="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center gap-1 mb-2">
+                    <button onclick="backToAssignments()" class="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center gap-1 mb-2 cursor-pointer">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                         กลับไปหน้ารายวิชา
                     </button>
@@ -37,9 +37,9 @@
 
             <!-- Tabs -->
             <div class="flex border-b border-slate-100 mb-6 overflow-x-auto">
-                <button onclick="switchSemester(1)" id="tab-semester1" class="px-6 py-3 text-sm font-medium border-b-2 border-blue-600 text-blue-600 whitespace-nowrap">ภาคเรียนที่ 1</button>
-                <button onclick="switchSemester(2)" id="tab-semester2" class="px-6 py-3 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-700 whitespace-nowrap">ภาคเรียนที่ 2</button>
-                <button onclick="switchGradingTab('annual')" id="tab-annual" class="px-6 py-3 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-700 whitespace-nowrap">รวมทั้งปีการศึกษา</button>
+                <button onclick="switchSemester(1)" id="tab-semester1" class="px-6 py-3 text-sm font-medium border-b-2 border-blue-600 text-blue-600 whitespace-nowrap cursor-pointer">ภาคเรียนที่ 1</button>
+                <button onclick="switchSemester(2)" id="tab-semester2" class="px-6 py-3 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-700 whitespace-nowrap cursor-pointer">ภาคเรียนที่ 2</button>
+                <button onclick="switchGradingTab('annual')" id="tab-annual" class="px-6 py-3 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-700 whitespace-nowrap cursor-pointer">รวมทั้งปีการศึกษา</button>
             </div>
 
             <!-- Tab Contents -->

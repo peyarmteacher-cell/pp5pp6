@@ -88,6 +88,13 @@ try {
         $results[] = "เพิ่มคอลัมน์ prefix ในตาราง students สำเร็จ";
     }
 
+    // ซิงค์ classroom_id ให้กับนักเรียนที่ยังไม่มี (อิงตาม level และ room)
+    $pdo->exec("UPDATE students s 
+                JOIN classrooms c ON s.school_id = c.school_id AND s.level = c.level AND s.room = c.room
+                SET s.classroom_id = c.id
+                WHERE s.classroom_id IS NULL");
+    $results[] = "ซิงค์ข้อมูลห้องเรียนให้นักเรียนสำเร็จ";
+
     // 7. ตรวจสอบและเพิ่มคอลัมน์ classroom_id ในตาราง teacher_assignments
     $stmt = $pdo->query("SHOW COLUMNS FROM teacher_assignments LIKE 'classroom_id'");
     if (!$stmt->fetch()) {
@@ -183,6 +190,14 @@ try {
     if (!$stmt->fetch()) {
         $pdo->exec("ALTER TABLE learning_units ADD COLUMN classroom_id INT AFTER subject_id");
         $pdo->exec("ALTER TABLE learning_units ADD FOREIGN KEY (classroom_id) REFERENCES classrooms(id) ON DELETE CASCADE");
+    }
+    $stmt = $pdo->query("SHOW COLUMNS FROM learning_units LIKE 'academic_year'");
+    if (!$stmt->fetch()) {
+        $pdo->exec("ALTER TABLE learning_units ADD COLUMN academic_year VARCHAR(4) AFTER classroom_id");
+    }
+    $stmt = $pdo->query("SHOW COLUMNS FROM learning_units LIKE 'semester'");
+    if (!$stmt->fetch()) {
+        $pdo->exec("ALTER TABLE learning_units ADD COLUMN semester INT AFTER academic_year");
     }
     $results[] = "ตรวจสอบ/สร้างตาราง learning_units สำเร็จ";
 
