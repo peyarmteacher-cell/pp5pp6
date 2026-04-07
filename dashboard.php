@@ -65,6 +65,7 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
             <?php if ($role === 'teacher' || $role === 'admin'): ?>
                 <div class="pt-4 pb-2 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">เมนูครู</div>
                 <a href="javascript:void(0)" onclick="showSection('record-grades')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">บันทึกผลการเรียน</a>
+                <a href="javascript:void(0)" onclick="showSection('record-learner-development')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">บันทึกกิจกรรมพัฒนาผู้เรียน</a>
             <?php endif; ?>
         </nav>
 
@@ -224,6 +225,7 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
 
         <!-- Teacher: Record Grades -->
         <?php include 'includes/dashboard/grading.php'; ?>
+        <?php include 'includes/dashboard/learner_development.php'; ?>
 
         <!-- Approve Users Section -->
         <div id="approve-section" class="section hidden space-y-6">
@@ -273,6 +275,9 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
             } else if (sectionId === 'record-grades') {
                 targetId = sectionId;
                 loadMyAssignments();
+            } else if (sectionId === 'record-learner-development') {
+                targetId = sectionId;
+                loadLearnerDevClassrooms();
             }
             
             const target = document.getElementById(targetId);
@@ -285,6 +290,7 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                 'manage-students': 'จัดการนักเรียน',
                 'manage-subjects': 'จัดการรายวิชา',
                 'record-grades': 'บันทึกผลการเรียน',
+                'record-learner-development': 'บันทึกกิจกรรมพัฒนาผู้เรียน',
                 'manage-super-admins': 'จัดการ Super Admin',
                 'profile': 'แก้ไขโปรไฟล์'
             };

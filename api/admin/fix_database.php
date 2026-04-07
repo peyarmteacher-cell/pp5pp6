@@ -355,6 +355,37 @@ try {
         $results[] = "เพิ่มคอลัมน์ generation ในตาราง students สำเร็จ";
     }
 
+    // 12. เพิ่มตารางกิจกรรมพัฒนาผู้เรียน
+    $pdo->exec("CREATE TABLE IF NOT EXISTS clubs (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        school_id INT,
+        name VARCHAR(255) NOT NULL,
+        academic_year VARCHAR(4) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (school_id) REFERENCES schools(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    $results[] = "ตรวจสอบ/สร้างตาราง clubs สำเร็จ";
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS learner_development_results (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        student_id INT,
+        classroom_id INT,
+        academic_year VARCHAR(4),
+        semester INT,
+        guidance_result ENUM('P', 'F', '') DEFAULT '',
+        scout_result ENUM('P', 'F', '') DEFAULT '',
+        club_id INT,
+        club_result ENUM('P', 'F', '') DEFAULT '',
+        social_result ENUM('P', 'F', '') DEFAULT '',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+        FOREIGN KEY (classroom_id) REFERENCES classrooms(id) ON DELETE CASCADE,
+        FOREIGN KEY (club_id) REFERENCES clubs(id) ON DELETE SET NULL,
+        UNIQUE KEY unique_learner_dev (student_id, academic_year, semester)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    $results[] = "ตรวจสอบ/สร้างตาราง learner_development_results สำเร็จ";
+
     echo json_encode([
         'status' => 'success',
         'message' => 'ตรวจสอบและปรับปรุงฐานข้อมูลเรียบร้อยแล้ว',
