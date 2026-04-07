@@ -157,6 +157,15 @@ try {
         FOREIGN KEY (teacher_id) REFERENCES users(id) ON DELETE CASCADE,
         UNIQUE KEY unique_grade (student_id, subject_id, classroom_id, academic_year, semester)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+    // ตรวจสอบและเพิ่มคอลัมน์ classroom_id ใน grades หากไม่มี
+    $stmt = $pdo->query("SHOW COLUMNS FROM grades LIKE 'classroom_id'");
+    if (!$stmt->fetch()) {
+        $pdo->exec("ALTER TABLE grades ADD COLUMN classroom_id INT AFTER subject_id");
+        $pdo->exec("ALTER TABLE grades ADD FOREIGN KEY (classroom_id) REFERENCES classrooms(id) ON DELETE CASCADE");
+        $results[] = "เพิ่มคอลัมน์ classroom_id ในตาราง grades สำเร็จ";
+    }
+    
     $results[] = "ตรวจสอบ/สร้างตาราง grades สำเร็จ";
 
     $pdo->exec("CREATE TABLE IF NOT EXISTS characteristics_scores (

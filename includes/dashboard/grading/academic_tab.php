@@ -1,4 +1,9 @@
 <div class="space-y-6">
+    <div class="flex justify-between items-center">
+        <h3 class="text-lg font-bold text-slate-800">บันทึกคะแนนรายวิชา</h3>
+        <button onclick="saveUnitScores()" class="bg-blue-600 text-white px-8 py-2 rounded-xl font-semibold hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20 cursor-pointer">บันทึกคะแนนหน่วยการเรียนรู้</button>
+    </div>
+
     <!-- Grading Table -->
     <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse min-w-[1000px]">
@@ -40,9 +45,6 @@
         <div id="unit-details-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-1">
             <!-- Unit details will be loaded here -->
         </div>
-    </div>
-    <div class="flex justify-end pt-4">
-        <button onclick="saveUnitScores()" class="bg-blue-600 text-white px-8 py-2 rounded-xl font-semibold hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20 cursor-pointer">บันทึกคะแนนหน่วยการเรียนรู้</button>
     </div>
 </div>
 
