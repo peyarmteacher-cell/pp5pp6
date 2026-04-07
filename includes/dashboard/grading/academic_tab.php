@@ -204,11 +204,10 @@
     function calculateAll() {
         currentStudents.forEach(s => recalculateRow(s.id));
         renderAcademicTable();
-        alert('คำนวณคะแนนและเกรดเฉลี่ยทั้งหมดเรียบร้อยแล้ว');
     }
 
     function calculateGradeFromPercent(percent) {
-        if (isNaN(percent)) return '0';
+        if (isNaN(percent) || percent === null) return '0';
         if (percent >= 80) return '4';
         if (percent >= 75) return '3.5';
         if (percent >= 70) return '3';
@@ -267,7 +266,6 @@
             <th class="pb-3 font-medium w-16 text-center">
                 <div class="flex flex-col items-center">
                     <span class="text-[10px]">รวมหน่วย</span>
-                    <button onclick="calculateAll()" class="mt-1 text-[8px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded hover:bg-blue-200 transition-colors cursor-pointer">คำนวณ</button>
                 </div>
             </th>
             <th class="pb-3 font-medium w-16 text-center group transition-all">
@@ -290,7 +288,7 @@
         `;
         headerRow.innerHTML = headerHtml;
 
-        tbody.innerHTML = currentStudents.map((s, index) => {
+        const rowsHtml = currentStudents.map((s, index) => {
             const totalMax = Array.isArray(currentUnits) ? currentUnits.reduce((sum, u) => sum + parseFloat(u.max_score), 0) : 0;
             
             let currentTotal = 0;
@@ -321,7 +319,15 @@
             const totalScore = currentTotal + scoreFinal;
             const totalMaxWithFinal = totalMax + finalMaxScore;
             const percent = totalMaxWithFinal > 0 ? Math.min((totalScore / totalMaxWithFinal) * 100, 100) : 0;
-            const grade = calculateGradeFromPercent(percent);
+            
+            // ตรวจสอบว่ามีการป้อนคะแนนหรือยัง (ถ้ายังไม่มีเลยให้แสดง -)
+            const hasScores = (s.unit_scores && s.unit_scores.length > 0) || scoreFinal > 0;
+            const grade = hasScores ? calculateGradeFromPercent(percent) : '-';
+
+            // Store calculated values in student object for summary
+            s.score_total = totalScore;
+            s.score_percent = percent;
+            s.grade = grade;
 
             return `
                 <tr class="border-b border-slate-50 hover:bg-slate-50/50">
@@ -341,6 +347,55 @@
                 </tr>
             `;
         }).join('');
+
+        tbody.innerHTML = rowsHtml;
+
+        // Add Summary Row
+        const validStudents = currentStudents.filter(s => {
+            const scoreFinal = parseFloat(s.score_final) || 0;
+            return (s.unit_scores && s.unit_scores.length > 0) || scoreFinal > 0;
+        });
+
+        if (validStudents.length > 0) {
+            const avgTotal = validStudents.reduce((sum, s) => sum + (parseFloat(s.score_total) || 0), 0) / validStudents.length;
+            const avgPercent = validStudents.reduce((sum, s) => sum + (parseFloat(s.score_percent) || 0), 0) / validStudents.length;
+            const avgGrade = calculateGradeFromPercent(avgPercent);
+
+            const summaryRow = document.createElement('tr');
+            summaryRow.id = "class-summary-row";
+            summaryRow.className = "bg-slate-100/50 font-bold border-t-2 border-slate-200";
+            summaryRow.innerHTML = `
+                <td colspan="2" class="py-4 px-4 text-right text-slate-700 text-xs uppercase tracking-wider">เฉลี่ยรวมทั้งห้อง</td>
+                ${Array.isArray(currentUnits) ? currentUnits.map(() => `<td class="py-4"></td>`).join('') : ''}
+                <td class="py-4"></td>
+                <td class="py-4"></td>
+                <td class="py-4 text-center text-slate-800 text-xs" id="avg-total">${avgTotal.toFixed(1)}</td>
+                <td class="py-4 text-center text-blue-600 text-xs" id="avg-percent">${avgPercent.toFixed(1)}%</td>
+                <td class="py-4 text-center text-slate-900 text-sm" id="avg-grade">${avgGrade}</td>
+            `;
+            tbody.appendChild(summaryRow);
+        }
+    }
+
+    function updateSummaryRow() {
+        const validStudents = currentStudents.filter(s => {
+            const scoreFinal = parseFloat(s.score_final) || 0;
+            return (s.unit_scores && s.unit_scores.length > 0) || scoreFinal > 0;
+        });
+
+        if (validStudents.length > 0) {
+            const avgTotal = validStudents.reduce((sum, s) => sum + (parseFloat(s.score_total) || 0), 0) / validStudents.length;
+            const avgPercent = validStudents.reduce((sum, s) => sum + (parseFloat(s.score_percent) || 0), 0) / validStudents.length;
+            const avgGrade = calculateGradeFromPercent(avgPercent);
+
+            const avgTotalEl = document.getElementById('avg-total');
+            const avgPercentEl = document.getElementById('avg-percent');
+            const avgGradeEl = document.getElementById('avg-grade');
+
+            if (avgTotalEl) avgTotalEl.innerText = avgTotal.toFixed(1);
+            if (avgPercentEl) avgPercentEl.innerText = avgPercent.toFixed(1) + '%';
+            if (avgGradeEl) avgGradeEl.innerText = avgGrade;
+        }
     }
 
     function updateFinalScore(studentId, input) {
@@ -386,7 +441,8 @@
         if (percentEl) percentEl.innerText = percent.toFixed(1) + '%';
         
         // คำนวณเกรดเบื้องต้น
-        const grade = calculateGradeFromPercent(percent);
+        const hasScores = (student.unit_scores && student.unit_scores.length > 0) || scoreFinal > 0;
+        const grade = hasScores ? calculateGradeFromPercent(percent) : '-';
         
         if (gradeEl) gradeEl.innerText = grade;
         
@@ -394,6 +450,9 @@
         student.score_total = totalScore;
         student.score_percent = percent;
         student.score_units = currentTotal;
+
+        // Update Class Summary
+        updateSummaryRow();
     }
 
     function updateUnitScore(studentId, unitId, input) {
