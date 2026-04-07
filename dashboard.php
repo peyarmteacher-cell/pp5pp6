@@ -64,9 +64,7 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
 
             <?php if ($role === 'teacher' || $role === 'admin'): ?>
                 <div class="pt-4 pb-2 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">เมนูครู</div>
-                <a href="javascript:void(0)" onclick="showSection('record-grades')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">บันทึกผลการเรียน (ปพ.5/6)</a>
-                <a href="javascript:void(0)" onclick="showSection('record-characteristics')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">คุณลักษณะอันพึงประสงค์</a>
-                <a href="javascript:void(0)" onclick="showSection('record-analytical')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">อ่าน คิดวิเคราะห์ และเขียน</a>
+                <a href="javascript:void(0)" onclick="showSection('record-grades')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">บันทึกผลการเรียน</a>
             <?php endif; ?>
         </nav>
 
@@ -295,8 +293,6 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                 'manage-students': 'จัดการนักเรียน',
                 'manage-subjects': 'จัดการรายวิชา',
                 'record-grades': 'บันทึกผลการเรียน',
-                'record-characteristics': 'คุณลักษณะอันพึงประสงค์',
-                'record-analytical': 'อ่าน คิดวิเคราะห์ และเขียน',
                 'manage-super-admins': 'จัดการ Super Admin',
                 'profile': 'แก้ไขโปรไฟล์'
             };

@@ -225,7 +225,12 @@ try {
         teacher_id INT,
         academic_year VARCHAR(4),
         semester INT,
-        score INT DEFAULT 0,
+        item1 INT DEFAULT 0,
+        item2 INT DEFAULT 0,
+        item3 INT DEFAULT 0,
+        item4 INT DEFAULT 0,
+        item5 INT DEFAULT 0,
+        average_score FLOAT DEFAULT 0,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
@@ -234,6 +239,19 @@ try {
         FOREIGN KEY (teacher_id) REFERENCES users(id) ON DELETE CASCADE,
         UNIQUE KEY unique_analytical (student_id, subject_id, classroom_id, academic_year, semester)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+    // Ensure columns exist if table was already created
+    $stmt = $pdo->query("SHOW COLUMNS FROM analytical_scores LIKE 'item1'");
+    if (!$stmt->fetch()) {
+        $pdo->exec("ALTER TABLE analytical_scores 
+            ADD COLUMN item1 INT DEFAULT 0 AFTER semester,
+            ADD COLUMN item2 INT DEFAULT 0 AFTER item1,
+            ADD COLUMN item3 INT DEFAULT 0 AFTER item2,
+            ADD COLUMN item4 INT DEFAULT 0 AFTER item3,
+            ADD COLUMN item5 INT DEFAULT 0 AFTER item4,
+            ADD COLUMN average_score FLOAT DEFAULT 0 AFTER item5
+        ");
+    }
     $results[] = "ตรวจสอบ/สร้างตาราง analytical_scores สำเร็จ";
 
     // 9. ปรับปรุงตาราง learning_units และเพิ่ม unit_scores

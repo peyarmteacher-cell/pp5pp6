@@ -49,6 +49,19 @@ try {
     }
 
     // 3. Fetch Students
+    // Ensure analytical_scores columns exist
+    $stmt = $pdo->query("SHOW COLUMNS FROM analytical_scores LIKE 'item1'");
+    if (!$stmt->fetch()) {
+        $pdo->exec("ALTER TABLE analytical_scores 
+            ADD COLUMN item1 INT DEFAULT 0 AFTER semester,
+            ADD COLUMN item2 INT DEFAULT 0 AFTER item1,
+            ADD COLUMN item3 INT DEFAULT 0 AFTER item2,
+            ADD COLUMN item4 INT DEFAULT 0 AFTER item3,
+            ADD COLUMN item5 INT DEFAULT 0 AFTER item4,
+            ADD COLUMN average_score FLOAT DEFAULT 0 AFTER item5
+        ");
+    }
+
     // We match by school_id, academic_year, level, room, and status
     $query_where = "s.school_id = ? AND s.academic_year = ? AND s.status = 'studying'";
     $params = [$school_id, $academic_year];
