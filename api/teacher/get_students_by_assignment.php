@@ -73,13 +73,17 @@ try {
                    g2.score_units as sem2_units, g2.score_percent as sem2_percent, g2.grade as sem2_grade,
                    ((IFNULL(g1.score_percent, 0) + IFNULL(g2.score_percent, 0)) / 2) as annual_percent
             FROM students s
-            LEFT JOIN grades g1 ON s.id = g1.student_id AND g1.subject_id = ? AND g1.academic_year = ? AND g1.semester = 1
-            LEFT JOIN grades g2 ON s.id = g2.student_id AND g2.subject_id = ? AND g2.academic_year = ? AND g2.semester = 2
+            LEFT JOIN grades g1 ON s.id = g1.student_id AND g1.subject_id = ? AND g1.academic_year = ? AND g1.semester = 1 AND (g1.classroom_id = ? OR ? = '')
+            LEFT JOIN grades g2 ON s.id = g2.student_id AND g2.subject_id = ? AND g2.academic_year = ? AND g2.semester = 2 AND (g2.classroom_id = ? OR ? = '')
             WHERE $query_where
+            GROUP BY s.id
             ORDER BY s.student_code ASC
         ";
         $stmt = $pdo->prepare($sql);
-        $stmt->execute(array_merge([$subject_id, $academic_year, $subject_id, $academic_year], $params));
+        $stmt->execute(array_merge([
+            $subject_id, $academic_year, $classroom_id, $classroom_id,
+            $subject_id, $academic_year, $classroom_id, $classroom_id
+        ], $params));
     } else {
         $sql = "
             SELECT s.id, s.student_code, s.name, s.prefix,
@@ -87,17 +91,18 @@ try {
                    cs.item1, cs.item2, cs.item3, cs.item4, cs.item5, cs.item6, cs.item7, cs.item8, cs.average_score,
                    ascore.score as analytical_score
             FROM students s
-            LEFT JOIN grades g ON s.id = g.student_id AND g.subject_id = ? AND g.academic_year = ? AND g.semester = ?
-            LEFT JOIN characteristics_scores cs ON s.id = cs.student_id AND cs.subject_id = ? AND cs.academic_year = ? AND cs.semester = ?
-            LEFT JOIN analytical_scores ascore ON s.id = ascore.student_id AND ascore.subject_id = ? AND ascore.academic_year = ? AND ascore.semester = ?
+            LEFT JOIN grades g ON s.id = g.student_id AND g.subject_id = ? AND g.academic_year = ? AND g.semester = ? AND (g.classroom_id = ? OR ? = '')
+            LEFT JOIN characteristics_scores cs ON s.id = cs.student_id AND cs.subject_id = ? AND cs.academic_year = ? AND cs.semester = ? AND (cs.classroom_id = ? OR ? = '')
+            LEFT JOIN analytical_scores ascore ON s.id = ascore.student_id AND ascore.subject_id = ? AND ascore.academic_year = ? AND ascore.semester = ? AND (ascore.classroom_id = ? OR ? = '')
             WHERE $query_where
+            GROUP BY s.id
             ORDER BY s.student_code ASC
         ";
         $stmt = $pdo->prepare($sql);
         $stmt->execute(array_merge([
-            $subject_id, $academic_year, $semester,
-            $subject_id, $academic_year, $semester,
-            $subject_id, $academic_year, $semester
+            $subject_id, $academic_year, $semester, $classroom_id, $classroom_id,
+            $subject_id, $academic_year, $semester, $classroom_id, $classroom_id,
+            $subject_id, $academic_year, $semester, $classroom_id, $classroom_id
         ], $params));
     }
     
