@@ -207,7 +207,8 @@
         alert('คำนวณคะแนนและเกรดเฉลี่ยทั้งหมดเรียบร้อยแล้ว');
     }
 
-    function calculateGrade(percent) {
+    function calculateGradeFromPercent(percent) {
+        if (isNaN(percent)) return '0';
         if (percent >= 80) return '4';
         if (percent >= 75) return '3.5';
         if (percent >= 70) return '3';
@@ -224,7 +225,7 @@
         
         if (!tbody || !headerRow) return;
 
-        if (currentStudents.length === 0) {
+        if (!Array.isArray(currentStudents) || currentStudents.length === 0) {
             tbody.innerHTML = `
                 <tr>
                     <td colspan="100%" class="py-12 text-center text-slate-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
@@ -245,20 +246,22 @@
             <th class="pb-3 font-medium w-40">ชื่อ-นามสกุล</th>
         `;
 
-        currentUnits.forEach((u, i) => {
-            const isUnlocked = unlockedUnitId == u.id;
-            headerHtml += `
-                <th onclick="toggleUnitLock(${u.id})" class="pb-3 font-medium w-16 text-center cursor-pointer group transition-all">
-                    <div class="text-[10px] font-bold ${isUnlocked ? 'text-green-600' : 'text-slate-700'} group-hover:text-blue-600">หน่วยที่ ${i + 1}</div>
-                    <div class="text-[9px] ${isUnlocked ? 'text-green-500' : 'text-slate-400'}">เต็ม ${u.max_score}</div>
-                    <div class="mt-1">
-                        <span class="px-1.5 py-0.5 rounded-full text-[8px] font-bold ${isUnlocked ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}">
-                            ${isUnlocked ? 'กำลังแก้ไข' : 'ล็อคอยู่'}
-                        </span>
-                    </div>
-                </th>
-            `;
-        });
+        if (Array.isArray(currentUnits)) {
+            currentUnits.forEach((u, i) => {
+                const isUnlocked = unlockedUnitId == u.id;
+                headerHtml += `
+                    <th onclick="toggleUnitLock(${u.id})" class="pb-3 font-medium w-16 text-center cursor-pointer group transition-all">
+                        <div class="text-[10px] font-bold ${isUnlocked ? 'text-green-600' : 'text-slate-700'} group-hover:text-blue-600">หน่วยที่ ${i + 1}</div>
+                        <div class="text-[9px] ${isUnlocked ? 'text-green-500' : 'text-slate-400'}">เต็ม ${u.max_score}</div>
+                        <div class="mt-1">
+                            <span class="px-1.5 py-0.5 rounded-full text-[8px] font-bold ${isUnlocked ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}">
+                                ${isUnlocked ? 'กำลังแก้ไข' : 'ล็อคอยู่'}
+                            </span>
+                        </div>
+                    </th>
+                `;
+            });
+        }
 
         headerHtml += `
             <th class="pb-3 font-medium w-16 text-center">
@@ -288,10 +291,10 @@
         headerRow.innerHTML = headerHtml;
 
         tbody.innerHTML = currentStudents.map((s, index) => {
-            const totalMax = currentUnits.reduce((sum, u) => sum + parseFloat(u.max_score), 0);
+            const totalMax = Array.isArray(currentUnits) ? currentUnits.reduce((sum, u) => sum + parseFloat(u.max_score), 0) : 0;
             
             let currentTotal = 0;
-            if (s.unit_scores) {
+            if (s.unit_scores && Array.isArray(currentUnits)) {
                 s.unit_scores.forEach(us => {
                     if (currentUnits.find(u => u.id == us.learning_unit_id)) {
                         currentTotal += parseFloat(us.score) || 0;
@@ -299,7 +302,7 @@
                 });
             }
             
-            const unitInputs = currentUnits.map(u => {
+            const unitInputs = Array.isArray(currentUnits) ? currentUnits.map(u => {
                 const scoreObj = s.unit_scores ? s.unit_scores.find(us => us.learning_unit_id == u.id) : null;
                 const score = scoreObj ? parseFloat(scoreObj.score) : 0;
                 const isUnlocked = unlockedUnitId == u.id;
@@ -307,18 +310,18 @@
                 return `
                     <td class="py-3 text-center">
                         <input type="number" step="0.1" max="${u.max_score}" value="${score}" 
-                            oninput="updateUnitScore(${s.id}, ${unitId = u.id}, this)"
+                            oninput="updateUnitScore(${s.id}, ${u.id}, this)"
                             ${!isUnlocked ? 'disabled' : ''}
                             class="w-14 px-1 py-1 ${isUnlocked ? 'bg-white border-green-300 ring-2 ring-green-500/10' : 'bg-slate-50 border-slate-200 opacity-60'} border rounded-lg outline-none focus:ring-2 focus:ring-blue-500/20 text-center text-xs transition-all">
                     </td>
                 `;
-            }).join('');
+            }).join('') : '';
 
             const scoreFinal = parseFloat(s.score_final) || 0;
             const totalScore = currentTotal + scoreFinal;
             const totalMaxWithFinal = totalMax + finalMaxScore;
             const percent = totalMaxWithFinal > 0 ? Math.min((totalScore / totalMaxWithFinal) * 100, 100) : 0;
-            const grade = calculateGrade(percent);
+            const grade = calculateGradeFromPercent(percent);
 
             return `
                 <tr class="border-b border-slate-50 hover:bg-slate-50/50">
@@ -348,17 +351,21 @@
             input.value = finalMaxScore;
         }
         const student = currentStudents.find(s => s.id == studentId);
-        student.score_final = val;
-        recalculateRow(studentId);
+        if (student) {
+            student.score_final = val;
+            recalculateRow(studentId);
+        }
     }
 
     function recalculateRow(studentId) {
         const student = currentStudents.find(s => s.id == studentId);
-        const totalMax = currentUnits.reduce((sum, u) => sum + parseFloat(u.max_score), 0);
+        if (!student) return;
+
+        const totalMax = Array.isArray(currentUnits) ? currentUnits.reduce((sum, u) => sum + parseFloat(u.max_score), 0) : 0;
         
         // คำนวณคะแนนหน่วยทั้งหมดจากข้อมูลในตัวแปร student
         const currentTotal = student.unit_scores ? student.unit_scores.reduce((sum, us) => {
-            if (currentUnits.find(u => u.id == us.learning_unit_id)) {
+            if (Array.isArray(currentUnits) && currentUnits.find(u => u.id == us.learning_unit_id)) {
                 return sum + parseFloat(us.score);
             }
             return sum;
@@ -369,14 +376,20 @@
         const totalMaxWithFinal = totalMax + finalMaxScore;
         const percent = totalMaxWithFinal > 0 ? Math.min((totalScore / totalMaxWithFinal) * 100, 100) : 0;
         
-        document.getElementById(`units-total-${studentId}`).innerText = currentTotal.toFixed(1);
-        document.getElementById(`total-${studentId}`).innerText = totalScore.toFixed(1);
-        document.getElementById(`percent-${studentId}`).innerText = percent.toFixed(1) + '%';
+        const unitsTotalEl = document.getElementById(`units-total-${studentId}`);
+        const totalEl = document.getElementById(`total-${studentId}`);
+        const percentEl = document.getElementById(`percent-${studentId}`);
+        const gradeEl = document.getElementById(`grade-${studentId}`);
+
+        if (unitsTotalEl) unitsTotalEl.innerText = currentTotal.toFixed(1);
+        if (totalEl) totalEl.innerText = totalScore.toFixed(1);
+        if (percentEl) percentEl.innerText = percent.toFixed(1) + '%';
         
         // คำนวณเกรดเบื้องต้น
-        const grade = calculateGrade(percent);
+        const grade = calculateGradeFromPercent(percent);
         
-        document.getElementById(`grade-${studentId}`).innerText = grade;
+        if (gradeEl) gradeEl.innerText = grade;
+        
         student.grade = grade;
         student.score_total = totalScore;
         student.score_percent = percent;
@@ -384,7 +397,10 @@
     }
 
     function updateUnitScore(studentId, unitId, input) {
+        if (!Array.isArray(currentUnits)) return;
         const unit = currentUnits.find(u => u.id == unitId);
+        if (!unit) return;
+
         const maxScore = parseFloat(unit.max_score);
         let val = parseFloat(input.value) || 0;
 
@@ -395,6 +411,8 @@
         }
 
         const student = currentStudents.find(s => s.id == studentId);
+        if (!student) return;
+
         if (!student.unit_scores) student.unit_scores = [];
         
         let scoreObj = student.unit_scores.find(us => us.learning_unit_id == unitId);
