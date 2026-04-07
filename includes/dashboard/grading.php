@@ -44,6 +44,8 @@
                 <button onclick="switchSemester(1)" id="tab-semester1" class="px-6 py-3 text-sm font-medium border-b-2 border-blue-600 text-blue-600 whitespace-nowrap cursor-pointer">ภาคเรียนที่ 1</button>
                 <button onclick="switchSemester(2)" id="tab-semester2" class="px-6 py-3 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-700 whitespace-nowrap cursor-pointer">ภาคเรียนที่ 2</button>
                 <button onclick="switchGradingTab('annual')" id="tab-annual" class="px-6 py-3 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-700 whitespace-nowrap cursor-pointer">รวมทั้งปีการศึกษา</button>
+                <button onclick="switchGradingTab('characteristics')" id="tab-characteristics" class="px-6 py-3 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-700 whitespace-nowrap cursor-pointer">คุณลักษณะอันพึงประสงค์</button>
+                <button onclick="switchGradingTab('analytical')" id="tab-analytical" class="px-6 py-3 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-700 whitespace-nowrap cursor-pointer">อ่าน คิดวิเคราะห์ และเขียน</button>
             </div>
 
             <!-- Tab Contents -->
@@ -52,6 +54,12 @@
             </div>
             <div id="annual-content" class="grading-tab-content hidden">
                 <?php include 'includes/dashboard/grading/annual_tab.php'; ?>
+            </div>
+            <div id="characteristics-content" class="grading-tab-content hidden">
+                <?php include 'includes/dashboard/grading/characteristics_tab.php'; ?>
+            </div>
+            <div id="analytical-content" class="grading-tab-content hidden">
+                <?php include 'includes/dashboard/grading/analytical_tab.php'; ?>
             </div>
         </div>
     </div>

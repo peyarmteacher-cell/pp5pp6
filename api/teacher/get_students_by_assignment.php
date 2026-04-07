@@ -89,7 +89,7 @@ try {
             SELECT s.id, s.student_code, s.name, s.prefix,
                    g.score_units, g.score_midterm, g.score_final, g.score_total, g.score_percent, g.grade,
                    cs.item1, cs.item2, cs.item3, cs.item4, cs.item5, cs.item6, cs.item7, cs.item8, cs.average_score,
-                   ascore.score as analytical_score
+                   ascore.item1 as anal_item1, ascore.item2 as anal_item2, ascore.item3 as anal_item3, ascore.item4 as anal_item4, ascore.item5 as anal_item5, ascore.average_score as analytical_avg
             FROM students s
             LEFT JOIN grades g ON s.id = g.student_id AND g.subject_id = ? AND g.academic_year = ? AND g.semester = ? AND (g.classroom_id = ? OR ? = '')
             LEFT JOIN characteristics_scores cs ON s.id = cs.student_id AND cs.subject_id = ? AND cs.academic_year = ? AND cs.semester = ? AND (cs.classroom_id = ? OR ? = '')

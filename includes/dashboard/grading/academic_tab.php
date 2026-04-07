@@ -182,6 +182,7 @@
 
     let unlockedUnitId = null;
     let isFinalUnlocked = false;
+    let isGradeUnlocked = false;
     let finalMaxScore = 30; // Default
 
     function toggleUnitLock(unitId) {
@@ -193,6 +194,14 @@
     function toggleFinalLock() {
         isFinalUnlocked = !isFinalUnlocked;
         unlockedUnitId = null;
+        isGradeUnlocked = false;
+        renderAcademicTable();
+    }
+
+    function toggleGradeLock() {
+        isGradeUnlocked = !isGradeUnlocked;
+        unlockedUnitId = null;
+        isFinalUnlocked = false;
         renderAcademicTable();
     }
 
@@ -284,7 +293,16 @@
             </th>
             <th class="pb-3 font-medium w-16 text-center">คะแนนรวม</th>
             <th class="pb-3 font-medium w-16 text-center">ร้อยละ</th>
-            <th class="pb-3 font-medium w-16 text-center">ผลการเรียน</th>
+            <th class="pb-3 font-medium w-16 text-center group transition-all">
+                <div onclick="toggleGradeLock()" class="cursor-pointer">
+                    <div class="text-[10px] font-bold ${isGradeUnlocked ? 'text-green-600' : 'text-slate-700'} group-hover:text-blue-600">ผลการเรียน</div>
+                    <div class="mt-1">
+                        <span class="px-1.5 py-0.5 rounded-full text-[8px] font-bold ${isGradeUnlocked ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}">
+                            ${isGradeUnlocked ? 'กำลังแก้ไข' : 'ล็อคอยู่'}
+                        </span>
+                    </div>
+                </div>
+            </th>
         `;
         headerRow.innerHTML = headerHtml;
 
@@ -325,7 +343,7 @@
             const calculatedGrade = hasScores ? calculateGradeFromPercent(percent) : '-';
             
             // ใช้เกรดที่บันทึกไว้ในฐานข้อมูลถ้ามี (เพื่อรองรับ ร, มส, มผ) หรือใช้ค่าที่คำนวณได้
-            const currentGrade = s.grade || calculatedGrade;
+            const currentGrade = isGradeUnlocked ? (s.grade || calculatedGrade) : calculatedGrade;
             const isZero = currentGrade === '0';
 
             // Store calculated values in student object for summary
@@ -348,23 +366,12 @@
                     <td class="py-3 text-center font-bold text-slate-800 text-xs" id="total-${s.id}">${totalScore.toFixed(1)}</td>
                     <td class="py-3 text-center font-bold text-blue-600 text-xs" id="percent-${s.id}">${percent.toFixed(1)}%</td>
                     <td class="py-3 text-center font-bold text-xs">
-                        <select onchange="updateManualGrade(${s.id}, this.value)" 
+                        <input type="text" 
                             id="grade-${s.id}"
-                            class="bg-transparent border-none outline-none cursor-pointer text-center w-full ${isZero ? 'text-red-600' : 'text-slate-800'}">
-                            <option value="" ${!s.grade || s.grade === calculatedGrade ? 'selected' : ''}>${calculatedGrade} (Auto)</option>
-                            <option value="0" ${s.grade === '0' ? 'selected' : ''}>0</option>
-                            <option value="1" ${s.grade === '1' ? 'selected' : ''}>1</option>
-                            <option value="1.5" ${s.grade === '1.5' ? 'selected' : ''}>1.5</option>
-                            <option value="2" ${s.grade === '2' ? 'selected' : ''}>2</option>
-                            <option value="2.5" ${s.grade === '2.5' ? 'selected' : ''}>2.5</option>
-                            <option value="3" ${s.grade === '3' ? 'selected' : ''}>3</option>
-                            <option value="3.5" ${s.grade === '3.5' ? 'selected' : ''}>3.5</option>
-                            <option value="4" ${s.grade === '4' ? 'selected' : ''}>4</option>
-                            <option value="ร" ${s.grade === 'ร' ? 'selected' : ''}>ร</option>
-                            <option value="มส" ${s.grade === 'มส' ? 'selected' : ''}>มส</option>
-                            <option value="มผ" ${s.grade === 'มผ' ? 'selected' : ''}>มผ</option>
-                            <option value="ผ" ${s.grade === 'ผ' ? 'selected' : ''}>ผ</option>
-                        </select>
+                            value="${currentGrade}"
+                            oninput="updateManualGrade(${s.id}, this.value)"
+                            ${!isGradeUnlocked ? 'disabled' : ''}
+                            class="w-full bg-transparent border-none outline-none text-center ${isZero ? 'text-red-600' : 'text-slate-800'} ${isGradeUnlocked ? 'bg-white ring-1 ring-green-300 rounded' : ''}">
                     </td>
                 </tr>
             `;
@@ -467,13 +474,10 @@
         const calculatedGrade = hasScores ? calculateGradeFromPercent(percent) : '-';
         
         if (gradeEl) {
-            // อัปเดตตัวเลือก Auto ใน select
-            const autoOption = gradeEl.querySelector('option[value=""]');
-            if (autoOption) autoOption.innerText = `${calculatedGrade} (Auto)`;
-            
-            // ถ้าไม่ได้เลือกเกรดแบบ Manual ไว้ ให้ใช้ค่า Auto
-            if (gradeEl.value === "") {
+            // ถ้าไม่ได้ล็อคเกรดไว้ (ล็อคอยู่) ให้ใช้ค่า Auto
+            if (!isGradeUnlocked) {
                 student.grade = calculatedGrade;
+                gradeEl.value = calculatedGrade;
                 if (calculatedGrade === '0') {
                     gradeEl.classList.add('text-red-600');
                     gradeEl.classList.remove('text-slate-800');
@@ -496,28 +500,11 @@
         const student = currentStudents.find(s => s.id == studentId);
         if (student) {
             const gradeEl = document.getElementById(`grade-${studentId}`);
-            if (value === "") {
-                // กลับไปใช้ค่า Auto
-                const totalMax = Array.isArray(currentUnits) ? currentUnits.reduce((sum, u) => sum + parseFloat(u.max_score), 0) : 0;
-                const currentTotal = student.unit_scores ? student.unit_scores.reduce((sum, us) => {
-                    if (Array.isArray(currentUnits) && currentUnits.find(u => u.id == us.learning_unit_id)) {
-                        return sum + parseFloat(us.score);
-                    }
-                    return sum;
-                }, 0) : 0;
-                const scoreFinal = parseFloat(student.score_final) || 0;
-                const totalScore = currentTotal + scoreFinal;
-                const totalMaxWithFinal = totalMax + finalMaxScore;
-                const percent = totalMaxWithFinal > 0 ? Math.min((totalScore / totalMaxWithFinal) * 100, 100) : 0;
-                const hasScores = (student.unit_scores && student.unit_scores.length > 0) || scoreFinal > 0;
-                student.grade = hasScores ? calculateGradeFromPercent(percent) : '-';
-            } else {
-                student.grade = value;
-            }
+            student.grade = value;
 
             // อัปเดตสี
             if (gradeEl) {
-                if (student.grade === '0') {
+                if (value === '0') {
                     gradeEl.classList.add('text-red-600');
                     gradeEl.classList.remove('text-slate-800');
                 } else {
