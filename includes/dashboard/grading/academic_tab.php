@@ -322,12 +322,16 @@
             
             // ตรวจสอบว่ามีการป้อนคะแนนหรือยัง (ถ้ายังไม่มีเลยให้แสดง -)
             const hasScores = (s.unit_scores && s.unit_scores.length > 0) || scoreFinal > 0;
-            const grade = hasScores ? calculateGradeFromPercent(percent) : '-';
+            const calculatedGrade = hasScores ? calculateGradeFromPercent(percent) : '-';
+            
+            // ใช้เกรดที่บันทึกไว้ในฐานข้อมูลถ้ามี (เพื่อรองรับ ร, มส, มผ) หรือใช้ค่าที่คำนวณได้
+            const currentGrade = s.grade || calculatedGrade;
+            const isZero = currentGrade === '0';
 
             // Store calculated values in student object for summary
             s.score_total = totalScore;
             s.score_percent = percent;
-            s.grade = grade;
+            if (!s.grade) s.grade = calculatedGrade;
 
             return `
                 <tr class="border-b border-slate-50 hover:bg-slate-50/50">
@@ -343,7 +347,25 @@
                     </td>
                     <td class="py-3 text-center font-bold text-slate-800 text-xs" id="total-${s.id}">${totalScore.toFixed(1)}</td>
                     <td class="py-3 text-center font-bold text-blue-600 text-xs" id="percent-${s.id}">${percent.toFixed(1)}%</td>
-                    <td class="py-3 text-center font-bold text-slate-800 text-xs" id="grade-${s.id}">${grade}</td>
+                    <td class="py-3 text-center font-bold text-xs">
+                        <select onchange="updateManualGrade(${s.id}, this.value)" 
+                            id="grade-${s.id}"
+                            class="bg-transparent border-none outline-none cursor-pointer text-center w-full ${isZero ? 'text-red-600' : 'text-slate-800'}">
+                            <option value="" ${!s.grade || s.grade === calculatedGrade ? 'selected' : ''}>${calculatedGrade} (Auto)</option>
+                            <option value="0" ${s.grade === '0' ? 'selected' : ''}>0</option>
+                            <option value="1" ${s.grade === '1' ? 'selected' : ''}>1</option>
+                            <option value="1.5" ${s.grade === '1.5' ? 'selected' : ''}>1.5</option>
+                            <option value="2" ${s.grade === '2' ? 'selected' : ''}>2</option>
+                            <option value="2.5" ${s.grade === '2.5' ? 'selected' : ''}>2.5</option>
+                            <option value="3" ${s.grade === '3' ? 'selected' : ''}>3</option>
+                            <option value="3.5" ${s.grade === '3.5' ? 'selected' : ''}>3.5</option>
+                            <option value="4" ${s.grade === '4' ? 'selected' : ''}>4</option>
+                            <option value="ร" ${s.grade === 'ร' ? 'selected' : ''}>ร</option>
+                            <option value="มส" ${s.grade === 'มส' ? 'selected' : ''}>มส</option>
+                            <option value="มผ" ${s.grade === 'มผ' ? 'selected' : ''}>มผ</option>
+                            <option value="ผ" ${s.grade === 'ผ' ? 'selected' : ''}>ผ</option>
+                        </select>
+                    </td>
                 </tr>
             `;
         }).join('');
@@ -442,17 +464,70 @@
         
         // คำนวณเกรดเบื้องต้น
         const hasScores = (student.unit_scores && student.unit_scores.length > 0) || scoreFinal > 0;
-        const grade = hasScores ? calculateGradeFromPercent(percent) : '-';
+        const calculatedGrade = hasScores ? calculateGradeFromPercent(percent) : '-';
         
-        if (gradeEl) gradeEl.innerText = grade;
+        if (gradeEl) {
+            // อัปเดตตัวเลือก Auto ใน select
+            const autoOption = gradeEl.querySelector('option[value=""]');
+            if (autoOption) autoOption.innerText = `${calculatedGrade} (Auto)`;
+            
+            // ถ้าไม่ได้เลือกเกรดแบบ Manual ไว้ ให้ใช้ค่า Auto
+            if (gradeEl.value === "") {
+                student.grade = calculatedGrade;
+                if (calculatedGrade === '0') {
+                    gradeEl.classList.add('text-red-600');
+                    gradeEl.classList.remove('text-slate-800');
+                } else {
+                    gradeEl.classList.remove('text-red-600');
+                    gradeEl.classList.add('text-slate-800');
+                }
+            }
+        }
         
-        student.grade = grade;
         student.score_total = totalScore;
         student.score_percent = percent;
         student.score_units = currentTotal;
 
         // Update Class Summary
         updateSummaryRow();
+    }
+
+    function updateManualGrade(studentId, value) {
+        const student = currentStudents.find(s => s.id == studentId);
+        if (student) {
+            const gradeEl = document.getElementById(`grade-${studentId}`);
+            if (value === "") {
+                // กลับไปใช้ค่า Auto
+                const totalMax = Array.isArray(currentUnits) ? currentUnits.reduce((sum, u) => sum + parseFloat(u.max_score), 0) : 0;
+                const currentTotal = student.unit_scores ? student.unit_scores.reduce((sum, us) => {
+                    if (Array.isArray(currentUnits) && currentUnits.find(u => u.id == us.learning_unit_id)) {
+                        return sum + parseFloat(us.score);
+                    }
+                    return sum;
+                }, 0) : 0;
+                const scoreFinal = parseFloat(student.score_final) || 0;
+                const totalScore = currentTotal + scoreFinal;
+                const totalMaxWithFinal = totalMax + finalMaxScore;
+                const percent = totalMaxWithFinal > 0 ? Math.min((totalScore / totalMaxWithFinal) * 100, 100) : 0;
+                const hasScores = (student.unit_scores && student.unit_scores.length > 0) || scoreFinal > 0;
+                student.grade = hasScores ? calculateGradeFromPercent(percent) : '-';
+            } else {
+                student.grade = value;
+            }
+
+            // อัปเดตสี
+            if (gradeEl) {
+                if (student.grade === '0') {
+                    gradeEl.classList.add('text-red-600');
+                    gradeEl.classList.remove('text-slate-800');
+                } else {
+                    gradeEl.classList.remove('text-red-600');
+                    gradeEl.classList.add('text-slate-800');
+                }
+            }
+            
+            updateSummaryRow();
+        }
     }
 
     function updateUnitScore(studentId, unitId, input) {
