@@ -207,6 +207,17 @@
         alert('คำนวณคะแนนและเกรดเฉลี่ยทั้งหมดเรียบร้อยแล้ว');
     }
 
+    function calculateGrade(percent) {
+        if (percent >= 80) return '4';
+        if (percent >= 75) return '3.5';
+        if (percent >= 70) return '3';
+        if (percent >= 65) return '2.5';
+        if (percent >= 60) return '2';
+        if (percent >= 55) return '1.5';
+        if (percent >= 50) return '1';
+        return '0';
+    }
+
     function renderAcademicTable() {
         const tbody = document.getElementById('academic-table-body');
         const headerRow = document.getElementById('academic-header-row');
@@ -296,7 +307,7 @@
                 return `
                     <td class="py-3 text-center">
                         <input type="number" step="0.1" max="${u.max_score}" value="${score}" 
-                            onchange="updateUnitScore(${s.id}, ${u.id}, this)"
+                            oninput="updateUnitScore(${s.id}, ${unitId = u.id}, this)"
                             ${!isUnlocked ? 'disabled' : ''}
                             class="w-14 px-1 py-1 ${isUnlocked ? 'bg-white border-green-300 ring-2 ring-green-500/10' : 'bg-slate-50 border-slate-200 opacity-60'} border rounded-lg outline-none focus:ring-2 focus:ring-blue-500/20 text-center text-xs transition-all">
                     </td>
@@ -307,6 +318,7 @@
             const totalScore = currentTotal + scoreFinal;
             const totalMaxWithFinal = totalMax + finalMaxScore;
             const percent = totalMaxWithFinal > 0 ? Math.min((totalScore / totalMaxWithFinal) * 100, 100) : 0;
+            const grade = calculateGrade(percent);
 
             return `
                 <tr class="border-b border-slate-50 hover:bg-slate-50/50">
@@ -316,13 +328,13 @@
                     <td class="py-3 text-center font-bold text-slate-700 text-xs" id="units-total-${s.id}">${currentTotal.toFixed(1)}</td>
                     <td class="py-3 text-center">
                         <input type="number" step="0.1" value="${scoreFinal}" 
-                            onchange="updateFinalScore(${s.id}, this)"
+                            oninput="updateFinalScore(${s.id}, this)"
                             ${!isFinalUnlocked ? 'disabled' : ''}
                             class="w-14 px-1 py-1 ${isFinalUnlocked ? 'bg-white border-green-300 ring-2 ring-green-500/10' : 'bg-slate-50 border-slate-200 opacity-60'} border rounded-lg outline-none focus:ring-2 focus:ring-blue-500/20 text-center text-xs transition-all">
                     </td>
                     <td class="py-3 text-center font-bold text-slate-800 text-xs" id="total-${s.id}">${totalScore.toFixed(1)}</td>
                     <td class="py-3 text-center font-bold text-blue-600 text-xs" id="percent-${s.id}">${percent.toFixed(1)}%</td>
-                    <td class="py-3 text-center font-bold text-slate-800 text-xs" id="grade-${s.id}">${s.grade || '-'}</td>
+                    <td class="py-3 text-center font-bold text-slate-800 text-xs" id="grade-${s.id}">${grade}</td>
                 </tr>
             `;
         }).join('');
@@ -362,14 +374,7 @@
         document.getElementById(`percent-${studentId}`).innerText = percent.toFixed(1) + '%';
         
         // คำนวณเกรดเบื้องต้น
-        let grade = '0';
-        if (percent >= 80) grade = '4';
-        else if (percent >= 75) grade = '3.5';
-        else if (percent >= 70) grade = '3';
-        else if (percent >= 65) grade = '2.5';
-        else if (percent >= 60) grade = '2';
-        else if (percent >= 55) grade = '1.5';
-        else if (percent >= 50) grade = '1';
+        const grade = calculateGrade(percent);
         
         document.getElementById(`grade-${studentId}`).innerText = grade;
         student.grade = grade;
