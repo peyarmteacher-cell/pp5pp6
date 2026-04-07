@@ -165,6 +165,28 @@ try {
         $pdo->exec("ALTER TABLE grades ADD FOREIGN KEY (classroom_id) REFERENCES classrooms(id) ON DELETE CASCADE");
         $results[] = "เพิ่มคอลัมน์ classroom_id ในตาราง grades สำเร็จ";
     }
+
+    // ตรวจสอบและเพิ่มคอลัมน์ teacher_id ใน grades หากไม่มี
+    $stmt = $pdo->query("SHOW COLUMNS FROM grades LIKE 'teacher_id'");
+    if (!$stmt->fetch()) {
+        $pdo->exec("ALTER TABLE grades ADD COLUMN teacher_id INT AFTER classroom_id");
+        $pdo->exec("ALTER TABLE grades ADD FOREIGN KEY (teacher_id) REFERENCES users(id) ON DELETE CASCADE");
+        $results[] = "เพิ่มคอลัมน์ teacher_id ในตาราง grades สำเร็จ";
+    }
+
+    // ตรวจสอบและเพิ่มคอลัมน์ score_units ใน grades หากไม่มี
+    $stmt = $pdo->query("SHOW COLUMNS FROM grades LIKE 'score_units'");
+    if (!$stmt->fetch()) {
+        $pdo->exec("ALTER TABLE grades ADD COLUMN score_units FLOAT DEFAULT 0 AFTER semester");
+        $results[] = "เพิ่มคอลัมน์ score_units ในตาราง grades สำเร็จ";
+    }
+
+    // ตรวจสอบและเพิ่มคอลัมน์ score_percent ใน grades หากไม่มี
+    $stmt = $pdo->query("SHOW COLUMNS FROM grades LIKE 'score_percent'");
+    if (!$stmt->fetch()) {
+        $pdo->exec("ALTER TABLE grades ADD COLUMN score_percent FLOAT DEFAULT 0 AFTER score_total");
+        $results[] = "เพิ่มคอลัมน์ score_percent ในตาราง grades สำเร็จ";
+    }
     
     $results[] = "ตรวจสอบ/สร้างตาราง grades สำเร็จ";
 
