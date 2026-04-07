@@ -283,7 +283,7 @@
                 return `
                     <td class="py-3 text-center">
                         <input type="number" step="0.1" max="${u.max_score}" value="${score}" 
-                            onchange="updateUnitScore(${s.id}, ${u.id}, this.value)"
+                            onchange="updateUnitScore(${s.id}, ${u.id}, this)"
                             ${!isUnlocked ? 'disabled' : ''}
                             class="w-14 px-1 py-1 ${isUnlocked ? 'bg-white border-green-300 ring-2 ring-green-500/10' : 'bg-slate-50 border-slate-200 opacity-60'} border rounded-lg outline-none focus:ring-2 focus:ring-blue-500/20 text-center text-xs transition-all">
                     </td>
@@ -293,7 +293,7 @@
             const scoreFinal = parseFloat(s.score_final) || 0;
             const totalScore = currentTotal + scoreFinal;
             const totalMaxWithFinal = totalMax + 30;
-            const percent = totalMaxWithFinal > 0 ? (totalScore / totalMaxWithFinal) * 100 : 0;
+            const percent = totalMaxWithFinal > 0 ? Math.min((totalScore / totalMaxWithFinal) * 100, 100) : 0;
 
             return `
                 <tr class="border-b border-slate-50 hover:bg-slate-50/50">
@@ -303,7 +303,7 @@
                     <td class="py-3 text-center font-bold text-slate-700 text-xs" id="units-total-${s.id}">${currentTotal.toFixed(1)}</td>
                     <td class="py-3 text-center">
                         <input type="number" step="0.1" value="${scoreFinal}" 
-                            onchange="updateFinalScore(${s.id}, this.value)"
+                            onchange="updateFinalScore(${s.id}, this)"
                             ${!isFinalUnlocked ? 'disabled' : ''}
                             class="w-14 px-1 py-1 ${isFinalUnlocked ? 'bg-white border-green-300 ring-2 ring-green-500/10' : 'bg-slate-50 border-slate-200 opacity-60'} border rounded-lg outline-none focus:ring-2 focus:ring-blue-500/20 text-center text-xs transition-all">
                     </td>
@@ -315,15 +315,23 @@
         }).join('');
     }
 
-    function updateFinalScore(studentId, value) {
+    function updateFinalScore(studentId, input) {
+        let val = parseFloat(input.value) || 0;
+        if (val > 30) {
+            alert('คะแนนสอบปลายภาคต้องไม่เกิน 30 คะแนน');
+            val = 30;
+            input.value = 30;
+        }
         const student = currentStudents.find(s => s.id == studentId);
-        student.score_final = parseFloat(value) || 0;
+        student.score_final = val;
         recalculateRow(studentId);
     }
 
     function recalculateRow(studentId) {
         const student = currentStudents.find(s => s.id == studentId);
         const totalMax = currentUnits.reduce((sum, u) => sum + parseFloat(u.max_score), 0);
+        
+        // คำนวณคะแนนหน่วยทั้งหมดจากข้อมูลในตัวแปร student
         const currentTotal = student.unit_scores ? student.unit_scores.reduce((sum, us) => {
             if (currentUnits.find(u => u.id == us.learning_unit_id)) {
                 return sum + parseFloat(us.score);
@@ -334,7 +342,7 @@
         const scoreFinal = parseFloat(student.score_final) || 0;
         const totalScore = currentTotal + scoreFinal;
         const totalMaxWithFinal = totalMax + 30; // ปลายภาค 30
-        const percent = totalMaxWithFinal > 0 ? (totalScore / totalMaxWithFinal) * 100 : 0;
+        const percent = totalMaxWithFinal > 0 ? Math.min((totalScore / totalMaxWithFinal) * 100, 100) : 0;
         
         document.getElementById(`units-total-${studentId}`).innerText = currentTotal.toFixed(1);
         document.getElementById(`total-${studentId}`).innerText = totalScore.toFixed(1);
@@ -357,7 +365,17 @@
         student.score_units = currentTotal;
     }
 
-    function updateUnitScore(studentId, unitId, value) {
+    function updateUnitScore(studentId, unitId, input) {
+        const unit = currentUnits.find(u => u.id == unitId);
+        const maxScore = parseFloat(unit.max_score);
+        let val = parseFloat(input.value) || 0;
+
+        if (val > maxScore) {
+            alert(`คะแนนหน่วยนี้ต้องไม่เกิน ${maxScore} คะแนน`);
+            val = maxScore;
+            input.value = maxScore;
+        }
+
         const student = currentStudents.find(s => s.id == studentId);
         if (!student.unit_scores) student.unit_scores = [];
         
@@ -366,7 +384,7 @@
             scoreObj = { learning_unit_id: unitId, score: 0 };
             student.unit_scores.push(scoreObj);
         }
-        scoreObj.score = parseFloat(value) || 0;
+        scoreObj.score = val;
         
         recalculateRow(studentId);
     }
