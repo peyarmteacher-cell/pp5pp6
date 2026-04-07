@@ -4,7 +4,7 @@
     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
         <div class="flex justify-between items-center mb-6">
             <h3 class="text-lg font-bold text-slate-800">จัดการปีการศึกษา</h3>
-            <button onclick="openModal('addYearModal')" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-blue-700 transition-all">เพิ่มปีการศึกษา</button>
+            <button onclick="openModal('addYearModal')" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-blue-700 transition-all cursor-pointer">เพิ่มปีการศึกษา</button>
         </div>
         
         <div class="overflow-x-auto">
@@ -31,7 +31,7 @@
         <form id="graduationForm" class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
             <div>
                 <label class="block text-sm font-medium text-slate-700 mb-1">ระดับชั้นที่จบ</label>
-                <select id="grad_level" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+                <select id="grad_level" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer">
                     <option value="">เลือกระดับชั้น</option>
                     <option value="ป.6">ป.6</option>
                     <option value="ม.3">ม.3</option>
@@ -41,7 +41,7 @@
                 <label class="block text-sm font-medium text-slate-700 mb-1">รุ่นที่จบ (เช่น รุ่นที่ 50)</label>
                 <input type="text" id="grad_generation" placeholder="ระบุรุ่น" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
             </div>
-            <button type="submit" class="bg-amber-600 text-white px-6 py-2 rounded-xl font-semibold hover:bg-amber-700 transition-all h-[42px]">บันทึกการจบการศึกษา</button>
+            <button type="submit" class="bg-amber-600 text-white px-6 py-2 rounded-xl font-semibold hover:bg-amber-700 transition-all h-[42px] cursor-pointer">บันทึกการจบการศึกษา</button>
         </form>
     </div>
 </div>
@@ -56,8 +56,8 @@
                 <input type="text" id="new_academic_year" placeholder="เช่น 2568" required maxlength="4" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
             </div>
             <div class="flex gap-3 pt-2">
-                <button type="button" onclick="closeModal('addYearModal')" class="flex-1 px-4 py-2 border border-slate-200 rounded-xl text-slate-600 font-semibold hover:bg-slate-50 transition-all">ยกเลิก</button>
-                <button type="submit" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-all">บันทึก</button>
+                <button type="button" onclick="closeModal('addYearModal')" class="flex-1 px-4 py-2 border border-slate-200 rounded-xl text-slate-600 font-semibold hover:bg-slate-50 transition-all cursor-pointer">ยกเลิก</button>
+                <button type="submit" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-all cursor-pointer">บันทึก</button>
             </div>
         </form>
     </div>

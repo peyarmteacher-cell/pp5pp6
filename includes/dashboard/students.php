@@ -4,7 +4,7 @@
     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
         <h3 class="text-lg font-bold mb-4">เพิ่มนักเรียนใหม่</h3>
         <form id="addStudentForm" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <select id="std_prefix" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
+            <select id="std_prefix" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none cursor-pointer">
                 <option value="">คำนำหน้า</option>
                 <option value="เด็กชาย">เด็กชาย</option>
                 <option value="เด็กหญิง">เด็กหญิง</option>
@@ -14,14 +14,14 @@
             <input type="text" id="std_code" placeholder="รหัสประจำตัวนักเรียน" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
             <input type="text" id="std_national_id" placeholder="เลขบัตรประชาชน (13 หลัก)" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
             <input type="text" id="std_name" placeholder="ชื่อ-นามสกุล" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
-            <select id="std_level" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
+            <select id="std_level" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none cursor-pointer">
                 <option value="">เลือกระดับชั้น</option>
                 <option value="ป.1">ป.1</option><option value="ป.2">ป.2</option><option value="ป.3">ป.3</option>
                 <option value="ป.4">ป.4</option><option value="ป.5">ป.5</option><option value="ป.6">ป.6</option>
                 <option value="ม.1">ม.1</option><option value="ม.2">ม.2</option><option value="ม.3">ม.3</option>
             </select>
             <input type="text" id="std_room" placeholder="ห้อง (เช่น 1)" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
-            <select id="std_academic_year" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
+            <select id="std_academic_year" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none cursor-pointer">
                 <!-- จะถูกเติมด้วย JavaScript -->
             </select>
             <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-xl font-semibold hover:bg-blue-700 cursor-pointer transition-all">บันทึก</button>
@@ -46,13 +46,13 @@
             <div class="flex gap-4">
                 <div class="flex-1">
                     <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">ปีการศึกษา</p>
-                    <select id="filter_academic_year" onchange="loadStudents()" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+                    <select id="filter_academic_year" onchange="loadStudents()" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer">
                         <!-- จะถูกเติมด้วย JavaScript -->
                     </select>
                 </div>
                 <div class="flex-1">
                     <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">สถานะ</p>
-                    <select id="filter_status" onchange="loadStudents()" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+                    <select id="filter_status" onchange="loadStudents()" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer">
                         <option value="studying">กำลังศึกษา</option>
                         <option value="graduated">จบการศึกษา</option>
                         <option value="transferred">ย้ายสถานศึกษา</option>
@@ -86,7 +86,7 @@
             <div class="grid grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">คำนำหน้า</label>
-                    <select id="edit_std_prefix" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+                    <select id="edit_std_prefix" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer">
                         <option value="เด็กชาย">เด็กชาย</option>
                         <option value="เด็กหญิง">เด็กหญิง</option>
                         <option value="นาย">นาย</option>
@@ -95,7 +95,7 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">ปีการศึกษา</label>
-                    <select id="edit_std_academic_year" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+                    <select id="edit_std_academic_year" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer">
                         <!-- จะถูกเติมด้วย JavaScript -->
                     </select>
                 </div>
@@ -107,7 +107,7 @@
             <div class="grid grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">ระดับชั้น</label>
-                    <select id="edit_std_level" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+                    <select id="edit_std_level" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer">
                         <option value="ป.1">ป.1</option><option value="ป.2">ป.2</option><option value="ป.3">ป.3</option>
                         <option value="ป.4">ป.4</option><option value="ป.5">ป.5</option><option value="ป.6">ป.6</option>
                         <option value="ม.1">ม.1</option><option value="ม.2">ม.2</option><option value="ม.3">ม.3</option>

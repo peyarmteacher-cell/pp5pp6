@@ -10,13 +10,13 @@
             </div>
         </div>
         <div class="flex items-center gap-2">
-            <select id="batch-anal-score" class="px-3 py-2 bg-white border border-purple-200 rounded-xl outline-none text-sm font-bold text-purple-600 focus:ring-2 focus:ring-purple-500/20">
+            <select id="batch-anal-score" class="px-3 py-2 bg-white border border-purple-200 rounded-xl outline-none text-sm font-bold text-purple-600 focus:ring-2 focus:ring-purple-500/20 cursor-pointer">
                 <option value="3">3 (ดีเยี่ยม)</option>
                 <option value="2">2 (ดี)</option>
                 <option value="1">1 (พอใช้)</option>
                 <option value="0">0 (ปรับปรุง)</option>
             </select>
-            <button onclick="applyBatchAnalScore()" class="bg-purple-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-purple-700 transition-all shadow-md shadow-purple-600/10">ตกลง</button>
+            <button onclick="applyBatchAnalScore()" class="bg-purple-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-purple-700 transition-all shadow-md shadow-purple-600/10 cursor-pointer">ตกลง</button>
         </div>
     </div>
 
@@ -44,7 +44,7 @@
         <p><strong>เกณฑ์การสรุปผล:</strong> ดีเยี่ยม (เฉลี่ย 2.50-3.00), ดี (เฉลี่ย 1.50-2.49), พอใช้ (เฉลี่ย 1.00-1.49), ปรับปรุง (เฉลี่ย 0.00-0.99)</p>
     </div>
     <div class="flex justify-end pt-4">
-        <button onclick="saveAnalytical()" class="bg-blue-600 text-white px-8 py-2 rounded-xl font-semibold hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20">บันทึกอ่านคิดวิเคราะห์</button>
+        <button onclick="saveAnalytical()" class="bg-blue-600 text-white px-8 py-2 rounded-xl font-semibold hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20 cursor-pointer">บันทึกอ่านคิดวิเคราะห์</button>
     </div>
 </div>
 
@@ -88,7 +88,7 @@
                     ${[1,2,3,4,5].map(i => `
                         <td class="py-3 text-center">
                             <select onchange="updateAnalyticalScore(${s.id}, ${i-1}, this.value)" 
-                                class="w-10 px-0.5 py-1 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500/20 text-center text-[10px]">
+                                class="w-10 px-0.5 py-1 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500/20 text-center text-[10px] cursor-pointer">
                                 <option value="0" ${s['anal_item'+i] == 0 ? 'selected' : ''}>0</option>
                                 <option value="1" ${s['anal_item'+i] == 1 ? 'selected' : ''}>1</option>
                                 <option value="2" ${s['anal_item'+i] == 2 ? 'selected' : ''}>2</option>

@@ -328,7 +328,7 @@
                         <input type="number" step="0.1" max="${u.max_score}" value="${score}" 
                             oninput="updateUnitScore(${s.id}, ${u.id}, this)"
                             ${!isUnlocked ? 'disabled' : ''}
-                            class="w-14 px-1 py-1 ${isUnlocked ? 'bg-white border-green-300 ring-2 ring-green-500/10' : 'bg-slate-50 border-slate-200 opacity-60'} border rounded-lg outline-none focus:ring-2 focus:ring-blue-500/20 text-center text-xs transition-all">
+                            class="w-14 px-1 py-1 ${isUnlocked ? 'bg-white border-green-300 ring-2 ring-green-500/10 cursor-pointer' : 'bg-slate-50 border-slate-200 opacity-60'} border rounded-lg outline-none focus:ring-2 focus:ring-blue-500/20 text-center text-xs transition-all">
                     </td>
                 `;
             }).join('') : '';
@@ -361,7 +361,7 @@
                         <input type="number" step="0.1" value="${scoreFinal}" 
                             oninput="updateFinalScore(${s.id}, this)"
                             ${!isFinalUnlocked ? 'disabled' : ''}
-                            class="w-14 px-1 py-1 ${isFinalUnlocked ? 'bg-white border-green-300 ring-2 ring-green-500/10' : 'bg-slate-50 border-slate-200 opacity-60'} border rounded-lg outline-none focus:ring-2 focus:ring-blue-500/20 text-center text-xs transition-all">
+                            class="w-14 px-1 py-1 ${isFinalUnlocked ? 'bg-white border-green-300 ring-2 ring-green-500/10 cursor-pointer' : 'bg-slate-50 border-slate-200 opacity-60'} border rounded-lg outline-none focus:ring-2 focus:ring-blue-500/20 text-center text-xs transition-all">
                     </td>
                     <td class="py-3 text-center font-bold text-slate-800 text-xs" id="total-${s.id}">${totalScore.toFixed(1)}</td>
                     <td class="py-3 text-center font-bold text-blue-600 text-xs" id="percent-${s.id}">${percent.toFixed(1)}%</td>
@@ -371,7 +371,7 @@
                             value="${currentGrade}"
                             oninput="updateManualGrade(${s.id}, this.value)"
                             ${!isGradeUnlocked ? 'disabled' : ''}
-                            class="w-full bg-transparent border-none outline-none text-center ${isZero ? 'text-red-600' : 'text-slate-800'} ${isGradeUnlocked ? 'bg-white ring-1 ring-green-300 rounded' : ''}">
+                            class="w-full bg-transparent border-none outline-none text-center ${isZero ? 'text-red-600' : 'text-slate-800'} ${isGradeUnlocked ? 'bg-white ring-1 ring-green-300 rounded cursor-pointer' : ''}">
                     </td>
                 </tr>
             `;

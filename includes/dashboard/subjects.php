@@ -16,7 +16,7 @@
         <form id="addSubjectForm" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
             <input type="text" id="sub_code" placeholder="รหัสวิชา" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
             <input type="text" id="sub_name" placeholder="ชื่อวิชา" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
-            <select id="sub_level" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
+            <select id="sub_level" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none cursor-pointer">
                 <option value="">ระดับชั้น</option>
                 <option value="ป.1">ป.1</option><option value="ป.2">ป.2</option><option value="ป.3">ป.3</option>
                 <option value="ป.4">ป.4</option><option value="ป.5">ป.5</option><option value="ป.6">ป.6</option>
@@ -108,7 +108,7 @@
             </div>
             <div>
                 <label class="block text-sm font-medium text-slate-700 mb-1">ระดับชั้น</label>
-                <select id="edit_sub_level" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
+                <select id="edit_sub_level" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none cursor-pointer">
                     <option value="ป.1">ป.1</option><option value="ป.2">ป.2</option><option value="ป.3">ป.3</option>
                     <option value="ป.4">ป.4</option><option value="ป.5">ป.5</option><option value="ป.6">ป.6</option>
                     <option value="ม.1">ม.1</option><option value="ม.2">ม.2</option><option value="ม.3">ม.3</option>

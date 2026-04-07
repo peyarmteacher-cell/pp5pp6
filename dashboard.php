@@ -34,16 +34,16 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
         
         <nav class="flex-1 p-4 space-y-2">
             <?php if ($role !== 'teacher' || $_SESSION['is_academic']): ?>
-                <a href="javascript:void(0)" onclick="showSection('overview')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">ภาพรวม</a>
+                <a href="javascript:void(0)" onclick="showSection('overview')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">ภาพรวม</a>
             <?php endif; ?>
             
             <?php if ($role === 'super_admin'): ?>
                 <div class="pt-4 pb-2 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Super Admin</div>
-                <a href="javascript:void(0)" onclick="showSection('manage-schools')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">จัดการโรงเรียน</a>
-                <a href="javascript:void(0)" onclick="showSection('approve-admins')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">อนุมัติ Admin โรงเรียน</a>
-                <a href="javascript:void(0)" onclick="showSection('manage-super-admins')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">จัดการ Super Admin</a>
-                <a href="javascript:void(0)" onclick="fixDatabase()" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors text-yellow-400">ปรับปรุงฐานข้อมูล</a>
-                <a href="javascript:void(0)" onclick="showSection('profile')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">แก้ไขโปรไฟล์</a>
+                <a href="javascript:void(0)" onclick="showSection('manage-schools')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">จัดการโรงเรียน</a>
+                <a href="javascript:void(0)" onclick="showSection('approve-admins')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">อนุมัติ Admin โรงเรียน</a>
+                <a href="javascript:void(0)" onclick="showSection('manage-super-admins')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">จัดการ Super Admin</a>
+                <a href="javascript:void(0)" onclick="fixDatabase()" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors text-yellow-400 cursor-pointer">ปรับปรุงฐานข้อมูล</a>
+                <a href="javascript:void(0)" onclick="showSection('profile')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">แก้ไขโปรไฟล์</a>
 <?php endif; ?>
 
             <?php if ($role === 'admin'): ?>
@@ -78,7 +78,7 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                     <p class="text-xs text-slate-400 truncate"><?= $role ?></p>
                 </div>
             </div>
-            <a href="logout.php" class="block w-full text-center py-2 bg-red-600/20 text-red-400 hover:bg-red-600/30 rounded-lg text-sm font-medium transition-all">ออกจากระบบ</a>
+            <a href="logout.php" class="block w-full text-center py-2 bg-red-600/20 text-red-400 hover:bg-red-600/30 rounded-lg text-sm font-medium transition-all cursor-pointer">ออกจากระบบ</a>
         </div>
     </aside>
 
@@ -109,7 +109,7 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                     <input type="text" id="schoolCode" placeholder="รหัสโรงเรียน 8 หลัก" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none">
                     <input type="text" id="schoolName" placeholder="ชื่อโรงเรียน" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none">
                     <input type="text" id="schoolProvince" placeholder="จังหวัด" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none">
-                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-xl font-semibold hover:bg-blue-700 transition-all">บันทึก</button>
+                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-xl font-semibold hover:bg-blue-700 transition-all cursor-pointer">บันทึก</button>
                 </form>
             </div>
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
@@ -185,7 +185,7 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                         <input type="text" id="sa_name" placeholder="ชื่อ-นามสกุล" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none">
                         <input type="text" id="sa_affiliation" placeholder="สังกัด (เช่น สพป.บุรีรัมย์ เขต 3)" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none">
                     </div>
-                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-xl font-semibold hover:bg-blue-700 transition-all">เพิ่มผู้ช่วย</button>
+                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-xl font-semibold hover:bg-blue-700 transition-all cursor-pointer">เพิ่มผู้ช่วย</button>
                 </form>
             </div>
         </div>
@@ -204,7 +204,7 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                             <input type="text" id="prof_affiliation" value="<?= $affiliation ?>" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none">
                         </div>
                     </div>
-                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-xl font-semibold hover:bg-blue-700 transition-all">บันทึกการเปลี่ยนแปลง</button>
+                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-xl font-semibold hover:bg-blue-700 transition-all cursor-pointer">บันทึกการเปลี่ยนแปลง</button>
                 </form>
             </div>
         </div>
@@ -224,8 +224,6 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
 
         <!-- Teacher: Record Grades -->
         <?php include 'includes/dashboard/grading.php'; ?>
-        <?php include 'includes/dashboard/characteristics.php'; ?>
-        <?php include 'includes/dashboard/analytical.php'; ?>
 
         <!-- Approve Users Section -->
         <div id="approve-section" class="section hidden space-y-6">
@@ -275,12 +273,6 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
             } else if (sectionId === 'record-grades') {
                 targetId = sectionId;
                 loadMyAssignments();
-            } else if (sectionId === 'record-characteristics') {
-                targetId = sectionId;
-                loadCharAssignments();
-            } else if (sectionId === 'record-analytical') {
-                targetId = sectionId;
-                loadAnalAssignments();
             }
             
             const target = document.getElementById(targetId);

@@ -68,7 +68,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                     <div>
                         <label class="block text-xs font-bold text-blue-700 mb-1 uppercase tracking-wider">ระดับชั้น</label>
-                        <select id="assign_level" onchange="onLevelChange()" class="w-full px-4 py-2 bg-white border border-blue-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                        <select id="assign_level" onchange="onLevelChange()" class="w-full px-4 py-2 bg-white border border-blue-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer">
                             <option value="">เลือกระดับชั้น</option>
                             <?php foreach(['ป.1', 'ป.2', 'ป.3', 'ป.4', 'ป.5', 'ป.6', 'ม.1', 'ม.2', 'ม.3'] as $l): ?>
                                 <option value="<?= $l ?>"><?= $l ?></option>
@@ -77,7 +77,7 @@
                     </div>
                     <div id="room_selection_container" class="hidden">
                         <label class="block text-xs font-bold text-blue-700 mb-1 uppercase tracking-wider">ห้อง</label>
-                        <select id="assign_room" class="w-full px-4 py-2 bg-white border border-blue-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                        <select id="assign_room" class="w-full px-4 py-2 bg-white border border-blue-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer">
                             <option value="">เลือกห้อง</option>
                         </select>
                     </div>
