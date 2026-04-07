@@ -180,6 +180,7 @@
 
     let unlockedUnitId = null;
     let isFinalUnlocked = false;
+    let finalMaxScore = 30; // Default
 
     function toggleUnitLock(unitId) {
         unlockedUnitId = (unlockedUnitId === unitId) ? null : unitId;
@@ -191,6 +192,11 @@
         isFinalUnlocked = !isFinalUnlocked;
         unlockedUnitId = null;
         renderAcademicTable();
+    }
+
+    function updateFinalMax(val) {
+        finalMaxScore = parseFloat(val) || 30;
+        calculateAll();
     }
 
     function calculateAll() {
@@ -248,13 +254,18 @@
                     <button onclick="calculateAll()" class="mt-1 text-[8px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded hover:bg-blue-200 transition-colors cursor-pointer">คำนวณ</button>
                 </div>
             </th>
-            <th onclick="toggleFinalLock()" class="pb-3 font-medium w-16 text-center cursor-pointer group transition-all">
-                <div class="text-[10px] font-bold ${isFinalUnlocked ? 'text-green-600' : 'text-slate-700'} group-hover:text-blue-600">ปลายภาค</div>
-                <div class="text-[9px] ${isFinalUnlocked ? 'text-green-500' : 'text-slate-400'}">เต็ม 30</div>
-                <div class="mt-1">
-                    <span class="px-1.5 py-0.5 rounded-full text-[8px] font-bold ${isFinalUnlocked ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}">
-                        ${isFinalUnlocked ? 'กำลังแก้ไข' : 'ล็อคอยู่'}
-                    </span>
+            <th class="pb-3 font-medium w-16 text-center group transition-all">
+                <div onclick="toggleFinalLock()" class="cursor-pointer">
+                    <div class="text-[10px] font-bold ${isFinalUnlocked ? 'text-green-600' : 'text-slate-700'} group-hover:text-blue-600">ปลายภาค</div>
+                    <div class="mt-1">
+                        <span class="px-1.5 py-0.5 rounded-full text-[8px] font-bold ${isFinalUnlocked ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}">
+                            ${isFinalUnlocked ? 'กำลังแก้ไข' : 'ล็อคอยู่'}
+                        </span>
+                    </div>
+                </div>
+                <div class="mt-1 flex items-center justify-center gap-1">
+                    <span class="text-[8px] text-slate-400">เต็ม</span>
+                    <input type="number" value="${finalMaxScore}" onchange="updateFinalMax(this.value)" class="w-8 text-[9px] border border-slate-200 rounded text-center outline-none focus:ring-1 focus:ring-blue-500">
                 </div>
             </th>
             <th class="pb-3 font-medium w-16 text-center">คะแนนรวม</th>
@@ -292,7 +303,7 @@
 
             const scoreFinal = parseFloat(s.score_final) || 0;
             const totalScore = currentTotal + scoreFinal;
-            const totalMaxWithFinal = totalMax + 30;
+            const totalMaxWithFinal = totalMax + finalMaxScore;
             const percent = totalMaxWithFinal > 0 ? Math.min((totalScore / totalMaxWithFinal) * 100, 100) : 0;
 
             return `
@@ -317,10 +328,10 @@
 
     function updateFinalScore(studentId, input) {
         let val = parseFloat(input.value) || 0;
-        if (val > 30) {
-            alert('คะแนนสอบปลายภาคต้องไม่เกิน 30 คะแนน');
-            val = 30;
-            input.value = 30;
+        if (val > finalMaxScore) {
+            alert(`คะแนนสอบปลายภาคต้องไม่เกิน ${finalMaxScore} คะแนน`);
+            val = finalMaxScore;
+            input.value = finalMaxScore;
         }
         const student = currentStudents.find(s => s.id == studentId);
         student.score_final = val;
@@ -341,7 +352,7 @@
         
         const scoreFinal = parseFloat(student.score_final) || 0;
         const totalScore = currentTotal + scoreFinal;
-        const totalMaxWithFinal = totalMax + 30; // ปลายภาค 30
+        const totalMaxWithFinal = totalMax + finalMaxScore;
         const percent = totalMaxWithFinal > 0 ? Math.min((totalScore / totalMaxWithFinal) * 100, 100) : 0;
         
         document.getElementById(`units-total-${studentId}`).innerText = currentTotal.toFixed(1);
