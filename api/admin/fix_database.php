@@ -198,6 +198,21 @@ try {
     
     $results[] = "ตรวจสอบ/สร้างตาราง grades สำเร็จ";
 
+    // ตรวจสอบและเพิ่มคอลัมน์ใน grades
+    $grade_cols = [
+        'classroom_id' => "INT AFTER subject_id",
+        'teacher_id' => "INT AFTER classroom_id",
+        'academic_year' => "VARCHAR(4) AFTER teacher_id",
+        'semester' => "INT AFTER academic_year"
+    ];
+    foreach ($grade_cols as $col => $def) {
+        $stmt = $pdo->query("SHOW COLUMNS FROM grades LIKE '$col'");
+        if (!$stmt->fetch()) {
+            $pdo->exec("ALTER TABLE grades ADD COLUMN $col $def");
+            $results[] = "เพิ่มคอลัมน์ $col ในตาราง grades สำเร็จ";
+        }
+    }
+
     $pdo->exec("CREATE TABLE IF NOT EXISTS characteristics_scores (
         id INT AUTO_INCREMENT PRIMARY KEY,
         student_id INT,
@@ -526,15 +541,50 @@ try {
         UNIQUE KEY unique_attendance (student_id, subject_id, activity_type, check_date, period_number)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
-    // ตรวจสอบและเพิ่มคอลัมน์ activity_type ใน attendance
-    $stmt = $pdo->query("SHOW COLUMNS FROM attendance LIKE 'activity_type'");
-    if (!$stmt->fetch()) {
-        $pdo->exec("ALTER TABLE attendance ADD COLUMN activity_type VARCHAR(50) NULL AFTER subject_id");
-        $pdo->exec("ALTER TABLE attendance MODIFY COLUMN subject_id INT NULL");
-        // อัปเดต Unique Key
-        $pdo->exec("ALTER TABLE attendance DROP INDEX unique_attendance");
-        $pdo->exec("ALTER TABLE attendance ADD UNIQUE KEY unique_attendance (student_id, subject_id, activity_type, check_date, period_number)");
+    // ตรวจสอบและเพิ่มคอลัมน์ต่างๆ ใน attendance
+    $attendance_cols = [
+        'activity_type' => "VARCHAR(50) NULL AFTER subject_id",
+        'classroom_id' => "INT AFTER activity_type",
+        'academic_year' => "VARCHAR(4) AFTER classroom_id",
+        'semester' => "INT AFTER academic_year",
+        'check_date' => "DATE AFTER semester",
+        'period_number' => "INT AFTER check_date",
+        'teacher_id' => "INT AFTER status"
+    ];
+
+    foreach ($attendance_cols as $col => $def) {
+        $stmt = $pdo->query("SHOW COLUMNS FROM attendance LIKE '$col'");
+        if (!$stmt->fetch()) {
+            // ถ้าเป็น check_date ลองดูว่ามีคอลัมน์ date เดิมไหม
+            if ($col === 'check_date') {
+                $stmt_old = $pdo->query("SHOW COLUMNS FROM attendance LIKE 'date'");
+                if ($stmt_old->fetch()) {
+                    $pdo->exec("ALTER TABLE attendance CHANGE COLUMN `date` check_date DATE");
+                    $results[] = "เปลี่ยนชื่อคอลัมน์ date เป็น check_date ในตาราง attendance สำเร็จ";
+                    continue;
+                }
+            }
+            $pdo->exec("ALTER TABLE attendance ADD COLUMN $col $def");
+            $results[] = "เพิ่มคอลัมน์ $col ในตาราง attendance สำเร็จ";
+        }
     }
+
+    // ปรับปรุง subject_id ให้เป็น NULL ได้
+    $pdo->exec("ALTER TABLE attendance MODIFY COLUMN subject_id INT NULL");
+
+    // อัปเดต Unique Key
+    try {
+        $pdo->exec("ALTER TABLE attendance DROP INDEX unique_attendance");
+    } catch (Exception $e) {}
+    
+    try {
+        $pdo->exec("ALTER TABLE attendance ADD UNIQUE KEY unique_attendance (student_id, subject_id, activity_type, check_date, period_number)");
+        $results[] = "อัปเดต Unique Key ในตาราง attendance สำเร็จ";
+    } catch (Exception $e) {
+        // ถ้าซ้ำอาจต้องลบข้อมูลที่ซ้ำออกก่อน (ในกรณีใช้งานจริงอาจต้องระวัง)
+        $results[] = "คำเตือน: ไม่สามารถสร้าง Unique Key ได้เนื่องจากมีข้อมูลซ้ำ";
+    }
+
     $results[] = "ตรวจสอบ/สร้างตาราง attendance สำเร็จ";
 
     echo json_encode([
