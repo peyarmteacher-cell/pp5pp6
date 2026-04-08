@@ -386,6 +386,15 @@ try {
         FOREIGN KEY (teacher_id) REFERENCES users(id) ON DELETE SET NULL,
         UNIQUE KEY unique_learner_dev (student_id, academic_year, semester)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+    // ตรวจสอบและเพิ่มคอลัมน์ teacher_id ใน learner_development_results หากไม่มี
+    $stmt = $pdo->query("SHOW COLUMNS FROM learner_development_results LIKE 'teacher_id'");
+    if (!$stmt->fetch()) {
+        $pdo->exec("ALTER TABLE learner_development_results ADD COLUMN teacher_id INT AFTER social_result");
+        $pdo->exec("ALTER TABLE learner_development_results ADD FOREIGN KEY (teacher_id) REFERENCES users(id) ON DELETE SET NULL");
+        $results[] = "เพิ่มคอลัมน์ teacher_id ในตาราง learner_development_results สำเร็จ";
+    }
+
     $results[] = "ตรวจสอบ/สร้างตาราง learner_development_results สำเร็จ";
 
     $pdo->exec("CREATE TABLE IF NOT EXISTS learner_development_assignments (
