@@ -95,11 +95,19 @@ try {
     
     $pdo->prepare("UPDATE students SET academic_year = ? WHERE academic_year IS NULL OR academic_year = ''")->execute([$current_year]);
     
+    // ซิงค์แบบปกติ
     $stmt_sync = $pdo->exec("UPDATE students s 
                 JOIN classrooms c ON s.school_id = c.school_id AND s.level = c.level AND s.room = c.room
                 SET s.classroom_id = c.id
                 WHERE s.classroom_id IS NULL OR s.classroom_id = 0");
-    $results[] = "ซิงค์ข้อมูลห้องเรียนให้นักเรียนสำเร็จ ($stmt_sync ราย) และตั้งปีการศึกษาเป็น $current_year";
+
+    // ซิงค์แบบล้าง prefix (เช่น ป.1 -> 1, ม.1 -> 1)
+    $stmt_sync_clean = $pdo->exec("UPDATE students s 
+                JOIN classrooms c ON s.school_id = c.school_id AND REPLACE(REPLACE(s.level, 'ป.', ''), 'ม.', '') = c.level AND s.room = c.room
+                SET s.classroom_id = c.id
+                WHERE s.classroom_id IS NULL OR s.classroom_id = 0");
+
+    $results[] = "ซิงค์ข้อมูลห้องเรียนให้นักเรียนสำเร็จ (ปกติ: $stmt_sync, ล้าง prefix: $stmt_sync_clean) และตั้งปีการศึกษาเป็น $current_year";
 
     // แก้ไข teacher_assignments ที่ไม่มี classroom_id (ขยายให้ครบทุกห้องในระดับชั้นนั้น)
     $stmt = $pdo->query("SELECT ta.*, s.level, s.school_id FROM teacher_assignments ta JOIN subjects s ON ta.subject_id = s.id WHERE ta.classroom_id IS NULL OR ta.classroom_id = 0");

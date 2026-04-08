@@ -145,6 +145,11 @@
             const res = await fetch(`api/teacher/get_attendance_data.php?classroom_id=${currentAttClassroom.id}&academic_year=${year}&semester=${semester}&check_date=${checkDate}`);
             const result = await res.json();
             
+            if (result.error) {
+                alert(result.error);
+                return;
+            }
+
             attSubjects = result.subjects;
             attStudents = result.students;
             attendanceData = result.attendance;
@@ -155,26 +160,34 @@
                 return;
             }
 
+            if (attStudents.length === 0) {
+                alert('ไม่พบรายชื่อนักเรียนในห้องเรียนนี้ กรุณาตรวจสอบข้อมูลนักเรียน');
+            }
+
             document.getElementById('attendance-no-subjects-state').classList.add('hidden');
             document.getElementById('attendance-main-container').classList.remove('hidden');
 
             renderSubjectTabs();
             // Select first subject by default
-            selectAttSubject(attSubjects[0].subject_id, attSubjects[0].period_number);
+            if (attSubjects.length > 0) {
+                selectAttSubject(attSubjects[0].subject_id, attSubjects[0].period_number);
+            }
         } catch (e) {
             console.error('Error loading attendance data:', e);
+            alert('เกิดข้อผิดพลาดในการโหลดข้อมูล: ' + e.message);
         }
     }
 
     function renderSubjectTabs() {
         const container = document.getElementById('attendance-subject-tabs');
         container.innerHTML = attSubjects.map(s => {
-            const safeId = s.subject_id.toString().replace(':', '-');
+            const sid = s.subject_id || 'none';
+            const safeId = sid.toString().replace(':', '-');
             return `
-                <button onclick="selectAttSubject('${s.subject_id}', ${s.period_number})" 
+                <button onclick="selectAttSubject('${sid}', ${s.period_number})" 
                     id="btn-att-sub-${safeId}-${s.period_number}"
                     class="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold transition-all hover:border-blue-500 hover:text-blue-600 cursor-pointer bg-white">
-                    คาบ ${s.period_number}: ${s.subject_code}
+                    คาบ ${s.period_number}: ${s.subject_code || 'ไม่ระบุ'}
                 </button>
             `;
         }).join('');
@@ -182,7 +195,8 @@
 
     function selectAttSubject(subjectId, period) {
         activeAttSubject = { subjectId, period };
-        const safeId = subjectId.toString().replace(':', '-');
+        const sid = subjectId || 'none';
+        const safeId = sid.toString().replace(':', '-');
         
         document.querySelectorAll('[id^="btn-att-sub-"]').forEach(btn => {
             btn.classList.remove('bg-blue-600', 'text-white', 'border-blue-600');

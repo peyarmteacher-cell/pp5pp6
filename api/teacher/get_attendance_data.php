@@ -53,7 +53,8 @@ try {
     }
 
     // 2. ดึงรายชื่อนักเรียน
-    $stmt = $pdo->prepare('SELECT id, student_code, prefix, name, last_name FROM students WHERE classroom_id = ? AND status = "studying" ORDER BY student_code ASC');
+    // ปรับปรุง query ให้ยืดหยุ่นขึ้น เผื่อ status เป็นค่าว่างหรือ NULL
+    $stmt = $pdo->prepare('SELECT id, student_code, prefix, name, last_name FROM students WHERE classroom_id = ? AND (status = "studying" OR status IS NULL OR status = "") ORDER BY student_code ASC');
     $stmt->execute([$classroom_id]);
     $students = $stmt->fetchAll();
 
@@ -66,12 +67,22 @@ try {
         if ($ad['activity_type']) {
             $ad['subject_id'] = 'LD:' . $ad['activity_type'];
         }
+        // ตรวจสอบว่า subject_id ไม่เป็น null เพื่อป้องกัน JS error
+        if ($ad['subject_id'] === null) {
+            $ad['subject_id'] = 'none';
+        }
     }
 
     echo json_encode([
         'subjects' => $subjects,
         'students' => $students,
-        'attendance' => $attendance_data
+        'attendance' => $attendance_data,
+        'debug' => [
+            'classroom_id' => $classroom_id,
+            'day_of_week' => $day_of_week,
+            'student_count' => count($students),
+            'subject_count' => count($subjects)
+        ]
     ]);
 } catch (PDOException $e) {
     http_response_code(500);
