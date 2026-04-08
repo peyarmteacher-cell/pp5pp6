@@ -31,13 +31,20 @@ try {
 
     $data = [];
     foreach ($students as $s) {
-        $res = $results_map[$s['id']] ?? [
+        $student_id = $s['id'];
+        $res = $results_map[$student_id] ?? [
             'guidance_result' => '',
             'scout_result' => '',
             'club_id' => null,
             'club_result' => '',
             'social_result' => ''
         ];
+        
+        // ลบ id ของผลลัพธ์ออกเพื่อไม่ให้ไปทับ id ของนักเรียน
+        if (isset($res['id'])) {
+            unset($res['id']);
+        }
+        
         $data[] = array_merge($s, $res);
     }
 
