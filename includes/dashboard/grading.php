@@ -93,8 +93,11 @@
         
         try {
             const res = await fetch(`api/teacher/get_my_assignments.php?academic_year=${year}&semester=${semester}`);
-            const assignments = await res.json();
+            let assignments = await res.json();
             
+            // กรองกิจกรรมพัฒนาผู้เรียนออก (เพราะบันทึกที่เมนูแยกต่างหาก)
+            assignments = assignments.filter(a => !a.subject_id || !a.subject_id.toString().startsWith('LD:'));
+
             const container = document.getElementById('assignment-list');
             if (assignments.length === 0) {
                 container.innerHTML = '<div class="col-span-full text-center py-12 text-slate-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200">ไม่พบรายวิชาที่ได้รับมอบหมายในภาคเรียนนี้</div>';
@@ -104,7 +107,7 @@
             container.innerHTML = assignments.map(a => `
                 <div onclick="selectAssignment(${JSON.stringify(a).replace(/"/g, '&quot;')})" class="bg-white p-5 rounded-2xl border border-slate-200 hover:border-blue-400 hover:shadow-md transition-all cursor-pointer group">
                     <div class="flex justify-between items-start mb-3">
-                        <span class="px-2 py-1 bg-blue-50 text-blue-600 text-[10px] font-bold rounded-lg uppercase">${a.code}</span>
+                        <span class="px-2 py-1 bg-blue-50 text-blue-600 text-[10px] font-bold rounded-lg uppercase">${a.subject_code}</span>
                         <span class="text-xs text-slate-400">${a.level}</span>
                     </div>
                     <h4 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors mb-1">${a.subject_name}</h4>
@@ -125,7 +128,7 @@
         document.getElementById('assignment-list').parentElement.classList.add('hidden');
         document.getElementById('grading-interface').classList.remove('hidden');
         
-        document.getElementById('selected-subject-title').innerText = `รายวิชา: ${assignment.code} ${assignment.subject_name}`;
+        document.getElementById('selected-subject-title').innerText = `รายวิชา: ${assignment.subject_code} ${assignment.subject_name}`;
         document.getElementById('selected-classroom-title').innerText = `ชั้น: ${assignment.level} ห้อง: ${assignment.room}`;
         document.getElementById('selected-year-title').innerText = `ปีการศึกษา: ${document.getElementById('grade_academic_year').value}`;
         
