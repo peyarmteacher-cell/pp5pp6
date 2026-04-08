@@ -22,6 +22,7 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sarabun:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Sarabun', sans-serif; }
+        button, a, select, input[type="checkbox"], input[type="radio"], input[type="submit"], input[type="button"] { cursor: pointer; }
     </style>
 </head>
 <body class="bg-slate-50 min-h-screen flex">
@@ -265,6 +266,8 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
         var selectedStudentLevel = null;
         var selectedStudentRoom = null;
         var selectedSubjectLevel = null;
+        var currentAcademicYear = '2567';
+        var currentSemester = 1;
 
         function showSection(sectionId) {
             document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));

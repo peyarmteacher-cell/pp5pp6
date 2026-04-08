@@ -95,7 +95,7 @@
     }
 
     function updateAcademicYearDropdowns(years) {
-        const dropdowns = ['std_academic_year', 'edit_std_academic_year', 'filter_academic_year', 'grade_academic_year', 'char_academic_year', 'anal_academic_year', 'ld_academic_year'];
+        const dropdowns = ['std_academic_year', 'edit_std_academic_year', 'filter_academic_year', 'grade_academic_year', 'char_academic_year', 'anal_academic_year', 'ld_academic_year', 'behavior-year', 'att_academic_year'];
         years.sort((a, b) => b.year - a.year);
         
         const currentYearObj = years.find(y => y.is_current);
@@ -112,6 +112,8 @@
                 if (currentValue && years.some(y => y.year === currentValue)) {
                     el.value = currentValue;
                 }
+                if (id === 'behavior-year' && typeof loadBehaviorClassrooms === 'function') loadBehaviorClassrooms();
+                if (id === 'att_academic_year' && typeof loadAttendanceClassrooms === 'function') loadAttendanceClassrooms();
             }
         });
     }
