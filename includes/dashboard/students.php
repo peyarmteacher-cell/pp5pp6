@@ -488,7 +488,7 @@
                 <td class="py-2">${s.student_code}</td>
                 <td class="py-2">${s.national_id}</td>
                 <td class="py-2">${s.prefix}</td>
-                <td class="py-2">${s.name}</td>
+                <td class="py-2">${s.name} ${s.last_name || ''}</td>
                 <td class="py-2">${s.level}</td>
                 <td class="py-2">${s.room}</td>
                 <td class="py-2">${s.academic_year}</td>

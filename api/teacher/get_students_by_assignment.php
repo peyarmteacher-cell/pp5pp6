@@ -81,7 +81,7 @@ try {
 
     if ($semester === 'annual') {
         $sql = "
-            SELECT s.id, s.student_code, s.name, s.prefix,
+            SELECT s.id, s.student_code, s.name, s.last_name, s.prefix,
                    g1.score_units as sem1_units, g1.score_percent as sem1_percent, g1.grade as sem1_grade,
                    g2.score_units as sem2_units, g2.score_percent as sem2_percent, g2.grade as sem2_grade,
                    ((IFNULL(g1.score_percent, 0) + IFNULL(g2.score_percent, 0)) / 2) as annual_percent
@@ -99,7 +99,7 @@ try {
         ], $params));
     } else {
         $sql = "
-            SELECT s.id, s.student_code, s.name, s.prefix,
+            SELECT s.id, s.student_code, s.name, s.last_name, s.prefix,
                    g.score_units, g.score_midterm, g.score_final, g.score_total, g.score_percent, g.grade,
                    cs.item1, cs.item2, cs.item3, cs.item4, cs.item5, cs.item6, cs.item7, cs.item8, cs.average_score,
                    ascore.item1 as anal_item1, ascore.item2 as anal_item2, ascore.item3 as anal_item3, ascore.item4 as anal_item4, ascore.item5 as anal_item5, ascore.average_score as analytical_avg

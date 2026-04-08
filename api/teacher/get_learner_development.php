@@ -15,7 +15,7 @@ $semester = $_GET['semester'] ?? 1;
 
 try {
     // Get students in classroom
-    $stmt = $pdo->prepare('SELECT id, prefix, name, student_code FROM students WHERE classroom_id = ? AND academic_year = ? ORDER BY student_code ASC');
+    $stmt = $pdo->prepare('SELECT id, prefix, name, last_name, student_code FROM students WHERE classroom_id = ? AND academic_year = ? ORDER BY student_code ASC');
     $stmt->execute([$classroom_id, $academic_year]);
     $students = $stmt->fetchAll();
 
