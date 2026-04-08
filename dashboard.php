@@ -18,6 +18,7 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
     <title>Dashboard - ระบบบริหารจัดการสถานศึกษา</title>
     <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sarabun:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Sarabun', sans-serif; }
@@ -66,6 +67,7 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                 <div class="pt-4 pb-2 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">เมนูครู</div>
                 <a href="javascript:void(0)" onclick="showSection('record-grades')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">บันทึกผลการเรียน</a>
                 <a href="javascript:void(0)" onclick="showSection('record-learner-development')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">บันทึกกิจกรรมพัฒนาผู้เรียน</a>
+                <a href="javascript:void(0)" onclick="showSection('record-health')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">บันทึกน้ำหนัก-ส่วนสูง</a>
             <?php endif; ?>
         </nav>
 
@@ -226,6 +228,7 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
         <!-- Teacher: Record Grades -->
         <?php include 'includes/dashboard/grading.php'; ?>
         <?php include 'includes/dashboard/learner_development.php'; ?>
+        <?php include 'includes/dashboard/health_records.php'; ?>
 
         <!-- Approve Users Section -->
         <div id="approve-section" class="section hidden space-y-6">
@@ -278,6 +281,9 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
             } else if (sectionId === 'record-learner-development') {
                 targetId = sectionId;
                 loadLearnerDevClassrooms();
+            } else if (sectionId === 'record-health') {
+                targetId = sectionId;
+                if (typeof loadHealthClassrooms === 'function') loadHealthClassrooms();
             }
             
             const target = document.getElementById(targetId);
@@ -291,6 +297,7 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                 'manage-subjects': 'จัดการรายวิชา',
                 'record-grades': 'บันทึกผลการเรียน',
                 'record-learner-development': 'บันทึกกิจกรรมพัฒนาผู้เรียน',
+                'record-health': 'บันทึกน้ำหนัก-ส่วนสูง',
                 'manage-super-admins': 'จัดการ Super Admin',
                 'profile': 'แก้ไขโปรไฟล์'
             };

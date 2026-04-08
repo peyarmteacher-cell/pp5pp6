@@ -448,6 +448,27 @@ try {
         UNIQUE KEY unique_ld_assignment (teacher_id, classroom_id, academic_year, semester)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
     $results[] = "ตรวจสอบ/สร้างตาราง learner_development_assignments สำเร็จ";
+    
+    // 13. เพิ่มตารางบันทึกน้ำหนักส่วนสูง
+    $pdo->exec("CREATE TABLE IF NOT EXISTS student_health_records (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        student_id INT,
+        classroom_id INT,
+        academic_year VARCHAR(4),
+        semester INT,
+        record_number INT,
+        weight FLOAT,
+        height FLOAT,
+        recorded_date DATE,
+        teacher_id INT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+        FOREIGN KEY (classroom_id) REFERENCES classrooms(id) ON DELETE CASCADE,
+        FOREIGN KEY (teacher_id) REFERENCES users(id) ON DELETE SET NULL,
+        UNIQUE KEY unique_health_record (student_id, academic_year, semester, record_number)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    $results[] = "ตรวจสอบ/สร้างตาราง student_health_records สำเร็จ";
 
     echo json_encode([
         'status' => 'success',
