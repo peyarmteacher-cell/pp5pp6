@@ -28,12 +28,29 @@ try {
     $stmt = $pdo->prepare('
         SELECT t.*, s.name as subject_name, s.code as subject_code
         FROM timetables t
-        JOIN subjects s ON t.subject_id = s.id
+        LEFT JOIN subjects s ON t.subject_id = s.id
         WHERE t.classroom_id = ? AND t.academic_year = ? AND t.semester = ? AND t.day_of_week = ?
         ORDER BY t.period_number ASC
     ');
     $stmt->execute([$classroom_id, $academic_year, $semester, $day_of_week]);
     $subjects = $stmt->fetchAll();
+
+    foreach ($subjects as &$s) {
+        if ($s['activity_type']) {
+            $activities = [
+                'guidance' => ['name' => 'กิจกรรมแนะแนว', 'code' => 'แนะแนว'],
+                'scouts' => ['name' => 'กิจกรรมลูกเสือ/เนตรนารี', 'code' => 'ลูกเสือ'],
+                'club' => ['name' => 'กิจกรรมชุมนุม', 'code' => 'ชุมนุม'],
+                'social' => ['name' => 'กิจกรรมเพื่อสังคมฯ', 'code' => 'สังคมฯ']
+            ];
+            $act = $activities[$s['activity_type']] ?? null;
+            if ($act) {
+                $s['subject_name'] = $act['name'];
+                $s['subject_code'] = $act['code'];
+                $s['subject_id'] = 'LD:' . $s['activity_type'];
+            }
+        }
+    }
 
     // 2. ดึงรายชื่อนักเรียน
     $stmt = $pdo->prepare('SELECT id, student_code, prefix, name, last_name FROM students WHERE classroom_id = ? AND status = "studying" ORDER BY student_code ASC');
@@ -44,6 +61,12 @@ try {
     $stmt = $pdo->prepare('SELECT * FROM attendance WHERE classroom_id = ? AND check_date = ?');
     $stmt->execute([$classroom_id, $check_date]);
     $attendance_data = $stmt->fetchAll();
+
+    foreach ($attendance_data as &$ad) {
+        if ($ad['activity_type']) {
+            $ad['subject_id'] = 'LD:' . $ad['activity_type'];
+        }
+    }
 
     echo json_encode([
         'subjects' => $subjects,

@@ -168,24 +168,28 @@
 
     function renderSubjectTabs() {
         const container = document.getElementById('attendance-subject-tabs');
-        container.innerHTML = attSubjects.map(s => `
-            <button onclick="selectAttSubject(${s.subject_id}, ${s.period_number})" 
-                id="btn-att-sub-${s.subject_id}-${s.period_number}"
-                class="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold transition-all hover:border-blue-500 hover:text-blue-600 cursor-pointer bg-white">
-                คาบ ${s.period_number}: ${s.subject_code}
-            </button>
-        `).join('');
+        container.innerHTML = attSubjects.map(s => {
+            const safeId = s.subject_id.toString().replace(':', '-');
+            return `
+                <button onclick="selectAttSubject('${s.subject_id}', ${s.period_number})" 
+                    id="btn-att-sub-${safeId}-${s.period_number}"
+                    class="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold transition-all hover:border-blue-500 hover:text-blue-600 cursor-pointer bg-white">
+                    คาบ ${s.period_number}: ${s.subject_code}
+                </button>
+            `;
+        }).join('');
     }
 
     function selectAttSubject(subjectId, period) {
         activeAttSubject = { subjectId, period };
+        const safeId = subjectId.toString().replace(':', '-');
         
         document.querySelectorAll('[id^="btn-att-sub-"]').forEach(btn => {
             btn.classList.remove('bg-blue-600', 'text-white', 'border-blue-600');
             btn.classList.add('bg-white', 'text-slate-700', 'border-slate-200');
         });
         
-        const activeBtn = document.getElementById(`btn-att-sub-${subjectId}-${period}`);
+        const activeBtn = document.getElementById(`btn-att-sub-${safeId}-${period}`);
         if (activeBtn) {
             activeBtn.classList.remove('bg-white', 'text-slate-700', 'border-slate-200');
             activeBtn.classList.add('bg-blue-600', 'text-white', 'border-blue-600');

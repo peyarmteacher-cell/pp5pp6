@@ -25,6 +25,37 @@ try {
     $stmt->execute([$teacher_id, $academic_year, $semester]);
     $assignments = $stmt->fetchAll();
 
+    // ดึงงานกิจกรรมพัฒนาผู้เรียน
+    $stmt_ld = $pdo->prepare('
+        SELECT lda.classroom_id, c.level, c.room
+        FROM learner_development_assignments lda
+        JOIN classrooms c ON lda.classroom_id = c.id
+        WHERE lda.teacher_id = ? AND lda.academic_year = ? AND lda.semester = ?
+    ');
+    $stmt_ld->execute([$teacher_id, $academic_year, $semester]);
+    $ld_assignments = $stmt_ld->fetchAll();
+
+    foreach ($ld_assignments as $ld) {
+        $activities = [
+            ['type' => 'guidance', 'name' => 'กิจกรรมแนะแนว', 'code' => 'แนะแนว'],
+            ['type' => 'scouts', 'name' => 'กิจกรรมลูกเสือ/เนตรนารี', 'code' => 'ลูกเสือ'],
+            ['type' => 'club', 'name' => 'กิจกรรมชุมนุม', 'code' => 'ชุมนุม'],
+            ['type' => 'social', 'name' => 'กิจกรรมเพื่อสังคมฯ', 'code' => 'สังคมฯ']
+        ];
+
+        foreach ($activities as $act) {
+            $assignments[] = [
+                'assignment_id' => null,
+                'subject_id' => 'LD:' . $act['type'], // ใช้ prefix เพื่อแยกแยะใน frontend
+                'subject_code' => $act['code'],
+                'subject_name' => $act['name'],
+                'level' => $ld['level'],
+                'classroom_id' => $ld['classroom_id'],
+                'room' => $ld['room']
+            ];
+        }
+    }
+
     echo json_encode($assignments);
 } catch (PDOException $e) {
     http_response_code(500);

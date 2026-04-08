@@ -15,15 +15,34 @@ $semester = $_GET['semester'] ?? 1;
 
 try {
     $stmt = $pdo->prepare('
-        SELECT t.*, s.name as subject_name, s.code as subject_code, c.level, c.room
+        SELECT t.*, 
+               s.name as subject_name, s.code as subject_code, 
+               c.level, c.room
         FROM timetables t
-        JOIN subjects s ON t.subject_id = s.id
+        LEFT JOIN subjects s ON t.subject_id = s.id
         JOIN classrooms c ON t.classroom_id = c.id
         WHERE t.teacher_id = ? AND t.academic_year = ? AND t.semester = ?
         ORDER BY t.day_of_week ASC, t.period_number ASC
     ');
     $stmt->execute([$teacher_id, $academic_year, $semester]);
     $timetable = $stmt->fetchAll();
+
+    foreach ($timetable as &$t) {
+        if ($t['activity_type']) {
+            $activities = [
+                'guidance' => ['name' => 'กิจกรรมแนะแนว', 'code' => 'แนะแนว'],
+                'scouts' => ['name' => 'กิจกรรมลูกเสือ/เนตรนารี', 'code' => 'ลูกเสือ'],
+                'club' => ['name' => 'กิจกรรมชุมนุม', 'code' => 'ชุมนุม'],
+                'social' => ['name' => 'กิจกรรมเพื่อสังคมฯ', 'code' => 'สังคมฯ']
+            ];
+            $act = $activities[$t['activity_type']] ?? null;
+            if ($act) {
+                $t['subject_name'] = $act['name'];
+                $t['subject_code'] = $act['code'];
+                $t['subject_id'] = 'LD:' . $t['activity_type'];
+            }
+        }
+    }
 
     echo json_encode($timetable);
 } catch (PDOException $e) {

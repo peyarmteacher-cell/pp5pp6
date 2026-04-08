@@ -474,7 +474,8 @@ try {
     $pdo->exec("CREATE TABLE IF NOT EXISTS timetables (
         id INT AUTO_INCREMENT PRIMARY KEY,
         teacher_id INT,
-        subject_id INT,
+        subject_id INT NULL,
+        activity_type VARCHAR(50) NULL, -- 'guidance', 'scouts', 'club', 'social'
         classroom_id INT,
         academic_year VARCHAR(4),
         semester INT,
@@ -486,13 +487,21 @@ try {
         FOREIGN KEY (classroom_id) REFERENCES classrooms(id) ON DELETE CASCADE,
         UNIQUE KEY unique_timetable (classroom_id, academic_year, semester, day_of_week, period_number)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+    // ตรวจสอบและเพิ่มคอลัมน์ activity_type ใน timetables
+    $stmt = $pdo->query("SHOW COLUMNS FROM timetables LIKE 'activity_type'");
+    if (!$stmt->fetch()) {
+        $pdo->exec("ALTER TABLE timetables ADD COLUMN activity_type VARCHAR(50) NULL AFTER subject_id");
+        $pdo->exec("ALTER TABLE timetables MODIFY COLUMN subject_id INT NULL");
+    }
     $results[] = "ตรวจสอบ/สร้างตาราง timetables สำเร็จ";
 
     // 15. เพิ่มตารางบันทึกการมาเรียน
     $pdo->exec("CREATE TABLE IF NOT EXISTS attendance (
         id INT AUTO_INCREMENT PRIMARY KEY,
         student_id INT,
-        subject_id INT,
+        subject_id INT NULL,
+        activity_type VARCHAR(50) NULL,
         classroom_id INT,
         academic_year VARCHAR(4),
         semester INT,
@@ -506,8 +515,18 @@ try {
         FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE CASCADE,
         FOREIGN KEY (classroom_id) REFERENCES classrooms(id) ON DELETE CASCADE,
         FOREIGN KEY (teacher_id) REFERENCES users(id) ON DELETE SET NULL,
-        UNIQUE KEY unique_attendance (student_id, subject_id, check_date, period_number)
+        UNIQUE KEY unique_attendance (student_id, subject_id, activity_type, check_date, period_number)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+    // ตรวจสอบและเพิ่มคอลัมน์ activity_type ใน attendance
+    $stmt = $pdo->query("SHOW COLUMNS FROM attendance LIKE 'activity_type'");
+    if (!$stmt->fetch()) {
+        $pdo->exec("ALTER TABLE attendance ADD COLUMN activity_type VARCHAR(50) NULL AFTER subject_id");
+        $pdo->exec("ALTER TABLE attendance MODIFY COLUMN subject_id INT NULL");
+        // อัปเดต Unique Key
+        $pdo->exec("ALTER TABLE attendance DROP INDEX unique_attendance");
+        $pdo->exec("ALTER TABLE attendance ADD UNIQUE KEY unique_attendance (student_id, subject_id, activity_type, check_date, period_number)");
+    }
     $results[] = "ตรวจสอบ/สร้างตาราง attendance สำเร็จ";
 
     echo json_encode([

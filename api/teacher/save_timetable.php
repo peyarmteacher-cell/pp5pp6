@@ -29,15 +29,25 @@ try {
         $stmt = $pdo->prepare('DELETE FROM timetables WHERE classroom_id = ? AND academic_year = ? AND semester = ? AND day_of_week = ? AND period_number = ?');
         $stmt->execute([$classroom_id, $academic_year, $semester, $day_of_week, $period_number]);
     } else {
+        $activity_type = null;
+        $real_subject_id = $subject_id;
+
+        // ตรวจสอบว่าเป็นกิจกรรมพัฒนาผู้เรียนหรือไม่
+        if (is_string($subject_id) && strpos($subject_id, 'LD:') === 0) {
+            $activity_type = str_replace('LD:', '', $subject_id);
+            $real_subject_id = null;
+        }
+
         // บันทึกหรืออัปเดต
         $stmt = $pdo->prepare('
-            INSERT INTO timetables (teacher_id, subject_id, classroom_id, academic_year, semester, day_of_week, period_number)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO timetables (teacher_id, subject_id, activity_type, classroom_id, academic_year, semester, day_of_week, period_number)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             ON DUPLICATE KEY UPDATE 
             teacher_id = VALUES(teacher_id),
-            subject_id = VALUES(subject_id)
+            subject_id = VALUES(subject_id),
+            activity_type = VALUES(activity_type)
         ');
-        $stmt->execute([$teacher_id, $subject_id, $classroom_id, $academic_year, $semester, $day_of_week, $period_number]);
+        $stmt->execute([$teacher_id, $real_subject_id, $activity_type, $classroom_id, $academic_year, $semester, $day_of_week, $period_number]);
     }
 
     echo json_encode(['message' => 'บันทึกตารางสอนเรียบร้อยแล้ว']);
