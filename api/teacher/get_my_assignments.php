@@ -15,7 +15,7 @@ $semester = $_GET['semester'] ?? 1;
 
 try {
     $stmt = $pdo->prepare('
-        SELECT ta.id as assignment_id, s.id as subject_id, s.code, s.name as subject_name, s.level, c.id as classroom_id, c.room
+        SELECT ta.id as assignment_id, s.id as subject_id, s.code as subject_code, s.name as subject_name, s.level, c.id as classroom_id, c.room
         FROM teacher_assignments ta
         JOIN subjects s ON ta.subject_id = s.id
         LEFT JOIN classrooms c ON ta.classroom_id = c.id

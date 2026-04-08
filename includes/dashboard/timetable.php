@@ -34,7 +34,14 @@
                 <thead>
                     <tr class="bg-slate-50">
                         <th class="p-3 border border-slate-200 text-slate-500 font-bold text-xs w-24">วัน / คาบ</th>
-                        ${[1, 2, 3, 4, 5, 6, 7, 8].map(i => `<th class="p-3 border border-slate-200 text-slate-500 font-bold text-xs">คาบที่ ${i}</th>`).join('')}
+                        <th class="p-3 border border-slate-200 text-slate-500 font-bold text-xs">คาบที่ 1</th>
+                        <th class="p-3 border border-slate-200 text-slate-500 font-bold text-xs">คาบที่ 2</th>
+                        <th class="p-3 border border-slate-200 text-slate-500 font-bold text-xs">คาบที่ 3</th>
+                        <th class="p-3 border border-slate-200 text-slate-500 font-bold text-xs">คาบที่ 4</th>
+                        <th class="p-3 border border-slate-200 text-slate-500 font-bold text-xs">คาบที่ 5</th>
+                        <th class="p-3 border border-slate-200 text-slate-500 font-bold text-xs">คาบที่ 6</th>
+                        <th class="p-3 border border-slate-200 text-slate-500 font-bold text-xs">คาบที่ 7</th>
+                        <th class="p-3 border border-slate-200 text-slate-500 font-bold text-xs">คาบที่ 8</th>
                     </tr>
                 </thead>
                 <tbody id="timetable-body">
