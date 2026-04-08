@@ -79,48 +79,210 @@
 
 <!-- Edit Student Modal -->
 <div id="editStudentModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl">
-        <h3 class="text-xl font-bold mb-4 text-slate-800">แก้ไขข้อมูลนักเรียน</h3>
-        <form id="editStudentForm" class="space-y-4">
+    <div class="bg-white rounded-2xl w-full max-w-4xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xl font-bold text-slate-800">แก้ไขข้อมูลนักเรียน</h3>
+            <button onclick="closeModal('editStudentModal')" class="text-slate-400 hover:text-slate-600">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+        
+        <form id="editStudentForm" class="space-y-6">
             <input type="hidden" id="edit_std_id">
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">คำนำหน้า</label>
-                    <select id="edit_std_prefix" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer">
-                        <option value="เด็กชาย">เด็กชาย</option>
-                        <option value="เด็กหญิง">เด็กหญิง</option>
-                        <option value="นาย">นาย</option>
-                        <option value="นางสาว">นางสาว</option>
-                    </select>
+            
+            <!-- ข้อมูลพื้นฐาน -->
+            <div class="space-y-4">
+                <h4 class="text-sm font-bold text-blue-600 uppercase tracking-wider border-b border-blue-50 pb-2">ข้อมูลพื้นฐาน</h4>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1">คำนำหน้า</label>
+                        <select id="edit_std_prefix" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer">
+                            <option value="เด็กชาย">เด็กชาย</option>
+                            <option value="เด็กหญิง">เด็กหญิง</option>
+                            <option value="นาย">นาย</option>
+                            <option value="นางสาว">นางสาว</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1">ชื่อ</label>
+                        <input type="text" id="edit_std_name" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1">นามสกุล</label>
+                        <input type="text" id="edit_std_last_name" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">ปีการศึกษา</label>
-                    <select id="edit_std_academic_year" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer">
-                        <!-- จะถูกเติมด้วย JavaScript -->
-                    </select>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1">รหัสประจำตัว</label>
+                        <input type="text" id="edit_std_code" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1">เลขบัตรประชาชน</label>
+                        <input type="text" id="edit_std_national_id" required maxlength="13" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1">เพศ</label>
+                        <select id="edit_std_gender" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer">
+                            <option value="">ระบุเพศ</option>
+                            <option value="ชาย">ชาย</option>
+                            <option value="หญิง">หญิง</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1">ระดับชั้น</label>
+                        <select id="edit_std_level" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer">
+                            <option value="ป.1">ป.1</option><option value="ป.2">ป.2</option><option value="ป.3">ป.3</option>
+                            <option value="ป.4">ป.4</option><option value="ป.5">ป.5</option><option value="ป.6">ป.6</option>
+                            <option value="ม.1">ม.1</option><option value="ม.2">ม.2</option><option value="ม.3">ม.3</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1">ห้อง</label>
+                        <input type="text" id="edit_std_room" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1">ปีการศึกษา</label>
+                        <select id="edit_std_academic_year" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer">
+                            <!-- จะถูกเติมด้วย JavaScript -->
+                        </select>
+                    </div>
                 </div>
             </div>
-            <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">ชื่อ-นามสกุล</label>
-                <input type="text" id="edit_std_name" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
-            </div>
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">ระดับชั้น</label>
-                    <select id="edit_std_level" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer">
-                        <option value="ป.1">ป.1</option><option value="ป.2">ป.2</option><option value="ป.3">ป.3</option>
-                        <option value="ป.4">ป.4</option><option value="ป.5">ป.5</option><option value="ป.6">ป.6</option>
-                        <option value="ม.1">ม.1</option><option value="ม.2">ม.2</option><option value="ม.3">ม.3</option>
-                    </select>
+
+            <!-- ข้อมูลส่วนตัวและสุขภาพ -->
+            <div class="space-y-4">
+                <h4 class="text-sm font-bold text-blue-600 uppercase tracking-wider border-b border-blue-50 pb-2">ข้อมูลส่วนตัวและสุขภาพ</h4>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1">วันเกิด</label>
+                        <input type="date" id="edit_std_birthday" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1">น้ำหนัก (กก.)</label>
+                        <input type="number" step="0.1" id="edit_std_weight" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1">ส่วนสูง (ซม.)</label>
+                        <input type="number" step="0.1" id="edit_std_height" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1">กลุ่มเลือด</label>
+                        <select id="edit_std_blood_group" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer">
+                            <option value="">ระบุ</option>
+                            <option value="A">A</option><option value="B">B</option><option value="AB">AB</option><option value="O">O</option>
+                        </select>
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">ห้อง</label>
-                    <input type="text" id="edit_std_room" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1">ศาสนา</label>
+                        <input type="text" id="edit_std_religion" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1">เชื้อชาติ</label>
+                        <input type="text" id="edit_std_race" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1">สัญชาติ</label>
+                        <input type="text" id="edit_std_nationality" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+                    </div>
                 </div>
             </div>
-            <div class="flex gap-3 pt-4">
-                <button type="button" onclick="closeModal('editStudentModal')" class="flex-1 px-4 py-2 border border-slate-200 rounded-xl font-semibold text-slate-600 hover:bg-slate-50 cursor-pointer transition-all">ยกเลิก</button>
-                <button type="submit" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-xl font-semibold hover:bg-blue-700 cursor-pointer transition-all shadow-lg shadow-blue-600/20">บันทึก</button>
+
+            <!-- ข้อมูลที่อยู่ -->
+            <div class="space-y-4">
+                <h4 class="text-sm font-bold text-blue-600 uppercase tracking-wider border-b border-blue-50 pb-2">ข้อมูลที่อยู่</h4>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1">บ้านเลขที่</label>
+                        <input type="text" id="edit_std_house_no" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1">หมู่</label>
+                        <input type="text" id="edit_std_moo" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1">ถนน/ซอย</label>
+                        <input type="text" id="edit_std_road_soi" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1">ตำบล</label>
+                        <input type="text" id="edit_std_sub_district" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1">อำเภอ</label>
+                        <input type="text" id="edit_std_district" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1">จังหวัด</label>
+                        <input type="text" id="edit_std_province_name" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1">ความด้อยโอกาส</label>
+                        <input type="text" id="edit_std_disadvantage" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+                    </div>
+                </div>
+            </div>
+
+            <!-- ข้อมูลครอบครัว -->
+            <div class="space-y-4">
+                <h4 class="text-sm font-bold text-blue-600 uppercase tracking-wider border-b border-blue-50 pb-2">ข้อมูลครอบครัว</h4>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1">ชื่อบิดา</label>
+                        <input type="text" id="edit_std_father_name" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1">นามสกุลบิดา</label>
+                        <input type="text" id="edit_std_father_last_name" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1">อาชีพของบิดา</label>
+                        <input type="text" id="edit_std_father_occupation" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1">ชื่อมารดา</label>
+                        <input type="text" id="edit_std_mother_name" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1">นามสกุลมารดา</label>
+                        <input type="text" id="edit_std_mother_last_name" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1">อาชีพของมารดา</label>
+                        <input type="text" id="edit_std_mother_occupation" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1">ชื่อผู้ปกครอง</label>
+                        <input type="text" id="edit_std_parent_name" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1">นามสกุลผู้ปกครอง</label>
+                        <input type="text" id="edit_std_parent_last_name" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1">อาชีพผู้ปกครอง</label>
+                        <input type="text" id="edit_std_parent_occupation" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1">ความเกี่ยวข้อง</label>
+                        <input type="text" id="edit_std_parent_relationship" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex gap-3 pt-4 border-t border-slate-100">
+                <button type="button" onclick="closeModal('editStudentModal')" class="flex-1 px-4 py-3 border border-slate-200 rounded-xl font-semibold text-slate-600 hover:bg-slate-50 cursor-pointer transition-all">ยกเลิก</button>
+                <button type="submit" class="flex-1 bg-blue-600 text-white px-4 py-3 rounded-xl font-semibold hover:bg-blue-700 cursor-pointer transition-all shadow-lg shadow-blue-600/20">บันทึกการเปลี่ยนแปลง</button>
             </div>
         </form>
     </div>
@@ -189,17 +351,113 @@
                 const workbook = XLSX.read(data, { type: 'array' });
                 const firstSheetName = workbook.SheetNames[0];
                 const worksheet = workbook.Sheets[firstSheetName];
-                const json = XLSX.utils.sheet_to_json(worksheet);
+                
+                // Get raw data to find header row
+                const rawData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                
+                // Find header row (usually row 3 in DMC, but let's be flexible)
+                let headerRowIndex = -1;
+                for (let i = 0; i < Math.min(rawData.length, 10); i++) {
+                    if (rawData[i].includes('เลขประจำตัวนักเรียน') && rawData[i].includes('ชื่อ')) {
+                        headerRowIndex = i;
+                        break;
+                    }
+                }
 
-                studentsToImport = json.map(row => ({
-                    student_code: String(row['รหัสประจำตัว'] || row['student_code'] || row['รหัส'] || ''),
-                    national_id: String(row['เลขบัตรประชาชน'] || row['national_id'] || row['เลขบัตร'] || ''),
-                    prefix: String(row['คำนำหน้า'] || row['prefix'] || ''),
-                    name: String(row['ชื่อ-นามสกุล'] || row['name'] || row['ชื่อ'] || ''),
-                    level: String(row['ระดับชั้น'] || row['level'] || row['ชั้น'] || ''),
-                    room: String(row['ห้อง'] || row['room'] || '1'),
-                    academic_year: String(row['ปีการศึกษา'] || row['academic_year'] || '2567')
-                })).filter(s => s.student_code && s.name && s.level);
+                if (headerRowIndex === -1) {
+                    // Fallback to standard mapping if DMC headers not found
+                    const json = XLSX.utils.sheet_to_json(worksheet);
+                    studentsToImport = json.map(row => ({
+                        student_code: String(row['รหัสประจำตัว'] || row['student_code'] || row['รหัส'] || ''),
+                        national_id: String(row['เลขบัตรประชาชน'] || row['national_id'] || row['เลขบัตร'] || ''),
+                        prefix: String(row['คำนำหน้า'] || row['prefix'] || ''),
+                        name: String(row['ชื่อ-นามสกุล'] || row['name'] || row['ชื่อ'] || ''),
+                        level: String(row['ระดับชั้น'] || row['level'] || row['ชั้น'] || ''),
+                        room: String(row['ห้อง'] || row['room'] || '1'),
+                        academic_year: String(row['ปีการศึกษา'] || row['academic_year'] || '2567')
+                    })).filter(s => s.student_code && s.name && s.level);
+                } else {
+                    // DMC Mapping
+                    const headers = rawData[headerRowIndex];
+                    const dataRows = rawData.slice(headerRowIndex + 1);
+                    
+                    // Helper to get index by header name (handling duplicates like 'เลขประจำตัวนักเรียน')
+                    const getIndices = (name) => headers.reduce((acc, h, i) => h === name ? [...acc, i] : acc, []);
+                    
+                    const nationalIdIdx = getIndices('เลขประจำตัวนักเรียน')[0]; // First one is National ID
+                    const studentCodeIdx = getIndices('เลขประจำตัวนักเรียน')[1]; // Second one is Student Code
+                    const levelIdx = headers.indexOf('ชั้น');
+                    const roomIdx = headers.indexOf('ห้อง');
+                    const genderIdx = headers.indexOf('เพศ');
+                    const prefixIdx = headers.indexOf('คำนำหน้าชื่อ');
+                    const nameIdx = headers.indexOf('ชื่อ');
+                    const lastNameIdx = headers.indexOf('นามสกุล');
+                    const birthdayIdx = headers.indexOf('วันเกิด');
+                    const ageIdx = headers.indexOf('อายุ(ปี)');
+                    const weightIdx = headers.indexOf('น้ำหนัก');
+                    const heightIdx = headers.indexOf('ส่วนสูง');
+                    const bloodIdx = headers.indexOf('กลุ่มเลือด');
+                    const religionIdx = headers.indexOf('ศาสนา');
+                    const raceIdx = headers.indexOf('เชื้อชาติ');
+                    const nationalityIdx = headers.indexOf('สัญชาติ');
+                    const houseNoIdx = headers.indexOf('บ้านเลขที่');
+                    const mooIdx = headers.indexOf('หมู่');
+                    const roadIdx = headers.indexOf('ถนน/ซอย');
+                    const subDistrictIdx = headers.indexOf('ตำบล');
+                    const districtIdx = headers.indexOf('อำเภอ');
+                    const provinceIdx = headers.indexOf('จังหวัด');
+                    const parentNameIdx = headers.indexOf('ชื่อผู้ปกครอง');
+                    const parentLastNameIdx = headers.indexOf('นามสกุลผู้ปกครอง');
+                    const parentOccupationIdx = headers.indexOf('อาชีพของผู้ปกครอง');
+                    const parentRelIdx = headers.indexOf('ความเกี่ยวข้องของผู้ปกครองกับนักเรียน');
+                    const fatherNameIdx = headers.indexOf('ชื่อบิดา');
+                    const fatherLastNameIdx = headers.indexOf('นามสกุลบิดา');
+                    const fatherOccupationIdx = headers.indexOf('อาชีพของบิดา');
+                    const motherNameIdx = headers.indexOf('ชื่อมารดา');
+                    const motherLastNameIdx = headers.indexOf('นามสกุลมารดา');
+                    const motherOccupationIdx = headers.indexOf('อาชีพของมารดา');
+                    const disadvantageIdx = headers.indexOf('ความด้อยโอกาส');
+
+                    studentsToImport = dataRows.map(row => {
+                        if (!row[nameIdx]) return null;
+                        return {
+                            national_id: String(row[nationalIdIdx] || ''),
+                            student_code: String(row[studentCodeIdx] || ''),
+                            level: String(row[levelIdx] || ''),
+                            room: String(row[roomIdx] || '1'),
+                            gender: String(row[genderIdx] || ''),
+                            prefix: String(row[prefixIdx] || ''),
+                            name: String(row[nameIdx] || ''),
+                            last_name: String(row[lastNameIdx] || ''),
+                            birthday: String(row[birthdayIdx] || ''),
+                            age: row[ageIdx],
+                            weight: row[weightIdx],
+                            height: row[heightIdx],
+                            blood_group: String(row[bloodIdx] || ''),
+                            religion: String(row[religionIdx] || ''),
+                            race: String(row[raceIdx] || ''),
+                            nationality: String(row[nationalityIdx] || ''),
+                            house_no: String(row[houseNoIdx] || ''),
+                            moo: String(row[mooIdx] || ''),
+                            road_soi: String(row[roadIdx] || ''),
+                            sub_district: String(row[subDistrictIdx] || ''),
+                            district: String(row[districtIdx] || ''),
+                            province_name: String(row[provinceIdx] || ''),
+                            parent_name: String(row[parentNameIdx] || ''),
+                            parent_last_name: String(row[parentLastNameIdx] || ''),
+                            parent_occupation: String(row[parentOccupationIdx] || ''),
+                            parent_relationship: String(row[parentRelIdx] || ''),
+                            father_name: String(row[fatherNameIdx] || ''),
+                            father_last_name: String(row[fatherLastNameIdx] || ''),
+                            father_occupation: String(row[fatherOccupationIdx] || ''),
+                            mother_name: String(row[motherNameIdx] || ''),
+                            mother_last_name: String(row[motherLastNameIdx] || ''),
+                            mother_occupation: String(row[motherOccupationIdx] || ''),
+                            disadvantage: String(row[disadvantageIdx] || ''),
+                            academic_year: document.getElementById('filter_academic_year')?.value || '2567'
+                        };
+                    }).filter(s => s && s.name && s.level);
+                }
 
                 if (studentsToImport.length === 0) {
                     alert('ไม่พบข้อมูลนักเรียนที่ถูกต้องในไฟล์ Excel (กรุณาตรวจสอบหัวคอลัมน์)');
@@ -346,7 +604,7 @@
                                 <tr class="border-b border-slate-50 hover:bg-slate-50/50">
                                     <td class="py-3 text-slate-600 font-mono">${s.student_code}</td>
                                     <td class="py-3 font-medium text-slate-800">
-                                        ${s.prefix || ''}${s.name}
+                                        ${s.prefix || ''}${s.name} ${s.last_name || ''}
                                         ${s.status === 'graduated' ? `<span class="ml-2 text-[10px] bg-amber-100 text-amber-600 px-1.5 py-0.5 rounded-full font-bold">${s.generation || 'ไม่ระบุรุ่น'}</span>` : ''}
                                     </td>
                                     <td class="py-3 text-right flex gap-2 justify-end">
@@ -426,9 +684,43 @@
         document.getElementById('edit_std_id').value = s.id;
         document.getElementById('edit_std_prefix').value = s.prefix || 'เด็กชาย';
         document.getElementById('edit_std_academic_year').value = s.academic_year || '2567';
-        document.getElementById('edit_std_name').value = s.name;
-        document.getElementById('edit_std_level').value = s.level;
+        document.getElementById('edit_std_name').value = s.name || '';
+        document.getElementById('edit_std_last_name').value = s.last_name || '';
+        document.getElementById('edit_std_code').value = s.student_code || '';
+        document.getElementById('edit_std_national_id').value = s.national_id || '';
+        document.getElementById('edit_std_gender').value = s.gender || '';
+        document.getElementById('edit_std_level').value = s.level || '';
         document.getElementById('edit_std_room').value = s.room || '1';
+        
+        document.getElementById('edit_std_birthday').value = s.birthday || '';
+        document.getElementById('edit_std_weight').value = s.weight || '';
+        document.getElementById('edit_std_height').value = s.height || '';
+        document.getElementById('edit_std_blood_group').value = s.blood_group || '';
+        document.getElementById('edit_std_religion').value = s.religion || '';
+        document.getElementById('edit_std_race').value = s.race || '';
+        document.getElementById('edit_std_nationality').value = s.nationality || '';
+        
+        document.getElementById('edit_std_house_no').value = s.house_no || '';
+        document.getElementById('edit_std_moo').value = s.moo || '';
+        document.getElementById('edit_std_road_soi').value = s.road_soi || '';
+        document.getElementById('edit_std_sub_district').value = s.sub_district || '';
+        document.getElementById('edit_std_district').value = s.district || '';
+        document.getElementById('edit_std_province_name').value = s.province_name || '';
+        document.getElementById('edit_std_disadvantage').value = s.disadvantage || '';
+        
+        document.getElementById('edit_std_father_name').value = s.father_name || '';
+        document.getElementById('edit_std_father_last_name').value = s.father_last_name || '';
+        document.getElementById('edit_std_father_occupation').value = s.father_occupation || '';
+        
+        document.getElementById('edit_std_mother_name').value = s.mother_name || '';
+        document.getElementById('edit_std_mother_last_name').value = s.mother_last_name || '';
+        document.getElementById('edit_std_mother_occupation').value = s.mother_occupation || '';
+        
+        document.getElementById('edit_std_parent_name').value = s.parent_name || '';
+        document.getElementById('edit_std_parent_last_name').value = s.parent_last_name || '';
+        document.getElementById('edit_std_parent_occupation').value = s.parent_occupation || '';
+        document.getElementById('edit_std_parent_relationship').value = s.parent_relationship || '';
+        
         openModal('editStudentModal');
     }
 
@@ -471,10 +763,43 @@
                     body: JSON.stringify({
                         id: document.getElementById('edit_std_id').value,
                         prefix: document.getElementById('edit_std_prefix').value,
-                        academic_year: document.getElementById('edit_std_academic_year').value,
                         name: document.getElementById('edit_std_name').value,
+                        last_name: document.getElementById('edit_std_last_name').value,
+                        student_code: document.getElementById('edit_std_code').value,
+                        national_id: document.getElementById('edit_std_national_id').value,
+                        gender: document.getElementById('edit_std_gender').value,
                         level: document.getElementById('edit_std_level').value,
-                        room: document.getElementById('edit_std_room').value
+                        room: document.getElementById('edit_std_room').value,
+                        academic_year: document.getElementById('edit_std_academic_year').value,
+                        
+                        birthday: document.getElementById('edit_std_birthday').value,
+                        weight: document.getElementById('edit_std_weight').value,
+                        height: document.getElementById('edit_std_height').value,
+                        blood_group: document.getElementById('edit_std_blood_group').value,
+                        religion: document.getElementById('edit_std_religion').value,
+                        race: document.getElementById('edit_std_race').value,
+                        nationality: document.getElementById('edit_std_nationality').value,
+                        
+                        house_no: document.getElementById('edit_std_house_no').value,
+                        moo: document.getElementById('edit_std_moo').value,
+                        road_soi: document.getElementById('edit_std_road_soi').value,
+                        sub_district: document.getElementById('edit_std_sub_district').value,
+                        district: document.getElementById('edit_std_district').value,
+                        province_name: document.getElementById('edit_std_province_name').value,
+                        disadvantage: document.getElementById('edit_std_disadvantage').value,
+                        
+                        father_name: document.getElementById('edit_std_father_name').value,
+                        father_last_name: document.getElementById('edit_std_father_last_name').value,
+                        father_occupation: document.getElementById('edit_std_father_occupation').value,
+                        
+                        mother_name: document.getElementById('edit_std_mother_name').value,
+                        mother_last_name: document.getElementById('edit_std_mother_last_name').value,
+                        mother_occupation: document.getElementById('edit_std_mother_occupation').value,
+                        
+                        parent_name: document.getElementById('edit_std_parent_name').value,
+                        parent_last_name: document.getElementById('edit_std_parent_last_name').value,
+                        parent_occupation: document.getElementById('edit_std_parent_occupation').value,
+                        parent_relationship: document.getElementById('edit_std_parent_relationship').value
                     })
                 });
                 const result = await res.json();

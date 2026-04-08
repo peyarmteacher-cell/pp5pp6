@@ -28,9 +28,49 @@ try {
         $prefix = trim($s['prefix'] ?? '');
         $national_id = trim($s['national_id'] ?? '');
         $name = trim($s['name'] ?? '');
+        $last_name = trim($s['last_name'] ?? '');
         $level = trim($s['level'] ?? '');
         $room = trim($s['room'] ?? '');
         $academic_year = trim($s['academic_year'] ?? '2567');
+
+        // DMC Fields
+        $gender = trim($s['gender'] ?? '');
+        $birthday = trim($s['birthday'] ?? '');
+        $age = intval($s['age'] ?? 0);
+        $weight = floatval($s['weight'] ?? 0);
+        $height = floatval($s['height'] ?? 0);
+        $blood_group = trim($s['blood_group'] ?? '');
+        $religion = trim($s['religion'] ?? '');
+        $race = trim($s['race'] ?? '');
+        $nationality = trim($s['nationality'] ?? '');
+        $house_no = trim($s['house_no'] ?? '');
+        $moo = trim($s['moo'] ?? '');
+        $road_soi = trim($s['road_soi'] ?? '');
+        $sub_district = trim($s['sub_district'] ?? '');
+        $district = trim($s['district'] ?? '');
+        $province_name = trim($s['province_name'] ?? '');
+        $parent_name = trim($s['parent_name'] ?? '');
+        $parent_last_name = trim($s['parent_last_name'] ?? '');
+        $parent_occupation = trim($s['parent_occupation'] ?? '');
+        $parent_relationship = trim($s['parent_relationship'] ?? '');
+        $father_name = trim($s['father_name'] ?? '');
+        $father_last_name = trim($s['father_last_name'] ?? '');
+        $father_occupation = trim($s['father_occupation'] ?? '');
+        $mother_name = trim($s['mother_name'] ?? '');
+        $mother_last_name = trim($s['mother_last_name'] ?? '');
+        $mother_occupation = trim($s['mother_occupation'] ?? '');
+        $disadvantage = trim($s['disadvantage'] ?? '');
+
+        // Convert birthday format if needed (DMC is DD/MM/YYYY in Buddhist Era)
+        if (!empty($birthday) && strpos($birthday, '/') !== false) {
+            $parts = explode('/', $birthday);
+            if (count($parts) === 3) {
+                $day = $parts[0];
+                $month = $parts[1];
+                $year = intval($parts[2]) - 543; // Convert BE to AD
+                $birthday = "$year-$month-$day";
+            }
+        }
 
         if (empty($student_code) || empty($name) || empty($level)) continue;
 
@@ -53,14 +93,45 @@ try {
         $stmt->execute([$school_id, $student_code, $national_id]);
         $existing = $stmt->fetch();
 
+        $params = [
+            $prefix, $name, $last_name, $level, $room, $classroom_id, $national_id, $academic_year,
+            $gender, $birthday, $age, $weight, $height, $blood_group, $religion, $race, $nationality,
+            $house_no, $moo, $road_soi, $sub_district, $district, $province_name,
+            $parent_name, $parent_last_name, $parent_occupation, $parent_relationship,
+            $father_name, $father_last_name, $father_occupation,
+            $mother_name, $mother_last_name, $mother_occupation,
+            $disadvantage
+        ];
+
         if ($existing) {
             // อัปเดต
-            $stmt = $pdo->prepare('UPDATE students SET prefix = ?, name = ?, level = ?, room = ?, classroom_id = ?, national_id = ?, academic_year = ? WHERE id = ?');
-            $stmt->execute([$prefix, $name, $level, $room, $classroom_id, $national_id, $academic_year, $existing['id']]);
+            $sql = 'UPDATE students SET 
+                prefix = ?, name = ?, last_name = ?, level = ?, room = ?, classroom_id = ?, national_id = ?, academic_year = ?,
+                gender = ?, birthday = ?, age = ?, weight = ?, height = ?, blood_group = ?, religion = ?, race = ?, nationality = ?,
+                house_no = ?, moo = ?, road_soi = ?, sub_district = ?, district = ?, province_name = ?,
+                parent_name = ?, parent_last_name = ?, parent_occupation = ?, parent_relationship = ?,
+                father_name = ?, father_last_name = ?, father_occupation = ?,
+                mother_name = ?, mother_last_name = ?, mother_occupation = ?,
+                disadvantage = ?
+                WHERE id = ?';
+            $params[] = $existing['id'];
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute($params);
         } else {
             // เพิ่มใหม่
-            $stmt = $pdo->prepare('INSERT INTO students (student_code, prefix, national_id, name, level, room, classroom_id, academic_year, school_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
-            $stmt->execute([$student_code, $prefix, $national_id, $name, $level, $room, $classroom_id, $academic_year, $school_id]);
+            $sql = 'INSERT INTO students (
+                prefix, name, last_name, level, room, classroom_id, national_id, academic_year,
+                gender, birthday, age, weight, height, blood_group, religion, race, nationality,
+                house_no, moo, road_soi, sub_district, district, province_name,
+                parent_name, parent_last_name, parent_occupation, parent_relationship,
+                father_name, father_last_name, father_occupation,
+                mother_name, mother_last_name, mother_occupation,
+                disadvantage, school_id, student_code
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+            $params[] = $school_id;
+            $params[] = $student_code;
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute($params);
         }
     }
 

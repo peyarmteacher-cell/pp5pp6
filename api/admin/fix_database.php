@@ -355,6 +355,45 @@ try {
         $results[] = "เพิ่มคอลัมน์ generation ในตาราง students สำเร็จ";
     }
 
+    // 11.5 เพิ่มคอลัมน์สำหรับข้อมูล DMC
+    $dmc_columns = [
+        'last_name' => "VARCHAR(255) AFTER name",
+        'gender' => "VARCHAR(10) AFTER student_code",
+        'birthday' => "DATE AFTER last_name",
+        'age' => "INT AFTER birthday",
+        'weight' => "FLOAT AFTER age",
+        'height' => "FLOAT AFTER weight",
+        'blood_group' => "VARCHAR(5) AFTER height",
+        'religion' => "VARCHAR(50) AFTER blood_group",
+        'race' => "VARCHAR(50) AFTER religion",
+        'nationality' => "VARCHAR(50) AFTER race",
+        'house_no' => "VARCHAR(50) AFTER nationality",
+        'moo' => "VARCHAR(10) AFTER house_no",
+        'road_soi' => "VARCHAR(100) AFTER moo",
+        'sub_district' => "VARCHAR(100) AFTER road_soi",
+        'district' => "VARCHAR(100) AFTER sub_district",
+        'province_name' => "VARCHAR(100) AFTER district",
+        'parent_name' => "VARCHAR(255) AFTER province_name",
+        'parent_last_name' => "VARCHAR(255) AFTER parent_name",
+        'parent_occupation' => "VARCHAR(100) AFTER parent_last_name",
+        'parent_relationship' => "VARCHAR(100) AFTER parent_occupation",
+        'father_name' => "VARCHAR(255) AFTER parent_relationship",
+        'father_last_name' => "VARCHAR(255) AFTER father_name",
+        'father_occupation' => "VARCHAR(100) AFTER father_last_name",
+        'mother_name' => "VARCHAR(255) AFTER father_occupation",
+        'mother_last_name' => "VARCHAR(255) AFTER mother_name",
+        'mother_occupation' => "VARCHAR(100) AFTER mother_last_name",
+        'disadvantage' => "VARCHAR(255) AFTER mother_occupation"
+    ];
+
+    foreach ($dmc_columns as $col => $def) {
+        $stmt = $pdo->query("SHOW COLUMNS FROM students LIKE '$col'");
+        if (!$stmt->fetch()) {
+            $pdo->exec("ALTER TABLE students ADD COLUMN $col $def");
+            $results[] = "เพิ่มคอลัมน์ $col ในตาราง students สำเร็จ";
+        }
+    }
+
     // 12. เพิ่มตารางกิจกรรมพัฒนาผู้เรียน
     $pdo->exec("CREATE TABLE IF NOT EXISTS clubs (
         id INT AUTO_INCREMENT PRIMARY KEY,
