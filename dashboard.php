@@ -68,6 +68,8 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                 <a href="javascript:void(0)" onclick="showSection('record-grades')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">บันทึกผลการเรียน</a>
                 <a href="javascript:void(0)" onclick="showSection('record-learner-development')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">บันทึกกิจกรรมพัฒนาผู้เรียน</a>
                 <a href="javascript:void(0)" onclick="showSection('record-health')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">บันทึกน้ำหนัก-ส่วนสูง</a>
+                <a href="javascript:void(0)" onclick="showSection('manage-timetable')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">จัดการตารางสอน</a>
+                <a href="javascript:void(0)" onclick="showSection('record-attendance')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">บันทึกการมาเรียน</a>
             <?php endif; ?>
         </nav>
 
@@ -229,6 +231,8 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
         <?php include 'includes/dashboard/grading.php'; ?>
         <?php include 'includes/dashboard/learner_development.php'; ?>
         <?php include 'includes/dashboard/health_records.php'; ?>
+        <?php include 'includes/dashboard/timetable.php'; ?>
+        <?php include 'includes/dashboard/attendance.php'; ?>
 
         <!-- Approve Users Section -->
         <div id="approve-section" class="section hidden space-y-6">
@@ -284,6 +288,12 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
             } else if (sectionId === 'record-health') {
                 targetId = sectionId;
                 if (typeof loadHealthClassrooms === 'function') loadHealthClassrooms();
+            } else if (sectionId === 'manage-timetable') {
+                targetId = sectionId;
+                if (typeof loadTimetable === 'function') loadTimetable();
+            } else if (sectionId === 'record-attendance') {
+                targetId = sectionId;
+                if (typeof loadAttendanceClassrooms === 'function') loadAttendanceClassrooms();
             }
             
             const target = document.getElementById(targetId);
@@ -298,6 +308,8 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                 'record-grades': 'บันทึกผลการเรียน',
                 'record-learner-development': 'บันทึกกิจกรรมพัฒนาผู้เรียน',
                 'record-health': 'บันทึกน้ำหนัก-ส่วนสูง',
+                'manage-timetable': 'จัดการตารางสอน',
+                'record-attendance': 'บันทึกการมาเรียน',
                 'manage-super-admins': 'จัดการ Super Admin',
                 'profile': 'แก้ไขโปรไฟล์'
             };

@@ -470,6 +470,46 @@ try {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
     $results[] = "ตรวจสอบ/สร้างตาราง student_health_records สำเร็จ";
 
+    // 14. เพิ่มตารางตารางสอน
+    $pdo->exec("CREATE TABLE IF NOT EXISTS timetables (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        teacher_id INT,
+        subject_id INT,
+        classroom_id INT,
+        academic_year VARCHAR(4),
+        semester INT,
+        day_of_week INT, -- 1=Mon, 2=Tue, ..., 7=Sun
+        period_number INT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (teacher_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE CASCADE,
+        FOREIGN KEY (classroom_id) REFERENCES classrooms(id) ON DELETE CASCADE,
+        UNIQUE KEY unique_timetable (classroom_id, academic_year, semester, day_of_week, period_number)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    $results[] = "ตรวจสอบ/สร้างตาราง timetables สำเร็จ";
+
+    // 15. เพิ่มตารางบันทึกการมาเรียน
+    $pdo->exec("CREATE TABLE IF NOT EXISTS attendance (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        student_id INT,
+        subject_id INT,
+        classroom_id INT,
+        academic_year VARCHAR(4),
+        semester INT,
+        check_date DATE,
+        period_number INT,
+        status ENUM('present', 'absent', 'late', 'sick', 'leave') DEFAULT 'present',
+        teacher_id INT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+        FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE CASCADE,
+        FOREIGN KEY (classroom_id) REFERENCES classrooms(id) ON DELETE CASCADE,
+        FOREIGN KEY (teacher_id) REFERENCES users(id) ON DELETE SET NULL,
+        UNIQUE KEY unique_attendance (student_id, subject_id, check_date, period_number)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    $results[] = "ตรวจสอบ/สร้างตาราง attendance สำเร็จ";
+
     echo json_encode([
         'status' => 'success',
         'message' => 'ตรวจสอบและปรับปรุงฐานข้อมูลเรียบร้อยแล้ว',

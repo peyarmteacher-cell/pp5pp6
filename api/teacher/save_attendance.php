@@ -4,40 +4,55 @@ require_once '../config.php';
 
 header('Content-Type: application/json');
 
-// ต้องเป็นคุณครู
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'teacher') {
-    http_response_code(403);
+if (!isset($_SESSION['user_id'])) {
+    http_response_code(401);
     exit;
 }
 
 $data = json_decode(file_get_contents('php://input'), true);
-$student_id = $data['student_id'] ?? '';
-$subject_id = $data['subject_id'] ?? '';
-$week_number = $data['week_number'] ?? '';
-$status = $data['status'] ?? 'present';
-$date = $data['date'] ?? date('Y-m-d');
+$teacher_id = $_SESSION['user_id'];
+$classroom_id = $data['classroom_id'] ?? null;
+$check_date = $data['check_date'] ?? date('Y-m-d');
+$academic_year = $data['academic_year'] ?? '';
+$semester = $data['semester'] ?? 1;
+$records = $data['records'] ?? []; // [{student_id, subject_id, period_number, status}]
 
-if (empty($student_id) || empty($subject_id) || empty($week_number)) {
+if (!$classroom_id || empty($academic_year) || empty($records)) {
     echo json_encode(['error' => 'ข้อมูลไม่ครบถ้วน']);
     exit;
 }
 
 try {
-    // ตรวจสอบว่ามีข้อมูลเดิมไหม ถ้ามีให้ UPDATE ถ้าไม่มีให้ INSERT
-    $stmt = $pdo->prepare('SELECT id FROM attendance WHERE student_id = ? AND subject_id = ? AND week_number = ?');
-    $stmt->execute([$student_id, $subject_id, $week_number]);
-    $existing = $stmt->fetch();
+    $pdo->beginTransaction();
 
-    if ($existing) {
-        $stmt = $pdo->prepare('UPDATE attendance SET status = ?, date = ? WHERE id = ?');
-        $stmt->execute([$status, $date, $existing['id']]);
-    } else {
-        $stmt = $pdo->prepare('INSERT INTO attendance (student_id, subject_id, week_number, status, date) VALUES (?, ?, ?, ?, ?)');
-        $stmt->execute([$student_id, $subject_id, $week_number, $status, $date]);
+    $stmt = $pdo->prepare('
+        INSERT INTO attendance 
+        (student_id, subject_id, classroom_id, academic_year, semester, check_date, period_number, status, teacher_id)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON DUPLICATE KEY UPDATE 
+        status = VALUES(status),
+        teacher_id = VALUES(teacher_id)
+    ');
+
+    foreach ($records as $r) {
+        $stmt->execute([
+            $r['student_id'],
+            $r['subject_id'],
+            $classroom_id,
+            $academic_year,
+            $semester,
+            $check_date,
+            $r['period_number'],
+            $r['status'],
+            $teacher_id
+        ]);
     }
-    echo json_encode(['message' => 'บันทึกเวลาเรียนสำเร็จแล้ว']);
+
+    $pdo->commit();
+    echo json_encode(['message' => 'บันทึกการมาเรียนเรียบร้อยแล้ว']);
 } catch (PDOException $e) {
+    if ($pdo->inTransaction()) $pdo->rollBack();
     http_response_code(500);
-    echo json_encode(['error' => 'ไม่สามารถบันทึกข้อมูลได้: ' . $e->getMessage()]);
+    echo json_encode(['error' => $e->getMessage()]);
 }
 ?>
