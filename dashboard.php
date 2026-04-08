@@ -70,6 +70,7 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                 <a href="javascript:void(0)" onclick="showSection('record-health')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">บันทึกน้ำหนัก-ส่วนสูง</a>
                 <a href="javascript:void(0)" onclick="showSection('manage-timetable')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">จัดการตารางสอน</a>
                 <a href="javascript:void(0)" onclick="showSection('record-attendance')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">บันทึกการมาเรียน</a>
+                <a href="javascript:void(0)" onclick="showSection('record-behavior')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">บันทึกพฤติกรรม</a>
             <?php endif; ?>
         </nav>
 
@@ -233,6 +234,7 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
         <?php include 'includes/dashboard/health_records.php'; ?>
         <?php include 'includes/dashboard/timetable.php'; ?>
         <?php include 'includes/dashboard/attendance.php'; ?>
+        <?php include 'includes/dashboard/behavior.php'; ?>
 
         <!-- Approve Users Section -->
         <div id="approve-section" class="section hidden space-y-6">
@@ -294,6 +296,9 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
             } else if (sectionId === 'record-attendance') {
                 targetId = sectionId;
                 if (typeof loadAttendanceClassrooms === 'function') loadAttendanceClassrooms();
+            } else if (sectionId === 'record-behavior') {
+                targetId = sectionId;
+                if (typeof initBehaviorSection === 'function') initBehaviorSection();
             }
             
             const target = document.getElementById(targetId);
@@ -310,6 +315,7 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                 'record-health': 'บันทึกน้ำหนัก-ส่วนสูง',
                 'manage-timetable': 'จัดการตารางสอน',
                 'record-attendance': 'บันทึกการมาเรียน',
+                'record-behavior': 'บันทึกพฤติกรรม',
                 'manage-super-admins': 'จัดการ Super Admin',
                 'profile': 'แก้ไขโปรไฟล์'
             };

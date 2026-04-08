@@ -587,6 +587,84 @@ try {
 
     $results[] = "ตรวจสอบ/สร้างตาราง attendance สำเร็จ";
 
+    // 16. เพิ่มตารางบันทึกพฤติกรรม
+    $pdo->exec("CREATE TABLE IF NOT EXISTS behavior_categories (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        school_id INT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (school_id) REFERENCES schools(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS behavior_options (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        category_id INT,
+        option_text TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (category_id) REFERENCES behavior_categories(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS student_behavior_records (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        student_id INT,
+        category_id INT,
+        behavior_text TEXT,
+        check_date DATE,
+        academic_year VARCHAR(4),
+        semester INT,
+        teacher_id INT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+        FOREIGN KEY (category_id) REFERENCES behavior_categories(id) ON DELETE CASCADE,
+        FOREIGN KEY (teacher_id) REFERENCES users(id) ON DELETE SET NULL,
+        UNIQUE KEY unique_behavior (student_id, category_id, check_date)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+    // เพิ่มหมวดหมู่พฤติกรรมเริ่มต้น (ถ้ายังไม่มี)
+    $default_categories = [
+        'หน้าที่รับผิดชอบ ความเอาใจใส่การเรียน',
+        'การใช้เวลาว่าง',
+        'ความสัมพันธ์กับบุคคลรอบข้าง',
+        'อุปนิสัย บุคลิกภาพ',
+        'สุขภาพ'
+    ];
+
+    foreach ($default_categories as $cat_name) {
+        $stmt = $pdo->prepare("SELECT id FROM behavior_categories WHERE name = ? AND school_id IS NULL");
+        $stmt->execute([$cat_name]);
+        $cat = $stmt->fetch();
+        if (!$cat) {
+            $pdo->prepare("INSERT INTO behavior_categories (name) VALUES (?)")->execute([$cat_name]);
+            $cat_id = $pdo->lastInsertId();
+            $results[] = "เพิ่มหมวดหมู่พฤติกรรมเริ่มต้น: $cat_name";
+        } else {
+            $cat_id = $cat['id'];
+        }
+
+        // เพิ่มตัวเลือกเริ่มต้นสำหรับแต่ละหมวดหมู่
+        $default_options = [];
+        if ($cat_name === 'หน้าที่รับผิดชอบ ความเอาใจใส่การเรียน') {
+            $default_options = ['รับผิดชอบทำความสะอาดห้องเรียน', 'ส่งงานตรงเวลา', 'ตั้งใจเรียน', 'ขาดความรับผิดชอบในการทำงาน', 'ส่งงานล่าช้า', 'ไม่ตั้งใจเรียน'];
+        } else if ($cat_name === 'การใช้เวลาว่าง') {
+            $default_options = ['เล่นกีฬา', 'อ่านหนังสือในห้องสมุด', 'ฝึกซ้อมดนตรี', 'ทำกิจกรรมจิตอาสา', 'เล่นเกมมากเกินไป'];
+        } else if ($cat_name === 'ความสัมพันธ์กับบุคคลรอบข้าง') {
+            $default_options = ['มีมนุษยสัมพันธ์ดี', 'ช่วยเหลือเพื่อน', 'สุภาพอ่อนน้อม', 'ทะเลาะกับเพื่อน', 'ก้าวร้าว'];
+        } else if ($cat_name === 'อุปนิสัย บุคลิกภาพ') {
+            $default_options = ['ร่าเริงแจ่มใส', 'มีความเป็นผู้นำ', 'กล้าแสดงออก', 'เก็บตัว', 'ขาดความมั่นใจ'];
+        } else if ($cat_name === 'สุขภาพ') {
+            $default_options = ['สุขภาพแข็งแรง', 'ร่างกายสมบูรณ์', 'เจ็บป่วยบ่อย', 'พักผ่อนไม่เพียงพอ'];
+        }
+
+        foreach ($default_options as $opt_text) {
+            $stmt_opt = $pdo->prepare("SELECT id FROM behavior_options WHERE category_id = ? AND option_text = ?");
+            $stmt_opt->execute([$cat_id, $opt_text]);
+            if (!$stmt_opt->fetch()) {
+                $pdo->prepare("INSERT INTO behavior_options (category_id, option_text) VALUES (?, ?)")->execute([$cat_id, $opt_text]);
+            }
+        }
+    }
+
     echo json_encode([
         'status' => 'success',
         'message' => 'ตรวจสอบและปรับปรุงฐานข้อมูลเรียบร้อยแล้ว',
