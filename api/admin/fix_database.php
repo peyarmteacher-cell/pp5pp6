@@ -377,14 +377,29 @@ try {
         club_id INT,
         club_result ENUM('P', 'F', '') DEFAULT '',
         social_result ENUM('P', 'F', '') DEFAULT '',
+        teacher_id INT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
         FOREIGN KEY (classroom_id) REFERENCES classrooms(id) ON DELETE CASCADE,
         FOREIGN KEY (club_id) REFERENCES clubs(id) ON DELETE SET NULL,
+        FOREIGN KEY (teacher_id) REFERENCES users(id) ON DELETE SET NULL,
         UNIQUE KEY unique_learner_dev (student_id, academic_year, semester)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
     $results[] = "ตรวจสอบ/สร้างตาราง learner_development_results สำเร็จ";
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS learner_development_assignments (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        teacher_id INT,
+        classroom_id INT,
+        academic_year VARCHAR(4),
+        semester INT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (teacher_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (classroom_id) REFERENCES classrooms(id) ON DELETE CASCADE,
+        UNIQUE KEY unique_ld_assignment (teacher_id, classroom_id, academic_year, semester)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    $results[] = "ตรวจสอบ/สร้างตาราง learner_development_assignments สำเร็จ";
 
     echo json_encode([
         'status' => 'success',

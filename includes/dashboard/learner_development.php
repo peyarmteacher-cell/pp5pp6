@@ -104,13 +104,16 @@
     let currentClubs = [];
 
     async function loadLearnerDevClassrooms() {
+        const year = document.getElementById('ld_academic_year').value;
+        const semester = document.getElementById('ld_semester').value;
+        
         try {
-            const res = await fetch('api/academic/get_classrooms.php');
+            const res = await fetch(`api/teacher/get_my_ld_classrooms.php?academic_year=${year}&semester=${semester}`);
             const classrooms = await res.json();
             
             const container = document.getElementById('ld-classroom-list');
             if (classrooms.length === 0) {
-                container.innerHTML = '<div class="col-span-full text-center py-12 text-slate-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200">ไม่พบข้อมูลห้องเรียน</div>';
+                container.innerHTML = '<div class="col-span-full text-center py-12 text-slate-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200">ยังไม่ได้รับการมอบหมายกิจกรรมพัฒนาผู้เรียนในภาคเรียนนี้</div>';
                 return;
             }
 
