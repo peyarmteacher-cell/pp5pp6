@@ -298,30 +298,39 @@
         `).join('');
     }
 
-    document.getElementById('addClubForm').onsubmit = async (e) => {
-        e.preventDefault();
-        const name = document.getElementById('new_club_name').value;
-        const year = document.getElementById('ld_academic_year').value;
-        
-        try {
-            const res = await fetch('api/teacher/add_club.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, academic_year: year })
-            });
-            const result = await res.json();
-            if (result.message) {
-                document.getElementById('new_club_name').value = '';
-                await loadClubs();
-                renderClubsList();
-                renderLDTable(); // Update dropdowns in table
-            } else {
-                alert(result.error);
-            }
-        } catch (e) {
-            console.error('Error adding club:', e);
+    document.addEventListener('DOMContentLoaded', () => {
+        const addClubForm = document.getElementById('addClubForm');
+        if (addClubForm) {
+            addClubForm.onsubmit = async (e) => {
+                e.preventDefault();
+                const nameEl = document.getElementById('new_club_name');
+                const yearEl = document.getElementById('ld_academic_year');
+                if (!nameEl || !yearEl) return;
+
+                const name = nameEl.value;
+                const year = yearEl.value;
+                
+                try {
+                    const res = await fetch('api/teacher/add_club.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name, academic_year: year })
+                    });
+                    const result = await res.json();
+                    if (result.message) {
+                        nameEl.value = '';
+                        await loadClubs();
+                        renderClubsList();
+                        renderLDTable(); // Update dropdowns in table
+                    } else {
+                        alert(result.error);
+                    }
+                } catch (e) {
+                    console.error('Error adding club:', e);
+                }
+            };
         }
-    };
+    });
 
     async function deleteClub(id) {
         if (!confirm('ยืนยันการลบชุมนุมนี้?')) return;

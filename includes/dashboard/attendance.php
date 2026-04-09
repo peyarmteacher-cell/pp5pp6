@@ -85,8 +85,12 @@
     let attendanceData = [];
 
     async function loadAttendanceClassrooms() {
-        const year = document.getElementById('att_academic_year').value || '2567';
-        const semester = document.getElementById('att_semester').value || 1;
+        const yearEl = document.getElementById('att_academic_year');
+        const semesterEl = document.getElementById('att_semester');
+        if (!yearEl || !semesterEl) return;
+
+        const year = yearEl.value || '2567';
+        const semester = semesterEl.value || 1;
         
         try {
             // We use the same LD classrooms API as it represents classrooms the teacher is responsible for
@@ -342,9 +346,14 @@
         }
     }
 
-    document.getElementById('att_academic_year').addEventListener('change', loadAttendanceClassrooms);
-    document.getElementById('att_semester').addEventListener('change', loadAttendanceClassrooms);
-    document.getElementById('att_check_date').addEventListener('change', loadAttendanceData);
+    document.addEventListener('DOMContentLoaded', () => {
+        const yearEl = document.getElementById('att_academic_year');
+        if (yearEl) yearEl.addEventListener('change', loadAttendanceClassrooms);
+        const semEl = document.getElementById('att_semester');
+        if (semEl) semEl.addEventListener('change', loadAttendanceClassrooms);
+        const dateEl = document.getElementById('att_check_date');
+        if (dateEl) dateEl.addEventListener('change', loadAttendanceData);
+    });
 
     async function initAttendanceSection() {
         try {

@@ -10,7 +10,7 @@
                     <input type="date" id="behavior-date" class="bg-transparent border-none text-sm focus:ring-0" value="<?= date('Y-m-d') ?>">
                 </div>
                 <button onclick="saveBehavior()" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold transition-all flex items-center gap-2 shadow-lg shadow-blue-900/20 cursor-pointer">
-                    <i data-lucide="save" class="w-4 h-4"></i>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
                     บันทึกทั้งหมด
                 </button>
             </div>
@@ -62,7 +62,7 @@
 
         <div id="behavior-empty-state" class="py-12 text-center">
             <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i data-lucide="users" class="w-8 h-8 text-slate-400"></i>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-8 h-8 text-slate-400"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
             </div>
             <h4 class="text-slate-800 font-bold">ยังไม่ได้เลือกห้องเรียน</h4>
             <p class="text-slate-500 text-sm">กรุณาเลือกห้องเรียนด้านบนเพื่อเริ่มบันทึกพฤติกรรม</p>
@@ -79,12 +79,12 @@
                 <p id="modal-student-name" class="text-sm text-slate-500">นักเรียน: -</p>
             </div>
             <button onclick="closeBehaviorModal()" class="p-2 hover:bg-slate-100 rounded-full transition-colors cursor-pointer">
-                <i data-lucide="x" class="w-6 h-6 text-slate-400"></i>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 text-slate-400"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             </button>
         </div>
         <div class="p-6 space-y-4">
             <div class="relative">
-                <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                 <input type="text" id="behavior-option-search" placeholder="ค้นหาหรือเพิ่มพฤติกรรมใหม่..." class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none">
             </div>
             
@@ -94,7 +94,7 @@
 
             <div id="add-option-container" class="hidden pt-4 border-t border-slate-100">
                 <button onclick="addNewBehaviorOption()" class="w-full py-2 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition-all flex items-center justify-center gap-2 cursor-pointer">
-                    <i data-lucide="plus" class="w-4 h-4"></i>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                     เพิ่มเป็นตัวเลือกใหม่: <span id="new-option-text" class="font-bold"></span>
                 </button>
             </div>
@@ -122,23 +122,30 @@
             behaviorCategories = configData.categories;
 
             // Load classrooms - wait a bit for academic_management to populate dropdowns
-            setTimeout(loadBehaviorClassrooms, 500);
+            setTimeout(() => {
+                if (typeof loadBehaviorClassrooms === 'function') loadBehaviorClassrooms();
+            }, 500);
 
             // Render category headers
             const headerContainer = document.getElementById('behavior-cat-headers');
-            headerContainer.innerHTML = '';
-            behaviorCategories.forEach(cat => {
-                const th = document.createElement('th');
-                th.className = 'px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider border-r border-slate-200 min-w-[150px]';
-                th.textContent = cat.name;
-                headerContainer.appendChild(th);
-            });
+            if (headerContainer) {
+                headerContainer.innerHTML = '';
+                behaviorCategories.forEach(cat => {
+                    const th = document.createElement('th');
+                    th.className = 'px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider border-r border-slate-200 min-w-[150px]';
+                    th.textContent = cat.name;
+                    headerContainer.appendChild(th);
+                });
+            }
 
             // Search listener
-            document.getElementById('behavior-option-search').oninput = (e) => {
-                const text = e.target.value.trim();
-                filterBehaviorOptions(text);
-            };
+            const searchInput = document.getElementById('behavior-option-search');
+            if (searchInput) {
+                searchInput.oninput = (e) => {
+                    const text = e.target.value.trim();
+                    filterBehaviorOptions(text);
+                };
+            }
 
         } catch (e) {
             console.error('Error initializing behavior section:', e);
@@ -146,8 +153,12 @@
     }
 
     async function loadBehaviorClassrooms() {
-        const year = document.getElementById('behavior-year').value;
-        const semester = document.getElementById('behavior-semester').value;
+        const yearEl = document.getElementById('behavior-year');
+        const semesterEl = document.getElementById('behavior-semester');
+        if (!yearEl || !semesterEl) return;
+
+        const year = yearEl.value;
+        const semester = semesterEl.value;
         
         console.log('Loading classrooms for:', year, semester);
         
@@ -158,12 +169,15 @@
             console.log('Classrooms loaded:', classrooms);
             
             const container = document.getElementById('behavior-classroom-list');
+            if (!container) return;
             container.innerHTML = '';
             
             if (classrooms.length === 0) {
                 container.innerHTML = '<p class="text-sm text-red-500 font-bold italic">ยังไม่มีการกำหนดห้องเรียนที่รับผิดชอบ</p>';
-                document.getElementById('behavior-table-container').classList.add('hidden');
-                document.getElementById('behavior-empty-state').classList.remove('hidden');
+                const tableContainer = document.getElementById('behavior-table-container');
+                if (tableContainer) tableContainer.classList.add('hidden');
+                const emptyState = document.getElementById('behavior-empty-state');
+                if (emptyState) emptyState.classList.remove('hidden');
                 return;
             }
 
@@ -180,8 +194,14 @@
     }
 
     // Add listeners for year and semester
-    document.getElementById('behavior-year').onchange = loadBehaviorClassrooms;
-    document.getElementById('behavior-semester').onchange = loadBehaviorClassrooms;
+    document.addEventListener('DOMContentLoaded', () => {
+        const yearEl = document.getElementById('behavior-year');
+        if (yearEl) yearEl.onchange = loadBehaviorClassrooms;
+        const semesterEl = document.getElementById('behavior-semester');
+        if (semesterEl) semesterEl.onchange = loadBehaviorClassrooms;
+        const dateEl = document.getElementById('behavior-date');
+        if (dateEl) dateEl.onchange = loadBehaviorData;
+    });
 
     async function selectBehaviorClassroom(classroom, btn) {
         try {
@@ -205,9 +225,12 @@
     async function loadBehaviorData() {
         if (!currentBehaviorClassroom) return;
         
-        const checkDate = document.getElementById('behavior-date').value;
+        const dateEl = document.getElementById('behavior-date');
+        if (!dateEl) return;
+        const checkDate = dateEl.value;
         const container = document.getElementById('behavior-table-container');
         const emptyState = document.getElementById('behavior-empty-state');
+        if (!container || !emptyState) return;
         
         try {
             const res = await fetch(`api/teacher/get_behavior_data.php?classroom_id=${currentBehaviorClassroom.id}&check_date=${checkDate}`);
@@ -226,12 +249,11 @@
                 emptyState.classList.remove('hidden');
                 emptyState.innerHTML = `
                     <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i data-lucide="users" class="w-8 h-8 text-slate-400"></i>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-8 h-8 text-slate-400"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
                     </div>
                     <h4 class="text-slate-800 font-bold">ไม่พบรายชื่อนักเรียน</h4>
                     <p class="text-slate-500 text-sm">ห้องเรียนนี้ยังไม่มีรายชื่อนักเรียนในระบบ</p>
                 `;
-                lucide.createIcons();
                 return;
             }
             
@@ -292,12 +314,15 @@
         const record = behaviorRecords.find(r => r.student_id == student.id && r.category_id == category.id);
         selectedOptionsInModal = record ? record.behavior_text.split(',').map(t => t.trim()).filter(t => t !== '') : [];
         
-        document.getElementById('behavior-option-search').value = '';
+        const searchInput = document.getElementById('behavior-option-search');
+        if (searchInput) searchInput.value = '';
         renderBehaviorOptions(category.id);
         
-        document.getElementById('behavior-modal').classList.remove('hidden');
-        document.getElementById('behavior-modal').classList.add('flex');
-        lucide.createIcons();
+        const modal = document.getElementById('behavior-modal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
     }
 
     function closeBehaviorModal() {
@@ -321,7 +346,7 @@
             div.className = `p-3 rounded-xl border cursor-pointer transition-all flex items-center justify-between ${isSelected ? 'bg-blue-50 border-blue-200 text-blue-700' : 'bg-white border-slate-200 text-slate-700 hover:border-blue-200'}`;
             div.innerHTML = `
                 <span class="text-sm font-medium">${opt.option_text}</span>
-                ${isSelected ? '<i data-lucide="check-circle-2" class="w-4 h-4"></i>' : '<div class="w-4 h-4 rounded-full border border-slate-300"></div>'}
+                ${isSelected ? '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-blue-600"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>' : '<div class="w-4 h-4 rounded-full border border-slate-300"></div>'}
             `;
             div.onclick = () => toggleOption(opt.option_text);
             list.appendChild(div);
@@ -335,7 +360,7 @@
             addContainer.classList.add('hidden');
         }
         
-        lucide.createIcons();
+        // lucide.createIcons();
     }
 
     function filterBehaviorOptions(text) {
@@ -350,7 +375,8 @@
         } else {
             selectedOptionsInModal.push(text);
         }
-        renderBehaviorOptions(activeBehaviorCell.categoryId, document.getElementById('behavior-option-search').value);
+        const searchInput = document.getElementById('behavior-option-search');
+        renderBehaviorOptions(activeBehaviorCell.categoryId, searchInput ? searchInput.value : '');
     }
 
     async function addNewBehaviorOption() {

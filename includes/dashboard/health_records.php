@@ -104,8 +104,12 @@
     let healthStudents = [];
 
     async function loadHealthClassrooms() {
-        const year = document.getElementById('health_academic_year').value || '2567';
-        const semester = document.getElementById('health_semester').value || 1;
+        const yearEl = document.getElementById('health_academic_year');
+        const semesterEl = document.getElementById('health_semester');
+        if (!yearEl || !semesterEl) return;
+
+        const year = yearEl.value || '2567';
+        const semester = semesterEl.value || 1;
         
         try {
             const res = await fetch(`api/teacher/get_my_ld_classrooms.php?academic_year=${year}&semester=${semester}`);
@@ -370,9 +374,14 @@
     }
 
     // Event Listeners for filters
-    document.getElementById('health_academic_year').addEventListener('change', loadHealthClassrooms);
-    document.getElementById('health_semester').addEventListener('change', loadHealthClassrooms);
-    document.getElementById('health_record_number').addEventListener('change', loadHealthRecords);
+    document.addEventListener('DOMContentLoaded', () => {
+        const yearEl = document.getElementById('health_academic_year');
+        if (yearEl) yearEl.addEventListener('change', loadHealthClassrooms);
+        const semEl = document.getElementById('health_semester');
+        if (semEl) semEl.addEventListener('change', loadHealthClassrooms);
+        const recEl = document.getElementById('health_record_number');
+        if (recEl) recEl.addEventListener('change', loadHealthRecords);
+    });
 
     // Initial load for academic years
     async function initHealthSection() {

@@ -275,21 +275,21 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
             let targetId = sectionId;
             if (sectionId === 'approve-admins' || sectionId === 'approve-teachers') {
                 targetId = 'approve-section';
-                loadPendingUsers();
+                if (typeof loadPendingUsers === 'function') loadPendingUsers();
             } else if (sectionId === 'manage-schools') {
-                loadSchools();
+                if (typeof loadSchools === 'function') loadSchools();
             } else if (sectionId === 'manage-teachers') {
-                loadSchoolTeachers();
+                if (typeof loadSchoolTeachers === 'function') loadSchoolTeachers();
             } else if (sectionId === 'manage-students') {
-                loadStudents();
+                if (typeof loadStudents === 'function') loadStudents();
             } else if (sectionId === 'manage-subjects') {
-                loadSubjects();
+                if (typeof loadSubjects === 'function') loadSubjects();
             } else if (sectionId === 'record-grades') {
                 targetId = sectionId;
-                loadMyAssignments();
+                if (typeof loadMyAssignments === 'function') loadMyAssignments();
             } else if (sectionId === 'record-learner-development') {
                 targetId = sectionId;
-                loadLearnerDevClassrooms();
+                if (typeof loadLearnerDevClassrooms === 'function') loadLearnerDevClassrooms();
             } else if (sectionId === 'record-health') {
                 targetId = sectionId;
                 if (typeof loadHealthClassrooms === 'function') loadHealthClassrooms();

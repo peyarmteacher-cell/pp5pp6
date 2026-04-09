@@ -88,8 +88,12 @@
     }
 
     async function loadMyAssignments() {
-        const year = document.getElementById('grade_academic_year').value;
-        const semester = document.getElementById('grade_semester').value;
+        const yearEl = document.getElementById('grade_academic_year');
+        const semesterEl = document.getElementById('grade_semester');
+        if (!yearEl || !semesterEl) return;
+
+        const year = yearEl.value;
+        const semester = semesterEl.value;
         
         try {
             const res = await fetch(`api/teacher/get_my_assignments.php?academic_year=${year}&semester=${semester}`);

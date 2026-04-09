@@ -95,8 +95,12 @@
     ];
 
     async function loadTimetable() {
-        const year = document.getElementById('time_academic_year').value || '2567';
-        const semester = document.getElementById('time_semester').value || 1;
+        const yearEl = document.getElementById('time_academic_year');
+        const semesterEl = document.getElementById('time_semester');
+        if (!yearEl || !semesterEl) return;
+
+        const year = yearEl.value || '2567';
+        const semester = semesterEl.value || 1;
         
         try {
             // Load timetable data
@@ -196,8 +200,14 @@
         }
     }
 
-    document.getElementById('time_academic_year').addEventListener('change', loadTimetable);
-    document.getElementById('time_semester').addEventListener('change', loadTimetable);
+    document.addEventListener('DOMContentLoaded', () => {
+        const yearEl = document.getElementById('time_academic_year');
+        if (yearEl) yearEl.addEventListener('change', loadTimetable);
+        const semEl = document.getElementById('time_semester');
+        if (semEl) semEl.addEventListener('change', loadTimetable);
+        
+        initTimetableSection();
+    });
 
     async function initTimetableSection() {
         try {
