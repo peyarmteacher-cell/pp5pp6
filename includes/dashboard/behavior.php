@@ -309,7 +309,7 @@
     function openBehaviorModal(student, category) {
         activeBehaviorCell = { studentId: student.id, categoryId: category.id };
         document.getElementById('modal-cat-name').textContent = category.name;
-        document.getElementById('modal-student-name').textContent = `นักเรียน: ${student.prefix}${student.name} ${student.lastname}`;
+        document.getElementById('modal-student-name').textContent = `นักเรียน: ${student.prefix}${student.name} ${student.last_name}`;
         
         const record = behaviorRecords.find(r => r.student_id == student.id && r.category_id == category.id);
         selectedOptionsInModal = record ? record.behavior_text.split(',').map(t => t.trim()).filter(t => t !== '') : [];

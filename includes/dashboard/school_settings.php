@@ -5,7 +5,7 @@
     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
         <div class="flex items-center gap-3 mb-6">
             <div class="p-2 bg-blue-50 text-blue-600 rounded-lg">
-                <i class="lucide-settings"></i>
+                <i data-lucide="settings"></i>
             </div>
             <h3 class="text-lg font-bold text-slate-800">ตั้งค่าโรงเรียนและโลโก้</h3>
         </div>
@@ -28,7 +28,7 @@
                     <div id="logo_preview_container" class="w-32 h-32 rounded-2xl border-2 border-dashed border-slate-200 flex items-center justify-center overflow-hidden bg-slate-50">
                         <img id="logo_preview" src="" alt="Logo Preview" class="max-w-full max-max-h-full object-contain hidden" referrerPolicy="no-referrer">
                         <div id="logo_placeholder" class="text-slate-400 text-center p-2">
-                            <i class="lucide-image text-2xl mb-1"></i>
+                            <i data-lucide="image" class="w-8 h-8 mx-auto mb-1"></i>
                             <p class="text-[10px]">ยังไม่มีโลโก้</p>
                         </div>
                     </div>
@@ -61,6 +61,7 @@
 
 <script>
     async function loadSchoolSettings() {
+        console.log('Loading school settings...');
         try {
             const res = await fetch('api/admin/get_school_info.php');
             const data = await res.json();

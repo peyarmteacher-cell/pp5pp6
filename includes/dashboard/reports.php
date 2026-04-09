@@ -7,7 +7,7 @@
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md transition-all">
             <div class="flex items-center gap-3 mb-6">
                 <div class="p-2 bg-green-50 text-green-600 rounded-lg">
-                    <i class="lucide-file-text"></i>
+                    <i data-lucide="file-text"></i>
                 </div>
                 <div>
                     <h3 class="text-lg font-bold text-slate-800">พิมพ์เอกสาร ปพ.5</h3>
@@ -57,11 +57,11 @@
 
                 <div class="pt-4 grid grid-cols-2 gap-2">
                     <button onclick="printP5()" class="bg-green-600 text-white py-3 rounded-xl font-bold hover:bg-green-700 shadow-lg shadow-green-600/20 transition-all flex items-center justify-center gap-2 cursor-pointer">
-                        <i class="lucide-printer text-sm"></i>
+                        <i data-lucide="printer" class="w-4 h-4"></i>
                         พิมพ์ ปพ.5
                     </button>
                     <button onclick="printP5Cover()" class="bg-slate-800 text-white py-3 rounded-xl font-bold hover:bg-slate-900 shadow-lg shadow-slate-800/20 transition-all flex items-center justify-center gap-2 cursor-pointer">
-                        <i class="lucide-book-open text-sm"></i>
+                        <i data-lucide="book-open" class="w-4 h-4"></i>
                         พิมพ์ปก
                     </button>
                 </div>
@@ -72,7 +72,7 @@
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md transition-all">
             <div class="flex items-center gap-3 mb-6">
                 <div class="p-2 bg-blue-50 text-blue-600 rounded-lg">
-                    <i class="lucide-user-check"></i>
+                    <i data-lucide="user-check"></i>
                 </div>
                 <div>
                     <h3 class="text-lg font-bold text-slate-800">พิมพ์เอกสาร ปพ.6</h3>
@@ -115,7 +115,7 @@
 
                 <div class="pt-4">
                     <button onclick="printP6()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 shadow-lg shadow-blue-600/20 transition-all flex items-center justify-center gap-2 cursor-pointer">
-                        <i class="lucide-printer text-sm"></i>
+                        <i data-lucide="printer" class="w-4 h-4"></i>
                         พิมพ์เอกสาร ปพ.6
                     </button>
                 </div>
@@ -148,12 +148,24 @@
     }
 
     async function loadReportOptions() {
+        console.log('Loading report options...');
         try {
             // Load Academic Years
             const yearRes = await fetch('api/academic/get_academic_years.php');
             const years = await yearRes.json();
+            
+            if (!Array.isArray(years)) {
+                console.error('Years is not an array:', years);
+                return;
+            }
+
             const yearP5 = document.getElementById('report_p5_year');
             const yearP6 = document.getElementById('report_p6_year');
+            
+            if (!yearP5 || !yearP6) {
+                console.warn('Report year dropdowns not found');
+                return;
+            }
             
             const yearOptions = years.map(y => `<option value="${y.year}" ${y.is_current ? 'selected' : ''}>${y.year}</option>`).join('');
             yearP5.innerHTML = yearOptions;
@@ -164,22 +176,34 @@
             // Load Assignments (for P5 Subject)
             const assignRes = await fetch(`api/teacher/get_my_assignments.php?academic_year=${currentYear}&semester=1`);
             const assignments = await assignRes.json();
-            const assignP5 = document.getElementById('report_p5_assignment');
-            assignP5.innerHTML = assignments.map(a => `
-                <option value="${a.assignment_id || a.subject_id}" data-subject="${a.subject_id}" data-classroom="${a.classroom_id}">
-                    ${a.subject_code} ${a.subject_name} (${a.level}/${a.room})
-                </option>
-            `).join('');
+            
+            if (Array.isArray(assignments)) {
+                const assignP5 = document.getElementById('report_p5_assignment');
+                if (assignP5) {
+                    assignP5.innerHTML = assignments.map(a => `
+                        <option value="${a.assignment_id || a.subject_id}" data-subject="${a.subject_id}" data-classroom="${a.classroom_id}">
+                            ${a.subject_code} ${a.subject_name} (${a.level}/${a.room})
+                        </option>
+                    `).join('');
+                }
+            } else {
+                console.error('Assignments is not an array:', assignments);
+            }
 
             // Load Classrooms (for P5 Class and P6)
             const classRes = await fetch('api/academic/get_classrooms.php');
             const classrooms = await classRes.json();
-            const classP5 = document.getElementById('report_p5_classroom');
-            const classP6 = document.getElementById('report_p6_classroom');
             
-            const classOptions = classrooms.map(c => `<option value="${c.id}">${c.level}/${c.room}</option>`).join('');
-            classP5.innerHTML = classOptions;
-            classP6.innerHTML = classOptions;
+            if (Array.isArray(classrooms)) {
+                const classP5 = document.getElementById('report_p5_classroom');
+                const classP6 = document.getElementById('report_p6_classroom');
+                
+                const classOptions = classrooms.map(c => `<option value="${c.id}">${c.level}/${c.room}</option>`).join('');
+                if (classP5) classP5.innerHTML = classOptions;
+                if (classP6) classP6.innerHTML = classOptions;
+            } else {
+                console.error('Classrooms is not an array:', classrooms);
+            }
 
             loadP6Students();
         } catch (e) {
@@ -206,6 +230,7 @@
     }
 
     function printP5() {
+        console.log('Printing P5...');
         const year = document.getElementById('report_p5_year').value;
         const semester = document.getElementById('report_p5_semester').value;
         let url = `reports/p5_report.php?year=${year}&semester=${semester}&type=${p5Type}`;
@@ -224,6 +249,7 @@
     }
 
     function printP5Cover() {
+        console.log('Printing P5 Cover...');
         const year = document.getElementById('report_p5_year').value;
         const semester = document.getElementById('report_p5_semester').value;
         let url = `reports/p5_cover.php?year=${year}&semester=${semester}&type=${p5Type}`;
@@ -242,6 +268,7 @@
     }
 
     function printP6() {
+        console.log('Printing P6...');
         const year = document.getElementById('report_p6_year').value;
         const semester = document.getElementById('report_p6_semester').value;
         const classroomId = document.getElementById('report_p6_classroom').value;

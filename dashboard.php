@@ -74,6 +74,9 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                 } else if (sectionId === 'record-behavior') {
                     targetId = sectionId;
                     if (typeof initBehaviorSection === 'function') initBehaviorSection();
+                } else if (sectionId === 'academic-management') {
+                    targetId = sectionId;
+                    if (typeof loadAcademicYears === 'function') loadAcademicYears();
                 } else if (sectionId === 'reports') {
                     targetId = sectionId;
                     if (typeof loadReportOptions === 'function') loadReportOptions();
@@ -327,6 +330,8 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
         <?php include 'includes/dashboard/timetable.php'; ?>
         <?php include 'includes/dashboard/attendance.php'; ?>
         <?php include 'includes/dashboard/behavior.php'; ?>
+        <?php include 'includes/dashboard/reports.php'; ?>
+        <?php include 'includes/dashboard/school_settings.php'; ?>
 
         <!-- Approve Users Section -->
         <div id="approve-section" class="section hidden space-y-6">
