@@ -285,7 +285,7 @@
             // Name
             const tdName = document.createElement('td');
             tdName.className = 'px-4 py-3 text-sm font-medium text-slate-800 border-r border-slate-200';
-            tdName.textContent = `${s.prefix}${s.name} ${s.lastname}`;
+            tdName.textContent = `${s.prefix}${s.name} ${s.last_name}`;
             tr.appendChild(tdName);
             
             // Categories

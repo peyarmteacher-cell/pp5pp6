@@ -19,7 +19,7 @@ if (empty($classroom_id)) {
 
 try {
     // ดึงรายชื่อนักเรียนในห้อง
-    $stmt = $pdo->prepare("SELECT id, prefix, name, lastname FROM students WHERE classroom_id = ? ORDER BY id ASC");
+    $stmt = $pdo->prepare("SELECT id, prefix, name, last_name FROM students WHERE classroom_id = ? ORDER BY id ASC");
     $stmt->execute([$classroom_id]);
     $students = $stmt->fetchAll();
 
