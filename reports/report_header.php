@@ -53,8 +53,8 @@ $province = $school['province'] ?? '';
             margin-bottom: 20px;
         }
         .logo {
-            width: 80px;
-            height: 80px;
+            width: 104px;
+            height: 104px;
             object-fit: contain;
             margin-bottom: 10px;
         }

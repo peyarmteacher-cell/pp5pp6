@@ -35,7 +35,7 @@ if ($type === 'subject' && $assignment_id) {
 <div class="page" style="display: flex; flex-direction: column; align-items: center; justify-content: center; border: 2px solid black; padding: 50px;">
     <div style="text-align: center; margin-bottom: 50px;">
         <?php if ($logo_url): ?>
-            <img src="<?= $logo_url ?>" style="width: 150px; height: 150px; object-fit: contain; margin-bottom: 30px;" referrerPolicy="no-referrer">
+            <img src="<?= $logo_url ?>" style="width: 195px; height: 195px; object-fit: contain; margin-bottom: 30px;" referrerPolicy="no-referrer">
         <?php endif; ?>
         <h1 style="font-size: 36px; margin: 10px 0;">สมุดบันทึกการพัฒนาคุณภาพผู้เรียน (ปพ.5)</h1>
         <h2 style="font-size: 28px; margin: 10px 0;"><?= $title ?></h2>
