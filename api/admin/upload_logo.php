@@ -32,16 +32,40 @@ if ($file['size'] > $max_size) {
     exit;
 }
 
-$upload_dir = '../../uploads/logos/';
+$upload_dir = $_SERVER['DOCUMENT_ROOT'] . '/uploads/logos/';
+// Fallback if DOCUMENT_ROOT is not set or weird
+if (empty($_SERVER['DOCUMENT_ROOT']) || !is_dir($_SERVER['DOCUMENT_ROOT'])) {
+    $upload_dir = __DIR__ . '/../../uploads/logos/';
+}
+
 if (!is_dir($upload_dir)) {
-    mkdir($upload_dir, 0755, true);
+    if (!mkdir($upload_dir, 0777, true)) {
+        http_response_code(500);
+        echo json_encode(['error' => 'ไม่สามารถสร้างโฟลเดอร์สำหรับเก็บไฟล์ได้', 'path' => $upload_dir]);
+        exit;
+    }
+}
+
+// Try to ensure it's writable
+chmod($upload_dir, 0777);
+
+if (!is_writable($upload_dir)) {
+    http_response_code(500);
+    echo json_encode([
+        'error' => 'โฟลเดอร์สำหรับเก็บไฟล์ไม่มีสิทธิ์ในการเขียน (Permission Denied)',
+        'path' => $upload_dir,
+        'user' => function_exists('posix_getpwuid') ? posix_getpwuid(posix_geteuid())['name'] : 'unknown'
+    ]);
+    exit;
 }
 
 $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
-$filename = 'logo_' . $_SESSION['school_id'] . '_' . time() . '.' . $extension;
+$school_id = $_SESSION['school_id'] ?? 'default';
+$filename = 'logo_' . $school_id . '_' . time() . '.' . $extension;
 $target_path = $upload_dir . $filename;
 
 if (move_uploaded_file($file['tmp_name'], $target_path)) {
+    chmod($target_path, 0666);
     // Return the relative path for the frontend
     $relative_path = 'uploads/logos/' . $filename;
     echo json_encode([
@@ -49,7 +73,13 @@ if (move_uploaded_file($file['tmp_name'], $target_path)) {
         'url' => $relative_path
     ]);
 } else {
+    $error = error_get_last();
     http_response_code(500);
-    echo json_encode(['error' => 'เกิดข้อผิดพลาดในการบันทึกไฟล์']);
+    echo json_encode([
+        'error' => 'เกิดข้อผิดพลาดในการบันทึกไฟล์',
+        'debug' => $error ? $error['message'] : 'Unknown error',
+        'path' => $target_path,
+        'tmp_name' => $file['tmp_name']
+    ]);
 }
 ?>

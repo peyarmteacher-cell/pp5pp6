@@ -155,6 +155,38 @@ app.post('/api/register.php', (req, res) => {
     res.json({ message: 'จำลองการสมัครสมาชิกสำเร็จ! (ในระบบจริงจะตรวจสอบรหัสโรงเรียน 8 หลัก)' });
 });
 
+// --- School Settings & Logo Upload Mocks ---
+let mockSchool = {
+    id: 1,
+    name: 'โรงเรียนบ้านหนองบัว',
+    province: 'บุรีรัมย์',
+    logo_url: ''
+};
+
+app.get('/api/admin/get_school_info.php', (req, res) => {
+    res.json({
+        status: 'success',
+        school: mockSchool
+    });
+});
+
+app.post('/api/admin/update_school_settings.php', (req, res) => {
+    const { name, province, logo_url } = req.body;
+    mockSchool.name = name;
+    mockSchool.province = province;
+    mockSchool.logo_url = logo_url;
+    res.json({ status: 'success', message: 'อัปเดตข้อมูลโรงเรียนเรียบร้อยแล้ว (Mock)' });
+});
+
+app.post('/api/admin/upload_logo.php', (req, res) => {
+    // ใน Preview เราจะจำลองการอัปโหลดโดยใช้รูปภาพ Placeholder
+    // หรือถ้ามีการส่งไฟล์มาจริงๆ เราจะตอบกลับด้วย URL จำลอง
+    res.json({
+        status: 'success',
+        url: 'https://picsum.photos/seed/school/200/200'
+    });
+});
+
 // --- Static File Serving with Mock PHP Replacement ---
 const servePhpAsHtml = (filePath, req, res) => {
     if (fs.existsSync(filePath)) {
