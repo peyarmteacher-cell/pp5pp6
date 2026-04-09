@@ -12,6 +12,9 @@ $stmt->execute([$school_id]);
 $school = $stmt->fetch();
 
 $logo_url = $school['logo_url'] ?? '';
+if ($logo_url && !preg_match('/^https?:\/\//', $logo_url)) {
+    $logo_url = '../' . $logo_url;
+}
 $school_name = $school['name'] ?? '';
 $province = $school['province'] ?? '';
 
@@ -52,7 +55,7 @@ $province = $school['province'] ?? '';
         .logo {
             width: 80px;
             height: 80px;
-            object-contain: contain;
+            object-fit: contain;
             margin-bottom: 10px;
         }
         table {
