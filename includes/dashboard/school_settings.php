@@ -33,9 +33,20 @@
                         </div>
                     </div>
                     <div class="flex-1 space-y-3">
-                        <div class="flex gap-2">
-                            <input type="text" id="setting_logo_url" placeholder="URL รูปภาพโลโก้ (เช่น https://...)" class="flex-1 px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none">
-                            <button type="button" onclick="previewLogo()" class="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl font-semibold hover:bg-slate-200 transition-all cursor-pointer">Preview</button>
+                        <div class="flex flex-col gap-3">
+                            <div class="flex gap-2">
+                                <input type="text" id="setting_logo_url" placeholder="URL รูปภาพโลโก้ (เช่น https://...)" class="flex-1 px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none">
+                                <button type="button" onclick="previewLogo()" class="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl font-semibold hover:bg-slate-200 transition-all cursor-pointer">Preview</button>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="text-xs text-slate-500">หรือ</span>
+                                <input type="file" id="logo_file_input" accept="image/*" class="hidden" onchange="handleLogoUpload(this)">
+                                <button type="button" onclick="document.getElementById('logo_file_input').click()" class="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-xl font-semibold hover:bg-blue-100 transition-all cursor-pointer">
+                                    <i data-lucide="upload" class="w-4 h-4"></i>
+                                    อัปโหลดไฟล์จากเครื่อง
+                                </button>
+                                <span id="upload_status" class="text-xs text-slate-500 italic"></span>
+                            </div>
                         </div>
                         <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
                             <h4 class="text-sm font-bold text-blue-800 mb-1">คำแนะนำขนาดโลโก้</h4>
@@ -94,6 +105,42 @@
         } else {
             img.classList.add('hidden');
             placeholder.classList.remove('hidden');
+        }
+    }
+
+    async function handleLogoUpload(input) {
+        if (!input.files || !input.files[0]) return;
+        
+        const file = input.files[0];
+        const status = document.getElementById('upload_status');
+        const urlInput = document.getElementById('setting_logo_url');
+        
+        status.textContent = 'กำลังอัปโหลด...';
+        status.className = 'text-xs text-blue-600 italic';
+        
+        const formData = new FormData();
+        formData.append('logo', file);
+        
+        try {
+            const res = await fetch('api/admin/upload_logo.php', {
+                method: 'POST',
+                body: formData
+            });
+            const result = await res.json();
+            
+            if (result.status === 'success') {
+                urlInput.value = result.url;
+                previewLogo();
+                status.textContent = 'อัปโหลดสำเร็จ!';
+                status.className = 'text-xs text-green-600 italic';
+            } else {
+                status.textContent = result.error || 'อัปโหลดไม่สำเร็จ';
+                status.className = 'text-xs text-red-600 italic';
+            }
+        } catch (e) {
+            console.error('Upload error:', e);
+            status.textContent = 'เกิดข้อผิดพลาดในการเชื่อมต่อ';
+            status.className = 'text-xs text-red-600 italic';
         }
     }
 
