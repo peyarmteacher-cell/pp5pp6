@@ -19,6 +19,7 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
     <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sarabun:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Sarabun', sans-serif; }
@@ -73,11 +74,18 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                 } else if (sectionId === 'record-behavior') {
                     targetId = sectionId;
                     if (typeof initBehaviorSection === 'function') initBehaviorSection();
+                } else if (sectionId === 'reports') {
+                    targetId = sectionId;
+                    if (typeof loadReportOptions === 'function') loadReportOptions();
+                } else if (sectionId === 'school-settings') {
+                    targetId = sectionId;
+                    if (typeof loadSchoolSettings === 'function') loadSchoolSettings();
                 }
                 
                 const target = document.getElementById(targetId);
                 if (target) {
                     target.classList.remove('hidden');
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
                 } else {
                     console.warn('Section target not found:', targetId);
                 }
@@ -94,6 +102,8 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                     'manage-timetable': 'จัดการตารางสอน',
                     'record-attendance': 'บันทึกการมาเรียน',
                     'record-behavior': 'บันทึกพฤติกรรม',
+                    'reports': 'รายงานเอกสาร (ปพ.5/ปพ.6)',
+                    'school-settings': 'ตั้งค่าโรงเรียน/โลโก้',
                     'manage-super-admins': 'จัดการ Super Admin',
                     'profile': 'แก้ไขโปรไฟล์',
                     'academic-management': 'จัดการปีการศึกษา/จบการศึกษา'
@@ -134,6 +144,7 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                 <a href="javascript:void(0)" onclick="showSection('manage-students')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">จัดการนักเรียน</a>
                 <a href="javascript:void(0)" onclick="showSection('manage-subjects')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">จัดการรายวิชา</a>
                 <a href="javascript:void(0)" onclick="showSection('academic-management')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">จัดการปีการศึกษา/จบการศึกษา</a>
+                <a href="javascript:void(0)" onclick="showSection('school-settings')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">ตั้งค่าโรงเรียน/โลโก้</a>
             <?php endif; ?>
 
             <?php if ($role === 'teacher' && $_SESSION['is_academic']): ?>
@@ -151,6 +162,7 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                 <a href="javascript:void(0)" onclick="showSection('manage-timetable')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">จัดการตารางสอน</a>
                 <a href="javascript:void(0)" onclick="showSection('record-attendance')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">บันทึกการมาเรียน</a>
                 <a href="javascript:void(0)" onclick="showSection('record-behavior')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">บันทึกพฤติกรรม</a>
+                <a href="javascript:void(0)" onclick="showSection('reports')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer text-green-400">รายงานเอกสาร (ปพ.5/ปพ.6)</a>
             <?php endif; ?>
         </nav>
 

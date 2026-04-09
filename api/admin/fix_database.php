@@ -50,6 +50,13 @@ try {
         $results[] = "ตาราง subjects มีคอลัมน์ credits อยู่แล้ว";
     }
 
+    // 4.5 ตรวจสอบและเพิ่มคอลัมน์ logo_url ในตาราง schools
+    $stmt = $pdo->query("SHOW COLUMNS FROM schools LIKE 'logo_url'");
+    if (!$stmt->fetch()) {
+        $pdo->exec("ALTER TABLE schools ADD COLUMN logo_url TEXT AFTER province");
+        $results[] = "เพิ่มคอลัมน์ logo_url ในตาราง schools สำเร็จ";
+    }
+
     // 5. เพิ่มตาราง classrooms
     $pdo->exec("CREATE TABLE IF NOT EXISTS classrooms (
         id INT AUTO_INCREMENT PRIMARY KEY,
