@@ -27,6 +27,85 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
 </head>
 <body class="bg-slate-50 min-h-screen flex">
 
+    <script>
+        var studentsToImport = [];
+        var subjectsToImport = [];
+        var allStudents = [];
+        var allSubjects = [];
+        var selectedStudentLevel = null;
+        var selectedStudentRoom = null;
+        var selectedSubjectLevel = null;
+        var currentAcademicYear = '2567';
+        var currentSemester = 1;
+
+        function showSection(sectionId) {
+            console.log('Showing section:', sectionId);
+            try {
+                document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
+                
+                let targetId = sectionId;
+                if (sectionId === 'approve-admins' || sectionId === 'approve-teachers') {
+                    targetId = 'approve-section';
+                    if (typeof loadPendingUsers === 'function') loadPendingUsers();
+                } else if (sectionId === 'manage-schools') {
+                    if (typeof loadSchools === 'function') loadSchools();
+                } else if (sectionId === 'manage-teachers') {
+                    if (typeof loadSchoolTeachers === 'function') loadSchoolTeachers();
+                } else if (sectionId === 'manage-students') {
+                    if (typeof loadStudents === 'function') loadStudents();
+                } else if (sectionId === 'manage-subjects') {
+                    if (typeof loadSubjects === 'function') loadSubjects();
+                } else if (sectionId === 'record-grades') {
+                    targetId = sectionId;
+                    if (typeof loadMyAssignments === 'function') loadMyAssignments();
+                } else if (sectionId === 'record-learner-development') {
+                    targetId = sectionId;
+                    if (typeof loadLearnerDevClassrooms === 'function') loadLearnerDevClassrooms();
+                } else if (sectionId === 'record-health') {
+                    targetId = sectionId;
+                    if (typeof loadHealthClassrooms === 'function') loadHealthClassrooms();
+                } else if (sectionId === 'manage-timetable') {
+                    targetId = sectionId;
+                    if (typeof loadTimetable === 'function') loadTimetable();
+                } else if (sectionId === 'record-attendance') {
+                    targetId = sectionId;
+                    if (typeof loadAttendanceClassrooms === 'function') loadAttendanceClassrooms();
+                } else if (sectionId === 'record-behavior') {
+                    targetId = sectionId;
+                    if (typeof initBehaviorSection === 'function') initBehaviorSection();
+                }
+                
+                const target = document.getElementById(targetId);
+                if (target) {
+                    target.classList.remove('hidden');
+                } else {
+                    console.warn('Section target not found:', targetId);
+                }
+                
+                const titles = {
+                    'overview': 'ภาพรวมระบบ',
+                    'manage-schools': 'จัดการโรงเรียน',
+                    'approve-section': 'อนุมัติผู้ใช้งาน',
+                    'manage-students': 'จัดการนักเรียน',
+                    'manage-subjects': 'จัดการรายวิชา',
+                    'record-grades': 'บันทึกผลการเรียน',
+                    'record-learner-development': 'บันทึกกิจกรรมพัฒนาผู้เรียน',
+                    'record-health': 'บันทึกน้ำหนัก-ส่วนสูง',
+                    'manage-timetable': 'จัดการตารางสอน',
+                    'record-attendance': 'บันทึกการมาเรียน',
+                    'record-behavior': 'บันทึกพฤติกรรม',
+                    'manage-super-admins': 'จัดการ Super Admin',
+                    'profile': 'แก้ไขโปรไฟล์',
+                    'academic-management': 'จัดการปีการศึกษา/จบการศึกษา'
+                };
+                const titleEl = document.getElementById('section-title');
+                if (titleEl) titleEl.innerText = titles[targetId] || 'ระบบบริหารจัดการ';
+            } catch (e) {
+                console.error('Error in showSection:', e);
+            }
+        }
+    </script>
+
     <!-- Sidebar -->
     <aside class="w-64 bg-slate-900 text-white flex flex-col">
         <div class="p-6 border-b border-slate-800">
@@ -259,72 +338,6 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
     </main>
 
     <script>
-        var studentsToImport = [];
-        var subjectsToImport = [];
-        var allStudents = [];
-        var allSubjects = [];
-        var selectedStudentLevel = null;
-        var selectedStudentRoom = null;
-        var selectedSubjectLevel = null;
-        var currentAcademicYear = '2567';
-        var currentSemester = 1;
-
-        function showSection(sectionId) {
-            document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
-            
-            let targetId = sectionId;
-            if (sectionId === 'approve-admins' || sectionId === 'approve-teachers') {
-                targetId = 'approve-section';
-                if (typeof loadPendingUsers === 'function') loadPendingUsers();
-            } else if (sectionId === 'manage-schools') {
-                if (typeof loadSchools === 'function') loadSchools();
-            } else if (sectionId === 'manage-teachers') {
-                if (typeof loadSchoolTeachers === 'function') loadSchoolTeachers();
-            } else if (sectionId === 'manage-students') {
-                if (typeof loadStudents === 'function') loadStudents();
-            } else if (sectionId === 'manage-subjects') {
-                if (typeof loadSubjects === 'function') loadSubjects();
-            } else if (sectionId === 'record-grades') {
-                targetId = sectionId;
-                if (typeof loadMyAssignments === 'function') loadMyAssignments();
-            } else if (sectionId === 'record-learner-development') {
-                targetId = sectionId;
-                if (typeof loadLearnerDevClassrooms === 'function') loadLearnerDevClassrooms();
-            } else if (sectionId === 'record-health') {
-                targetId = sectionId;
-                if (typeof loadHealthClassrooms === 'function') loadHealthClassrooms();
-            } else if (sectionId === 'manage-timetable') {
-                targetId = sectionId;
-                if (typeof loadTimetable === 'function') loadTimetable();
-            } else if (sectionId === 'record-attendance') {
-                targetId = sectionId;
-                if (typeof loadAttendanceClassrooms === 'function') loadAttendanceClassrooms();
-            } else if (sectionId === 'record-behavior') {
-                targetId = sectionId;
-                if (typeof initBehaviorSection === 'function') initBehaviorSection();
-            }
-            
-            const target = document.getElementById(targetId);
-            if (target) target.classList.remove('hidden');
-            
-            const titles = {
-                'overview': 'ภาพรวมระบบ',
-                'manage-schools': 'จัดการโรงเรียน',
-                'approve-section': 'อนุมัติผู้ใช้งาน',
-                'manage-students': 'จัดการนักเรียน',
-                'manage-subjects': 'จัดการรายวิชา',
-                'record-grades': 'บันทึกผลการเรียน',
-                'record-learner-development': 'บันทึกกิจกรรมพัฒนาผู้เรียน',
-                'record-health': 'บันทึกน้ำหนัก-ส่วนสูง',
-                'manage-timetable': 'จัดการตารางสอน',
-                'record-attendance': 'บันทึกการมาเรียน',
-                'record-behavior': 'บันทึกพฤติกรรม',
-                'manage-super-admins': 'จัดการ Super Admin',
-                'profile': 'แก้ไขโปรไฟล์'
-            };
-            document.getElementById('section-title').innerText = titles[targetId] || 'ระบบบริหารจัดการ';
-        }
-
         // Create Super Admin Logic
         const createSuperAdminForm = document.getElementById('createSuperAdminForm');
         if (createSuperAdminForm) {

@@ -458,7 +458,10 @@
     }
 
     // Listen for date change
-    document.getElementById('behavior-date').onchange = loadBehaviorData;
-
-    document.addEventListener('DOMContentLoaded', initBehaviorSection);
+    document.addEventListener('DOMContentLoaded', () => {
+        const dateEl = document.getElementById('behavior-date');
+        if (dateEl) dateEl.onchange = loadBehaviorData;
+        
+        initBehaviorSection();
+    });
 </script>
