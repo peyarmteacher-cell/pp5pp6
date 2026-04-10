@@ -177,6 +177,34 @@ app.post('/api/academic/update_classroom_teachers.php', (req, res) => {
     res.json({ status: 'success', message: 'อัปเดตครูประจำชั้นเรียบร้อยแล้ว (Mock)' });
 });
 
+let mockOfficials = [
+    { id: 1, school_id: 1, name: 'นายสยาม เชียงเครือ', position: 'ผู้อำนวยการโรงเรียนบ้านหนองบัว', role_key: 'director' },
+    { id: 2, school_id: 1, name: 'นางสาวสมศรี รักเรียน', position: 'หัวหน้างานวิชาการ', role_key: 'academic_head' }
+];
+
+app.get('/api/admin/get_school_officials.php', (req, res) => {
+    res.json(mockOfficials);
+});
+
+app.post('/api/admin/save_school_official.php', (req, res) => {
+    const { id, name, position, role_key } = req.body;
+    if (id) {
+        const idx = mockOfficials.findIndex(o => o.id == id);
+        if (idx !== -1) {
+            mockOfficials[idx] = { ...mockOfficials[idx], name, position, role_key };
+        }
+    } else {
+        mockOfficials.push({ id: Date.now(), school_id: 1, name, position, role_key });
+    }
+    res.json({ status: 'success', message: 'บันทึกข้อมูลสำเร็จ (Mock)' });
+});
+
+app.post('/api/admin/delete_school_official.php', (req, res) => {
+    const { id } = req.body;
+    mockOfficials = mockOfficials.filter(o => o.id != id);
+    res.json({ status: 'success', message: 'ลบข้อมูลสำเร็จ (Mock)' });
+});
+
 app.get('/api/admin/get_school_info.php', (req, res) => {
     res.json({
         status: 'success',

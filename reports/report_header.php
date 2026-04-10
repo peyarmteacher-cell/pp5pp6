@@ -17,9 +17,31 @@ if ($logo_url && !preg_match('/^https?:\/\//', $logo_url)) {
 }
 $school_name = $school['name'] ?? '';
 $province = $school['province'] ?? '';
-$director_name = $school['director_name'] ?? '';
-$academic_head_name = $school['academic_head_name'] ?? '';
-$academic_head_position = $school['academic_head_position'] ?? 'หัวหน้างานวิชาการ';
+
+// ดึงข้อมูลผู้บริหารจากตาราง school_officials
+$director_name = '';
+$academic_head_name = '';
+$academic_head_position = 'หัวหน้างานวิชาการ';
+
+try {
+    $stmt_off = $pdo->prepare("SELECT * FROM school_officials WHERE school_id = ? AND is_active = 1");
+    $stmt_off->execute([$school_id]);
+    $officials = $stmt_off->fetchAll();
+    
+    foreach ($officials as $off) {
+        if ($off['role_key'] === 'director' && empty($director_name)) {
+            $director_name = $off['name'];
+        } else if (($off['role_key'] === 'academic_head' || $off['role_key'] === 'deputy_academic') && empty($academic_head_name)) {
+            $academic_head_name = $off['name'];
+            $academic_head_position = $off['position'];
+        }
+    }
+} catch (Exception $e) {
+    // Fallback to schools table if error
+    $director_name = $school['director_name'] ?? '';
+    $academic_head_name = $school['academic_head_name'] ?? '';
+    $academic_head_position = $school['academic_head_position'] ?? 'หัวหน้างานวิชาการ';
+}
 
 // Common report header/styles
 ?>

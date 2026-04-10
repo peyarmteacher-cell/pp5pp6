@@ -693,6 +693,42 @@ try {
         }
     }
 
+    // สร้างตาราง school_officials สำหรับจัดการรายชื่อผู้บริหารและหัวหน้างานต่างๆ
+    $pdo->exec("CREATE TABLE IF NOT EXISTS school_officials (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        school_id INT NOT NULL,
+        name VARCHAR(255) NOT NULL,
+        position VARCHAR(255) NOT NULL,
+        role_key VARCHAR(50) NOT NULL, -- 'director', 'academic_head', 'deputy_academic', etc.
+        is_active TINYINT(1) DEFAULT 1,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (school_id) REFERENCES schools(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
+    $results[] = "สร้างตาราง school_officials สำเร็จ";
+
+    // ย้ายข้อมูลจาก schools ไปยัง school_officials (ถ้ามี)
+    $stmt = $pdo->query("SELECT id, director_name, academic_head_name, academic_head_position FROM schools");
+    while ($school = $stmt->fetch()) {
+        if (!empty($school['director_name'])) {
+            $check = $pdo->prepare("SELECT id FROM school_officials WHERE school_id = ? AND role_key = 'director'");
+            $check->execute([$school['id']]);
+            if (!$check->fetch()) {
+                $ins = $pdo->prepare("INSERT INTO school_officials (school_id, name, position, role_key) VALUES (?, ?, ?, 'director')");
+                $ins->execute([$school['id'], $school['director_name'], 'ผู้อำนวยการโรงเรียน']);
+                $results[] = "ย้ายข้อมูลผู้อำนวยการโรงเรียน {$school['director_name']} ไปยังตารางใหม่";
+            }
+        }
+        if (!empty($school['academic_head_name'])) {
+            $check = $pdo->prepare("SELECT id FROM school_officials WHERE school_id = ? AND role_key = 'academic_head'");
+            $check->execute([$school['id']]);
+            if (!$check->fetch()) {
+                $ins = $pdo->prepare("INSERT INTO school_officials (school_id, name, position, role_key) VALUES (?, ?, ?, 'academic_head')");
+                $ins->execute([$school['id'], $school['academic_head_name'], $school['academic_head_position'] ?: 'หัวหน้างานวิชาการ']);
+                $results[] = "ย้ายข้อมูลหัวหน้างานวิชาการ {$school['academic_head_name']} ไปยังตารางใหม่";
+            }
+        }
+    }
+
     echo json_encode([
         'status' => 'success',
         'message' => 'ตรวจสอบและปรับปรุงฐานข้อมูลเรียบร้อยแล้ว',

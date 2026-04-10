@@ -87,6 +87,78 @@
             </div>
         </form>
     </div>
+
+    <!-- School Officials Management -->
+    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+        <div class="flex justify-between items-center mb-6">
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-amber-50 text-amber-600 rounded-lg">
+                    <i data-lucide="users"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-slate-800">รายชื่อผู้บริหารและหัวหน้างาน</h3>
+                    <p class="text-xs text-slate-500">จัดการรายชื่อที่จะปรากฏในลายเซ็นท้ายเอกสาร ปพ. ต่างๆ</p>
+                </div>
+            </div>
+            <button onclick="openOfficialModal()" class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-all cursor-pointer shadow-md shadow-blue-600/10">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+                เพิ่มรายชื่อ
+            </button>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="text-slate-500 border-b border-slate-100">
+                        <th class="pb-3 font-medium text-xs uppercase tracking-wider">บทบาท</th>
+                        <th class="pb-3 font-medium text-xs uppercase tracking-wider">ชื่อ-นามสกุล</th>
+                        <th class="pb-3 font-medium text-xs uppercase tracking-wider">ตำแหน่ง</th>
+                        <th class="pb-3 font-medium text-xs uppercase tracking-wider text-right">การจัดการ</th>
+                    </tr>
+                </thead>
+                <tbody id="officialsTableBody">
+                    <!-- จะถูกเติมด้วย JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Official Modal -->
+<div id="officialModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl">
+        <div class="flex justify-between items-center mb-6">
+            <h3 id="officialModalTitle" class="text-xl font-bold text-slate-800">เพิ่มรายชื่อผู้บริหาร</h3>
+            <button onclick="closeModal('officialModal')" class="text-slate-400 hover:text-slate-600">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+        </div>
+        <form id="officialForm" class="space-y-4">
+            <input type="hidden" id="official_id">
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">บทบาทในเอกสาร</label>
+                <select id="official_role_key" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer">
+                    <option value="director">ผู้อำนวยการโรงเรียน</option>
+                    <option value="academic_head">หัวหน้างานวิชาการ</option>
+                    <option value="deputy_academic">รองผู้อำนวยการฝ่ายวิชาการ</option>
+                    <option value="assistant_academic">ผู้ช่วยผู้อำนวยการฝ่ายวิชาการ</option>
+                    <option value="registrar">นายทะเบียน</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">ชื่อ-นามสกุล</label>
+                <input type="text" id="official_name" required placeholder="เช่น นายสยาม เชียงเครือ" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">ตำแหน่งที่แสดงในเอกสาร</label>
+                <input type="text" id="official_position" required placeholder="เช่น ผู้อำนวยการโรงเรียนบ้านหนองบัว" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+            </div>
+            <div class="flex gap-3 pt-4">
+                <button type="button" onclick="closeModal('officialModal')" class="flex-1 px-4 py-2 border border-slate-200 rounded-xl text-slate-600 font-semibold hover:bg-slate-50 transition-all cursor-pointer">ยกเลิก</button>
+                <button type="submit" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-all cursor-pointer">บันทึกข้อมูล</button>
+            </div>
+        </form>
+    </div>
 </div>
 
 <script>
@@ -110,10 +182,134 @@
                     document.getElementById('logo_placeholder').classList.add('hidden');
                 }
             }
+            
+            // Load officials list
+            loadSchoolOfficials();
         } catch (e) {
             console.error('Error loading school settings:', e);
         }
     }
+
+    async function loadSchoolOfficials() {
+        try {
+            const res = await fetch('api/admin/get_school_officials.php');
+            const officials = await res.json();
+            const tbody = document.getElementById('officialsTableBody');
+            if (!tbody) return;
+
+            const roleLabels = {
+                'director': 'ผู้อำนวยการ',
+                'academic_head': 'หัวหน้าวิชาการ',
+                'deputy_academic': 'รองฯ วิชาการ',
+                'assistant_academic': 'ผู้ช่วยฯ วิชาการ',
+                'registrar': 'นายทะเบียน'
+            };
+
+            if (officials.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="py-8 text-center text-slate-400 italic">ยังไม่มีข้อมูลรายชื่อผู้บริหาร</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = officials.map(o => `
+                <tr class="border-b border-slate-50 hover:bg-slate-50/50 transition-all group">
+                    <td class="py-4">
+                        <span class="px-2 py-1 bg-slate-100 text-slate-600 text-[10px] font-bold rounded uppercase">
+                            ${roleLabels[o.role_key] || o.role_key}
+                        </span>
+                    </td>
+                    <td class="py-4 font-medium text-slate-800">${o.name}</td>
+                    <td class="py-4 text-sm text-slate-500">${o.position}</td>
+                    <td class="py-4 text-right">
+                        <div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                            <button onclick='editOfficial(${JSON.stringify(o).replace(/'/g, "&apos;")})' class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-all cursor-pointer" title="แก้ไข">
+                                <i data-lucide="edit-2" class="w-4 h-4"></i>
+                            </button>
+                            <button onclick="deleteOfficial(${o.id})" class="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-all cursor-pointer" title="ลบ">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+            
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        } catch (e) {
+            console.error('Error loading officials:', e);
+        }
+    }
+
+    function openOfficialModal(o = null) {
+        const modal = document.getElementById('officialModal');
+        const title = document.getElementById('officialModalTitle');
+        const form = document.getElementById('officialForm');
+        
+        form.reset();
+        document.getElementById('official_id').value = '';
+        
+        if (o) {
+            title.innerText = 'แก้ไขรายชื่อผู้บริหาร';
+            document.getElementById('official_id').value = o.id;
+            document.getElementById('official_role_key').value = o.role_key;
+            document.getElementById('official_name').value = o.name;
+            document.getElementById('official_position').value = o.position;
+        } else {
+            title.innerText = 'เพิ่มรายชื่อผู้บริหาร';
+        }
+        
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+
+    function editOfficial(o) {
+        openOfficialModal(o);
+    }
+
+    async function deleteOfficial(id) {
+        if (!confirm('คุณต้องการลบรายชื่อนี้ใช่หรือไม่?')) return;
+        
+        try {
+            const res = await fetch('api/admin/delete_school_official.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id })
+            });
+            const result = await res.json();
+            if (result.status === 'success') {
+                loadSchoolOfficials();
+            } else {
+                alert(result.error);
+            }
+        } catch (e) {
+            console.error('Error deleting official:', e);
+        }
+    }
+
+    document.getElementById('officialForm')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const data = {
+            id: document.getElementById('official_id').value,
+            role_key: document.getElementById('official_role_key').value,
+            name: document.getElementById('official_name').value,
+            position: document.getElementById('official_position').value
+        };
+
+        try {
+            const res = await fetch('api/admin/save_school_official.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const result = await res.json();
+            if (result.status === 'success') {
+                closeModal('officialModal');
+                loadSchoolOfficials();
+            } else {
+                alert(result.error);
+            }
+        } catch (e) {
+            console.error('Error saving official:', e);
+        }
+    });
 
     function previewLogo() {
         const url = document.getElementById('setting_logo_url').value;
