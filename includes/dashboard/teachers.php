@@ -1,4 +1,5 @@
 <script>
+    console.log('teachers.php script block started');
     async function loadSchoolTeachers() {
         const schoolId = '<?= $_SESSION['school_id'] ?? '' ?>';
         const mockRole = new URLSearchParams(window.location.search).get('mock_role') || '';
@@ -28,7 +29,8 @@
                 return;
             }
             
-            if (teachers.length === 0) {
+            if (!Array.isArray(teachers) || teachers.length === 0) {
+                console.log('loadSchoolTeachers: No teachers found or invalid response');
                 tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-400">ยังไม่มีข้อมูลคุณครูในโรงเรียนนี้</td></tr>`;
                 return;
             }
@@ -37,17 +39,18 @@
             window.lastLoadedTeachers = teachers;
 
             tbody.innerHTML = teachers.map((t, index) => {
-                const safeName = t.name.replace(/'/g, "\\'");
+                const teacherName = t.name || 'ไม่ระบุชื่อ';
+                const safeName = teacherName.replace(/'/g, "\\'");
                 const isApproved = t.is_approved == 1 || t.is_approved === true || t.is_approved === '1';
                 const isAcademic = t.is_academic == 1 || t.is_academic === true || t.is_academic === '1';
                 
                 return `
                 <tr class="border-b border-slate-50 hover:bg-slate-50/50 group">
                     <td class="py-3">
-                        <div class="font-medium text-slate-800">${t.name}</div>
+                        <div class="font-medium text-slate-800">${teacherName}</div>
                         <div class="text-[10px] text-slate-400">ID: ${t.username || '-'}</div>
                     </td>
-                    <td class="py-3 text-slate-500">${t.position}</td>
+                    <td class="py-3 text-slate-500">${t.position || '-'}</td>
                     <td class="py-3">
                         <label class="relative inline-flex items-center cursor-pointer">
                             <input type="checkbox" class="sr-only peer" ${isAcademic ? 'checked' : ''} onchange="toggleAcademic(${t.id}, this.checked)">
@@ -127,39 +130,41 @@
         if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 
-    document.getElementById('editTeacherForm')?.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const data = {
-            id: document.getElementById('edit_teacher_id').value,
-            school_id: document.getElementById('edit_teacher_school_id').value,
-            username: document.getElementById('edit_teacher_username').value,
-            name: document.getElementById('edit_teacher_name').value,
-            position: document.getElementById('edit_teacher_position').value,
-            is_academic: document.getElementById('edit_teacher_is_academic').checked ? 1 : 0
-        };
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('editTeacherForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                id: document.getElementById('edit_teacher_id').value,
+                school_id: document.getElementById('edit_teacher_school_id').value,
+                username: document.getElementById('edit_teacher_username').value,
+                name: document.getElementById('edit_teacher_name').value,
+                position: document.getElementById('edit_teacher_position').value,
+                is_academic: document.getElementById('edit_teacher_is_academic').checked ? 1 : 0
+            };
 
-        try {
-            const res = await fetch('api/admin/save_teacher.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
-            const result = await res.json();
-            if (result.status === 'success') {
-                alert(result.message || 'บันทึกข้อมูลสำเร็จ');
-                closeModal('editTeacherModal');
-                loadSchoolTeachers();
-                
-                // If Super Admin modal is open, refresh it
-                if (typeof viewTeachers === 'function' && window.currentViewingSchool && document.getElementById('teacherModal').classList.contains('flex')) {
-                    viewTeachers(window.currentViewingSchool.id, window.currentViewingSchool.name);
+            try {
+                const res = await fetch('api/admin/save_teacher.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await res.json();
+                if (result.status === 'success') {
+                    alert(result.message || 'บันทึกข้อมูลสำเร็จ');
+                    closeModal('editTeacherModal');
+                    loadSchoolTeachers();
+                    
+                    // If Super Admin modal is open, refresh it
+                    if (typeof viewTeachers === 'function' && window.currentViewingSchool && document.getElementById('teacherModal')?.classList.contains('flex')) {
+                        viewTeachers(window.currentViewingSchool.id, window.currentViewingSchool.name);
+                    }
+                } else {
+                    alert(result.error);
                 }
-            } else {
-                alert(result.error);
+            } catch (e) {
+                console.error('Error saving teacher:', e);
             }
-        } catch (e) {
-            console.error('Error saving teacher:', e);
-        }
+        });
     });
 
     async function deleteTeacher(id) {
@@ -177,7 +182,7 @@
                 loadSchoolTeachers();
                 
                 // If Super Admin modal is open, refresh it
-                if (typeof viewTeachers === 'function' && window.currentViewingSchool && document.getElementById('teacherModal').classList.contains('flex')) {
+                if (typeof viewTeachers === 'function' && window.currentViewingSchool && document.getElementById('teacherModal')?.classList.contains('flex')) {
                     viewTeachers(window.currentViewingSchool.id, window.currentViewingSchool.name);
                 }
             } else {
@@ -201,12 +206,13 @@
         }
     }
 
-    let currentAssignTeacherId = null;
-    let currentAcademicYear = '2567';
-    let currentSemester = 1;
+    // Use existing globals if available, otherwise initialize
+    window.currentAssignTeacherId = window.currentAssignTeacherId || null;
+    window.currentAcademicYear = window.currentAcademicYear || '2567';
+    window.currentSemester = window.currentSemester || 1;
 
     async function openAssignSubjectsModal(teacherId, teacherName) {
-        currentAssignTeacherId = teacherId;
+        window.currentAssignTeacherId = teacherId;
         const nameEl = document.getElementById('assignTeacherName');
         if (nameEl) nameEl.innerText = `มอบหมายงานสอน - ${teacherName}`;
         

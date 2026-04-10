@@ -528,21 +528,23 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                     return;
                 }
                 
-                if (teachers.length === 0) {
+                if (!Array.isArray(teachers) || teachers.length === 0) {
+                    console.log('viewTeachers: No teachers found or invalid response');
                     tbody.innerHTML = `<tr><td colspan="${'<?= $role ?>' === 'super_admin' ? 4 : 3}" class="py-4 text-center text-slate-400">ไม่พบรายชื่อคุณครูในโรงเรียนนี้</td></tr>`;
                 } else {
                     // Store teachers globally for safer access from onclick
                     window.lastLoadedTeachers = teachers;
                     
                     tbody.innerHTML = teachers.map((t, index) => {
+                        const teacherName = t.name || 'ไม่ระบุชื่อ';
                         const safeSchoolName = schoolName.replace(/'/g, "\\'");
                         return `
                         <tr class="border-b border-slate-50 group">
                             <td class="py-3">
-                                <div class="font-medium text-slate-800">${t.name}</div>
+                                <div class="font-medium text-slate-800">${teacherName}</div>
                                 <div class="text-[10px] text-slate-400">ID: ${t.username || '-'}</div>
                             </td>
-                            <td class="py-3 text-slate-500">${t.position}</td>
+                            <td class="py-3 text-slate-500">${t.position || '-'}</td>
                             <td class="py-3">
                                 <div class="flex flex-col gap-1">
                                     <span class="px-2 py-0.5 rounded-full text-[10px] font-bold w-fit ${t.is_approved == 1 || t.is_approved === true || t.is_approved === '1' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">

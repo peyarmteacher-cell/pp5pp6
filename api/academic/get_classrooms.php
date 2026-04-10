@@ -14,8 +14,8 @@ $school_id = $_SESSION['school_id'];
 try {
     $stmt = $pdo->prepare('
         SELECT c.*, 
-               u1.name as teacher_name_1, u1.last_name as teacher_last_name_1,
-               u2.name as teacher_name_2, u2.last_name as teacher_last_name_2
+               u1.name as teacher_name_1,
+               u2.name as teacher_name_2
         FROM classrooms c
         LEFT JOIN users u1 ON c.teacher_id_1 = u1.id
         LEFT JOIN users u2 ON c.teacher_id_2 = u2.id
