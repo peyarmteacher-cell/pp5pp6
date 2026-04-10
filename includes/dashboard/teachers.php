@@ -1,271 +1,6 @@
-<!-- School Admin: Manage Teachers -->
-<?php if ($role === 'admin'): ?>
-<div id="manage-teachers" class="section hidden space-y-6">
-    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-        <div class="flex justify-between items-center mb-6">
-            <div class="flex items-center gap-3">
-                <div class="p-2 bg-blue-50 text-blue-600 rounded-lg">
-                    <i data-lucide="users"></i>
-                </div>
-                <div>
-                    <h3 class="text-lg font-bold text-slate-800">ข้อมูลคุณครูในโรงเรียน</h3>
-                    <p class="text-xs text-slate-500">จัดการรายชื่อและมอบหมายหน้าที่งานวิชาการ</p>
-                </div>
-            </div>
-            <div class="flex gap-2">
-                <button onclick="loadSchoolTeachers()" class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all cursor-pointer" title="รีเฟรช">
-                    <i data-lucide="refresh-cw" class="w-5 h-5"></i>
-                </button>
-                <button onclick="console.log('Add Teacher clicked'); openEditTeacherModal()" class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-all cursor-pointer shadow-md shadow-blue-600/10">
-                    <i data-lucide="plus" class="w-4 h-4"></i>
-                    เพิ่มคุณครู
-                </button>
-            </div>
-        </div>
-        
-        <div class="overflow-x-auto">
-            <table class="w-full text-left">
-                <thead>
-                    <tr class="text-slate-500 border-b border-slate-100">
-                        <th class="pb-3 font-medium text-xs uppercase tracking-wider">ชื่อ-นามสกุล</th>
-                        <th class="pb-3 font-medium text-xs uppercase tracking-wider">ตำแหน่ง</th>
-                        <th class="pb-3 font-medium text-xs uppercase tracking-wider">งานวิชาการ</th>
-                        <th class="pb-3 font-medium text-xs uppercase tracking-wider">สถานะ</th>
-                        <th class="pb-3 font-medium text-xs uppercase tracking-wider text-right">การจัดการ</th>
-                    </tr>
-                </thead>
-                <tbody id="schoolTeachersTableBody"></tbody>
-            </table>
-        </div>
-    </div>
-</div>
-<?php endif; ?>
-
-<!-- Modal: เพิ่ม/แก้ไขคุณครู -->
-<div id="editTeacherModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl">
-        <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-            <h3 id="editTeacherModalTitle" class="text-xl font-bold text-slate-800">เพิ่มข้อมูลคุณครู</h3>
-            <button onclick="closeModal('editTeacherModal')" class="text-slate-400 hover:text-slate-600 cursor-pointer p-2 hover:bg-slate-200 rounded-full transition-all">
-                <i data-lucide="x" class="w-6 h-6"></i>
-            </button>
-        </div>
-        <form id="editTeacherForm" class="p-6 space-y-4">
-            <input type="hidden" id="edit_teacher_id">
-            <input type="hidden" id="edit_teacher_school_id">
-            
-            <div id="username_field_container">
-                <label class="block text-sm font-medium text-slate-700 mb-1">เลขบัตรประชาชน (ใช้เป็นชื่อผู้ใช้)</label>
-                <input type="text" id="edit_teacher_username" maxlength="13" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all">
-                <p class="text-[10px] text-slate-400 mt-1">* รหัสผ่านเริ่มต้นคือ 123456</p>
-            </div>
-            
-            <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">ชื่อ-นามสกุล</label>
-                <input type="text" id="edit_teacher_name" required placeholder="เช่น นายสมชาย ใจดี" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all">
-            </div>
-            
-            <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">ตำแหน่ง</label>
-                <select id="edit_teacher_position" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all cursor-pointer">
-                    <option value="ครูผู้ช่วย">ครูผู้ช่วย</option>
-                    <option value="ครู ค.ศ. 1">ครู ค.ศ. 1</option>
-                    <option value="ครู ค.ศ. 2">ครู ค.ศ. 2 (ชำนาญการ)</option>
-                    <option value="ครู ค.ศ. 3">ครู ค.ศ. 3 (ชำนาญการพิเศษ)</option>
-                    <option value="ครู ค.ศ. 4">ครู ค.ศ. 4 (เชี่ยวชาญ)</option>
-                    <option value="ครู ค.ศ. 5">ครู ค.ศ. 5 (เชี่ยวชาญพิเศษ)</option>
-                    <option value="พนักงานราชการ">พนักงานราชการ</option>
-                    <option value="ครูอัตราจ้าง">ครูอัตราจ้าง</option>
-                </select>
-            </div>
-            
-            <div class="flex items-center gap-3 p-3 bg-blue-50 rounded-xl border border-blue-100">
-                <input type="checkbox" id="edit_teacher_is_academic" class="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500">
-                <label for="edit_teacher_is_academic" class="text-sm font-medium text-blue-800 cursor-pointer">มอบหมายงานวิชาการ (สามารถจัดการนักเรียนและวิชาได้)</label>
-            </div>
-            
-            <div class="pt-4 flex gap-3">
-                <button type="button" onclick="closeModal('editTeacherModal')" class="flex-1 px-4 py-2 border border-slate-200 text-slate-600 rounded-xl font-semibold hover:bg-slate-50 cursor-pointer transition-all">ยกเลิก</button>
-                <button type="submit" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-xl font-semibold hover:bg-blue-700 cursor-pointer transition-all shadow-lg shadow-blue-200">บันทึกข้อมูล</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Modal: รายชื่อคุณครู (Super Admin) -->
-<div id="teacherModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-3xl w-full max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
-        <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-            <h3 id="modalSchoolName" class="text-xl font-bold text-slate-800">รายชื่อคุณครู</h3>
-            <div class="flex items-center gap-2">
-                <button id="addTeacherBtnSuperAdmin" class="flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700 transition-all cursor-pointer">
-                    <i data-lucide="plus" class="w-3 h-3"></i>
-                    เพิ่มคุณครู
-                </button>
-                <button onclick="closeModal('teacherModal')" class="text-slate-400 hover:text-slate-600 cursor-pointer p-2 hover:bg-slate-200 rounded-full transition-all">
-                    <i data-lucide="x" class="w-6 h-6"></i>
-                </button>
-            </div>
-        </div>
-        <div class="p-6 overflow-y-auto flex-1">
-            <table class="w-full text-left">
-                <thead>
-                    <tr class="text-slate-500 border-b border-slate-100">
-                        <th class="pb-3 font-medium text-slate-800">ชื่อ-นามสกุล</th>
-                        <th class="pb-3 font-medium text-slate-800">ตำแหน่ง</th>
-                        <th class="pb-3 font-medium text-slate-800">สถานะ</th>
-                        <th class="pb-3 font-medium text-right text-slate-800">การจัดการ</th>
-                    </tr>
-                </thead>
-                <tbody id="modalTeacherTableBody"></tbody>
-            </table>
-        </div>
-    </div>
-</div>
-
-<!-- Modal: มอบหมายงานสอน -->
-<div id="assignSubjectsModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
-        <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-            <div>
-                <h3 id="assignTeacherName" class="text-xl font-bold text-slate-800">มอบหมายงานสอน</h3>
-                <p class="text-xs text-slate-500 mt-1">กำหนดรายวิชาที่คุณครูรับผิดชอบ</p>
-            </div>
-            <button onclick="closeModal('assignSubjectsModal')" class="text-slate-400 hover:text-slate-600 cursor-pointer p-2 hover:bg-slate-200 rounded-full transition-all">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-            </button>
-        </div>
-        <div class="p-6 overflow-y-auto flex-1 space-y-8">
-            <!-- ส่วนที่ 1: เลือกชั้นเรียนและวิชา -->
-            <div class="bg-blue-50 p-6 rounded-2xl border border-blue-100">
-                <h4 class="text-sm font-bold text-blue-800 mb-4 flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                    มอบหมายงานสอนรายวิชา
-                </h4>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                    <div>
-                        <label class="block text-xs font-bold text-blue-700 mb-1 uppercase tracking-wider">ระดับชั้น</label>
-                        <select id="assign_level" onchange="onLevelChange()" class="w-full px-4 py-2 bg-white border border-blue-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer">
-                            <option value="">เลือกระดับชั้น</option>
-                            <?php foreach(['ป.1', 'ป.2', 'ป.3', 'ป.4', 'ป.5', 'ป.6', 'ม.1', 'ม.2', 'ม.3'] as $l): ?>
-                                <option value="<?= $l ?>"><?= $l ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div id="room_selection_container" class="hidden">
-                        <label class="block text-xs font-bold text-blue-700 mb-1 uppercase tracking-wider">ห้อง</label>
-                        <select id="assign_room" class="w-full px-4 py-2 bg-white border border-blue-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer">
-                            <option value="">เลือกห้อง</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div id="subject_selection_container" class="hidden space-y-4">
-                    <div class="flex justify-between items-center">
-                        <h5 class="text-sm font-bold text-slate-700">เลือกรายวิชา</h5>
-                        <button onclick="toggleSelectAllSubjects()" class="text-xs font-bold text-blue-600 hover:text-blue-800 cursor-pointer">เลือกทั้งหมด / ยกเลิกทั้งหมด</button>
-                    </div>
-                    <div id="subject_list" class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto p-2 bg-white rounded-xl border border-blue-100">
-                        <!-- Subjects will be loaded here -->
-                    </div>
-                    <div class="pt-2">
-                        <button onclick="submitAssignment()" class="w-full bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 cursor-pointer">
-                            บันทึกการมอบหมายงานสอน
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ส่วนที่ 1.5: มอบหมายกิจกรรมพัฒนาผู้เรียน -->
-            <div class="bg-amber-50 p-6 rounded-2xl border border-amber-100">
-                <h4 class="text-sm font-bold text-amber-800 mb-4 flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                    มอบหมายกิจกรรมพัฒนาผู้เรียน (แนะแนว, ลูกเสือ, ชุมนุม, เพื่อสังคมฯ)
-                </h4>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div>
-                        <label class="block text-xs font-bold text-amber-700 mb-1 uppercase tracking-wider">ระดับชั้น</label>
-                        <select id="ld_assign_level" onchange="onLDLevelChange()" class="w-full px-4 py-2 bg-white border border-amber-200 rounded-xl outline-none focus:ring-2 focus:ring-amber-500 transition-all cursor-pointer">
-                            <option value="">เลือกระดับชั้น</option>
-                            <?php foreach(['ป.1', 'ป.2', 'ป.3', 'ป.4', 'ป.5', 'ป.6', 'ม.1', 'ม.2', 'ม.3'] as $l): ?>
-                                <option value="<?= $l ?>"><?= $l ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div id="ld_room_selection_container" class="hidden">
-                        <label class="block text-xs font-bold text-amber-700 mb-1 uppercase tracking-wider">ห้อง</label>
-                        <select id="ld_assign_room" class="w-full px-4 py-2 bg-white border border-amber-200 rounded-xl outline-none focus:ring-2 focus:ring-amber-500 transition-all cursor-pointer">
-                            <option value="">เลือกห้อง</option>
-                        </select>
-                    </div>
-                </div>
-                <button onclick="submitLDAssignment()" class="w-full bg-amber-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-amber-700 transition-all shadow-lg shadow-amber-200 cursor-pointer">
-                    บันทึกการมอบหมายกิจกรรมพัฒนาผู้เรียน
-                </button>
-            </div>
-
-            <!-- ส่วนที่ 2: รายการที่มอบหมายแล้ว -->
-            <div>
-                <div class="flex flex-col space-y-6">
-                    <div>
-                        <div class="flex justify-between items-center mb-4">
-                            <h4 class="text-sm font-bold text-slate-800 flex items-center gap-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                                รายวิชาที่รับผิดชอบในปัจจุบัน
-                            </h4>
-                            <button onclick="copyPreviousAssignments()" class="text-xs bg-amber-500 text-white px-3 py-1.5 rounded-lg font-bold hover:bg-amber-600 transition-all shadow-sm cursor-pointer flex items-center gap-1">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                                คัดลอกงานสอนจากปีที่แล้ว
-                            </button>
-                        </div>
-                        <div class="overflow-x-auto border border-slate-100 rounded-2xl">
-                            <table class="w-full text-left">
-                                <thead class="bg-slate-50">
-                                    <tr class="text-slate-500 text-xs uppercase tracking-wider">
-                                        <th class="px-4 py-3 font-medium">รหัสวิชา</th>
-                                        <th class="px-4 py-3 font-medium">ชื่อวิชา</th>
-                                        <th class="px-4 py-3 font-medium">ระดับชั้น/ห้อง</th>
-                                        <th class="px-4 py-3 font-medium">ชั่วโมง/หน่วยกิต</th>
-                                        <th class="px-4 py-3 font-medium text-right">การจัดการ</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="teacherAssignmentsTableBody" class="text-sm">
-                                    <tr><td colspan="5" class="py-8 text-center text-slate-400">กำลังโหลดข้อมูล...</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <div>
-                        <h4 class="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                            กิจกรรมพัฒนาผู้เรียนที่รับผิดชอบ
-                        </h4>
-                        <div class="overflow-x-auto border border-slate-100 rounded-2xl">
-                            <table class="w-full text-left">
-                                <thead class="bg-slate-50">
-                                    <tr class="text-slate-500 text-xs uppercase tracking-wider">
-                                        <th class="px-4 py-3 font-medium">ระดับชั้น</th>
-                                        <th class="px-4 py-3 font-medium text-right">การจัดการ</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="teacherLDAssignmentsTableBody" class="text-sm">
-                                    <tr><td colspan="2" class="py-8 text-center text-slate-400">กำลังโหลดข้อมูล...</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
 <script>
     async function loadSchoolTeachers() {
-        const schoolId = '<?= $_SESSION['school_id'] ?>';
+        const schoolId = '<?= $_SESSION['school_id'] ?? '' ?>';
         const mockRole = new URLSearchParams(window.location.search).get('mock_role') || '';
         console.log('loadSchoolTeachers: school_id =', schoolId, 'mock_role =', mockRole);
         
@@ -344,7 +79,7 @@
                     </td>
                 </tr>
             `}).join('');
-        
+            
         if (typeof lucide !== 'undefined') lucide.createIcons();
         } catch (e) {
             console.error('Error in loadSchoolTeachers:', e);
@@ -366,7 +101,7 @@
 
         form.reset();
         document.getElementById('edit_teacher_id').value = '';
-        document.getElementById('edit_teacher_school_id').value = schoolId || '<?= $_SESSION['school_id'] ?>';
+        document.getElementById('edit_teacher_school_id').value = schoolId || '<?= $_SESSION['school_id'] ?? '' ?>';
         
         if (t) {
             title.innerText = 'แก้ไขข้อมูลคุณครู';
@@ -739,3 +474,266 @@
         }
     }
 </script>
+
+<!-- School Admin: Manage Teachers -->
+<?php if ($role === 'admin'): ?>
+<div id="manage-teachers" class="section hidden space-y-6">
+    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+        <div class="flex justify-between items-center mb-6">
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-blue-50 text-blue-600 rounded-lg">
+                    <i data-lucide="users"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-slate-800">ข้อมูลคุณครูในโรงเรียน</h3>
+                    <p class="text-xs text-slate-500">จัดการรายชื่อและมอบหมายหน้าที่งานวิชาการ</p>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="loadSchoolTeachers()" class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all cursor-pointer" title="รีเฟรช">
+                    <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+                </button>
+                <button onclick="console.log('Add Teacher clicked'); openEditTeacherModal()" class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-all cursor-pointer shadow-md shadow-blue-600/10">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                    เพิ่มคุณครู
+                </button>
+            </div>
+        </div>
+        
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="text-slate-500 border-b border-slate-100">
+                        <th class="pb-3 font-medium text-xs uppercase tracking-wider">ชื่อ-นามสกุล</th>
+                        <th class="pb-3 font-medium text-xs uppercase tracking-wider">ตำแหน่ง</th>
+                        <th class="pb-3 font-medium text-xs uppercase tracking-wider">งานวิชาการ</th>
+                        <th class="pb-3 font-medium text-xs uppercase tracking-wider">สถานะ</th>
+                        <th class="pb-3 font-medium text-xs uppercase tracking-wider text-right">การจัดการ</th>
+                    </tr>
+                </thead>
+                <tbody id="schoolTeachersTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
+
+<!-- Modal: เพิ่ม/แก้ไขคุณครู -->
+<div id="editTeacherModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl">
+        <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+            <h3 id="editTeacherModalTitle" class="text-xl font-bold text-slate-800">เพิ่มข้อมูลคุณครู</h3>
+            <button onclick="closeModal('editTeacherModal')" class="text-slate-400 hover:text-slate-600 cursor-pointer p-2 hover:bg-slate-200 rounded-full transition-all">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+        </div>
+        <form id="editTeacherForm" class="p-6 space-y-4">
+            <input type="hidden" id="edit_teacher_id">
+            <input type="hidden" id="edit_teacher_school_id">
+            
+            <div id="username_field_container">
+                <label class="block text-sm font-medium text-slate-700 mb-1">เลขบัตรประชาชน (ใช้เป็นชื่อผู้ใช้)</label>
+                <input type="text" id="edit_teacher_username" maxlength="13" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all">
+                <p class="text-[10px] text-slate-400 mt-1">* รหัสผ่านเริ่มต้นคือ 123456</p>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">ชื่อ-นามสกุล</label>
+                <input type="text" id="edit_teacher_name" required placeholder="เช่น นายสมชาย ใจดี" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all">
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">ตำแหน่ง</label>
+                <select id="edit_teacher_position" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all cursor-pointer">
+                    <option value="ครูผู้ช่วย">ครูผู้ช่วย</option>
+                    <option value="ครู ค.ศ. 1">ครู ค.ศ. 1</option>
+                    <option value="ครู ค.ศ. 2">ครู ค.ศ. 2 (ชำนาญการ)</option>
+                    <option value="ครู ค.ศ. 3">ครู ค.ศ. 3 (ชำนาญการพิเศษ)</option>
+                    <option value="ครู ค.ศ. 4">ครู ค.ศ. 4 (เชี่ยวชาญ)</option>
+                    <option value="ครู ค.ศ. 5">ครู ค.ศ. 5 (เชี่ยวชาญพิเศษ)</option>
+                    <option value="พนักงานราชการ">พนักงานราชการ</option>
+                    <option value="ครูอัตราจ้าง">ครูอัตราจ้าง</option>
+                </select>
+            </div>
+            
+            <div class="flex items-center gap-3 p-3 bg-blue-50 rounded-xl border border-blue-100">
+                <input type="checkbox" id="edit_teacher_is_academic" class="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500">
+                <label for="edit_teacher_is_academic" class="text-sm font-medium text-blue-800 cursor-pointer">มอบหมายงานวิชาการ (สามารถจัดการนักเรียนและวิชาได้)</label>
+            </div>
+            
+            <div class="pt-4 flex gap-3">
+                <button type="button" onclick="closeModal('editTeacherModal')" class="flex-1 px-4 py-2 border border-slate-200 text-slate-600 rounded-xl font-semibold hover:bg-slate-50 cursor-pointer transition-all">ยกเลิก</button>
+                <button type="submit" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-xl font-semibold hover:bg-blue-700 cursor-pointer transition-all shadow-lg shadow-blue-200">บันทึกข้อมูล</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal: รายชื่อคุณครู (Super Admin) -->
+<div id="teacherModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-3xl w-full max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
+        <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+            <h3 id="modalSchoolName" class="text-xl font-bold text-slate-800">รายชื่อคุณครู</h3>
+            <div class="flex items-center gap-2">
+                <button id="addTeacherBtnSuperAdmin" class="flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700 transition-all cursor-pointer">
+                    <i data-lucide="plus" class="w-3 h-3"></i>
+                    เพิ่มคุณครู
+                </button>
+                <button onclick="closeModal('teacherModal')" class="text-slate-400 hover:text-slate-600 cursor-pointer p-2 hover:bg-slate-200 rounded-full transition-all">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+        </div>
+        <div class="p-6 overflow-y-auto flex-1">
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="text-slate-500 border-b border-slate-100">
+                        <th class="pb-3 font-medium text-slate-800">ชื่อ-นามสกุล</th>
+                        <th class="pb-3 font-medium text-slate-800">ตำแหน่ง</th>
+                        <th class="pb-3 font-medium text-slate-800">สถานะ</th>
+                        <th class="pb-3 font-medium text-right text-slate-800">การจัดการ</th>
+                    </tr>
+                </thead>
+                <tbody id="modalTeacherTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: มอบหมายงานสอน -->
+<div id="assignSubjectsModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
+        <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+            <div>
+                <h3 id="assignTeacherName" class="text-xl font-bold text-slate-800">มอบหมายงานสอน</h3>
+                <p class="text-xs text-slate-500 mt-1">กำหนดรายวิชาที่คุณครูรับผิดชอบ</p>
+            </div>
+            <button onclick="closeModal('assignSubjectsModal')" class="text-slate-400 hover:text-slate-600 cursor-pointer p-2 hover:bg-slate-200 rounded-full transition-all">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+        </div>
+        <div class="p-6 overflow-y-auto flex-1 space-y-8">
+            <!-- ส่วนที่ 1: เลือกชั้นเรียนและวิชา -->
+            <div class="bg-blue-50 p-6 rounded-2xl border border-blue-100">
+                <h4 class="text-sm font-bold text-blue-800 mb-4 flex items-center gap-2">
+                    <i data-lucide="book-open" class="w-4 h-4"></i>
+                    มอบหมายงานสอนรายวิชา
+                </h4>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div>
+                        <label class="block text-xs font-bold text-blue-700 mb-1 uppercase tracking-wider">ระดับชั้น</label>
+                        <select id="assign_level" onchange="onLevelChange()" class="w-full px-4 py-2 bg-white border border-blue-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer">
+                            <option value="">เลือกระดับชั้น</option>
+                            <?php foreach(['ป.1', 'ป.2', 'ป.3', 'ป.4', 'ป.5', 'ป.6', 'ม.1', 'ม.2', 'ม.3'] as $l): ?>
+                                <option value="<?= $l ?>"><?= $l ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div id="room_selection_container" class="hidden">
+                        <label class="block text-xs font-bold text-blue-700 mb-1 uppercase tracking-wider">ห้อง</label>
+                        <select id="assign_room" class="w-full px-4 py-2 bg-white border border-blue-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer">
+                            <option value="">เลือกห้อง</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="subject_selection_container" class="hidden space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h5 class="text-sm font-bold text-slate-700">เลือกรายวิชา</h5>
+                        <button onclick="toggleSelectAllSubjects()" class="text-xs font-bold text-blue-600 hover:text-blue-800 cursor-pointer">เลือกทั้งหมด / ยกเลิกทั้งหมด</button>
+                    </div>
+                    <div id="subject_list" class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto p-2 bg-white rounded-xl border border-blue-100">
+                        <!-- Subjects will be loaded here -->
+                    </div>
+                    <div class="pt-2">
+                        <button onclick="submitAssignment()" class="w-full bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 cursor-pointer">
+                            บันทึกการมอบหมายงานสอน
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ส่วนที่ 1.5: มอบหมายกิจกรรมพัฒนาผู้เรียน -->
+            <div class="bg-amber-50 p-6 rounded-2xl border border-amber-100">
+                <h4 class="text-sm font-bold text-amber-800 mb-4 flex items-center gap-2">
+                    <i data-lucide="users" class="w-4 h-4"></i>
+                    มอบหมายกิจกรรมพัฒนาผู้เรียน (แนะแนว, ลูกเสือ, ชุมนุม, เพื่อสังคมฯ)
+                </h4>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-xs font-bold text-amber-700 mb-1 uppercase tracking-wider">ระดับชั้น</label>
+                        <select id="ld_assign_level" onchange="onLDLevelChange()" class="w-full px-4 py-2 bg-white border border-amber-200 rounded-xl outline-none focus:ring-2 focus:ring-amber-500 transition-all cursor-pointer">
+                            <option value="">เลือกระดับชั้น</option>
+                            <?php foreach(['ป.1', 'ป.2', 'ป.3', 'ป.4', 'ป.5', 'ป.6', 'ม.1', 'ม.2', 'ม.3'] as $l): ?>
+                                <option value="<?= $l ?>"><?= $l ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div id="ld_room_selection_container" class="hidden">
+                        <label class="block text-xs font-bold text-amber-700 mb-1 uppercase tracking-wider">ห้อง</label>
+                        <select id="ld_assign_room" class="w-full px-4 py-2 bg-white border border-amber-200 rounded-xl outline-none focus:ring-2 focus:ring-amber-500 transition-all cursor-pointer">
+                            <option value="">เลือกห้อง</option>
+                        </select>
+                    </div>
+                </div>
+                <button onclick="submitLDAssignment()" class="w-full bg-amber-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-amber-700 transition-all shadow-lg shadow-amber-200 cursor-pointer">
+                    บันทึกการมอบหมายกิจกรรมพัฒนาผู้เรียน
+                </button>
+            </div>
+
+            <!-- ส่วนที่ 2: รายการที่มอบหมายแล้ว -->
+            <div class="grid grid-cols-1 gap-8">
+                <div>
+                    <div class="flex justify-between items-center mb-4">
+                        <h4 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                            <i data-lucide="clipboard-list" class="w-4 h-4"></i>
+                            รายวิชาที่รับผิดชอบในปัจจุบัน
+                        </h4>
+                        <button onclick="copyPreviousAssignments()" class="text-xs bg-amber-500 text-white px-3 py-1.5 rounded-lg font-bold hover:bg-amber-600 transition-all shadow-sm cursor-pointer flex items-center gap-1">
+                            <i data-lucide="copy" class="w-3 h-3"></i>
+                            คัดลอกงานสอนจากปีที่แล้ว
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto border border-slate-100 rounded-2xl">
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-50">
+                                <tr class="text-slate-500 text-xs uppercase tracking-wider">
+                                    <th class="px-4 py-3 font-medium">รหัสวิชา</th>
+                                    <th class="px-4 py-3 font-medium">ชื่อวิชา</th>
+                                    <th class="px-4 py-3 font-medium">ระดับชั้น/ห้อง</th>
+                                    <th class="px-4 py-3 font-medium">ชั่วโมง/หน่วยกิต</th>
+                                    <th class="px-4 py-3 font-medium text-right">การจัดการ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="teacherAssignmentsTableBody" class="text-sm">
+                                <tr><td colspan="5" class="py-8 text-center text-slate-400">ยังไม่มีงานสอนที่มอบหมาย</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <i data-lucide="users" class="w-4 h-4"></i>
+                        กิจกรรมพัฒนาผู้เรียนที่รับผิดชอบ
+                    </h4>
+                    <div class="overflow-x-auto border border-slate-100 rounded-2xl">
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-50">
+                                <tr class="text-slate-500 text-xs uppercase tracking-wider">
+                                    <th class="px-4 py-3 font-medium">ระดับชั้น</th>
+                                    <th class="px-4 py-3 font-medium text-right">การจัดการ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="teacherLDAssignmentsTableBody" class="text-sm">
+                                <tr><td colspan="2" class="py-8 text-center text-slate-400">ยังไม่มีกิจกรรมพัฒนาผู้เรียนที่มอบหมาย</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
