@@ -51,10 +51,8 @@ app.get('/api/get_school_teachers.php', (req, res) => {
 
     let teachers = mockUsers.filter(u => u.school_id === targetSchoolId);
     
-    // ถ้าไม่ใช่ Super Admin ให้แสดงเฉพาะคนที่อนุมัติแล้ว
-    if (mockRole !== 'super_admin') {
-        teachers = teachers.filter(u => u.is_approved === 1);
-    }
+    // เรียงลำดับตามชื่อ
+    teachers.sort((a, b) => a.name.localeCompare(b.name, 'th'));
     
     res.json(teachers);
 });

@@ -31,13 +31,10 @@ if ($current_role !== 'super_admin' && (string)$school_id !== (string)$current_s
 }
 
 try {
-    $query = 'SELECT id, name, position, role, is_approved, is_academic FROM users WHERE school_id = ?';
+    $query = 'SELECT id, username, name, position, role, is_approved, is_academic FROM users WHERE school_id = ?';
     
-    // ถ้าไม่ใช่ Super Admin ให้แสดงเฉพาะคนที่อนุมัติแล้ว (ตามความต้องการของเมนูจัดการครู)
-    // แต่ถ้าเป็น Super Admin ให้ดูได้ทุกคนเพื่อตรวจสอบข้อมูลโรงเรียน
-    if ($current_role !== 'super_admin') {
-        $query .= ' AND is_approved = 1';
-    }
+    // สำหรับ Admin โรงเรียน ให้เห็นทุกคนในโรงเรียนตัวเองเพื่อจัดการข้อมูลได้ (ทั้งที่อนุมัติแล้วและยังไม่ได้รับอนุมัติ)
+    // แต่ถ้าเป็น Super Admin ให้ดูได้ทุกคนตามรหัสโรงเรียนที่ส่งมา
     
     $query .= ' ORDER BY name ASC';
     

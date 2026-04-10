@@ -284,7 +284,10 @@
 
             tbody.innerHTML = teachers.map(t => `
             <tr class="border-b border-slate-50 hover:bg-slate-50/50 group">
-                <td class="py-3 font-medium text-slate-800">${t.name}</td>
+                <td class="py-3">
+                    <div class="font-medium text-slate-800">${t.name}</div>
+                    <div class="text-[10px] text-slate-400">ID: ${t.username}</div>
+                </td>
                 <td class="py-3 text-slate-500">${t.position}</td>
                 <td class="py-3">
                     <label class="relative inline-flex items-center cursor-pointer">
