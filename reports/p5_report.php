@@ -54,12 +54,24 @@ if ($type === 'subject' && $assignment_id) {
     $ct = $stmt_t->fetch();
     
     $teacher_name = $ct['t1_name'] ? $ct['t1_name'] . ' ' . $ct['t1_last'] : '';
+    $teacher_pos = formatTeacherPosition($ct['t1_pos'] ?? 'ครู');
     if ($ct['t2_name']) {
         $teacher_name .= ($teacher_name ? ' และ ' : '') . $ct['t2_name'] . ' ' . $ct['t2_last'];
     }
-    if (!$teacher_name) $teacher_name = $_SESSION['name'];
+    if (!$teacher_name) {
+        $teacher_name = $_SESSION['name'];
+        $teacher_pos = formatTeacherPosition($_SESSION['position'] ?? 'ครู');
+    }
 } else {
     die('Invalid parameters');
+}
+
+// Fetch teacher position for subject type if not already fetched
+if ($type === 'subject' && !isset($teacher_pos)) {
+    $stmt_p = $pdo->prepare('SELECT position FROM users WHERE id = ?');
+    $stmt_p->execute([$assignment['teacher_id']]);
+    $u_pos = $stmt_p->fetch();
+    $teacher_pos = formatTeacherPosition($u_pos['position'] ?? 'ครู');
 }
 
 // ดึงรายชื่อนักเรียน
@@ -195,17 +207,18 @@ $female_students = $total_students - $male_students;
                 <td style="width: 33%; text-align: center;">
                     <p>ลงชื่อ..........................................................</p>
                     <p>( <?= $teacher_name ?> )</p>
-                    <p><?= $type === 'subject' ? 'ครูผู้สอน' : 'ครูประจำชั้น' ?></p>
+                    <p>ตำแหน่ง <?= $teacher_pos ?></p>
+                    <p style="font-size: 12px; color: #666;"><?= $type === 'subject' ? 'ครูผู้สอน' : 'ครูประจำชั้น' ?></p>
                 </td>
                 <td style="width: 33%; text-align: center;">
                     <p>ลงชื่อ..........................................................</p>
                     <p>( <?= $academic_head_name ?: '..........................................................' ?> )</p>
-                    <p><?= $academic_head_position ?></p>
+                    <p>ตำแหน่ง <?= $academic_head_position ?></p>
                 </td>
                 <td style="width: 33%; text-align: center;">
                     <p>ลงชื่อ..........................................................</p>
                     <p>( <?= $director_name ?: '..........................................................' ?> )</p>
-                    <p>ผู้อำนวยการโรงเรียน</p>
+                    <p>ตำแหน่ง ผู้อำนวยการโรงเรียน<?= $school_name ?></p>
                 </td>
             </tr>
         </table>

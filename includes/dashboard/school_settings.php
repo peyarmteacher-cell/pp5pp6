@@ -399,8 +399,20 @@
             });
             const result = await res.json();
             if (result.status === 'success') {
-                alert('บันทึกการตั้งค่าเรียบร้อยแล้ว');
-                location.reload(); // Reload to update school name in header
+                // Show success message instead of reloading
+                const successMsg = document.createElement('div');
+                successMsg.className = 'fixed bottom-4 right-4 bg-green-600 text-white px-6 py-3 rounded-xl shadow-lg z-[100] animate-bounce';
+                successMsg.innerHTML = '<div class="flex items-center gap-2"><i data-lucide="check-circle"></i> บันทึกการตั้งค่าเรียบร้อยแล้ว</div>';
+                document.body.appendChild(successMsg);
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+                
+                setTimeout(() => {
+                    successMsg.remove();
+                }, 3000);
+                
+                // Update school name in header without reload if possible
+                const headerSchoolName = document.querySelector('header h1');
+                if (headerSchoolName) headerSchoolName.textContent = data.name;
             } else {
                 alert(result.error || 'เกิดข้อผิดพลาด');
             }

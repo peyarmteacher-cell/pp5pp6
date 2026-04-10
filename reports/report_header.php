@@ -20,6 +20,30 @@ $affiliation = $school['affiliation'] ?? '';
 $district = $school['district'] ?? '';
 $province = $school['province'] ?? '';
 
+/**
+ * ฟังก์ชันจัดรูปแบบตำแหน่งครูให้เป็นทางการ
+ * เช่น "ครูชำนาญการ" -> "ครู วิทยฐานะชำนาญการ"
+ */
+function formatTeacherPosition($position) {
+    if (empty($position)) return '';
+    
+    // รายการวิทยฐานะ
+    $levels = ['ชำนาญการ', 'ชำนาญการพิเศษ', 'เชี่ยวชาญ', 'เชี่ยวชาญพิเศษ'];
+    
+    foreach ($levels as $level) {
+        if (strpos($position, $level) !== false && strpos($position, 'วิทยฐานะ') === false) {
+            // ถ้ามีคำว่า "ครู" อยู่ข้างหน้า ให้แทรก "วิทยฐานะ" เข้าไป
+            if (strpos($position, 'ครู') === 0) {
+                return str_replace('ครู', 'ครู วิทยฐานะ', $position);
+            } else {
+                return 'ครู วิทยฐานะ' . $position;
+            }
+        }
+    }
+    
+    return $position;
+}
+
 // ดึงข้อมูลผู้บริหารจากตาราง school_officials
 $director_name = '';
 $academic_head_name = '';
