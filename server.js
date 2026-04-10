@@ -160,8 +160,22 @@ let mockSchool = {
     id: 1,
     name: 'โรงเรียนบ้านหนองบัว',
     province: 'บุรีรัมย์',
-    logo_url: ''
+    logo_url: '',
+    director_name: 'นายสยาม เชียงเครือ',
+    academic_head_name: 'นางสาวสมศรี รักเรียน',
+    academic_head_position: 'หัวหน้างานวิชาการ'
 };
+
+app.get('/api/academic/get_classrooms.php', (req, res) => {
+    res.json([
+        { id: 1, level: 'ป.1', room: '1', teacher_id_1: 2, teacher_name_1: 'School Admin' },
+        { id: 2, level: 'ป.2', room: '1', teacher_id_1: null, teacher_name_1: null }
+    ]);
+});
+
+app.post('/api/academic/update_classroom_teachers.php', (req, res) => {
+    res.json({ status: 'success', message: 'อัปเดตครูประจำชั้นเรียบร้อยแล้ว (Mock)' });
+});
 
 app.get('/api/admin/get_school_info.php', (req, res) => {
     res.json({
@@ -171,10 +185,13 @@ app.get('/api/admin/get_school_info.php', (req, res) => {
 });
 
 app.post('/api/admin/update_school_settings.php', (req, res) => {
-    const { name, province, logo_url } = req.body;
+    const { name, province, logo_url, director_name, academic_head_name, academic_head_position } = req.body;
     mockSchool.name = name;
     mockSchool.province = province;
     mockSchool.logo_url = logo_url;
+    mockSchool.director_name = director_name;
+    mockSchool.academic_head_name = academic_head_name;
+    mockSchool.academic_head_position = academic_head_position;
     res.json({ status: 'success', message: 'อัปเดตข้อมูลโรงเรียนเรียบร้อยแล้ว (Mock)' });
 });
 

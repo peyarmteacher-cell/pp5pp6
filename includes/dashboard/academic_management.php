@@ -44,6 +44,61 @@
             <button type="submit" class="bg-amber-600 text-white px-6 py-2 rounded-xl font-semibold hover:bg-amber-700 transition-all h-[42px] cursor-pointer">บันทึกการจบการศึกษา</button>
         </form>
     </div>
+
+    <!-- Classroom & Teacher Assignment -->
+    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-lg font-bold text-slate-800">จัดการห้องเรียนและครูประจำชั้น</h3>
+            <div class="flex gap-2">
+                <button onclick="loadClassroomTeachers()" class="p-2 text-slate-400 hover:text-blue-600 transition-all cursor-pointer" title="รีเฟรช">
+                    <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="text-slate-500 border-b border-slate-100">
+                        <th class="pb-3 font-medium">ห้องเรียน</th>
+                        <th class="pb-3 font-medium">ครูประจำชั้น 1</th>
+                        <th class="pb-3 font-medium">ครูประจำชั้น 2</th>
+                        <th class="pb-3 font-medium text-right">การจัดการ</th>
+                    </tr>
+                </thead>
+                <tbody id="classroomsTableBody">
+                    <!-- จะถูกเติมด้วย JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Classroom Teachers Modal -->
+<div id="editClassroomTeachersModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl">
+        <h3 class="text-xl font-bold mb-4 text-slate-800">กำหนดครูประจำชั้น</h3>
+        <p id="edit_classroom_title" class="text-sm text-slate-500 mb-4 font-bold"></p>
+        <form id="editClassroomTeachersForm" class="space-y-4">
+            <input type="hidden" id="edit_classroom_id">
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">ครูประจำชั้นคนที่ 1</label>
+                <select id="edit_teacher_id_1" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer">
+                    <option value="">เลือกครูประจำชั้น</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">ครูประจำชั้นคนที่ 2 (ถ้ามี)</label>
+                <select id="edit_teacher_id_2" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer">
+                    <option value="">เลือกครูประจำชั้น</option>
+                </select>
+            </div>
+            <div class="flex gap-3 pt-2">
+                <button type="button" onclick="closeModal('editClassroomTeachersModal')" class="flex-1 px-4 py-2 border border-slate-200 rounded-xl text-slate-600 font-semibold hover:bg-slate-50 transition-all cursor-pointer">ยกเลิก</button>
+                <button type="submit" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-all cursor-pointer">บันทึก</button>
+            </div>
+        </form>
+    </div>
 </div>
 
 <!-- Add Academic Year Modal -->
@@ -89,10 +144,88 @@
 
             // Update dropdowns in other sections if they exist
             updateAcademicYearDropdowns(years);
+            
+            // Load classrooms as well
+            loadClassroomTeachers();
         } catch (e) {
             console.error('Error loading academic years:', e);
         }
     }
+
+    let allTeachers = [];
+    async function loadClassroomTeachers() {
+        try {
+            // Load teachers first if not loaded
+            if (allTeachers.length === 0) {
+                const tRes = await fetch('api/get_school_teachers.php');
+                allTeachers = await tRes.json();
+                
+                // Populate modal dropdowns
+                const t1 = document.getElementById('edit_teacher_id_1');
+                const t2 = document.getElementById('edit_teacher_id_2');
+                if (t1 && t2) {
+                    const options = allTeachers.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+                    t1.innerHTML = '<option value="">เลือกครูประจำชั้น</option>' + options;
+                    t2.innerHTML = '<option value="">เลือกครูประจำชั้น (ถ้ามี)</option>' + options;
+                }
+            }
+
+            const res = await fetch('api/academic/get_classrooms.php');
+            const classrooms = await res.json();
+            const tbody = document.getElementById('classroomsTableBody');
+            if (!tbody) return;
+
+            tbody.innerHTML = classrooms.map(c => `
+                <tr class="border-b border-slate-50 hover:bg-slate-50/50">
+                    <td class="py-4 font-medium text-slate-800">ชั้น ${c.level}/${c.room}</td>
+                    <td class="py-4 text-sm text-slate-600">${c.teacher_name_1 ? c.teacher_name_1 : '<span class="text-slate-300 italic">ยังไม่ได้กำหนด</span>'}</td>
+                    <td class="py-4 text-sm text-slate-600">${c.teacher_name_2 ? c.teacher_name_2 : '<span class="text-slate-300 italic">-</span>'}</td>
+                    <td class="py-4 text-right">
+                        <button onclick="openEditClassroomModal(${JSON.stringify(c).replace(/"/g, '&quot;')})" class="text-blue-600 hover:text-blue-800 text-xs font-bold cursor-pointer">กำหนดครู</button>
+                    </td>
+                </tr>
+            `).join('');
+            
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        } catch (e) {
+            console.error('Error loading classrooms:', e);
+        }
+    }
+
+    function openEditClassroomModal(c) {
+        document.getElementById('edit_classroom_id').value = c.id;
+        document.getElementById('edit_classroom_title').innerText = `ชั้น ${c.level}/${c.room}`;
+        document.getElementById('edit_teacher_id_1').value = c.teacher_id_1 || '';
+        document.getElementById('edit_teacher_id_2').value = c.teacher_id_2 || '';
+        openModal('editClassroomTeachersModal');
+    }
+
+    document.getElementById('editClassroomTeachersForm')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const data = {
+            classroom_id: document.getElementById('edit_classroom_id').value,
+            teacher_id_1: document.getElementById('edit_teacher_id_1').value,
+            teacher_id_2: document.getElementById('edit_teacher_id_2').value
+        };
+
+        try {
+            const res = await fetch('api/academic/update_classroom_teachers.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const result = await res.json();
+            if (result.status === 'success') {
+                alert(result.message);
+                closeModal('editClassroomTeachersModal');
+                loadClassroomTeachers();
+            } else {
+                alert(result.error);
+            }
+        } catch (e) {
+            console.error('Error updating classroom teachers:', e);
+        }
+    });
 
     function updateAcademicYearDropdowns(years) {
         const dropdowns = ['std_academic_year', 'edit_std_academic_year', 'filter_academic_year', 'grade_academic_year', 'char_academic_year', 'anal_academic_year', 'ld_academic_year', 'behavior-year', 'att_academic_year'];

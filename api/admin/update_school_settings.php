@@ -14,6 +14,9 @@ $data = json_decode(file_get_contents('php://input'), true);
 $name = $data['name'] ?? '';
 $province = $data['province'] ?? '';
 $logo_url = $data['logo_url'] ?? '';
+$director_name = $data['director_name'] ?? '';
+$academic_head_name = $data['academic_head_name'] ?? '';
+$academic_head_position = $data['academic_head_position'] ?? 'หัวหน้างานวิชาการ';
 
 if (empty($name) || empty($province)) {
     echo json_encode(['error' => 'กรุณากรอกข้อมูลให้ครบถ้วน']);
@@ -21,8 +24,8 @@ if (empty($name) || empty($province)) {
 }
 
 try {
-    $stmt = $pdo->prepare('UPDATE schools SET name = ?, province = ?, logo_url = ? WHERE id = ?');
-    $stmt->execute([$name, $province, $logo_url, $_SESSION['school_id']]);
+    $stmt = $pdo->prepare('UPDATE schools SET name = ?, province = ?, logo_url = ?, director_name = ?, academic_head_name = ?, academic_head_position = ? WHERE id = ?');
+    $stmt->execute([$name, $province, $logo_url, $director_name, $academic_head_name, $academic_head_position, $_SESSION['school_id']]);
 
     // Update session school name
     $_SESSION['school_name'] = $name;

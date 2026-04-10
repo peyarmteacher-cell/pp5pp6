@@ -17,6 +17,9 @@ if ($logo_url && !preg_match('/^https?:\/\//', $logo_url)) {
 }
 $school_name = $school['name'] ?? '';
 $province = $school['province'] ?? '';
+$director_name = $school['director_name'] ?? '';
+$academic_head_name = $school['academic_head_name'] ?? '';
+$academic_head_position = $school['academic_head_position'] ?? 'หัวหน้างานวิชาการ';
 
 // Common report header/styles
 ?>

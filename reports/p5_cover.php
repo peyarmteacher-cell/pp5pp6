@@ -28,7 +28,24 @@ if ($type === 'subject' && $assignment_id) {
     $classroom = $stmt->fetch();
     $title = "แบบบันทึกผลการพัฒนาคุณภาพผู้เรียน (รายชั้น)";
     $subtitle = "ชั้น {$classroom['level']}/{$classroom['room']}";
-    $teacher = $_SESSION['name'];
+    
+    // ดึงชื่อครูประจำชั้น
+    $stmt_t = $pdo->prepare('
+        SELECT u1.name as t1_name, u1.last_name as t1_last,
+               u2.name as t2_name, u2.last_name as t2_last
+        FROM classrooms c
+        LEFT JOIN users u1 ON c.teacher_id_1 = u1.id
+        LEFT JOIN users u2 ON c.teacher_id_2 = u2.id
+        WHERE c.id = ?
+    ');
+    $stmt_t->execute([$classroom_id]);
+    $ct = $stmt_t->fetch();
+    
+    $teacher = $ct['t1_name'] ? $ct['t1_name'] . ' ' . $ct['t1_last'] : '';
+    if ($ct['t2_name']) {
+        $teacher .= ($teacher ? ' และ ' : '') . $ct['t2_name'] . ' ' . $ct['t2_last'];
+    }
+    if (!$teacher) $teacher = $_SESSION['name'];
 }
 ?>
 
@@ -50,9 +67,24 @@ if ($type === 'subject' && $assignment_id) {
         </div>
     </div>
 
-    <div style="text-align: center; margin-top: 50px;">
-        <p style="font-size: 20px;">ชื่อครูผู้สอน/ครูประจำชั้น</p>
-        <p style="font-size: 24px; font-weight: bold; margin-top: 10px;"><?= $teacher ?></p>
+    <div style="display: flex; flex-direction: column; gap: 30px; width: 100%; align-items: center; margin-top: 30px;">
+        <div style="text-align: center;">
+            <p style="font-size: 18px; margin-bottom: 5px;">ลงชื่อ..........................................................</p>
+            <p style="font-size: 20px; font-weight: bold;">( <?= $teacher ?> )</p>
+            <p style="font-size: 16px;"><?= $type === 'subject' ? 'ครูผู้สอน' : 'ครูประจำชั้น' ?></p>
+        </div>
+
+        <div style="text-align: center;">
+            <p style="font-size: 18px; margin-bottom: 5px;">ลงชื่อ..........................................................</p>
+            <p style="font-size: 20px; font-weight: bold;">( <?= $academic_head_name ?: '..........................................................' ?> )</p>
+            <p style="font-size: 16px;"><?= $academic_head_position ?></p>
+        </div>
+
+        <div style="text-align: center;">
+            <p style="font-size: 18px; margin-bottom: 5px;">ลงชื่อ..........................................................</p>
+            <p style="font-size: 20px; font-weight: bold;">( <?= $director_name ?: '..........................................................' ?> )</p>
+            <p style="font-size: 16px;">ผู้อำนวยการโรงเรียน<?= $school_name ?></p>
+        </div>
     </div>
 </div>
 

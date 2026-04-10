@@ -22,6 +22,25 @@
                 </div>
             </div>
 
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-slate-100">
+                <div class="space-y-2">
+                    <label class="text-sm font-semibold text-slate-700">ชื่อผู้อำนวยการโรงเรียน</label>
+                    <input type="text" id="setting_director_name" placeholder="เช่น นายสยาม เชียงเครือ" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none">
+                </div>
+                <div class="space-y-2">
+                    <label class="text-sm font-semibold text-slate-700">ชื่อหัวหน้างานวิชาการ / รองฯ วิชาการ</label>
+                    <input type="text" id="setting_academic_head_name" placeholder="เช่น นางสาวสมศรี รักเรียน" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none">
+                </div>
+                <div class="space-y-2">
+                    <label class="text-sm font-semibold text-slate-700">ตำแหน่งงานวิชาการ</label>
+                    <select id="setting_academic_head_position" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none">
+                        <option value="หัวหน้างานวิชาการ">หัวหน้างานวิชาการ</option>
+                        <option value="รองผู้อำนวยการฝ่ายวิชาการ">รองผู้อำนวยการฝ่ายวิชาการ</option>
+                        <option value="ผู้ช่วยผู้อำนวยการฝ่ายวิชาการ">ผู้ช่วยผู้อำนวยการฝ่ายวิชาการ</option>
+                    </select>
+                </div>
+            </div>
+
             <div class="space-y-4">
                 <label class="text-sm font-semibold text-slate-700">โลโก้โรงเรียน / โลโก้ สพฐ.</label>
                 <div class="flex flex-col md:flex-row items-start gap-6">
@@ -80,6 +99,9 @@
                 document.getElementById('setting_school_name').value = data.school.name;
                 document.getElementById('setting_school_province').value = data.school.province;
                 document.getElementById('setting_logo_url').value = data.school.logo_url || '';
+                document.getElementById('setting_director_name').value = data.school.director_name || '';
+                document.getElementById('setting_academic_head_name').value = data.school.academic_head_name || '';
+                document.getElementById('setting_academic_head_position').value = data.school.academic_head_position || 'หัวหน้างานวิชาการ';
                 
                 if (data.school.logo_url) {
                     const img = document.getElementById('logo_preview');
@@ -158,7 +180,10 @@
                 body: JSON.stringify({
                     name: document.getElementById('setting_school_name').value,
                     province: document.getElementById('setting_school_province').value,
-                    logo_url: document.getElementById('setting_logo_url').value
+                    logo_url: document.getElementById('setting_logo_url').value,
+                    director_name: document.getElementById('setting_director_name').value,
+                    academic_head_name: document.getElementById('setting_academic_head_name').value,
+                    academic_head_position: document.getElementById('setting_academic_head_position').value
                 })
             });
             const result = await res.json();

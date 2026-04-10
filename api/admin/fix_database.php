@@ -57,16 +57,37 @@ try {
         $results[] = "เพิ่มคอลัมน์ logo_url ในตาราง schools สำเร็จ";
     }
 
+    $stmt = $pdo->query("SHOW COLUMNS FROM schools LIKE 'director_name'");
+    if (!$stmt->fetch()) {
+        $pdo->exec("ALTER TABLE schools ADD COLUMN director_name VARCHAR(255) AFTER logo_url");
+        $pdo->exec("ALTER TABLE schools ADD COLUMN academic_head_name VARCHAR(255) AFTER director_name");
+        $pdo->exec("ALTER TABLE schools ADD COLUMN academic_head_position VARCHAR(255) DEFAULT 'หัวหน้างานวิชาการ' AFTER academic_head_name");
+        $results[] = "เพิ่มคอลัมน์สำหรับผู้บริหารและหัวหน้างานวิชาการในตาราง schools สำเร็จ";
+    }
+
     // 5. เพิ่มตาราง classrooms
     $pdo->exec("CREATE TABLE IF NOT EXISTS classrooms (
         id INT AUTO_INCREMENT PRIMARY KEY,
         school_id INT,
         level VARCHAR(50) NOT NULL,
         room VARCHAR(10) NOT NULL,
+        teacher_id_1 INT NULL,
+        teacher_id_2 INT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (school_id) REFERENCES schools(id) ON DELETE CASCADE,
+        FOREIGN KEY (teacher_id_1) REFERENCES users(id) ON DELETE SET NULL,
+        FOREIGN KEY (teacher_id_2) REFERENCES users(id) ON DELETE SET NULL,
         UNIQUE KEY unique_classroom (school_id, level, room)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+    $stmt = $pdo->query("SHOW COLUMNS FROM classrooms LIKE 'teacher_id_1'");
+    if (!$stmt->fetch()) {
+        $pdo->exec("ALTER TABLE classrooms ADD COLUMN teacher_id_1 INT NULL AFTER room");
+        $pdo->exec("ALTER TABLE classrooms ADD COLUMN teacher_id_2 INT NULL AFTER teacher_id_1");
+        $pdo->exec("ALTER TABLE classrooms ADD FOREIGN KEY (teacher_id_1) REFERENCES users(id) ON DELETE SET NULL");
+        $pdo->exec("ALTER TABLE classrooms ADD FOREIGN KEY (teacher_id_2) REFERENCES users(id) ON DELETE SET NULL");
+        $results[] = "เพิ่มคอลัมน์ครูประจำชั้นในตาราง classrooms สำเร็จ";
+    }
     $results[] = "ตรวจสอบ/สร้างตาราง classrooms สำเร็จ";
 
     // 6. เพิ่มคอลัมน์ room และ classroom_id ในตาราง students

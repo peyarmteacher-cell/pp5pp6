@@ -40,7 +40,24 @@ if ($type === 'subject' && $assignment_id) {
     
     $level = $classroom['level'];
     $room = $classroom['room'];
-    $teacher_name = $_SESSION['name']; // สมมติว่าเป็นครูประจำชั้นที่พิมพ์
+    
+    // ดึงชื่อครูประจำชั้น
+    $stmt_t = $pdo->prepare('
+        SELECT u1.name as t1_name, u1.last_name as t1_last,
+               u2.name as t2_name, u2.last_name as t2_last
+        FROM classrooms c
+        LEFT JOIN users u1 ON c.teacher_id_1 = u1.id
+        LEFT JOIN users u2 ON c.teacher_id_2 = u2.id
+        WHERE c.id = ?
+    ');
+    $stmt_t->execute([$classroom_id]);
+    $ct = $stmt_t->fetch();
+    
+    $teacher_name = $ct['t1_name'] ? $ct['t1_name'] . ' ' . $ct['t1_last'] : '';
+    if ($ct['t2_name']) {
+        $teacher_name .= ($teacher_name ? ' และ ' : '') . $ct['t2_name'] . ' ' . $ct['t2_last'];
+    }
+    if (!$teacher_name) $teacher_name = $_SESSION['name'];
 } else {
     die('Invalid parameters');
 }
@@ -175,25 +192,23 @@ $female_students = $total_students - $male_students;
     <div style="margin-top: 40px;">
         <table class="border-none no-border">
             <tr>
-                <td style="width: 50%;"></td>
-                <td style="text-align: center;">
-                    <p>ลงชื่อ..........................................................ครูประจำชั้น/ครูผู้สอน</p>
-                    <p>(..........................................................)</p>
-                    <p>วันที่ .......... เดือน .......................... พ.ศ. ...............</p>
+                <td style="width: 33%; text-align: center;">
+                    <p>ลงชื่อ..........................................................</p>
+                    <p>( <?= $teacher_name ?> )</p>
+                    <p><?= $type === 'subject' ? 'ครูผู้สอน' : 'ครูประจำชั้น' ?></p>
+                </td>
+                <td style="width: 33%; text-align: center;">
+                    <p>ลงชื่อ..........................................................</p>
+                    <p>( <?= $academic_head_name ?: '..........................................................' ?> )</p>
+                    <p><?= $academic_head_position ?></p>
+                </td>
+                <td style="width: 33%; text-align: center;">
+                    <p>ลงชื่อ..........................................................</p>
+                    <p>( <?= $director_name ?: '..........................................................' ?> )</p>
+                    <p>ผู้อำนวยการโรงเรียน</p>
                 </td>
             </tr>
         </table>
-    </div>
-
-    <div style="margin-top: 40px; border: 1px solid black; padding: 20px; text-align: center;">
-        <h4 style="margin: 0 0 10px 0;">การอนุมัติผลการเรียน</h4>
-        <div style="display: flex; justify-content: center; gap: 40px; margin-bottom: 20px;">
-            <label><input type="checkbox"> อนุมัติ</label>
-            <label><input type="checkbox"> ไม่อนุมัติ</label>
-        </div>
-        <p style="margin-top: 30px;">(ลงชื่อ)..........................................................</p>
-        <p>(นายสยาม เชียงเครือ)</p>
-        <p>ผู้อำนวยการโรงเรียน</p>
     </div>
 </div>
 

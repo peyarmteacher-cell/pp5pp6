@@ -51,6 +51,23 @@ foreach ($students_to_print as $student):
     $stmt->execute([$student['id'], $year, $semester === 'annual' ? 0 : $semester]);
     $ld_result = $stmt->fetch();
 
+    // ดึงชื่อครูประจำชั้น
+    $stmt_t = $pdo->prepare('
+        SELECT u1.name as t1_name, u1.last_name as t1_last,
+               u2.name as t2_name, u2.last_name as t2_last
+        FROM classrooms c
+        LEFT JOIN users u1 ON c.teacher_id_1 = u1.id
+        LEFT JOIN users u2 ON c.teacher_id_2 = u2.id
+        WHERE c.id = ?
+    ');
+    $stmt_t->execute([$classroom_id]);
+    $ct = $stmt_t->fetch();
+    
+    $teacher_name = $ct['t1_name'] ? $ct['t1_name'] . ' ' . $ct['t1_last'] : '';
+    if ($ct['t2_name']) {
+        $teacher_name .= ($teacher_name ? ' และ ' : '') . $ct['t2_name'] . ' ' . $ct['t2_last'];
+    }
+    if (!$teacher_name) $teacher_name = '..........................................................';
 ?>
 
 <div class="page">
@@ -146,12 +163,12 @@ foreach ($students_to_print as $student):
         <div style="display: flex; justify-content: space-between; gap: 20px;">
             <div style="text-align: center; flex: 1;">
                 <p>ลงชื่อ..........................................................</p>
-                <p>(..........................................................)</p>
+                <p>( <?= $teacher_name ?> )</p>
                 <p>ครูประจำชั้น/ครูที่ปรึกษา</p>
             </div>
             <div style="text-align: center; flex: 1;">
                 <p>ลงชื่อ..........................................................</p>
-                <p>(นายสยาม เชียงเครือ)</p>
+                <p>( <?= $director_name ?: '..........................................................' ?> )</p>
                 <p>ผู้อำนวยการโรงเรียน</p>
             </div>
         </div>
