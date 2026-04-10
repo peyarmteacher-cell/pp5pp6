@@ -492,6 +492,10 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
 
         async function viewTeachers(schoolId, schoolName) {
             document.getElementById('modalSchoolName').innerText = `รายชื่อคุณครู - ${schoolName}`;
+            const addBtn = document.getElementById('addTeacherBtnSuperAdmin');
+            if (addBtn) {
+                addBtn.onclick = () => openEditTeacherModal(null, schoolId);
+            }
             const mockRole = new URLSearchParams(window.location.search).get('mock_role') || '';
             try {
                 const res = await fetch(`api/get_school_teachers.php?school_id=${schoolId}&mock_role=${mockRole}`);
@@ -508,7 +512,7 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                     tbody.innerHTML = `<tr><td colspan="${'<?= $role ?>' === 'super_admin' ? 4 : 3}" class="py-4 text-center text-slate-400">ไม่พบรายชื่อคุณครูในโรงเรียนนี้</td></tr>`;
                 } else {
                     tbody.innerHTML = teachers.map(t => `
-                    <tr class="border-b border-slate-50">
+                    <tr class="border-b border-slate-50 group">
                         <td class="py-3 font-medium text-slate-800">${t.name}</td>
                         <td class="py-3 text-slate-500">${t.position}</td>
                         <td class="py-3">
@@ -521,9 +525,15 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                         </td>
                         <?php if ($role === 'super_admin'): ?>
                         <td class="py-3 text-right">
-                            ${t.role !== 'admin' ? `
-                                <button onclick="promoteToAdmin(${t.id}, '${schoolName}')" class="text-blue-600 hover:text-blue-800 text-xs font-bold cursor-pointer">กำหนดเป็น Admin</button>
-                            ` : '<span class="text-slate-400 text-xs">เป็น Admin แล้ว</span>'}
+                            <div class="flex flex-col items-end gap-1">
+                                ${t.role !== 'admin' ? `
+                                    <button onclick="promoteToAdmin(${t.id}, '${schoolName}')" class="text-blue-600 hover:text-blue-800 text-[10px] font-bold cursor-pointer">กำหนดเป็น Admin</button>
+                                ` : '<span class="text-slate-400 text-[10px]">เป็น Admin แล้ว</span>'}
+                                <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                                    <button onclick='openEditTeacherModal(${JSON.stringify(t).replace(/'/g, "&apos;")}, ${schoolId})' class="text-blue-500 hover:text-blue-700 text-[10px] font-bold cursor-pointer">แก้ไข</button>
+                                    <button onclick="deleteTeacher(${t.id})" class="text-red-500 hover:text-red-700 text-[10px] font-bold cursor-pointer">ลบ</button>
+                                </div>
+                            </div>
                         </td>
                         <?php endif; ?>
                     </tr>

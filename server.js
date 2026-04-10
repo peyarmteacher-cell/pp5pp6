@@ -137,6 +137,34 @@ app.post('/api/reject_user.php', (req, res) => {
     res.json({ message: 'ปฏิเสธการสมัครและลบข้อมูลสำเร็จแล้ว (Mock)' });
 });
 
+app.post('/api/admin/save_teacher.php', (req, res) => {
+    const { id, name, position, is_academic, username, school_id } = req.body;
+    if (id) {
+        const idx = mockUsers.findIndex(u => u.id == id);
+        if (idx !== -1) {
+            mockUsers[idx] = { ...mockUsers[idx], name, position, is_academic: is_academic ? 1 : 0 };
+        }
+    } else {
+        mockUsers.push({
+            id: Date.now(),
+            username: username || Date.now().toString(),
+            name,
+            position,
+            role: 'teacher',
+            is_approved: 1,
+            is_academic: is_academic ? 1 : 0,
+            school_id: parseInt(school_id) || 1
+        });
+    }
+    res.json({ status: 'success', message: 'บันทึกข้อมูลคุณครูเรียบร้อยแล้ว (Mock)' });
+});
+
+app.post('/api/admin/delete_teacher.php', (req, res) => {
+    const { id } = req.body;
+    mockUsers = mockUsers.filter(u => u.id != id);
+    res.json({ status: 'success', message: 'ลบข้อมูลคุณครูเรียบร้อยแล้ว (Mock)' });
+});
+
 app.get('/api/admin/get_teacher_assignments.php', (req, res) => {
     res.json([
         { assignment_id: 1, code: 'ท11101', name: 'ภาษาไทย', level: 'ป.1', hours: 200, credits: 5.0 }

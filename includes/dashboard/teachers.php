@@ -2,15 +2,31 @@
 <?php if ($role === 'admin'): ?>
 <div id="manage-teachers" class="section hidden space-y-6">
     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-        <h3 class="text-lg font-bold mb-4">ข้อมูลคุณครูในโรงเรียน</h3>
+        <div class="flex justify-between items-center mb-6">
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-blue-50 text-blue-600 rounded-lg">
+                    <i data-lucide="users"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-slate-800">ข้อมูลคุณครูในโรงเรียน</h3>
+                    <p class="text-xs text-slate-500">จัดการรายชื่อและมอบหมายหน้าที่งานวิชาการ</p>
+                </div>
+            </div>
+            <button onclick="openEditTeacherModal()" class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-all cursor-pointer shadow-md shadow-blue-600/10">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+                เพิ่มคุณครู
+            </button>
+        </div>
+        
         <div class="overflow-x-auto">
             <table class="w-full text-left">
                 <thead>
                     <tr class="text-slate-500 border-b border-slate-100">
-                        <th class="pb-3 font-medium">ชื่อ-นามสกุล</th>
-                        <th class="pb-3 font-medium">ตำแหน่ง</th>
-                        <th class="pb-3 font-medium">งานวิชาการ</th>
-                        <th class="pb-3 font-medium">สถานะ</th>
+                        <th class="pb-3 font-medium text-xs uppercase tracking-wider">ชื่อ-นามสกุล</th>
+                        <th class="pb-3 font-medium text-xs uppercase tracking-wider">ตำแหน่ง</th>
+                        <th class="pb-3 font-medium text-xs uppercase tracking-wider">งานวิชาการ</th>
+                        <th class="pb-3 font-medium text-xs uppercase tracking-wider">สถานะ</th>
+                        <th class="pb-3 font-medium text-xs uppercase tracking-wider text-right">การจัดการ</th>
                     </tr>
                 </thead>
                 <tbody id="schoolTeachersTableBody"></tbody>
@@ -20,14 +36,71 @@
 </div>
 <?php endif; ?>
 
+<!-- Modal: เพิ่ม/แก้ไขคุณครู -->
+<div id="editTeacherModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl">
+        <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+            <h3 id="editTeacherModalTitle" class="text-xl font-bold text-slate-800">เพิ่มข้อมูลคุณครู</h3>
+            <button onclick="closeModal('editTeacherModal')" class="text-slate-400 hover:text-slate-600 cursor-pointer p-2 hover:bg-slate-200 rounded-full transition-all">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+        </div>
+        <form id="editTeacherForm" class="p-6 space-y-4">
+            <input type="hidden" id="edit_teacher_id">
+            <input type="hidden" id="edit_teacher_school_id">
+            
+            <div id="username_field_container">
+                <label class="block text-sm font-medium text-slate-700 mb-1">เลขบัตรประชาชน (ใช้เป็นชื่อผู้ใช้)</label>
+                <input type="text" id="edit_teacher_username" maxlength="13" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all">
+                <p class="text-[10px] text-slate-400 mt-1">* รหัสผ่านเริ่มต้นคือ 123456</p>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">ชื่อ-นามสกุล</label>
+                <input type="text" id="edit_teacher_name" required placeholder="เช่น นายสมชาย ใจดี" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all">
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">ตำแหน่ง</label>
+                <select id="edit_teacher_position" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all cursor-pointer">
+                    <option value="ครูผู้ช่วย">ครูผู้ช่วย</option>
+                    <option value="ครู ค.ศ. 1">ครู ค.ศ. 1</option>
+                    <option value="ครู ค.ศ. 2">ครู ค.ศ. 2 (ชำนาญการ)</option>
+                    <option value="ครู ค.ศ. 3">ครู ค.ศ. 3 (ชำนาญการพิเศษ)</option>
+                    <option value="ครู ค.ศ. 4">ครู ค.ศ. 4 (เชี่ยวชาญ)</option>
+                    <option value="ครู ค.ศ. 5">ครู ค.ศ. 5 (เชี่ยวชาญพิเศษ)</option>
+                    <option value="พนักงานราชการ">พนักงานราชการ</option>
+                    <option value="ครูอัตราจ้าง">ครูอัตราจ้าง</option>
+                </select>
+            </div>
+            
+            <div class="flex items-center gap-3 p-3 bg-blue-50 rounded-xl border border-blue-100">
+                <input type="checkbox" id="edit_teacher_is_academic" class="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500">
+                <label for="edit_teacher_is_academic" class="text-sm font-medium text-blue-800 cursor-pointer">มอบหมายงานวิชาการ (สามารถจัดการนักเรียนและวิชาได้)</label>
+            </div>
+            
+            <div class="pt-4 flex gap-3">
+                <button type="button" onclick="closeModal('editTeacherModal')" class="flex-1 px-4 py-2 border border-slate-200 text-slate-600 rounded-xl font-semibold hover:bg-slate-50 cursor-pointer transition-all">ยกเลิก</button>
+                <button type="submit" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-xl font-semibold hover:bg-blue-700 cursor-pointer transition-all shadow-lg shadow-blue-200">บันทึกข้อมูล</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <!-- Modal: รายชื่อคุณครู (Super Admin) -->
 <div id="teacherModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center p-4 z-50">
     <div class="bg-white rounded-3xl w-full max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
-        <div class="p-6 border-b border-slate-100 flex justify-between items-center">
+        <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
             <h3 id="modalSchoolName" class="text-xl font-bold text-slate-800">รายชื่อคุณครู</h3>
-            <button onclick="closeModal('teacherModal')" class="text-slate-400 hover:text-slate-600 cursor-pointer">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-            </button>
+            <div class="flex items-center gap-2">
+                <button id="addTeacherBtnSuperAdmin" class="flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700 transition-all cursor-pointer">
+                    <i data-lucide="plus" class="w-3 h-3"></i>
+                    เพิ่มคุณครู
+                </button>
+                <button onclick="closeModal('teacherModal')" class="text-slate-400 hover:text-slate-600 cursor-pointer p-2 hover:bg-slate-200 rounded-full transition-all">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
         </div>
         <div class="p-6 overflow-y-auto flex-1">
             <table class="w-full text-left">
@@ -210,7 +283,7 @@
             }
 
             tbody.innerHTML = teachers.map(t => `
-            <tr class="border-b border-slate-50 hover:bg-slate-50/50">
+            <tr class="border-b border-slate-50 hover:bg-slate-50/50 group">
                 <td class="py-3 font-medium text-slate-800">${t.name}</td>
                 <td class="py-3 text-slate-500">${t.position}</td>
                 <td class="py-3">
@@ -226,17 +299,116 @@
                         </span>
                         ${t.is_approved ? `
                             <button onclick="openAssignSubjectsModal(${t.id}, '${t.name}')" class="text-blue-600 hover:text-blue-800 text-xs font-bold cursor-pointer flex items-center gap-1">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                <i data-lucide="book-open" class="w-3 h-3"></i>
                                 มอบหมายงานสอน
                             </button>
                         ` : ''}
                     </div>
                 </td>
+                <td class="py-3 text-right">
+                    <div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                        <button onclick='openEditTeacherModal(${JSON.stringify(t).replace(/'/g, "&apos;")})' class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-all cursor-pointer" title="แก้ไข">
+                            <i data-lucide="edit-2" class="w-4 h-4"></i>
+                        </button>
+                        <button onclick="deleteTeacher(${t.id})" class="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-all cursor-pointer" title="ลบ">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </td>
             </tr>
         `).join('');
+        
+        if (typeof lucide !== 'undefined') lucide.createIcons();
         } catch (e) {
             console.error('Error in loadSchoolTeachers:', e);
             alert('เกิดข้อผิดพลาดในการโหลดข้อมูลคุณครู');
+        }
+    }
+
+    function openEditTeacherModal(t = null, schoolId = null) {
+        const modal = document.getElementById('editTeacherModal');
+        const title = document.getElementById('editTeacherModalTitle');
+        const form = document.getElementById('editTeacherForm');
+        const userField = document.getElementById('username_field_container');
+        
+        form.reset();
+        document.getElementById('edit_teacher_id').value = '';
+        document.getElementById('edit_teacher_school_id').value = schoolId || '<?= $_SESSION['school_id'] ?>';
+        
+        if (t) {
+            title.innerText = 'แก้ไขข้อมูลคุณครู';
+            document.getElementById('edit_teacher_id').value = t.id;
+            document.getElementById('edit_teacher_name').value = t.name;
+            document.getElementById('edit_teacher_position').value = t.position;
+            document.getElementById('edit_teacher_is_academic').checked = t.is_academic == 1;
+            userField.classList.add('hidden');
+            document.getElementById('edit_teacher_username').required = false;
+        } else {
+            title.innerText = 'เพิ่มข้อมูลคุณครู';
+            userField.classList.remove('hidden');
+            document.getElementById('edit_teacher_username').required = true;
+        }
+        
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+
+    document.getElementById('editTeacherForm')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const data = {
+            id: document.getElementById('edit_teacher_id').value,
+            school_id: document.getElementById('edit_teacher_school_id').value,
+            username: document.getElementById('edit_teacher_username').value,
+            name: document.getElementById('edit_teacher_name').value,
+            position: document.getElementById('edit_teacher_position').value,
+            is_academic: document.getElementById('edit_teacher_is_academic').checked ? 1 : 0
+        };
+
+        try {
+            const res = await fetch('api/admin/save_teacher.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const result = await res.json();
+            if (result.status === 'success') {
+                closeModal('editTeacherModal');
+                loadSchoolTeachers();
+                // If in Super Admin modal, we might need to refresh that too
+                if (typeof viewTeachers === 'function' && document.getElementById('teacherModal').classList.contains('flex')) {
+                    // We need schoolId and schoolName, which are tricky to get here
+                    // For now, just close and let user reopen
+                    closeModal('teacherModal');
+                }
+            } else {
+                alert(result.error);
+            }
+        } catch (e) {
+            console.error('Error saving teacher:', e);
+        }
+    });
+
+    async function deleteTeacher(id) {
+        if (!confirm('คุณต้องการลบข้อมูลคุณครูท่านนี้ใช่หรือไม่? การดำเนินการนี้จะลบข้อมูลงานสอนและผลการเรียนที่เกี่ยวข้องทั้งหมด')) return;
+        
+        try {
+            const res = await fetch('api/admin/delete_teacher.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id })
+            });
+            const result = await res.json();
+            if (result.status === 'success') {
+                loadSchoolTeachers();
+                if (typeof viewTeachers === 'function' && document.getElementById('teacherModal').classList.contains('flex')) {
+                    closeModal('teacherModal');
+                }
+            } else {
+                alert(result.error);
+            }
+        } catch (e) {
+            console.error('Error deleting teacher:', e);
         }
     }
 
