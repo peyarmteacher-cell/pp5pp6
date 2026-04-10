@@ -14,6 +14,8 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'super_admin') {
 $data = json_decode(file_get_contents('php://input'), true);
 $code = $data['code'] ?? '';
 $name = $data['name'] ?? '';
+$affiliation = $data['affiliation'] ?? '';
+$district = $data['district'] ?? '';
 $province = $data['province'] ?? '';
 
 if (strlen($code) !== 8) {
@@ -22,11 +24,11 @@ if (strlen($code) !== 8) {
 }
 
 try {
-    $stmt = $pdo->prepare('INSERT INTO schools (code, name, province) VALUES (?, ?, ?)');
-    $stmt->execute([$code, $name, $province]);
+    $stmt = $pdo->prepare('INSERT INTO schools (code, name, affiliation, district, province) VALUES (?, ?, ?, ?, ?)');
+    $stmt->execute([$code, $name, $affiliation, $district, $province]);
     echo json_encode(['message' => 'สร้างโรงเรียนสำเร็จแล้ว']);
 } catch (PDOException $e) {
     http_response_code(400);
-    echo json_encode(['error' => 'รหัสโรงเรียนนี้อาจมีอยู่ในระบบแล้ว']);
+    echo json_encode(['error' => 'รหัสโรงเรียนนี้อาจมีอยู่ในระบบแล้ว หรือเกิดข้อผิดพลาด: ' . $e->getMessage()]);
 }
 ?>

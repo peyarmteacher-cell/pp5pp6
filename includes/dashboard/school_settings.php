@@ -17,6 +17,17 @@
                     <input type="text" id="setting_school_name" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none">
                 </div>
                 <div class="space-y-2">
+                    <label class="text-sm font-semibold text-slate-700">สังกัด (เช่น สพป.บุรีรัมย์ เขต 3)</label>
+                    <input type="text" id="setting_school_affiliation" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-2">
+                    <label class="text-sm font-semibold text-slate-700">อำเภอ</label>
+                    <input type="text" id="setting_school_district" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none">
+                </div>
+                <div class="space-y-2">
                     <label class="text-sm font-semibold text-slate-700">จังหวัด</label>
                     <input type="text" id="setting_school_province" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none">
                 </div>
@@ -169,6 +180,8 @@
             const data = await res.json();
             if (data.status === 'success') {
                 document.getElementById('setting_school_name').value = data.school.name;
+                document.getElementById('setting_school_affiliation').value = data.school.affiliation || '';
+                document.getElementById('setting_school_district').value = data.school.district || '';
                 document.getElementById('setting_school_province').value = data.school.province;
                 document.getElementById('setting_logo_url').value = data.school.logo_url || '';
                 document.getElementById('setting_director_name').value = data.school.director_name || '';
@@ -375,6 +388,8 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     name: document.getElementById('setting_school_name').value,
+                    affiliation: document.getElementById('setting_school_affiliation').value,
+                    district: document.getElementById('setting_school_district').value,
                     province: document.getElementById('setting_school_province').value,
                     logo_url: document.getElementById('setting_logo_url').value,
                     director_name: document.getElementById('setting_director_name').value,

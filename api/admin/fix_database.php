@@ -65,6 +65,18 @@ try {
         $results[] = "เพิ่มคอลัมน์สำหรับผู้บริหารและหัวหน้างานวิชาการในตาราง schools สำเร็จ";
     }
 
+    // เพิ่มคอลัมน์ affiliation และ district ในตาราง schools
+    $stmt = $pdo->query("SHOW COLUMNS FROM schools LIKE 'affiliation'");
+    if (!$stmt->fetch()) {
+        $pdo->exec("ALTER TABLE schools ADD COLUMN affiliation VARCHAR(255) AFTER name");
+        $results[] = "เพิ่มคอลัมน์ affiliation ในตาราง schools สำเร็จ";
+    }
+    $stmt = $pdo->query("SHOW COLUMNS FROM schools LIKE 'district'");
+    if (!$stmt->fetch()) {
+        $pdo->exec("ALTER TABLE schools ADD COLUMN district VARCHAR(100) AFTER affiliation");
+        $results[] = "เพิ่มคอลัมน์ district ในตาราง schools สำเร็จ";
+    }
+
     // 5. เพิ่มตาราง classrooms
     $pdo->exec("CREATE TABLE IF NOT EXISTS classrooms (
         id INT AUTO_INCREMENT PRIMARY KEY,

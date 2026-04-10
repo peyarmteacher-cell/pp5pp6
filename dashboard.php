@@ -215,9 +215,11 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
         <div id="manage-schools" class="section hidden space-y-6">
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                 <h3 class="text-lg font-bold mb-4">สร้างโรงเรียนใหม่</h3>
-                <form id="createSchoolForm" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <form id="createSchoolForm" class="grid grid-cols-1 md:grid-cols-6 gap-4">
                     <input type="text" id="schoolCode" placeholder="รหัสโรงเรียน 8 หลัก" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none">
                     <input type="text" id="schoolName" placeholder="ชื่อโรงเรียน" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none">
+                    <input type="text" id="schoolAffiliation" placeholder="สังกัด (เช่น สพป.บุรีรัมย์ เขต 3)" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none">
+                    <input type="text" id="schoolDistrict" placeholder="อำเภอ" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none">
                     <input type="text" id="schoolProvince" placeholder="จังหวัด" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none">
                     <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-xl font-semibold hover:bg-blue-700 transition-all cursor-pointer">บันทึก</button>
                 </form>
@@ -230,7 +232,8 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                             <tr class="text-slate-500 border-b border-slate-100">
                                 <th class="pb-3 font-medium">รหัส</th>
                                 <th class="pb-3 font-medium">ชื่อโรงเรียน</th>
-                                <th class="pb-3 font-medium">จังหวัด</th>
+                                <th class="pb-3 font-medium">สังกัด</th>
+                                <th class="pb-3 font-medium">อำเภอ/จังหวัด</th>
                                 <th class="pb-3 font-medium">การจัดการ</th>
                             </tr>
                         </thead>
@@ -256,8 +259,18 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                         <input type="text" id="edit_school_name" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">จังหวัด</label>
-                        <input type="text" id="edit_school_province" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none">
+                        <label class="block text-sm font-medium text-slate-700 mb-1">สังกัด</label>
+                        <input type="text" id="edit_school_affiliation" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">อำเภอ</label>
+                            <input type="text" id="edit_school_district" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">จังหวัด</label>
+                            <input type="text" id="edit_school_province" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none">
+                        </div>
                     </div>
                     <div class="pt-2 flex gap-3">
                         <button type="button" onclick="closeModal('editSchoolModal')" class="flex-1 px-4 py-2 border border-slate-200 text-slate-600 rounded-xl font-semibold hover:bg-slate-50 cursor-pointer transition-all">ยกเลิก</button>
@@ -422,9 +435,10 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                     <tr class="border-b border-slate-50 hover:bg-slate-50/50">
                         <td class="py-3 text-slate-600 font-mono">${s.code}</td>
                         <td class="py-3 font-medium text-slate-800 cursor-pointer hover:text-blue-600" onclick="viewTeachers(${s.id}, '${s.name}')">${s.name}</td>
-                        <td class="py-3 text-slate-500">${s.province || '-'}</td>
+                        <td class="py-3 text-slate-500">${s.affiliation || '-'}</td>
+                        <td class="py-3 text-slate-500">${s.district || ''} ${s.province || ''}</td>
                         <td class="py-3 flex gap-2">
-                            <button onclick="editSchool(${s.id}, '${s.name}', '${s.province || ''}')" class="text-blue-600 hover:text-blue-800 text-sm font-medium cursor-pointer">แก้ไข</button>
+                            <button onclick="editSchool(${s.id}, '${s.name}', '${s.affiliation || ''}', '${s.district || ''}', '${s.province || ''}')" class="text-blue-600 hover:text-blue-800 text-sm font-medium cursor-pointer">แก้ไข</button>
                             <button onclick="deleteSchool(${s.id})" class="text-red-600 hover:text-red-800 text-sm font-medium cursor-pointer">ลบ</button>
                         </td>
                     </tr>
@@ -446,9 +460,11 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
             modal.classList.remove('flex');
         }
 
-        async function editSchool(id, currentName, currentProvince) {
+        async function editSchool(id, currentName, currentAffiliation, currentDistrict, currentProvince) {
             document.getElementById('edit_school_id').value = id;
             document.getElementById('edit_school_name').value = currentName;
+            document.getElementById('edit_school_affiliation').value = currentAffiliation;
+            document.getElementById('edit_school_district').value = currentDistrict;
             document.getElementById('edit_school_province').value = currentProvince;
             openModal('editSchoolModal');
         }
@@ -459,6 +475,8 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                 e.preventDefault();
                 const id = document.getElementById('edit_school_id').value;
                 const name = document.getElementById('edit_school_name').value;
+                const affiliation = document.getElementById('edit_school_affiliation').value;
+                const district = document.getElementById('edit_school_district').value;
                 const province = document.getElementById('edit_school_province').value;
 
                 if (!confirm('ยืนยันการบันทึกการแก้ไขข้อมูลโรงเรียน?')) return;
@@ -466,7 +484,7 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                 const res = await fetch('api/update_school.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id, name, province })
+                    body: JSON.stringify({ id, name, affiliation, district, province })
                 });
                 const result = await res.json();
                 if (result.message) {
@@ -689,6 +707,8 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                     body: JSON.stringify({
                         code: document.getElementById('schoolCode').value,
                         name: document.getElementById('schoolName').value,
+                        affiliation: document.getElementById('schoolAffiliation').value,
+                        district: document.getElementById('schoolDistrict').value,
                         province: document.getElementById('schoolProvince').value
                     })
                 });

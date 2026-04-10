@@ -76,7 +76,7 @@ foreach ($students_to_print as $student):
             <img src="<?= $logo_url ?>" class="logo" referrerPolicy="no-referrer">
         <?php endif; ?>
         <h3 style="margin: 5px 0;">แบบรายงานประจำตัวนักเรียน : ผลการพัฒนาคุณภาพผู้เรียนรายบุคคล (ปพ.6)</h3>
-        <p style="margin: 5px 0;"><?= $school_name ?> สำนักงานเขตพื้นที่การศึกษาประถมศึกษาบุรีรัมย์ เขต 3</p>
+        <p style="margin: 5px 0;"><?= $school_name ?> <?= $affiliation ?></p>
         <p>ชั้น <?= $classroom['level'] ?>/<?= $classroom['room'] ?> ภาคเรียนที่ <?= $semester === 'annual' ? '1-2' : $semester ?> ปีการศึกษา <?= $year ?></p>
     </div>
 

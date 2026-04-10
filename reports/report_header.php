@@ -16,6 +16,8 @@ if ($logo_url && !preg_match('/^https?:\/\//', $logo_url)) {
     $logo_url = '../' . $logo_url;
 }
 $school_name = $school['name'] ?? '';
+$affiliation = $school['affiliation'] ?? '';
+$district = $school['district'] ?? '';
 $province = $school['province'] ?? '';
 
 // ดึงข้อมูลผู้บริหารจากตาราง school_officials

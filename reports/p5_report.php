@@ -81,7 +81,7 @@ $female_students = $total_students - $male_students;
         <?php endif; ?>
         <h2 style="margin: 5px 0;">สมุดบันทึกการพัฒนาคุณภาพผู้เรียน (ปพ.5)</h2>
         <h3 style="margin: 5px 0;"><?= $school_name ?></h3>
-        <p>สำนักงานเขตพื้นที่การศึกษาประถมศึกษาบุรีรัมย์ เขต 3</p>
+        <p><?= $affiliation ?></p>
     </div>
 
     <div style="margin-bottom: 20px;">

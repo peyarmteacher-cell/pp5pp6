@@ -63,7 +63,7 @@ if ($type === 'subject' && $assignment_id) {
         <div style="border-top: 1px solid black; border-bottom: 1px solid black; padding: 20px 0; margin: 20px 0;">
             <p style="font-size: 22px; margin: 10px 0;">ภาคเรียนที่ <?= $semester === 'annual' ? '1-2' : $semester ?> ปีการศึกษา <?= $year ?></p>
             <p style="font-size: 22px; margin: 10px 0;">โรงเรียน<?= $school_name ?></p>
-            <p style="font-size: 20px; margin: 10px 0;">สำนักงานเขตพื้นที่การศึกษาประถมศึกษาบุรีรัมย์ เขต 3</p>
+            <p style="font-size: 20px; margin: 10px 0;"><?= $affiliation ?></p>
         </div>
     </div>
 
