@@ -39,6 +39,15 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
         var currentAcademicYear = '2567';
         var currentSemester = 1;
 
+        console.log('Dashboard loaded. Session Info:', {
+            user_id: '<?= $_SESSION['user_id'] ?? '' ?>',
+            username: '<?= $_SESSION['username'] ?? '' ?>',
+            role: '<?= $_SESSION['role'] ?? '' ?>',
+            school_id: '<?= $_SESSION['school_id'] ?? '' ?>',
+            school_name: '<?= $_SESSION['school_name'] ?? '' ?>',
+            is_academic: '<?= $_SESSION['is_academic'] ?? '' ?>'
+        });
+
         function showSection(sectionId) {
             console.log('Showing section:', sectionId);
             try {

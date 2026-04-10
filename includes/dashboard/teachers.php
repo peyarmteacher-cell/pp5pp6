@@ -12,7 +12,7 @@
                     <p class="text-xs text-slate-500">จัดการรายชื่อและมอบหมายหน้าที่งานวิชาการ</p>
                 </div>
             </div>
-            <button onclick="openEditTeacherModal()" class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-all cursor-pointer shadow-md shadow-blue-600/10">
+            <button onclick="console.log('Add Teacher clicked'); openEditTeacherModal()" class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-all cursor-pointer shadow-md shadow-blue-600/10">
                 <i data-lucide="plus" class="w-4 h-4"></i>
                 เพิ่มคุณครู
             </button>
@@ -262,64 +262,78 @@
     async function loadSchoolTeachers() {
         const schoolId = '<?= $_SESSION['school_id'] ?>';
         const mockRole = new URLSearchParams(window.location.search).get('mock_role') || '';
-        console.log('Loading teachers for school_id:', schoolId);
+        console.log('loadSchoolTeachers: school_id =', schoolId, 'mock_role =', mockRole);
+        
+        if (!schoolId) {
+            console.warn('loadSchoolTeachers: No school_id found in session');
+            const tbody = document.getElementById('schoolTeachersTableBody');
+            if (tbody) tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-red-400">ไม่พบรหัสโรงเรียนใน Session กรุณาเข้าสู่ระบบใหม่</td></tr>`;
+            return;
+        }
+
         try {
             const res = await fetch(`api/get_school_teachers.php?school_id=${schoolId}&mock_role=${mockRole}`);
             const teachers = await res.json();
-            console.log('Teachers loaded:', teachers);
+            console.log('loadSchoolTeachers: Received teachers:', teachers);
             
             if (teachers.error) {
-                console.error('API Error:', teachers.error);
+                console.error('loadSchoolTeachers: API Error:', teachers.error);
                 alert(teachers.error);
                 return;
             }
 
             const tbody = document.getElementById('schoolTeachersTableBody');
-            if (!tbody) return;
+            if (!tbody) {
+                console.error('loadSchoolTeachers: schoolTeachersTableBody not found');
+                return;
+            }
             
             if (teachers.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="py-8 text-center text-slate-400">ยังไม่มีข้อมูลคุณครูในโรงเรียนนี้</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-400">ยังไม่มีข้อมูลคุณครูในโรงเรียนนี้</td></tr>`;
                 return;
             }
 
-            tbody.innerHTML = teachers.map(t => `
-            <tr class="border-b border-slate-50 hover:bg-slate-50/50 group">
-                <td class="py-3">
-                    <div class="font-medium text-slate-800">${t.name}</div>
-                    <div class="text-[10px] text-slate-400">ID: ${t.username}</div>
-                </td>
-                <td class="py-3 text-slate-500">${t.position}</td>
-                <td class="py-3">
-                    <label class="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" class="sr-only peer" ${t.is_academic ? 'checked' : ''} onchange="toggleAcademic(${t.id}, this.checked)">
-                        <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                    </label>
-                </td>
-                <td class="py-3">
-                    <div class="flex items-center gap-3">
-                        <span class="px-2 py-1 rounded-full text-[10px] font-bold ${t.is_approved ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">
-                            ${t.is_approved ? 'อนุมัติแล้ว' : 'รออนุมัติ'}
-                        </span>
-                        ${t.is_approved ? `
-                            <button onclick="openAssignSubjectsModal(${t.id}, '${t.name}')" class="text-blue-600 hover:text-blue-800 text-xs font-bold cursor-pointer flex items-center gap-1">
-                                <i data-lucide="book-open" class="w-3 h-3"></i>
-                                มอบหมายงานสอน
+            tbody.innerHTML = teachers.map(t => {
+                const teacherData = JSON.stringify(t).replace(/'/g, "&apos;");
+                const safeName = t.name.replace(/'/g, "\\'");
+                return `
+                <tr class="border-b border-slate-50 hover:bg-slate-50/50 group">
+                    <td class="py-3">
+                        <div class="font-medium text-slate-800">${t.name}</div>
+                        <div class="text-[10px] text-slate-400">ID: ${t.username || '-'}</div>
+                    </td>
+                    <td class="py-3 text-slate-500">${t.position}</td>
+                    <td class="py-3">
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" class="sr-only peer" ${t.is_academic ? 'checked' : ''} onchange="toggleAcademic(${t.id}, this.checked)">
+                            <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        </label>
+                    </td>
+                    <td class="py-3">
+                        <div class="flex items-center gap-3">
+                            <span class="px-2 py-1 rounded-full text-[10px] font-bold ${t.is_approved ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">
+                                ${t.is_approved ? 'อนุมัติแล้ว' : 'รออนุมัติ'}
+                            </span>
+                            ${t.is_approved ? `
+                                <button onclick="openAssignSubjectsModal(${t.id}, '${safeName}')" class="text-blue-600 hover:text-blue-800 text-xs font-bold cursor-pointer flex items-center gap-1">
+                                    <i data-lucide="book-open" class="w-3 h-3"></i>
+                                    มอบหมายงานสอน
+                                </button>
+                            ` : ''}
+                        </div>
+                    </td>
+                    <td class="py-3 text-right">
+                        <div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                            <button onclick='openEditTeacherModal(${teacherData})' class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-all cursor-pointer" title="แก้ไข">
+                                <i data-lucide="edit-2" class="w-4 h-4"></i>
                             </button>
-                        ` : ''}
-                    </div>
-                </td>
-                <td class="py-3 text-right">
-                    <div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                        <button onclick='openEditTeacherModal(${JSON.stringify(t).replace(/'/g, "&apos;")})' class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-all cursor-pointer" title="แก้ไข">
-                            <i data-lucide="edit-2" class="w-4 h-4"></i>
-                        </button>
-                        <button onclick="deleteTeacher(${t.id})" class="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-all cursor-pointer" title="ลบ">
-                            <i data-lucide="trash-2" class="w-4 h-4"></i>
-                        </button>
-                    </div>
-                </td>
-            </tr>
-        `).join('');
+                            <button onclick="deleteTeacher(${t.id})" class="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-all cursor-pointer" title="ลบ">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `}).join('');
         
         if (typeof lucide !== 'undefined') lucide.createIcons();
         } catch (e) {
@@ -329,11 +343,17 @@
     }
 
     function openEditTeacherModal(t = null, schoolId = null) {
+        console.log('openEditTeacherModal: t =', t, 'schoolId =', schoolId);
         const modal = document.getElementById('editTeacherModal');
         const title = document.getElementById('editTeacherModalTitle');
         const form = document.getElementById('editTeacherForm');
         const userField = document.getElementById('username_field_container');
         
+        if (!modal || !form) {
+            console.error('openEditTeacherModal: Modal or Form not found');
+            return;
+        }
+
         form.reset();
         document.getElementById('edit_teacher_id').value = '';
         document.getElementById('edit_teacher_school_id').value = schoolId || '<?= $_SESSION['school_id'] ?>';
@@ -344,12 +364,17 @@
             document.getElementById('edit_teacher_name').value = t.name;
             document.getElementById('edit_teacher_position').value = t.position;
             document.getElementById('edit_teacher_is_academic').checked = t.is_academic == 1;
-            userField.classList.add('hidden');
-            document.getElementById('edit_teacher_username').required = false;
+            if (userField) userField.classList.add('hidden');
+            const usernameInput = document.getElementById('edit_teacher_username');
+            if (usernameInput) {
+                usernameInput.value = t.username || '';
+                usernameInput.required = false;
+            }
         } else {
             title.innerText = 'เพิ่มข้อมูลคุณครู';
-            userField.classList.remove('hidden');
-            document.getElementById('edit_teacher_username').required = true;
+            if (userField) userField.classList.remove('hidden');
+            const usernameInput = document.getElementById('edit_teacher_username');
+            if (usernameInput) usernameInput.required = true;
         }
         
         modal.classList.remove('hidden');
