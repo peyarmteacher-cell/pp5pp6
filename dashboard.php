@@ -500,63 +500,80 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
         }
 
         async function viewTeachers(schoolId, schoolName) {
+            console.log('viewTeachers: schoolId =', schoolId, 'schoolName =', schoolName);
+            window.currentViewingSchool = { id: schoolId, name: schoolName }; // Store for refresh
             document.getElementById('modalSchoolName').innerText = `รายชื่อคุณครู - ${schoolName}`;
             const addBtn = document.getElementById('addTeacherBtnSuperAdmin');
             if (addBtn) {
-                addBtn.onclick = () => openEditTeacherModal(null, schoolId);
+                addBtn.onclick = () => {
+                    console.log('Super Admin: Add Teacher clicked for schoolId:', schoolId);
+                    openEditTeacherModal(null, schoolId);
+                };
             }
             const mockRole = new URLSearchParams(window.location.search).get('mock_role') || '';
             try {
                 const res = await fetch(`api/get_school_teachers.php?school_id=${schoolId}&mock_role=${mockRole}`);
                 const teachers = await res.json();
+                console.log('viewTeachers: Received teachers:', teachers);
                 
                 if (teachers.error) {
+                    console.error('viewTeachers: API Error:', teachers.error);
                     alert(teachers.error);
                     return;
                 }
 
                 const tbody = document.getElementById('modalTeacherTableBody');
+                if (!tbody) {
+                    console.error('viewTeachers: modalTeacherTableBody not found');
+                    return;
+                }
                 
                 if (teachers.length === 0) {
                     tbody.innerHTML = `<tr><td colspan="${'<?= $role ?>' === 'super_admin' ? 4 : 3}" class="py-4 text-center text-slate-400">ไม่พบรายชื่อคุณครูในโรงเรียนนี้</td></tr>`;
                 } else {
-                    tbody.innerHTML = teachers.map(t => `
-                    <tr class="border-b border-slate-50 group">
-                        <td class="py-3">
-                            <div class="font-medium text-slate-800">${t.name}</div>
-                            <div class="text-[10px] text-slate-400">ID: ${t.username}</div>
-                        </td>
-                        <td class="py-3 text-slate-500">${t.position}</td>
-                        <td class="py-3">
-                            <div class="flex flex-col gap-1">
-                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold w-fit ${t.is_approved ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">
-                                    ${t.is_approved ? 'อนุมัติแล้ว' : 'รออนุมัติ'}
-                                </span>
-                                ${t.is_academic ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-700 w-fit">งานวิชาการ</span>' : ''}
-                            </div>
-                        </td>
-                        <?php if ($role === 'super_admin'): ?>
-                        <td class="py-3 text-right">
-                            <div class="flex flex-col items-end gap-1">
-                                ${t.role !== 'admin' ? `
-                                    <button onclick="promoteToAdmin(${t.id}, '${schoolName}')" class="text-blue-600 hover:text-blue-800 text-[10px] font-bold cursor-pointer">กำหนดเป็น Admin</button>
-                                ` : '<span class="text-slate-400 text-[10px]">เป็น Admin แล้ว</span>'}
-                                <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                                    <button onclick='openEditTeacherModal(${JSON.stringify(t).replace(/'/g, "&apos;")}, ${schoolId})' class="text-blue-500 hover:text-blue-700 text-[10px] font-bold cursor-pointer">แก้ไข</button>
-                                    <button onclick="deleteTeacher(${t.id})" class="text-red-500 hover:text-red-700 text-[10px] font-bold cursor-pointer">ลบ</button>
+                    // Store teachers globally for safer access from onclick
+                    window.lastLoadedTeachers = teachers;
+                    
+                    tbody.innerHTML = teachers.map((t, index) => {
+                        const safeSchoolName = schoolName.replace(/'/g, "\\'");
+                        return `
+                        <tr class="border-b border-slate-50 group">
+                            <td class="py-3">
+                                <div class="font-medium text-slate-800">${t.name}</div>
+                                <div class="text-[10px] text-slate-400">ID: ${t.username || '-'}</div>
+                            </td>
+                            <td class="py-3 text-slate-500">${t.position}</td>
+                            <td class="py-3">
+                                <div class="flex flex-col gap-1">
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold w-fit ${t.is_approved == 1 || t.is_approved === true || t.is_approved === '1' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">
+                                        ${t.is_approved == 1 || t.is_approved === true || t.is_approved === '1' ? 'อนุมัติแล้ว' : 'รออนุมัติ'}
+                                    </span>
+                                    ${t.is_academic == 1 || t.is_academic === true || t.is_academic === '1' ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-700 w-fit">งานวิชาการ</span>' : ''}
                                 </div>
-                            </div>
-                        </td>
-                        <?php endif; ?>
-                    </tr>
-                `).join('');
+                            </td>
+                            <?php if ($role === 'super_admin'): ?>
+                            <td class="py-3 text-right">
+                                <div class="flex flex-col items-end gap-1">
+                                    ${t.role !== 'admin' ? `
+                                        <button onclick="promoteToAdmin(${t.id}, '${safeSchoolName}')" class="text-blue-600 hover:text-blue-800 text-[10px] font-bold cursor-pointer">กำหนดเป็น Admin</button>
+                                    ` : '<span class="text-slate-400 text-[10px]">เป็น Admin แล้ว</span>'}
+                                    <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                                        <button onclick="openEditTeacherModal(window.lastLoadedTeachers[${index}], ${schoolId})" class="text-blue-500 hover:text-blue-700 text-[10px] font-bold cursor-pointer">แก้ไข</button>
+                                        <button onclick="deleteTeacher(${t.id})" class="text-red-500 hover:text-red-700 text-[10px] font-bold cursor-pointer">ลบ</button>
+                                    </div>
+                                </div>
+                            </td>
+                            <?php endif; ?>
+                        </tr>
+                    `}).join('');
                 }
+                
+                openModal('teacherModal');
+                if (typeof lucide !== 'undefined') lucide.createIcons();
             } catch (e) {
                 console.error('Error in viewTeachers:', e);
-                alert('เกิดข้อผิดพลาดในการดึงข้อมูลคุณครู');
+                alert('เกิดข้อผิดพลาดในการดึงข้อมูลคุณครู: ' + e.message);
             }
-            
-            openModal('teacherModal');
         }
 
         async function promoteToAdmin(userId, schoolName) {

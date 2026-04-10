@@ -12,10 +12,15 @@
                     <p class="text-xs text-slate-500">จัดการรายชื่อและมอบหมายหน้าที่งานวิชาการ</p>
                 </div>
             </div>
-            <button onclick="console.log('Add Teacher clicked'); openEditTeacherModal()" class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-all cursor-pointer shadow-md shadow-blue-600/10">
-                <i data-lucide="plus" class="w-4 h-4"></i>
-                เพิ่มคุณครู
-            </button>
+            <div class="flex gap-2">
+                <button onclick="loadSchoolTeachers()" class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all cursor-pointer" title="รีเฟรช">
+                    <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+                </button>
+                <button onclick="console.log('Add Teacher clicked'); openEditTeacherModal()" class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-all cursor-pointer shadow-md shadow-blue-600/10">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                    เพิ่มคุณครู
+                </button>
+            </div>
         </div>
         
         <div class="overflow-x-auto">
@@ -293,9 +298,14 @@
                 return;
             }
 
-            tbody.innerHTML = teachers.map(t => {
-                const teacherData = JSON.stringify(t).replace(/'/g, "&apos;");
+            // Store globally for safety
+            window.lastLoadedTeachers = teachers;
+
+            tbody.innerHTML = teachers.map((t, index) => {
                 const safeName = t.name.replace(/'/g, "\\'");
+                const isApproved = t.is_approved == 1 || t.is_approved === true || t.is_approved === '1';
+                const isAcademic = t.is_academic == 1 || t.is_academic === true || t.is_academic === '1';
+                
                 return `
                 <tr class="border-b border-slate-50 hover:bg-slate-50/50 group">
                     <td class="py-3">
@@ -305,16 +315,16 @@
                     <td class="py-3 text-slate-500">${t.position}</td>
                     <td class="py-3">
                         <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" class="sr-only peer" ${t.is_academic ? 'checked' : ''} onchange="toggleAcademic(${t.id}, this.checked)">
+                            <input type="checkbox" class="sr-only peer" ${isAcademic ? 'checked' : ''} onchange="toggleAcademic(${t.id}, this.checked)">
                             <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                         </label>
                     </td>
                     <td class="py-3">
                         <div class="flex items-center gap-3">
-                            <span class="px-2 py-1 rounded-full text-[10px] font-bold ${t.is_approved ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">
-                                ${t.is_approved ? 'อนุมัติแล้ว' : 'รออนุมัติ'}
+                            <span class="px-2 py-1 rounded-full text-[10px] font-bold ${isApproved ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">
+                                ${isApproved ? 'อนุมัติแล้ว' : 'รออนุมัติ'}
                             </span>
-                            ${t.is_approved ? `
+                            ${isApproved ? `
                                 <button onclick="openAssignSubjectsModal(${t.id}, '${safeName}')" class="text-blue-600 hover:text-blue-800 text-xs font-bold cursor-pointer flex items-center gap-1">
                                     <i data-lucide="book-open" class="w-3 h-3"></i>
                                     มอบหมายงานสอน
@@ -324,7 +334,7 @@
                     </td>
                     <td class="py-3 text-right">
                         <div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                            <button onclick='openEditTeacherModal(${teacherData})' class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-all cursor-pointer" title="แก้ไข">
+                            <button onclick="openEditTeacherModal(window.lastLoadedTeachers[${index}])" class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-all cursor-pointer" title="แก้ไข">
                                 <i data-lucide="edit-2" class="w-4 h-4"></i>
                             </button>
                             <button onclick="deleteTeacher(${t.id})" class="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-all cursor-pointer" title="ลบ">
@@ -401,13 +411,13 @@
             });
             const result = await res.json();
             if (result.status === 'success') {
+                alert(result.message || 'บันทึกข้อมูลสำเร็จ');
                 closeModal('editTeacherModal');
                 loadSchoolTeachers();
-                // If in Super Admin modal, we might need to refresh that too
-                if (typeof viewTeachers === 'function' && document.getElementById('teacherModal').classList.contains('flex')) {
-                    // We need schoolId and schoolName, which are tricky to get here
-                    // For now, just close and let user reopen
-                    closeModal('teacherModal');
+                
+                // If Super Admin modal is open, refresh it
+                if (typeof viewTeachers === 'function' && window.currentViewingSchool && document.getElementById('teacherModal').classList.contains('flex')) {
+                    viewTeachers(window.currentViewingSchool.id, window.currentViewingSchool.name);
                 }
             } else {
                 alert(result.error);
@@ -428,9 +438,12 @@
             });
             const result = await res.json();
             if (result.status === 'success') {
+                alert('ลบข้อมูลสำเร็จ');
                 loadSchoolTeachers();
-                if (typeof viewTeachers === 'function' && document.getElementById('teacherModal').classList.contains('flex')) {
-                    closeModal('teacherModal');
+                
+                // If Super Admin modal is open, refresh it
+                if (typeof viewTeachers === 'function' && window.currentViewingSchool && document.getElementById('teacherModal').classList.contains('flex')) {
+                    viewTeachers(window.currentViewingSchool.id, window.currentViewingSchool.name);
                 }
             } else {
                 alert(result.error);
