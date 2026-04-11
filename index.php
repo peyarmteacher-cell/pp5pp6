@@ -75,11 +75,12 @@
                         <option value="">เลือกตำแหน่ง</option>
                         <option value="ครูอัตราจ้าง">ครูอัตราจ้าง</option>
                         <option value="พนักงานราชการ">พนักงานราชการ</option>
-                        <option value="ครู คศ.1">ครู คศ.1</option>
-                        <option value="ครู คศ.2">ครู คศ.2</option>
-                        <option value="ครู คศ.3">ครู คศ.3</option>
-                        <option value="ครู คศ.4">ครู คศ.4</option>
-                        <option value="ครู คศ.5">ครู คศ.5</option>
+                        <option value="ครูผู้ช่วย">ครูผู้ช่วย</option>
+                        <option value="ครู">ครู</option>
+                        <option value="ครูชำนาญการ">ครูชำนาญการ</option>
+                        <option value="ครูชำนาญการพิเศษ">ครูชำนาญการพิเศษ</option>
+                        <option value="ครูเชี่ยวชาญ">ครูเชี่ยวชาญ</option>
+                        <option value="ครูเชี่ยวชาญพิเศษ">ครูเชี่ยวชาญพิเศษ</option>
                         <option value="รองผู้อำนวยการโรงเรียน">รองผู้อำนวยการโรงเรียน</option>
                         <option value="ผู้อำนวยการโรงเรียน">ผู้อำนวยการโรงเรียน</option>
                     </select>

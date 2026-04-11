@@ -551,14 +551,16 @@
             <div>
                 <label class="block text-sm font-medium text-slate-700 mb-1">ตำแหน่ง</label>
                 <select id="edit_teacher_position" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all cursor-pointer">
-                    <option value="ครูผู้ช่วย">ครูผู้ช่วย</option>
-                    <option value="ครู ค.ศ. 1">ครู ค.ศ. 1</option>
-                    <option value="ครู ค.ศ. 2">ครู ค.ศ. 2 (ชำนาญการ)</option>
-                    <option value="ครู ค.ศ. 3">ครู ค.ศ. 3 (ชำนาญการพิเศษ)</option>
-                    <option value="ครู ค.ศ. 4">ครู ค.ศ. 4 (เชี่ยวชาญ)</option>
-                    <option value="ครู ค.ศ. 5">ครู ค.ศ. 5 (เชี่ยวชาญพิเศษ)</option>
-                    <option value="พนักงานราชการ">พนักงานราชการ</option>
                     <option value="ครูอัตราจ้าง">ครูอัตราจ้าง</option>
+                    <option value="พนักงานราชการ">พนักงานราชการ</option>
+                    <option value="ครูผู้ช่วย">ครูผู้ช่วย</option>
+                    <option value="ครู">ครู</option>
+                    <option value="ครูชำนาญการ">ครูชำนาญการ</option>
+                    <option value="ครูชำนาญการพิเศษ">ครูชำนาญการพิเศษ</option>
+                    <option value="ครูเชี่ยวชาญ">ครูเชี่ยวชาญ</option>
+                    <option value="ครูเชี่ยวชาญพิเศษ">ครูเชี่ยวชาญพิเศษ</option>
+                    <option value="รองผู้อำนวยการโรงเรียน">รองผู้อำนวยการโรงเรียน</option>
+                    <option value="ผู้อำนวยการโรงเรียน">ผู้อำนวยการโรงเรียน</option>
                 </select>
             </div>
             

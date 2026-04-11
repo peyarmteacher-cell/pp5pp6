@@ -59,7 +59,7 @@ try {
             $director_name = $off['name'];
         } else if (($off['role_key'] === 'academic_head' || $off['role_key'] === 'deputy_academic') && empty($academic_head_name)) {
             $academic_head_name = $off['name'];
-            $academic_head_position = $off['position'];
+            $academic_head_position = formatTeacherPosition($off['position']);
         }
     }
 } catch (Exception $e) {

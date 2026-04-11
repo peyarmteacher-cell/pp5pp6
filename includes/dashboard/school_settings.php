@@ -46,8 +46,13 @@
                     <label class="text-sm font-semibold text-slate-700">ตำแหน่งงานวิชาการ</label>
                     <select id="setting_academic_head_position" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none">
                         <option value="หัวหน้างานวิชาการ">หัวหน้างานวิชาการ</option>
-                        <option value="รองผู้อำนวยการฝ่ายวิชาการ">รองผู้อำนวยการฝ่ายวิชาการ</option>
-                        <option value="ผู้ช่วยผู้อำนวยการฝ่ายวิชาการ">ผู้ช่วยผู้อำนวยการฝ่ายวิชาการ</option>
+                        <option value="รองผู้อำนวยการโรงเรียน">รองผู้อำนวยการโรงเรียน</option>
+                        <option value="ผู้อำนวยการโรงเรียน">ผู้อำนวยการโรงเรียน</option>
+                        <option value="ครู">ครู</option>
+                        <option value="ครูชำนาญการ">ครูชำนาญการ</option>
+                        <option value="ครูชำนาญการพิเศษ">ครูชำนาญการพิเศษ</option>
+                        <option value="ครูเชี่ยวชาญ">ครูเชี่ยวชาญ</option>
+                        <option value="ครูเชี่ยวชาญพิเศษ">ครูเชี่ยวชาญพิเศษ</option>
                     </select>
                 </div>
             </div>
