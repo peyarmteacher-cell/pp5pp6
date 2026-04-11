@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบบริหารจัดการสถานศึกษา - Login / Register</title>
+    <title>ระบบบริหารงานวิชาการ - Login / Register</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>body { font-family: 'Sarabun', sans-serif; }</style>
@@ -16,7 +16,7 @@
             <div class="w-20 h-20 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl shadow-blue-900/40">
                 <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
             </div>
-            <h2 class="text-3xl font-bold text-white mb-2">ระบบวัดผล ปพ.</h2>
+            <h2 class="text-3xl font-bold text-white mb-2">ระบบบริหารงานวิชาการ</h2>
             <p class="text-slate-400" id="formTitle">เข้าสู่ระบบเพื่อจัดการข้อมูลการเรียน</p>
         </div>
 

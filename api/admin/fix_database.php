@@ -741,6 +741,25 @@ try {
         }
     }
 
+    // 17. เพิ่มตาราง app_settings สำหรับการตั้งค่าส่วนกลาง
+    $pdo->exec("CREATE TABLE IF NOT EXISTS app_settings (
+        setting_key VARCHAR(50) PRIMARY KEY,
+        setting_value TEXT,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    
+    // ตั้งค่าชื่อแอปเริ่มต้น
+    $stmt = $pdo->prepare("SELECT setting_value FROM app_settings WHERE setting_key = 'app_name'");
+    $stmt->execute();
+    if (!$stmt->fetch()) {
+        $pdo->prepare("INSERT INTO app_settings (setting_key, setting_value) VALUES ('app_name', 'ระบบบริหารงานวิชาการ')")->execute();
+        $results[] = "ตั้งค่าชื่อแอปเริ่มต้นสำเร็จ";
+    } else {
+        // อัปเดตชื่อแอปตามที่ผู้ใช้ขอ
+        $pdo->prepare("UPDATE app_settings SET setting_value = 'ระบบบริหารงานวิชาการ' WHERE setting_key = 'app_name'")->execute();
+        $results[] = "อัปเดตชื่อแอปเป็น 'ระบบบริหารงานวิชาการ' สำเร็จ";
+    }
+
     echo json_encode([
         'status' => 'success',
         'message' => 'ตรวจสอบและปรับปรุงฐานข้อมูลเรียบร้อยแล้ว',

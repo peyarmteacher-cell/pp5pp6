@@ -5,17 +5,30 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
+require_once 'api/config.php';
+
 $username = $_SESSION['name']; // ใช้ชื่อเต็มจาก Session
+$position = $_SESSION['position'] ?? '';
 $role = $_SESSION['role'];
 $affiliation = $_SESSION['affiliation'] ?? 'ไม่มีสังกัด';
 $school_name = $_SESSION['school_name'] ?? $affiliation;
+
+// ดึงการตั้งค่าแอป
+$app_name = 'ระบบบริหารงานวิชาการ';
+$app_logo = '';
+try {
+    $stmt_app = $pdo->query("SELECT setting_key, setting_value FROM app_settings");
+    $settings = $stmt_app->fetchAll(PDO::FETCH_KEY_PAIR);
+    if (isset($settings['app_name'])) $app_name = $settings['app_name'];
+    if (isset($settings['app_logo'])) $app_logo = $settings['app_logo'];
+} catch (Exception $e) {}
 ?>
 <!DOCTYPE html>
 <html lang="th">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - ระบบบริหารจัดการสถานศึกษา</title>
+    <title>Dashboard - <?= $app_name ?></title>
     <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://d3js.org/d3.v7.min.js"></script>
@@ -131,11 +144,42 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
     <!-- Sidebar -->
     <aside class="w-64 bg-slate-900 text-white flex flex-col">
         <div class="p-6 border-b border-slate-800">
-            <h1 class="text-xl font-bold text-blue-400">SchoolOS</h1>
-            <p class="text-xs text-slate-400 mt-1">ระบบบริหารจัดการสถานศึกษา</p>
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center font-bold overflow-hidden shadow-lg shadow-blue-900/20">
+                    <?php if ($app_logo): ?>
+                        <img src="<?= $app_logo ?>" alt="App Logo" class="w-full h-full object-cover" referrerPolicy="no-referrer">
+                    <?php else: ?>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+                    <?php endif; ?>
+                </div>
+                <div class="overflow-hidden">
+                    <h1 class="text-lg font-bold text-blue-400 truncate"><?= $app_name ?></h1>
+                    <p class="text-[10px] text-slate-500 uppercase tracking-wider">Academic Management</p>
+                </div>
+            </div>
+            
+            <div class="bg-slate-800/50 rounded-2xl p-3 border border-slate-700/50">
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-xs font-bold">
+                        <?= mb_substr($username, 0, 1) ?>
+                    </div>
+                    <div class="overflow-hidden">
+                        <p class="text-[10px] text-slate-400 truncate capitalize"><?= $position ?: str_replace('_', ' ', $role) ?></p>
+                        <p class="text-xs font-semibold truncate"><?= $username ?></p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="showSection('profile')" class="flex items-center justify-center gap-1 py-1.5 bg-slate-700 hover:bg-slate-600 rounded-lg text-[10px] font-medium transition-all">
+                        <i data-lucide="user" class="w-3 h-3"></i> โปรไฟล์
+                    </button>
+                    <a href="logout.php" class="flex items-center justify-center gap-1 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg text-[10px] font-medium transition-all">
+                        <i data-lucide="log-out" class="w-3 h-3"></i> ออก
+                    </a>
+                </div>
+            </div>
         </div>
         
-        <nav class="flex-1 p-4 space-y-2">
+        <nav class="flex-1 p-4 space-y-1 overflow-y-auto custom-scrollbar">
             <?php if ($role !== 'teacher' || $_SESSION['is_academic']): ?>
                 <a href="javascript:void(0)" onclick="showSection('overview')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">ภาพรวม</a>
             <?php endif; ?>
@@ -145,6 +189,7 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                 <a href="javascript:void(0)" onclick="showSection('manage-schools')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">จัดการโรงเรียน</a>
                 <a href="javascript:void(0)" onclick="showSection('approve-admins')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">อนุมัติ Admin โรงเรียน</a>
                 <a href="javascript:void(0)" onclick="showSection('manage-super-admins')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">จัดการ Super Admin</a>
+                <a href="javascript:void(0)" onclick="showSection('app-settings')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">ตั้งค่าระบบ</a>
                 <a href="javascript:void(0)" onclick="fixDatabase()" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors text-yellow-400 cursor-pointer">ปรับปรุงฐานข้อมูล</a>
                 <a href="javascript:void(0)" onclick="showSection('profile')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">แก้ไขโปรไฟล์</a>
 <?php endif; ?>
@@ -177,26 +222,13 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                 <a href="javascript:void(0)" onclick="showSection('reports')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer text-green-400">รายงานเอกสาร (ปพ.5/ปพ.6)</a>
             <?php endif; ?>
         </nav>
-
-        <div class="p-4 border-t border-slate-800">
-            <div class="flex items-center gap-3 mb-4">
-                <div class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center font-bold">
-                    <?= mb_substr($username, 0, 1) ?>
-                </div>
-                <div class="overflow-hidden">
-                    <p class="text-sm font-medium truncate"><?= $username ?></p>
-                    <p class="text-xs text-slate-400 truncate"><?= $role ?></p>
-                </div>
-            </div>
-            <a href="logout.php" class="block w-full text-center py-2 bg-red-600/20 text-red-400 hover:bg-red-600/30 rounded-lg text-sm font-medium transition-all cursor-pointer">ออกจากระบบ</a>
-        </div>
     </aside>
 
     <!-- Main Content -->
     <main class="flex-1 p-8 overflow-y-auto">
         <header class="flex justify-between items-center mb-8">
             <h2 id="section-title" class="text-2xl font-bold text-slate-800">ภาพรวมระบบ</h2>
-            <div class="text-sm text-slate-500">สังกัด: <span class="font-semibold text-blue-600"><?= $school_name ?></span></div>
+            <div class="text-sm text-slate-500">โรงเรียน: <span class="font-semibold text-blue-600"><?= $school_name ?></span></div>
         </header>
 
         <!-- Sections -->
@@ -313,9 +345,46 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
             </div>
         </div>
 
+        <div id="app-settings" class="section hidden space-y-6">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <h3 class="text-lg font-bold mb-4">ตั้งค่าแอปพลิเคชัน</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- แก้ไขชื่อแอป -->
+                    <div class="space-y-4">
+                        <h4 class="font-semibold text-slate-700">ชื่อแอปพลิเคชัน</h4>
+                        <form id="saveAppNameForm" class="space-y-3">
+                            <input type="text" id="app_name_input" value="<?= $app_name ?>" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none">
+                            <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-xl font-semibold hover:bg-blue-700 transition-all cursor-pointer">บันทึกชื่อแอป</button>
+                        </form>
+                    </div>
+                    
+                    <!-- อัปโหลดโลโก้แอป -->
+                    <div class="space-y-4">
+                        <h4 class="font-semibold text-slate-700">โลโก้แอปพลิเคชัน</h4>
+                        <div class="flex items-center gap-4">
+                            <div class="w-20 h-20 rounded-2xl bg-slate-100 border border-slate-200 flex items-center justify-center overflow-hidden">
+                                <?php if ($app_logo): ?>
+                                    <img src="<?= $app_logo ?>" id="app_logo_preview" class="w-full h-full object-cover" referrerPolicy="no-referrer">
+                                <?php else: ?>
+                                    <div id="app_logo_placeholder" class="text-slate-300">
+                                        <i data-lucide="image" class="w-8 h-8"></i>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                            <div class="flex-1">
+                                <input type="file" id="app_logo_file" accept="image/*" class="hidden">
+                                <button type="button" onclick="document.getElementById('app_logo_file').click()" class="px-4 py-2 border border-slate-200 rounded-xl text-sm font-medium hover:bg-slate-50 transition-all cursor-pointer">เลือกรูปภาพ</button>
+                                <p class="text-[10px] text-slate-400 mt-2">แนะนำขนาด 200x200px (JPG, PNG, WEBP)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div id="profile" class="section hidden space-y-6">
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                <h3 class="text-lg font-bold mb-4">แก้ไขโปรไฟล์</h3>
+                <h3 class="text-lg font-bold mb-4">แก้ไขโปรไฟล์ส่วนตัว</h3>
                 <form id="updateProfileForm" class="space-y-4">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
@@ -323,11 +392,13 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                             <input type="text" id="prof_name" value="<?= $username ?>" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1">สังกัด</label>
-                            <input type="text" id="prof_affiliation" value="<?= $affiliation ?>" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none">
+                            <label class="block text-sm font-medium text-slate-700 mb-1">รหัสผ่านใหม่ (เว้นว่างไว้หากไม่ต้องการเปลี่ยน)</label>
+                            <input type="password" id="prof_password" placeholder="ระบุรหัสผ่านใหม่" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none">
                         </div>
                     </div>
-                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-xl font-semibold hover:bg-blue-700 transition-all cursor-pointer">บันทึกการเปลี่ยนแปลง</button>
+                    <div class="flex justify-end">
+                        <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-xl font-semibold hover:bg-blue-700 transition-all cursor-pointer">บันทึกการเปลี่ยนแปลง</button>
+                    </div>
                 </form>
             </div>
         </div>
@@ -402,6 +473,54 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
             };
         }
 
+        // App Settings Logic
+        const saveAppNameForm = document.getElementById('saveAppNameForm');
+        if (saveAppNameForm) {
+            saveAppNameForm.onsubmit = async (e) => {
+                e.preventDefault();
+                const res = await fetch('api/admin/save_app_settings.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        app_name: document.getElementById('app_name_input').value
+                    })
+                });
+                const result = await res.json();
+                if (result.message) {
+                    alert(result.message);
+                    location.reload();
+                } else {
+                    alert(result.error);
+                }
+            };
+        }
+
+        const appLogoFile = document.getElementById('app_logo_file');
+        if (appLogoFile) {
+            appLogoFile.onchange = async (e) => {
+                if (e.target.files.length > 0) {
+                    const formData = new FormData();
+                    formData.append('logo', e.target.files[0]);
+                    
+                    try {
+                        const res = await fetch('api/admin/upload_app_logo.php', {
+                            method: 'POST',
+                            body: formData
+                        });
+                        const result = await res.json();
+                        if (result.url) {
+                            alert('อัปโหลดโลโก้สำเร็จ');
+                            location.reload();
+                        } else {
+                            alert(result.error || 'เกิดข้อผิดพลาดในการอัปโหลด');
+                        }
+                    } catch (err) {
+                        alert('เกิดข้อผิดพลาดในการเชื่อมต่อ');
+                    }
+                }
+            };
+        }
+
         // Update Profile Logic
         const updateProfileForm = document.getElementById('updateProfileForm');
         if (updateProfileForm) {
@@ -412,7 +531,7 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         name: document.getElementById('prof_name').value,
-                        affiliation: document.getElementById('prof_affiliation').value
+                        password: document.getElementById('prof_password').value
                     })
                 });
                 const result = await res.json();
