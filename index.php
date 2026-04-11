@@ -16,7 +16,8 @@
             <div class="w-20 h-20 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl shadow-blue-900/40">
                 <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
             </div>
-            <h2 class="text-3xl font-bold text-white mb-2">ระบบบริหารงานวิชาการ</h2>
+            <h2 class="text-3xl font-bold text-white mb-1">ระบบบริหารงานวิชาการ</h2>
+            <p class="text-blue-400 font-medium tracking-widest text-xs uppercase mb-2">Academic Management</p>
             <p class="text-slate-400" id="formTitle">เข้าสู่ระบบเพื่อจัดการข้อมูลการเรียน</p>
         </div>
 

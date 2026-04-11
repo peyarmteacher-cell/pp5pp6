@@ -154,25 +154,24 @@ try {
                 </div>
                 <div class="overflow-hidden">
                     <h1 class="text-lg font-bold text-blue-400 truncate"><?= $app_name ?></h1>
-                    <p class="text-[10px] text-slate-500 uppercase tracking-wider">Academic Management</p>
                 </div>
             </div>
             
-            <div class="bg-slate-800/50 rounded-2xl p-3 border border-slate-700/50">
-                <div class="flex items-center gap-3 mb-3">
-                    <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-xs font-bold">
+            <div class="bg-slate-800/40 rounded-2xl p-4 border border-slate-700/50 shadow-inner">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-600 to-blue-400 flex items-center justify-center text-sm font-bold shadow-lg border-2 border-slate-700">
                         <?= mb_substr($username, 0, 1) ?>
                     </div>
                     <div class="overflow-hidden">
-                        <p class="text-[10px] text-slate-400 truncate capitalize"><?= $position ?: str_replace('_', ' ', $role) ?></p>
-                        <p class="text-xs font-semibold truncate"><?= $username ?></p>
+                        <p class="text-[10px] text-blue-400 font-medium uppercase tracking-wider mb-0.5"><?= $position ?: str_replace('_', ' ', $role) ?></p>
+                        <p class="text-sm font-bold text-white truncate leading-tight"><?= $username ?></p>
                     </div>
                 </div>
-                <div class="grid grid-cols-2 gap-2">
-                    <button onclick="showSection('profile')" class="flex items-center justify-center gap-1 py-1.5 bg-slate-700 hover:bg-slate-600 rounded-lg text-[10px] font-medium transition-all">
+                <div class="flex gap-2">
+                    <button onclick="showSection('profile')" class="flex-1 flex items-center justify-center gap-1.5 py-2 bg-slate-700/50 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-[10px] font-semibold transition-all border border-slate-600/50">
                         <i data-lucide="user" class="w-3 h-3"></i> โปรไฟล์
                     </button>
-                    <a href="logout.php" class="flex items-center justify-center gap-1 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg text-[10px] font-medium transition-all">
+                    <a href="logout.php" class="flex-1 flex items-center justify-center gap-1.5 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl text-[10px] font-semibold transition-all border border-red-500/20">
                         <i data-lucide="log-out" class="w-3 h-3"></i> ออก
                     </a>
                 </div>
@@ -225,11 +224,23 @@ try {
     </aside>
 
     <!-- Main Content -->
-    <main class="flex-1 p-8 overflow-y-auto">
-        <header class="flex justify-between items-center mb-8">
-            <h2 id="section-title" class="text-2xl font-bold text-slate-800">ภาพรวมระบบ</h2>
-            <div class="text-sm text-slate-500">โรงเรียน: <span class="font-semibold text-blue-600"><?= $school_name ?></span></div>
-        </header>
+    <main class="flex-1 overflow-y-auto bg-slate-50">
+        <!-- Top Bar Decor -->
+        <div class="w-full h-1 bg-gradient-to-r from-blue-600 via-blue-400 to-blue-600"></div>
+        
+        <div class="p-8">
+            <div class="flex items-center gap-2 mb-6">
+                <span class="text-[10px] font-bold text-blue-600 uppercase tracking-[0.2em] bg-blue-50 px-2 py-1 rounded border border-blue-100">Academic Management</span>
+                <div class="flex-1 h-[1px] bg-slate-200"></div>
+            </div>
+
+            <header class="flex justify-between items-center mb-8">
+                <h2 id="section-title" class="text-2xl font-bold text-slate-800">ภาพรวมระบบ</h2>
+                <div class="text-sm text-slate-500 flex items-center gap-2">
+                    <i data-lucide="school" class="w-4 h-4 text-blue-500"></i>
+                    โรงเรียน: <span class="font-semibold text-slate-700"><?= $school_name ?></span>
+                </div>
+            </header>
 
         <!-- Sections -->
         <div id="overview" class="section space-y-6">
