@@ -33,18 +33,21 @@ if ($type === 'subject' && $assignment_id) {
         $stmt->execute([$assignment_id]);
         $assignment = $stmt->fetch();
     } catch (PDOException $e) {
-        // Fallback if learning_area column is missing
-        if (strpos($e->getMessage(), 'learning_area') !== false) {
-            $stmt = $pdo->prepare('
-                SELECT ta.*, s.name as subject_name, s.code as subject_code, s.hours, "" as learning_area,
-                       c.level, c.room, u.name as teacher_name, u.last_name as teacher_last, u.position as teacher_pos,
+        $error_msg = $e->getMessage();
+        $select_learning_area = (strpos($error_msg, 'learning_area') !== false) ? '"" as learning_area' : 's.learning_area';
+        $select_last_name = (strpos($error_msg, 'last_name') !== false) ? '"" as teacher_last' : 'u.last_name as teacher_last';
+
+        if (strpos($error_msg, 'learning_area') !== false || strpos($error_msg, 'last_name') !== false) {
+            $stmt = $pdo->prepare("
+                SELECT ta.*, s.name as subject_name, s.code as subject_code, s.hours, $select_learning_area,
+                       c.level, c.room, u.name as teacher_name, $select_last_name, u.position as teacher_pos,
                        c.id as cid
                 FROM teacher_assignments ta
                 JOIN subjects s ON ta.subject_id = s.id
                 JOIN classrooms c ON ta.classroom_id = c.id
                 JOIN users u ON ta.teacher_id = u.id
                 WHERE ta.id = ?
-            ');
+            ");
             $stmt->execute([$assignment_id]);
             $assignment = $stmt->fetch();
         } else {

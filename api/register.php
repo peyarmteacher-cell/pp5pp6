@@ -9,9 +9,10 @@ $school_code = $data['school_code'] ?? '';
 $username = $data['username'] ?? ''; // เลขบัตรประชาชน
 $password = $data['password'] ?? '';
 $name = $data['name'] ?? '';
+$last_name = $data['last_name'] ?? '';
 $position = $data['position'] ?? '';
 
-if (empty($school_code) || empty($username) || empty($password) || empty($name) || empty($position)) {
+if (empty($school_code) || empty($username) || empty($password) || empty($name) || empty($last_name) || empty($position)) {
     echo json_encode(['error' => 'กรุณากรอกข้อมูลให้ครบถ้วน']);
     exit;
 }
@@ -39,10 +40,10 @@ try {
 
     // 3. บันทึกข้อมูลการสมัคร (รอการอนุมัติ)
     $stmt = $pdo->prepare('
-        INSERT INTO users (username, password, name, school_id, position, is_approved, role) 
-        VALUES (?, ?, ?, ?, ?, FALSE, "teacher")
+        INSERT INTO users (username, password, name, last_name, school_id, position, is_approved, role) 
+        VALUES (?, ?, ?, ?, ?, ?, FALSE, "teacher")
     ');
-    $stmt->execute([$username, $password, $name, $school['id'], $position]);
+    $stmt->execute([$username, $password, $name, $last_name, $school['id'], $position]);
 
     echo json_encode(['message' => 'สมัครสมาชิกสำเร็จ กรุณารอการอนุมัติจาก Admin โรงเรียน หรือ Super Admin']);
 

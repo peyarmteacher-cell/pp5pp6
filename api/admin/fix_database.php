@@ -23,6 +23,12 @@ try {
         $results[] = "ตาราง users มีคอลัมน์ is_academic อยู่แล้ว";
     }
 
+    $stmt = $pdo->query("SHOW COLUMNS FROM users LIKE 'last_name'");
+    if (!$stmt->fetch()) {
+        $pdo->exec("ALTER TABLE users ADD COLUMN last_name VARCHAR(255) AFTER name");
+        $results[] = "เพิ่มคอลัมน์ last_name ในตาราง users สำเร็จ";
+    }
+
     // 2. ตรวจสอบและเพิ่มคอลัมน์ national_id ในตาราง students
     $stmt = $pdo->query("SHOW COLUMNS FROM students LIKE 'national_id'");
     if (!$stmt->fetch()) {

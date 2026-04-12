@@ -11,6 +11,7 @@ if (!isset($_SESSION['user_id'])) {
 
 $data = json_decode(file_get_contents('php://input'), true);
 $name = $data['name'] ?? '';
+$last_name = $data['last_name'] ?? '';
 $password = $data['password'] ?? '';
 
 if (empty($name)) {
@@ -21,15 +22,16 @@ if (empty($name)) {
 try {
     if (!empty($password)) {
         $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-        $stmt = $pdo->prepare('UPDATE users SET name = ?, password = ? WHERE id = ?');
-        $stmt->execute([$name, $hashedPassword, $_SESSION['user_id']]);
+        $stmt = $pdo->prepare('UPDATE users SET name = ?, last_name = ?, password = ? WHERE id = ?');
+        $stmt->execute([$name, $last_name, $hashedPassword, $_SESSION['user_id']]);
     } else {
-        $stmt = $pdo->prepare('UPDATE users SET name = ? WHERE id = ?');
-        $stmt->execute([$name, $_SESSION['user_id']]);
+        $stmt = $pdo->prepare('UPDATE users SET name = ?, last_name = ? WHERE id = ?');
+        $stmt->execute([$name, $last_name, $_SESSION['user_id']]);
     }
     
     // อัปเดต Session
     $_SESSION['name'] = $name;
+    $_SESSION['last_name'] = $last_name;
     
     echo json_encode(['message' => 'อัปเดตข้อมูลสำเร็จแล้ว']);
 } catch (PDOException $e) {

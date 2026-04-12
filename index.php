@@ -66,9 +66,15 @@
                     <label class="block text-sm font-medium text-slate-700 mb-1">เลขบัตรประชาชน 13 หลัก</label>
                     <input type="text" id="reg_username" maxlength="13" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all" placeholder="กรอกเลขบัตรประชาชน">
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">ชื่อ-นามสกุล</label>
-                    <input type="text" id="reg_name" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all" placeholder="กรอกชื่อ-นามสกุล">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">ชื่อ</label>
+                        <input type="text" id="reg_name" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all" placeholder="ชื่อ">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">นามสกุล</label>
+                        <input type="text" id="reg_last_name" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all" placeholder="นามสกุล">
+                    </div>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">ตำแหน่ง</label>
@@ -203,6 +209,7 @@
                 school_code: document.getElementById('reg_school_code').value,
                 username: document.getElementById('reg_username').value,
                 name: document.getElementById('reg_name').value,
+                last_name: document.getElementById('reg_last_name').value,
                 position: document.getElementById('reg_position').value,
                 password: document.getElementById('reg_password').value
             };

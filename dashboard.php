@@ -8,6 +8,7 @@ if (!isset($_SESSION['user_id'])) {
 require_once 'api/config.php';
 
 $username = $_SESSION['name']; // ใช้ชื่อเต็มจาก Session
+$last_name = $_SESSION['last_name'] ?? '';
 $position = $_SESSION['position'] ?? '';
 $role = $_SESSION['role'];
 $affiliation = $_SESSION['affiliation'] ?? 'ไม่มีสังกัด';
@@ -405,12 +406,21 @@ try {
                 <form id="updateProfileForm" class="space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="space-y-2">
-                            <label class="block text-sm font-semibold text-slate-700 ml-1">ชื่อ-นามสกุล</label>
+                            <label class="block text-sm font-semibold text-slate-700 ml-1">ชื่อ</label>
                             <div class="relative">
                                 <i data-lucide="user" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
                                 <input type="text" id="prof_name" value="<?= $username ?>" required class="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all">
                             </div>
                         </div>
+                        <div class="space-y-2">
+                            <label class="block text-sm font-semibold text-slate-700 ml-1">นามสกุล</label>
+                            <div class="relative">
+                                <i data-lucide="user" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                                <input type="text" id="prof_last_name" value="<?= $last_name ?>" class="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="space-y-2">
                             <label class="block text-sm font-semibold text-slate-700 ml-1">รหัสผ่านใหม่ <span class="text-slate-400 font-normal">(เว้นว่างไว้หากไม่ต้องการเปลี่ยน)</span></label>
                             <div class="relative">
@@ -701,6 +711,7 @@ try {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         name: document.getElementById('prof_name').value,
+                        last_name: document.getElementById('prof_last_name').value,
                         password: document.getElementById('prof_password').value
                     })
                 });
