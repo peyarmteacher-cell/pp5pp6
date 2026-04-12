@@ -57,6 +57,8 @@ function formatTeacherPosition($position) {
 $director_name = '';
 $academic_head_name = '';
 $academic_head_position = 'หัวหน้างานวิชาการ';
+$deputy_director_name = '';
+$deputy_director_position = 'รองผู้อำนวยการโรงเรียน';
 
 try {
     $stmt_off = $pdo->prepare("SELECT * FROM school_officials WHERE school_id = ? AND is_active = 1");
@@ -66,6 +68,9 @@ try {
     foreach ($officials as $off) {
         if ($off['role_key'] === 'director' && empty($director_name)) {
             $director_name = $off['name'];
+        } else if ($off['role_key'] === 'deputy_director' && empty($deputy_director_name)) {
+            $deputy_director_name = $off['name'];
+            $deputy_director_position = formatTeacherPosition($off['position']);
         } else if (($off['role_key'] === 'academic_head' || $off['role_key'] === 'deputy_academic') && empty($academic_head_name)) {
             $academic_head_name = $off['name'];
             $academic_head_position = formatTeacherPosition($off['position']);

@@ -525,23 +525,14 @@ if ($classroom_id) {
                     <div class="sig-name">( <?= $teacher_name ?> )</div>
                 </div>
 
-                <?php
-                // ตรวจสอบ รองผู้อำนวยการ
-                $deputy = null;
-                try {
-                    $stmt_dep = $pdo->prepare("SELECT * FROM school_officials WHERE school_id = ? AND role_key = 'deputy_director' AND is_active = 1 LIMIT 1");
-                    $stmt_dep->execute([$school_id]);
-                    $deputy = $stmt_dep->fetch();
-                } catch (Exception $e) {}
-
-                if ($deputy): ?>
+                <?php if ($deputy_director_name): ?>
                     <div class="signature-item-container">
                         <div class="signature-row">
                             <div class="sig-label">ลงชื่อ</div>
                             <div class="sig-dotted"></div>
-                            <div class="sig-pos"><?= formatTeacherPosition($deputy['position']) ?></div>
+                            <div class="sig-pos"><?= $deputy_director_position ?></div>
                         </div>
-                        <div class="sig-name">( <?= $deputy['name'] ?> )</div>
+                        <div class="sig-name">( <?= $deputy_director_name ?> )</div>
                     </div>
                 <?php else: ?>
                     <div class="signature-item-container">

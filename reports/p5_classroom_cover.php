@@ -466,14 +466,27 @@ while ($row = $stmt_ld->fetch()) {
                     <div class="sig-line"></div>
                     <div class="sig-label">ครูประจำชั้น/ครูที่ปรึกษา</div>
                 </div>
+                <div style="text-align: right; width: 450px; padding-right: 190px; margin-top: -5px; margin-bottom: 5px;">
+                    ( <?= $class_teacher_1 ?: '..........................................................' ?> )
+                </div>
+
+                <?php if ($deputy_director_name): ?>
                 <div class="sig-row">
                     <div class="sig-line"></div>
-                    <div class="sig-label">หัวหน้างานวิชาการโรงเรียน</div>
+                    <div class="sig-label"><?= $deputy_director_position ?></div>
                 </div>
+                <div style="text-align: right; width: 450px; padding-right: 190px; margin-top: -5px; margin-bottom: 5px;">
+                    ( <?= $deputy_director_name ?> )
+                </div>
+                <?php else: ?>
                 <div class="sig-row">
                     <div class="sig-line"></div>
-                    <div class="sig-label">รองผู้อำนวยการโรงเรียน</div>
+                    <div class="sig-label"><?= $academic_head_position ?></div>
                 </div>
+                <div style="text-align: right; width: 450px; padding-right: 190px; margin-top: -5px; margin-bottom: 5px;">
+                    ( <?= $academic_head_name ?: '..........................................................' ?> )
+                </div>
+                <?php endif; ?>
             </div>
 
             <div class="approval-check-row">
