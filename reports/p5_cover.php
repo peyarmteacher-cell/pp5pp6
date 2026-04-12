@@ -19,18 +19,42 @@ $class_teacher_name = '';
 $class_teacher_position = '';
 
 if ($type === 'subject' && $assignment_id) {
-    $stmt = $pdo->prepare('
-        SELECT ta.*, s.name as subject_name, s.code as subject_code, s.hours, s.learning_area,
-               c.level, c.room, u.name as teacher_name, u.last_name as teacher_last, u.position as teacher_pos,
-               c.id as cid
-        FROM teacher_assignments ta
-        JOIN subjects s ON ta.subject_id = s.id
-        JOIN classrooms c ON ta.classroom_id = c.id
-        JOIN users u ON ta.teacher_id = u.id
-        WHERE ta.id = ?
-    ');
-    $stmt->execute([$assignment_id]);
-    $assignment = $stmt->fetch();
+    try {
+        $stmt = $pdo->prepare('
+            SELECT ta.*, s.name as subject_name, s.code as subject_code, s.hours, s.learning_area,
+                   c.level, c.room, u.name as teacher_name, u.last_name as teacher_last, u.position as teacher_pos,
+                   c.id as cid
+            FROM teacher_assignments ta
+            JOIN subjects s ON ta.subject_id = s.id
+            JOIN classrooms c ON ta.classroom_id = c.id
+            JOIN users u ON ta.teacher_id = u.id
+            WHERE ta.id = ?
+        ');
+        $stmt->execute([$assignment_id]);
+        $assignment = $stmt->fetch();
+    } catch (PDOException $e) {
+        // Fallback if learning_area column is missing
+        if (strpos($e->getMessage(), 'learning_area') !== false) {
+            $stmt = $pdo->prepare('
+                SELECT ta.*, s.name as subject_name, s.code as subject_code, s.hours, "" as learning_area,
+                       c.level, c.room, u.name as teacher_name, u.last_name as teacher_last, u.position as teacher_pos,
+                       c.id as cid
+                FROM teacher_assignments ta
+                JOIN subjects s ON ta.subject_id = s.id
+                JOIN classrooms c ON ta.classroom_id = c.id
+                JOIN users u ON ta.teacher_id = u.id
+                WHERE ta.id = ?
+            ');
+            $stmt->execute([$assignment_id]);
+            $assignment = $stmt->fetch();
+        } else {
+            die('<div style="padding: 20px; color: red; border: 1px solid red; margin: 20px;">
+                    <h3>เกิดข้อผิดพลาดในการดึงข้อมูล</h3>
+                    <p>' . htmlspecialchars($e->getMessage()) . '</p>
+                    <p>กรุณาติดต่อผู้ดูแลระบบเพื่อตรวจสอบฐานข้อมูล</p>
+                 </div>');
+        }
+    }
     
     if ($assignment) {
         $subject_name = $assignment['subject_name'];

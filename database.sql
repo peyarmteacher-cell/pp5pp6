@@ -43,6 +43,7 @@ CREATE TABLE IF NOT EXISTS subjects (
     level VARCHAR(20) NOT NULL,
     hours INT DEFAULT 40, -- จำนวนชั่วโมง
     credits FLOAT DEFAULT 1.0, -- หน่วยกิต
+    learning_area VARCHAR(255), -- กลุ่มสาระการเรียนรู้
     school_id INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (school_id) REFERENCES schools(id) ON DELETE CASCADE

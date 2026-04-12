@@ -29,6 +29,7 @@ try {
         $level = trim($s['level'] ?? '');
         $hours = intval($s['hours'] ?? 40);
         $credits = floatval($s['credits'] ?? 1.0);
+        $learning_area = trim($s['learning_area'] ?? '');
 
         if (empty($code) || empty($name) || empty($level)) continue;
 
@@ -39,12 +40,12 @@ try {
 
         if ($existing) {
             // อัปเดต
-            $stmt = $pdo->prepare('UPDATE subjects SET name = ?, hours = ?, credits = ? WHERE id = ?');
-            $stmt->execute([$name, $hours, $credits, $existing['id']]);
+            $stmt = $pdo->prepare('UPDATE subjects SET name = ?, hours = ?, credits = ?, learning_area = ? WHERE id = ?');
+            $stmt->execute([$name, $hours, $credits, $learning_area, $existing['id']]);
         } else {
             // เพิ่มใหม่
-            $stmt = $pdo->prepare('INSERT INTO subjects (code, name, level, hours, credits, school_id) VALUES (?, ?, ?, ?, ?, ?)');
-            $stmt->execute([$code, $name, $level, $hours, $credits, $school_id]);
+            $stmt = $pdo->prepare('INSERT INTO subjects (code, name, level, hours, credits, learning_area, school_id) VALUES (?, ?, ?, ?, ?, ?, ?)');
+            $stmt->execute([$code, $name, $level, $hours, $credits, $learning_area, $school_id]);
         }
     }
 

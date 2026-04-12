@@ -13,9 +13,10 @@
                 <button onclick="document.getElementById('importSubjectExcel').click()" class="bg-green-600 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-green-700 cursor-pointer transition-all">นำเข้าจาก Excel</button>
             </div>
         </div>
-        <form id="addSubjectForm" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        <form id="addSubjectForm" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
             <input type="text" id="sub_code" placeholder="รหัสวิชา" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
             <input type="text" id="sub_name" placeholder="ชื่อวิชา" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
+            <input type="text" id="sub_learning_area" placeholder="กลุ่มสาระฯ" class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
             <select id="sub_level" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none cursor-pointer">
                 <option value="">ระดับชั้น</option>
                 <option value="ป.1">ป.1</option><option value="ป.2">ป.2</option><option value="ป.3">ป.3</option>
@@ -42,6 +43,7 @@
                     <tr class="text-slate-500 border-b border-slate-100">
                         <th class="pb-3 font-medium">รหัสวิชา</th>
                         <th class="pb-3 font-medium">ชื่อวิชา</th>
+                        <th class="pb-3 font-medium">กลุ่มสาระฯ</th>
                         <th class="pb-3 font-medium">ระดับชั้น</th>
                         <th class="pb-3 font-medium">ชั่วโมง/หน่วยกิต</th>
                         <th class="pb-3 font-medium">การจัดการ</th>
@@ -72,6 +74,7 @@
                     <tr class="text-slate-500 border-b border-slate-100">
                         <th class="pb-3 font-medium">รหัสวิชา</th>
                         <th class="pb-3 font-medium">ชื่อวิชา</th>
+                        <th class="pb-3 font-medium">กลุ่มสาระฯ</th>
                         <th class="pb-3 font-medium">ระดับชั้น</th>
                         <th class="pb-3 font-medium">ชั่วโมง</th>
                         <th class="pb-3 font-medium">หน่วยกิต</th>
@@ -107,6 +110,10 @@
                 <input type="text" id="edit_sub_name" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
             </div>
             <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">กลุ่มสาระการเรียนรู้</label>
+                <input type="text" id="edit_sub_learning_area" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
+            </div>
+            <div>
                 <label class="block text-sm font-medium text-slate-700 mb-1">ระดับชั้น</label>
                 <select id="edit_sub_level" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none cursor-pointer">
                     <option value="ป.1">ป.1</option><option value="ป.2">ป.2</option><option value="ป.3">ป.3</option>
@@ -135,9 +142,9 @@
 <script>
     function downloadSubjectTemplate() {
         const data = [
-            ["รหัสวิชา", "ชื่อวิชา", "ระดับชั้น", "ชั่วโมง", "หน่วยกิต"],
-            ["ท11101", "ภาษาไทย 1", "ป.1", "200", "5.0"],
-            ["ค11101", "คณิตศาสตร์ 1", "ป.1", "200", "5.0"]
+            ["รหัสวิชา", "ชื่อวิชา", "กลุ่มสาระการเรียนรู้", "ระดับชั้น", "ชั่วโมง", "หน่วยกิต"],
+            ["ท11101", "ภาษาไทย 1", "ภาษาไทย", "ป.1", "200", "5.0"],
+            ["ค11101", "คณิตศาสตร์ 1", "คณิตศาสตร์", "ป.1", "200", "5.0"]
         ];
         const worksheet = XLSX.utils.aoa_to_sheet(data);
         const workbook = XLSX.utils.book_new();
@@ -161,6 +168,7 @@
                 subjectsToImport = json.map(row => ({
                     code: String(row['รหัสวิชา'] || row['code'] || ''),
                     name: String(row['ชื่อวิชา'] || row['name'] || ''),
+                    learning_area: String(row['กลุ่มสาระการเรียนรู้'] || row['learning_area'] || ''),
                     level: String(row['ระดับชั้น'] || row['level'] || ''),
                     hours: parseInt(row['ชั่วโมง'] || row['hours'] || '40'),
                     credits: parseFloat(row['หน่วยกิต'] || row['credits'] || '1.0')
@@ -194,6 +202,7 @@
             <tr class="border-b border-slate-50">
                 <td class="py-2">${s.code}</td>
                 <td class="py-2">${s.name}</td>
+                <td class="py-2">${s.learning_area}</td>
                 <td class="py-2">${s.level}</td>
                 <td class="py-2">${s.hours}</td>
                 <td class="py-2">${s.credits}</td>
@@ -214,7 +223,7 @@
                 filterSubjectsByLevel(selectedSubjectLevel);
             } else {
                 const tbody = document.getElementById('subjectsTableBody');
-                if (tbody) tbody.innerHTML = '<tr><td colspan="5" class="py-8 text-center text-slate-400">กรุณาเลือกระดับชั้นเพื่อดูข้อมูลรายวิชา</td></tr>';
+                if (tbody) tbody.innerHTML = '<tr><td colspan="6" class="py-8 text-center text-slate-400">กรุณาเลือกระดับชั้นเพื่อดูข้อมูลรายวิชา</td></tr>';
             }
         } catch (e) {
             console.error('Error in loadSubjects:', e);
@@ -246,7 +255,7 @@
         const filtered = allSubjects.filter(s => s.level === level);
         
         if (filtered.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" class="py-8 text-center text-slate-400">ไม่พบข้อมูลรายวิชาในระดับชั้นนี้</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" class="py-8 text-center text-slate-400">ไม่พบข้อมูลรายวิชาในระดับชั้นนี้</td></tr>';
             return;
         }
 
@@ -254,11 +263,12 @@
             <tr class="border-b border-slate-50 hover:bg-slate-50/50">
                 <td class="py-3 text-slate-600 font-mono">${s.code}</td>
                 <td class="py-3 font-medium text-slate-800">${s.name}</td>
+                <td class="py-3 text-slate-500">${s.learning_area || '-'}</td>
                 <td class="py-3 text-slate-500">${s.level}</td>
                 <td class="py-3 text-slate-500">${s.hours} ชม. / ${s.credits} นก.</td>
                 <td class="py-3">
                     <div class="flex gap-2">
-                        <button onclick="editSubject(${s.id}, '${s.code}', '${s.name}', '${s.level}', ${s.hours}, ${s.credits})" class="text-blue-600 hover:text-blue-800 text-xs font-bold cursor-pointer">แก้ไข</button>
+                        <button onclick="editSubject(${s.id}, '${s.code}', '${s.name}', '${s.level}', ${s.hours}, ${s.credits}, '${s.learning_area || ''}')" class="text-blue-600 hover:text-blue-800 text-xs font-bold cursor-pointer">แก้ไข</button>
                         <button onclick="deleteSubject(${s.id})" class="text-red-600 hover:text-red-800 text-xs font-bold cursor-pointer">ลบ</button>
                     </div>
                 </td>
@@ -317,13 +327,14 @@
         }
     }
 
-    function editSubject(id, code, name, level, hours, credits) {
+    function editSubject(id, code, name, level, hours, credits, learning_area) {
         document.getElementById('edit_sub_id').value = id;
         document.getElementById('edit_sub_code').value = code;
         document.getElementById('edit_sub_name').value = name;
         document.getElementById('edit_sub_level').value = level;
         document.getElementById('edit_sub_hours').value = hours;
         document.getElementById('edit_sub_credits').value = credits;
+        document.getElementById('edit_sub_learning_area').value = learning_area || '';
         openModal('editSubjectModal');
     }
 
@@ -341,7 +352,8 @@
                         name: document.getElementById('edit_sub_name').value,
                         level: document.getElementById('edit_sub_level').value,
                         hours: document.getElementById('edit_sub_hours').value,
-                        credits: document.getElementById('edit_sub_credits').value
+                        credits: document.getElementById('edit_sub_credits').value,
+                        learning_area: document.getElementById('edit_sub_learning_area').value
                     })
                 });
                 const result = await res.json();
@@ -366,7 +378,8 @@
                         name: document.getElementById('sub_name').value,
                         level: document.getElementById('sub_level').value,
                         hours: document.getElementById('sub_hours').value,
-                        credits: document.getElementById('sub_credits').value
+                        credits: document.getElementById('sub_credits').value,
+                        learning_area: document.getElementById('sub_learning_area').value
                     })
                 });
                 const result = await res.json();

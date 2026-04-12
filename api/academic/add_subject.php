@@ -16,6 +16,7 @@ $name = $data['name'] ?? '';
 $level = $data['level'] ?? '';
 $hours = $data['hours'] ?? 40;
 $credits = $data['credits'] ?? 1.0;
+$learning_area = $data['learning_area'] ?? '';
 
 if (empty($code) || empty($name) || empty($level)) {
     echo json_encode(['error' => 'กรุณากรอกข้อมูลรายวิชาให้ครบถ้วน']);
@@ -23,8 +24,8 @@ if (empty($code) || empty($name) || empty($level)) {
 }
 
 try {
-    $stmt = $pdo->prepare('INSERT INTO subjects (code, name, level, hours, credits, school_id) VALUES (?, ?, ?, ?, ?, ?)');
-    $stmt->execute([$code, $name, $level, $hours, $credits, $_SESSION['school_id']]);
+    $stmt = $pdo->prepare('INSERT INTO subjects (code, name, level, hours, credits, learning_area, school_id) VALUES (?, ?, ?, ?, ?, ?, ?)');
+    $stmt->execute([$code, $name, $level, $hours, $credits, $learning_area, $_SESSION['school_id']]);
     echo json_encode(['message' => 'เพิ่มข้อมูลรายวิชาสำเร็จแล้ว']);
 } catch (PDOException $e) {
     http_response_code(500);

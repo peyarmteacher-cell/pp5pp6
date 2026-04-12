@@ -18,6 +18,7 @@ $name = $data['name'] ?? '';
 $level = $data['level'] ?? '';
 $hours = $data['hours'] ?? 40;
 $credits = $data['credits'] ?? 1.0;
+$learning_area = $data['learning_area'] ?? '';
 
 if (empty($id) || empty($code) || empty($name) || empty($level)) {
     echo json_encode(['error' => 'กรุณากรอกข้อมูลรายวิชาให้ครบถ้วน']);
@@ -26,8 +27,8 @@ if (empty($id) || empty($code) || empty($name) || empty($level)) {
 
 try {
     // ตรวจสอบว่าเป็นรายวิชาของโรงเรียนตัวเอง
-    $stmt = $pdo->prepare('UPDATE subjects SET code = ?, name = ?, level = ?, hours = ?, credits = ? WHERE id = ? AND school_id = ?');
-    $stmt->execute([$code, $name, $level, $hours, $credits, $id, $_SESSION['school_id']]);
+    $stmt = $pdo->prepare('UPDATE subjects SET code = ?, name = ?, level = ?, hours = ?, credits = ?, learning_area = ? WHERE id = ? AND school_id = ?');
+    $stmt->execute([$code, $name, $level, $hours, $credits, $learning_area, $id, $_SESSION['school_id']]);
     
     if ($stmt->rowCount() > 0) {
         echo json_encode(['message' => 'แก้ไขข้อมูลรายวิชาสำเร็จแล้ว']);

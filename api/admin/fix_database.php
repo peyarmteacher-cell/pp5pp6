@@ -50,6 +50,15 @@ try {
         $results[] = "ตาราง subjects มีคอลัมน์ credits อยู่แล้ว";
     }
 
+    // 4.1 ตรวจสอบและเพิ่มคอลัมน์ learning_area ในตาราง subjects
+    $stmt = $pdo->query("SHOW COLUMNS FROM subjects LIKE 'learning_area'");
+    if (!$stmt->fetch()) {
+        $pdo->exec("ALTER TABLE subjects ADD COLUMN learning_area VARCHAR(255) AFTER credits");
+        $results[] = "เพิ่มคอลัมน์ learning_area ในตาราง subjects สำเร็จ";
+    } else {
+        $results[] = "ตาราง subjects มีคอลัมน์ learning_area อยู่แล้ว";
+    }
+
     // 4.5 ตรวจสอบและเพิ่มคอลัมน์ logo_url ในตาราง schools
     $stmt = $pdo->query("SHOW COLUMNS FROM schools LIKE 'logo_url'");
     if (!$stmt->fetch()) {
