@@ -135,15 +135,15 @@ while ($row = $stmt_ld->fetch()) {
     .header-container {
         display: flex;
         align-items: center;
-        margin-bottom: 15px;
-        gap: 20px;
+        margin-bottom: 10px;
+        gap: 10px; /* ลดระยะห่างระหว่างโลโก้กับข้อความ */
     }
     .logo-box {
         flex-shrink: 0;
     }
     .logo-img {
-        width: 100px;
-        height: 100px;
+        width: 90px; /* ปรับขนาดโลโก้ให้เล็กลงเล็กน้อย */
+        height: 90px;
         object-fit: contain;
     }
     .header-info {
@@ -153,7 +153,7 @@ while ($row = $stmt_ld->fetch()) {
     .main-title {
         font-size: 22px;
         font-weight: bold;
-        margin-bottom: 5px;
+        margin-bottom: 2px; /* ลดระยะห่าง */
     }
     .school-name {
         font-size: 20px;
@@ -345,26 +345,8 @@ while ($row = $stmt_ld->fetch()) {
         </div>
 
         <div class="stats-section">
-            <div class="stats-row">
-                <div class="stats-label">นักเรียนต้นปีการศึกษา</div>
-                <div class="stats-value">ชาย <span class="dotted-line"><?= $male_count ?></span> คน</div>
-                <div class="stats-value">หญิง <span class="dotted-line"><?= $female_count ?></span> คน</div>
-                <div class="stats-value">รวม <span class="dotted-line"><?= $total_count ?></span> คน</div>
-            </div>
-            <div class="stats-row">
-                <div class="stats-label">ออกระหว่างปีการศึกษา</div>
-                <div class="stats-value">ชาย <span class="dotted-line">0</span> คน</div>
-                <div class="stats-value">หญิง <span class="dotted-line">0</span> คน</div>
-                <div class="stats-value">รวม <span class="dotted-line">0</span> คน</div>
-            </div>
-            <div class="stats-row">
-                <div class="stats-label">เข้าระหว่างปีการศึกษา</div>
-                <div class="stats-value">ชาย <span class="dotted-line">0</span> คน</div>
-                <div class="stats-value">หญิง <span class="dotted-line">0</span> คน</div>
-                <div class="stats-value">รวม <span class="dotted-line">0</span> คน</div>
-            </div>
-            <div class="stats-row">
-                <div class="stats-label">รวมสิ้นปีการศึกษา</div>
+            <div class="stats-row" style="grid-template-columns: 150px 1fr 1fr 1fr;">
+                <div class="stats-label font-bold">นักเรียนทั้งหมด</div>
                 <div class="stats-value">ชาย <span class="dotted-line"><?= $male_count ?></span> คน</div>
                 <div class="stats-value">หญิง <span class="dotted-line"><?= $female_count ?></span> คน</div>
                 <div class="stats-value">รวม <span class="dotted-line"><?= $total_count ?></span> คน</div>
@@ -434,56 +416,44 @@ while ($row = $stmt_ld->fetch()) {
             <div>
                 <table class="eval-table">
                     <tr>
-                        <th rowspan="2">สรุปการประเมิน</th>
-                        <th colspan="4">คุณลักษณะอันพึงประสงค์</th>
+                        <th colspan="5">คุณลักษณะอันพึงประสงค์</th>
                     </tr>
                     <tr>
-                        <th width="18%">ไม่ผ่าน</th>
-                        <th width="18%">ผ่าน</th>
-                        <th width="18%">ดี</th>
-                        <th width="18%">ดีเยี่ยม</th>
-                    </tr>
-                    <tr>
-                        <td class="font-bold">จำนวนนักเรียน</td>
-                        <td>-</td><td>-</td><td>-</td><td>-</td>
+                        <td width="30%" class="font-bold">จำนวนนักเรียน</td>
+                        <td width="17.5%">ไม่ผ่าน<br>-</td>
+                        <td width="17.5%">ผ่าน<br>-</td>
+                        <td width="17.5%">ดี<br>-</td>
+                        <td width="17.5%">ดีเยี่ยม<br>-</td>
                     </tr>
                 </table>
             </div>
             <div>
                 <table class="eval-table">
                     <tr>
-                        <th rowspan="2">สรุปการประเมิน</th>
-                        <th colspan="4">การอ่าน คิดวิเคราะห์ และเขียน</th>
+                        <th colspan="5">การอ่าน คิดวิเคราะห์ และเขียน</th>
                     </tr>
                     <tr>
-                        <th width="18%">ไม่ผ่าน</th>
-                        <th width="18%">ผ่าน</th>
-                        <th width="18%">ดี</th>
-                        <th width="18%">ดีเยี่ยม</th>
-                    </tr>
-                    <tr>
-                        <td class="font-bold">จำนวนนักเรียน</td>
-                        <td>-</td><td>-</td><td>-</td><td>-</td>
+                        <td width="30%" class="font-bold">จำนวนนักเรียน</td>
+                        <td width="17.5%">ไม่ผ่าน<br>-</td>
+                        <td width="17.5%">ผ่าน<br>-</td>
+                        <td width="17.5%">ดี<br>-</td>
+                        <td width="17.5%">ดีเยี่ยม<br>-</td>
                     </tr>
                 </table>
             </div>
         </div>
 
-        <div style="width: 50%;">
+        <div style="width: 54.5%;">
             <table class="eval-table">
                 <tr>
-                    <th rowspan="2">สรุปการประเมิน</th>
-                    <th colspan="4">สมรรถนะสำคัญของผู้เรียน</th>
+                    <th colspan="5">สมรรถนะสำคัญของผู้เรียน</th>
                 </tr>
                 <tr>
-                    <th width="18%">ปรับปรุง</th>
-                    <th width="18%">พอใช้</th>
-                    <th width="18%">ดี</th>
-                    <th width="18%">ดีเยี่ยม</th>
-                </tr>
-                <tr>
-                    <td class="font-bold">จำนวนนักเรียน</td>
-                    <td>-</td><td>-</td><td>-</td><td>-</td>
+                    <td width="30%" class="font-bold">จำนวนนักเรียน</td>
+                    <td width="17.5%">ปรับปรุง<br>-</td>
+                    <td width="17.5%">พอใช้<br>-</td>
+                    <td width="17.5%">ดี<br>-</td>
+                    <td width="17.5%">ดีเยี่ยม<br>-</td>
                 </tr>
             </table>
         </div>
