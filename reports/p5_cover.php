@@ -1,11 +1,17 @@
 <?php
+$type = $_GET['type'] ?? 'subject';
+$classroom_id = $_GET['classroom_id'] ?? '';
+
+if ($type === 'class' && $classroom_id) {
+    include 'p5_classroom_cover.php';
+    exit;
+}
+
 require_once 'report_header.php';
 
 $year = $_GET['year'] ?? '';
 $semester = $_GET['semester'] ?? '1';
-$type = $_GET['type'] ?? 'subject';
 $assignment_id = $_GET['assignment_id'] ?? '';
-$classroom_id = $_GET['classroom_id'] ?? '';
 
 $subject_name = '';
 $subject_code = '';
@@ -17,11 +23,6 @@ $teacher_name = '';
 $teacher_position = '';
 $class_teacher_name = '';
 $class_teacher_position = '';
-
-if ($type === 'classroom' && $classroom_id) {
-    include 'p5_classroom_cover.php';
-    exit;
-}
 
 if ($type === 'subject' && $assignment_id) {
     try {

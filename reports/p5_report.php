@@ -74,6 +74,11 @@ if ($type === 'subject' && !isset($teacher_pos)) {
     $teacher_pos = formatTeacherPosition($u_pos['position'] ?? 'ครู');
 }
 
+if ($type === 'class' && $classroom_id) {
+    include 'p5_classroom_cover.php';
+    // หลังจากแสดงหน้าปกรายชั้นแล้ว ให้แสดงหน้ารายงานนักเรียนต่อ
+}
+
 // ดึงรายชื่อนักเรียน
 $stmt = $pdo->prepare('SELECT * FROM students WHERE classroom_id = ? AND academic_year = ? AND status = "studying" ORDER BY student_code ASC');
 $stmt->execute([$classroom_id, $year]);
