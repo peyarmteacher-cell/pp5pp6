@@ -179,38 +179,37 @@ if ($classroom_id) {
         position: relative;
     }
     .logo-container {
-        position: absolute;
-        top: 0;
-        left: 0;
+        text-align: center;
+        margin-bottom: 10px;
     }
     .logo-img {
-        width: 70px;
-        height: 70px;
+        width: 80px;
+        height: 80px;
         object-fit: contain;
     }
     .main-title {
-        font-size: 22px;
+        font-size: 26px;
         font-weight: bold;
         text-align: center;
-        margin-bottom: 5px;
+        margin-bottom: 8px;
     }
     .school-name {
-        font-size: 20px;
+        font-size: 24px;
         font-weight: bold;
         text-align: center;
-        margin-bottom: 5px;
+        margin-bottom: 8px;
     }
     .affiliation {
-        font-size: 16px;
+        font-size: 18px;
         text-align: center;
-        margin-bottom: 15px;
+        margin-bottom: 20px;
     }
     
     .flex-row {
         display: flex;
         align-items: baseline;
-        font-size: 16px;
-        margin-bottom: 8px;
+        font-size: 18px;
+        margin-bottom: 15px;
         width: 100%;
         white-space: nowrap;
     }
@@ -226,14 +225,15 @@ if ($classroom_id) {
     }
 
     .teacher-section {
-        margin: 10px 0;
+        margin: 20px 0;
         width: 100%;
     }
     .teacher-row {
         display: flex;
         justify-content: space-between;
         align-items: baseline;
-        margin-bottom: 8px;
+        margin-bottom: 12px;
+        font-size: 18px;
     }
     .teacher-label {
         width: 200px;
@@ -250,49 +250,55 @@ if ($classroom_id) {
     .section-title {
         font-weight: bold;
         text-align: center;
-        margin: 10px 0 5px 0;
+        margin: 20px 0 10px 0;
         text-decoration: underline;
-        font-size: 16px;
+        font-size: 18px;
     }
     .stats-table {
         width: 100%;
         border-collapse: collapse;
-        margin-bottom: 10px;
+        margin-bottom: 15px;
         border: 1px solid #000;
     }
     .stats-table td {
         border: 1px solid #000;
-        padding: 5px 10px;
-        font-size: 14px;
+        padding: 8px 10px;
+        font-size: 16px;
         white-space: nowrap;
     }
     .summary-table {
         width: 100%;
         border-collapse: collapse;
-        margin-bottom: 10px;
+        margin-bottom: 15px;
     }
     .summary-table th, .summary-table td {
         border: 1px solid #000;
-        padding: 3px;
-        font-size: 12px;
+        padding: 5px;
+        font-size: 14px;
         white-space: nowrap;
     }
     .approval-section {
         margin-top: auto;
-        padding-top: 5px;
+        padding-top: 10px;
     }
     .signature-group {
         display: flex;
         flex-direction: column;
         align-items: center;
-        margin: 5px 0;
+        margin: 10px 0;
     }
-    .signature-item {
+    .signature-item-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        margin-bottom: 15px;
+    }
+    .signature-row {
         display: flex;
         align-items: baseline;
-        margin-bottom: 8px;
-        width: 100%;
         justify-content: center;
+        width: 100%;
     }
     .sig-label {
         width: 60px;
@@ -307,16 +313,25 @@ if ($classroom_id) {
         width: 220px;
         text-align: left;
     }
+    .sig-name {
+        width: 550px;
+        text-align: center;
+        padding-right: 210px;
+        box-sizing: border-box;
+        font-weight: bold;
+        margin-top: 5px;
+        font-size: 16px;
+    }
     .approval-box {
         display: flex;
         align-items: center;
         gap: 15px;
-        margin: 10px 0;
+        margin: 15px 0;
         justify-content: center;
     }
     .check-box {
-        width: 16px;
-        height: 16px;
+        width: 18px;
+        height: 18px;
         border: 1px solid #000;
         display: inline-block;
     }
@@ -371,10 +386,10 @@ if ($classroom_id) {
 
         <table class="stats-table">
             <tr>
-                <td class="font-bold" style="font-size: 15px;">จำนวนนักเรียนทั้งหมด</td>
-                <td style="text-align: center;">ชาย <span style="display: inline-block; width: 40px; border-bottom: 1px dotted #000;"><?= $male_count ?></span> คน</td>
-                <td style="text-align: center;">หญิง <span style="display: inline-block; width: 40px; border-bottom: 1px dotted #000;"><?= $female_count ?></span> คน</td>
-                <td style="text-align: center;">รวม <span style="display: inline-block; width: 40px; border-bottom: 1px dotted #000;"><?= $total_count ?></span> คน</td>
+                <td class="font-bold" style="font-size: 18px;">จำนวนนักเรียนทั้งหมด</td>
+                <td style="text-align: center;">ชาย <span style="display: inline-block; width: 50px; border-bottom: 1px dotted #000;"><?= $male_count ?></span> คน</td>
+                <td style="text-align: center;">หญิง <span style="display: inline-block; width: 50px; border-bottom: 1px dotted #000;"><?= $female_count ?></span> คน</td>
+                <td style="text-align: center;">รวม <span style="display: inline-block; width: 50px; border-bottom: 1px dotted #000;"><?= $total_count ?></span> คน</td>
             </tr>
         </table>
 
@@ -474,21 +489,18 @@ if ($classroom_id) {
         </table>
 
         <div class="approval-section">
-            <div class="section-title" style="text-decoration: none; margin-bottom: 15px;">การอนุมัติผลการเรียน</div>
+            <div class="section-title" style="text-decoration: none; margin-bottom: 20px;">การอนุมัติผลการเรียน</div>
             
             <div class="signature-group">
-                <div class="signature-item">
-                    <div class="sig-label">ลงชื่อ</div>
-                    <div class="sig-dotted"></div>
-                    <div class="sig-pos">ครูประจำวิชา</div>
+                <div class="signature-item-container">
+                    <div class="signature-row">
+                        <div class="sig-label">ลงชื่อ</div>
+                        <div class="sig-dotted"></div>
+                        <div class="sig-pos">ครูประจำวิชา</div>
+                    </div>
+                    <div class="sig-name">( <?= $teacher_name ?> )</div>
                 </div>
 
-                <div class="signature-item">
-                    <div class="sig-label">ลงชื่อ</div>
-                    <div class="sig-dotted"></div>
-                    <div class="sig-pos"><?= $academic_head_position ?></div>
-                </div>
-                
                 <?php
                 // ตรวจสอบ รองผู้อำนวยการ
                 $deputy = null;
@@ -499,10 +511,22 @@ if ($classroom_id) {
                 } catch (Exception $e) {}
 
                 if ($deputy): ?>
-                    <div class="signature-item">
-                        <div class="sig-label">ลงชื่อ</div>
-                        <div class="sig-dotted"></div>
-                        <div class="sig-pos"><?= formatTeacherPosition($deputy['position']) ?></div>
+                    <div class="signature-item-container">
+                        <div class="signature-row">
+                            <div class="sig-label">ลงชื่อ</div>
+                            <div class="sig-dotted"></div>
+                            <div class="sig-pos"><?= formatTeacherPosition($deputy['position']) ?></div>
+                        </div>
+                        <div class="sig-name">( <?= $deputy['name'] ?> )</div>
+                    </div>
+                <?php else: ?>
+                    <div class="signature-item-container">
+                        <div class="signature-row">
+                            <div class="sig-label">ลงชื่อ</div>
+                            <div class="sig-dotted"></div>
+                            <div class="sig-pos"><?= $academic_head_position ?></div>
+                        </div>
+                        <div class="sig-name">( <?= $academic_head_name ?: '..........................................................' ?> )</div>
                     </div>
                 <?php endif; ?>
             </div>
@@ -513,11 +537,11 @@ if ($classroom_id) {
                 <div class="check-box"></div> ไม่อนุมัติ
             </div>
 
-            <div style="text-align: center; margin-top: 15px;">
+            <div style="text-align: center; margin-top: 20px;">
                 <p style="margin-bottom: 10px;">..........................................................</p>
-                <p class="font-bold" style="font-size: 18px;">( <?= $director_name ?: '..........................................................' ?> )</p>
-                <p style="font-size: 16px;">ผู้อำนวยการโรงเรียน<?= $school_name ?></p>
-                <p style="margin-top: 10px;">วันที่ <span style="display: inline-block; width: 30px; border-bottom: 1px dotted #000;"></span> เดือน <span style="display: inline-block; width: 100px; border-bottom: 1px dotted #000;"></span> พ.ศ. <span style="display: inline-block; width: 50px; border-bottom: 1px dotted #000;"></span></p>
+                <p class="font-bold" style="font-size: 20px;">( <?= $director_name ?: '..........................................................' ?> )</p>
+                <p style="font-size: 18px;">ผู้อำนวยการโรงเรียน<?= $school_name ?></p>
+                <p style="margin-top: 15px;">วันที่ <span style="display: inline-block; width: 40px; border-bottom: 1px dotted #000;"></span> เดือน <span style="display: inline-block; width: 120px; border-bottom: 1px dotted #000;"></span> พ.ศ. <span style="display: inline-block; width: 60px; border-bottom: 1px dotted #000;"></span></p>
             </div>
         </div>
     </div>
