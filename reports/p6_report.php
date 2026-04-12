@@ -33,6 +33,122 @@ if ($student_id === 'all') {
     $students_to_print = [$stmt->fetch()];
 }
 
+function getResultText($avg) {
+    if (!$avg) return '-';
+    if ($avg >= 2.5) return 'ดีเยี่ยม';
+    if ($avg >= 1.5) return 'ดี';
+    if ($avg >= 0.5) return 'ผ่าน';
+    return 'ไม่ผ่าน';
+}
+
+function formatPassFail($val) {
+    if (empty($val)) return '-';
+    if ($val === 'P' || $val === 'ผ่าน') return 'ผ่าน';
+    if ($val === 'F' || $val === 'ไม่ผ่าน') return 'ไม่ผ่าน';
+    return $val;
+}
+?>
+
+<style>
+    .p6-container {
+        font-family: 'Sarabun', sans-serif;
+        color: black;
+    }
+    .p6-header {
+        position: relative;
+        text-align: center;
+        margin-bottom: 20px;
+        min-height: 100px;
+    }
+    .p6-logo-left {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 80px;
+        height: 80px;
+        object-fit: contain;
+    }
+    .p6-logo-center {
+        display: block;
+        margin: 0 auto 15px;
+        width: 100px;
+        height: 100px;
+        object-fit: contain;
+    }
+    .p6-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+    }
+    .p6-table th, .p6-table td {
+        border: 1px solid black;
+        padding: 4px;
+        text-align: center;
+    }
+    .p6-table th {
+        background: #fff;
+    }
+    .text-left { text-align: left !important; }
+    .text-center { text-align: center !important; }
+    .dotted-line {
+        border-bottom: 1px dotted black;
+        display: inline-block;
+        min-width: 100px;
+        padding: 0 5px;
+        text-align: center;
+    }
+    .summary-section {
+        display: flex;
+        margin-top: 10px;
+        font-size: 13px;
+    }
+    .summary-left {
+        width: 45%;
+    }
+    .summary-right {
+        width: 55%;
+        text-align: center;
+    }
+    .summary-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .summary-table td {
+        border: 1px solid black;
+        padding: 2px 5px;
+    }
+    .sig-block {
+        margin-top: 15px;
+        text-align: center;
+    }
+    .page-break {
+        page-break-after: always;
+    }
+    .cover-page {
+        text-align: center;
+        padding: 20mm;
+    }
+    .guide-page {
+        font-size: 14px;
+        line-height: 1.6;
+    }
+    .guide-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+        font-size: 12px;
+    }
+    .guide-table td {
+        border: 1px solid black;
+        padding: 3px;
+        text-align: center;
+    }
+    @media print {
+        .page { margin: 0; padding: 10mm; border: none; box-shadow: none; }
+    }
+</style>
+
+<?php
 foreach ($students_to_print as $student):
     if (!$student) continue;
     
@@ -91,95 +207,27 @@ foreach ($students_to_print as $student):
     $acad_name = $acad ? $acad['name'] . ' ' . $acad['last_name'] : '';
     $acad_pos = $acad ? formatTeacherPosition($acad['position']) : 'หัวหน้างานวิชาการโรงเรียน';
 
-    function getResultText($avg) {
-        if (!$avg) return '-';
-        if ($avg >= 2.5) return 'ดีเยี่ยม';
-        if ($avg >= 1.5) return 'ดี';
-        if ($avg >= 0.5) return 'ผ่าน';
-        return 'ไม่ผ่าน';
-    }
-
-    function formatPassFail($val) {
-        if (empty($val)) return '-';
-        if ($val === 'P' || $val === 'ผ่าน') return 'ผ่าน';
-        if ($val === 'F' || $val === 'ไม่ผ่าน') return 'ไม่ผ่าน';
-        return $val;
+    // คำนวณข้อมูลเพิ่มเติมสำหรับหน้าปก
+    $bday = formatThaiDate($student['birthday'] ?? '');
+    $age_years = $student['age'] ?? 0;
+    $age_months = 0;
+    
+    if (!empty($student['birthday'])) {
+        $birthDate = new DateTime($student['birthday']);
+        $today = new DateTime();
+        $age_diff = $today->diff($birthDate);
+        $age_years = $age_diff->y;
+        $age_months = $age_diff->m;
     }
 ?>
 
-<style>
-    .p6-container {
-        font-family: 'Sarabun', sans-serif;
-        color: black;
-    }
-    .p6-header {
-        position: relative;
-        text-align: center;
-        margin-bottom: 20px;
-    }
-    .p6-logo {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 80px;
-        height: 80px;
-        object-fit: contain;
-    }
-    .p6-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 13px;
-    }
-    .p6-table th, .p6-table td {
-        border: 1px solid black;
-        padding: 4px;
-        text-align: center;
-    }
-    .p6-table th {
-        background: #fff;
-    }
-    .text-left { text-align: left !important; }
-    .dotted-line {
-        border-bottom: 1px dotted black;
-        display: inline-block;
-        min-width: 100px;
-        padding: 0 5px;
-    }
-    .summary-section {
-        display: flex;
-        margin-top: 10px;
-        font-size: 13px;
-    }
-    .summary-left {
-        width: 45%;
-    }
-    .summary-right {
-        width: 55%;
-        text-align: center;
-    }
-    .summary-table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-    .summary-table td {
-        border: 1px solid black;
-        padding: 2px 5px;
-    }
-    .sig-block {
-        margin-top: 15px;
-        text-align: center;
-    }
-    @media print {
-        .page { margin: 0; padding: 10mm; }
-    }
-</style>
-
+<!-- หน้าที่ 1: ผลการเรียน (Score Summary) -->
 <div class="page p6-container">
     <div class="p6-header">
         <?php if ($logo_url): ?>
-            <img src="<?= $logo_url ?>" class="p6-logo" referrerPolicy="no-referrer">
+            <img src="<?= $logo_url ?>" class="p6-logo-left" referrerPolicy="no-referrer">
         <?php endif; ?>
-        <h3 style="margin: 0; font-size: 18px;">แบบรายงานประจำตัวนักเรียน : ผลการพัฒนาคุณภาพผู้เรียนรายบุคคล (ปพ.๖)</h3>
+        <h3 style="margin: 0; font-size: 18px; padding-top: 10px;">แบบรายงานประจำตัวนักเรียน : ผลการพัฒนาคุณภาพผู้เรียนรายบุคคล (ปพ.๖)</h3>
         <p style="margin: 5px 0; font-size: 16px;">โรงเรียน<?= $school_name ?> <?= $affiliation ?></p>
         <p style="margin: 5px 0; font-size: 16px;">ชั้นประถมศึกษาปีที่ <?= $classroom['level'] ?> ภาคเรียนที่ <?= $semester === 'annual' ? '๑-๒' : $semester ?> ปีการศึกษา <?= $year ?></p>
     </div>
@@ -320,6 +368,102 @@ foreach ($students_to_print as $student):
             </div>
         </div>
     </div>
+</div>
+
+<!-- หน้าที่ 2: ปก (Cover Page) -->
+<div class="page cover-page">
+    <?php if ($logo_url): ?>
+        <img src="<?= $logo_url ?>" class="p6-logo-center" referrerPolicy="no-referrer">
+    <?php endif; ?>
+    
+    <h2 style="margin: 20px 0 10px; font-size: 24px;">แบบรายงานประจำตัวนักเรียน</h2>
+    <h3 style="margin: 0 0 20px; font-size: 20px;">ผลการพัฒนาคุณภาพผู้เรียนรายบุคคล (ปพ.๖)</h3>
+    
+    <h3 style="margin: 30px 0 10px; font-size: 22px;">โรงเรียน<?= $school_name ?></h3>
+    <p style="font-size: 18px; margin: 5px 0;"><?= $affiliation ?></p>
+    <p style="font-size: 18px; margin: 5px 0;"><?= $district ?> <?= $province ?></p>
+
+    <div style="margin-top: 50px; text-align: left; padding-left: 50px; font-size: 18px; line-height: 2.5;">
+        <div>ชื่อ <span class="dotted-line" style="min-width: 250px;"><?= $student['prefix'] ?><?= $student['name'] ?></span> นามสกุล <span class="dotted-line" style="min-width: 250px;"><?= $student['last_name'] ?></span></div>
+        <div>วันเกิด <span class="dotted-line" style="min-width: 200px;"><?= $bday['day'] ?> <?= $bday['month'] ?> <?= $bday['year'] ?></span> อายุ <span class="dotted-line" style="min-width: 50px;"><?= $age_years ?></span> ปี <span class="dotted-line" style="min-width: 50px;"><?= $age_months ?></span> เดือน</div>
+        <div>เลขประจำตัวนักเรียน <span class="dotted-line" style="min-width: 150px;"><?= $student['student_code'] ?></span> เลขประจำตัวประชาชน <span class="dotted-line" style="min-width: 250px;"><?= $student['national_id'] ?></span></div>
+        <div>ชั้น <span class="dotted-line" style="min-width: 200px;">ประถมศึกษาปีที่ <?= $classroom['level'] ?></span> เลขที่ <span class="dotted-line" style="min-width: 100px;"><?= array_search($student['id'], array_column($students_to_print, 'id')) + 1 ?></span></div>
+        <div>ปีการศึกษา <span class="dotted-line" style="min-width: 150px;"><?= $year ?></span></div>
+    </div>
+
+    <div style="margin-top: 60px; text-align: right; padding-right: 50px;">
+        <div class="sig-block" style="display: inline-block; text-align: center; margin-left: 50px;">
+            <p>ลงชื่อ..........................................................</p>
+            <p>( <?= $teacher_name ?> )</p>
+            <p>ครูประจำชั้น/ครูที่ปรึกษา</p>
+        </div>
+        <br>
+        <div class="sig-block" style="display: inline-block; text-align: center; margin-left: 50px;">
+            <p>ลงชื่อ..........................................................</p>
+            <p>( <?= $acad_name ?> )</p>
+            <p><?= $acad_pos ?></p>
+        </div>
+        <br>
+        <div class="sig-block" style="display: inline-block; text-align: center; margin-left: 50px;">
+            <p>ลงชื่อ..........................................................</p>
+            <p>( <?= $director_name ?> )</p>
+            <p>ผู้อำนวยการโรงเรียน</p>
+        </div>
+        <div style="margin-top: 20px; text-align: center; width: 300px; float: right;">
+            วันที่ <span class="dotted-line" style="min-width: 150px;"><?= $approval_date['day'] ?> <?= $approval_date['month'] ?> <?= $approval_date['year'] ?></span>
+        </div>
+    </div>
+</div>
+
+<!-- หน้าที่ 3: คู่มือสำหรับผู้ปกครอง (Parent Guide) -->
+<div class="page guide-page">
+    <h3 class="text-center" style="font-size: 20px; margin-bottom: 20px;">คำแนะนำสำหรับผู้ปกครอง</h3>
+    <p>เรียน ท่านผู้ปกครองนักเรียน</p>
+    <p style="text-indent: 50px;">เมื่อท่านได้รับแบบรายงานประจำตัวนักเรียนนี้แล้ว โปรดสละเวลาพิจารณาข้อมูลต่าง ๆ ดังนี้</p>
+    <p>๑. โปรดตรวจสอบความถูกต้องของข้อมูลนักเรียน และบันทึกหากมีการเปลี่ยนแปลงแก้ไขข้อมูล</p>
+    <p>๒. โปรดตรวจสอบผลการประเมินภาวะโภชนาการ จากน้ำหนัก - ส่วนสูง ตามเกณฑ์มาตรฐาน ถ้ามีผลผิดปกติ เช่น น้ำหนักน้อยกว่าเกณฑ์ เตี้ย อ้วน เริ่มอ้วน หรือ ผอม ควรหาทางช่วยเหลือ หรือปรึกษาแพทย์ ในกรณีที่บุตรหลานของท่านมีโรคประจำตัว หรือมีสิ่งผิดปกติโปรดแจ้งครูประจำชั้นทราบด้วย</p>
+    <p>๓. โปรดตรวจสอบผลการไปโรงเรียนของเด็กอย่างสม่ำเสมอ ติดต่อกับโรงเรียนทันทีเมื่อทราบว่าเด็กหยุดเรียนโดยไม่ได้รับอนุญาต ทั้งนี้เพื่อป้องกันไม่ให้เกิดปัญหาพฤติกรรมหรือขาดเรียนนาน</p>
+    <p>๔. โปรดตรวจสอบผลการเรียนรายวิชา ผลการประเมินกิจกรรมพัฒนาผู้เรียน ผลการประเมินคุณลักษณะอันพึงประสงค์ ผลการประเมินการอ่าน คิดวิเคราะห์และเขียน ผลการประเมินค่านิยม ๑๒ ประการ และผลการประเมินสมรรถนะสำคัญของผู้เรียน โดยตรวจสอบว่านักเรียนมีผลการประเมินด้านใด อยู่ในระดับใด ผ่านเกณฑ์การประเมินการศึกษาของสถานศึกษาหรือไม่ และควรได้รับการช่วยเหลือด้านใด</p>
+    <p>๕. เกณฑ์การประเมิน</p>
+    <div style="padding-left: 30px;">
+        <p>๕.๑ นักเรียนต้องมีผลการประเมินรายวิชาตั้งแต่ระดับ ๑ ขึ้นไปทุกวิชา</p>
+        <p>๕.๒ นักเรียนมีผลการประเมินการอ่าน คิดวิเคราะห์ และเขียน ผ่านเกณฑ์การประเมินในระดับดีเยี่ยม/ดี/ผ่าน</p>
+        <p>๕.๓ นักเรียนมีผลการประเมินคุณลักษณะอันพึงประสงค์ ผ่านเกณฑ์การประเมินในระดับ ดีเยี่ยม/ดี/ผ่าน</p>
+        <p>๕.๔ นักเรียนเข้าร่วมกิจกรรมพัฒนาผู้เรียน และได้ผลการประเมิน 'ผ' ทุกกิจกรรม</p>
+        <p>๕.๕ นักเรียนมีผลการประเมินค่านิยม ๑๒ ประการ ผ่านเกณฑ์การประเมินในระดับ ดีเยี่ยม/ดี/ผ่าน</p>
+        <p>๕.๖ นักเรียนมีผลการประเมินสมรรถนะสำคัญของผู้เรียน ผ่านเกณฑ์การประเมินในระดับ ดีเยี่ยม/ดี/ผ่าน</p>
+    </div>
+    <p>๖. โปรดตรวจสอบความคิดเห็นและข้อเสนอแนะของครูประจำชั้นต่อนักเรียน</p>
+    <p>๗. โปรดสละเวลาให้ความคิดเห็นและเสนอแนะเกี่ยวกับตัวนักเรียน ความเห็นของท่านจะเป็นประโยชน์ต่อตัวนักเรียนในปกครองของท่านเอง เพราะจะช่วยให้ครูเข้าใจนักเรียนได้ดียิ่งขึ้น และจะช่วยพัฒนานักเรียนได้ถูกต้องต่อไป</p>
+    
+    <div style="margin-top: 20px;">
+        <p class="font-bold">คำอธิบายเกณฑ์ ผลการประเมินรายวิชา</p>
+        <div style="display: flex; justify-content: space-between;">
+            <table class="guide-table" style="width: 32%;">
+                <tr><td>คะแนน</td><td>ผลการเรียน</td><td>ความหมาย</td></tr>
+                <tr><td>๘๐-๑๐๐</td><td>๔</td><td>ดีเยี่ยม</td></tr>
+                <tr><td>๗๕-๗๙</td><td>๓.๕</td><td>ดีมาก</td></tr>
+                <tr><td>๗๐-๗๔</td><td>๓</td><td>ดี</td></tr>
+                <tr><td>๖๕-๖๙</td><td>๒.๕</td><td>ค่อนข้างดี</td></tr>
+            </table>
+            <table class="guide-table" style="width: 32%;">
+                <tr><td>คะแนน</td><td>ผลการเรียน</td><td>ความหมาย</td></tr>
+                <tr><td>๖๐-๖๔</td><td>๒</td><td>ปานกลาง</td></tr>
+                <tr><td>๕๕-๕๙</td><td>๑.๕</td><td>พอใช้</td></tr>
+                <tr><td>๕๐-๕๔</td><td>๑</td><td>ผ่านเกณฑ์ขั้นต่ำ</td></tr>
+                <tr><td>๐-๔๙</td><td>๐</td><td>ต่ำกว่าเกณฑ์</td></tr>
+            </table>
+            <table class="guide-table" style="width: 32%;">
+                <tr><td>ผลการเรียน</td><td>ความหมาย</td></tr>
+                <tr><td>ร</td><td>รอการตัดสิน</td></tr>
+                <tr><td>มส</td><td>ไม่มีสิทธิ์สอบ</td></tr>
+                <tr><td>ผ</td><td>ผ่าน</td></tr>
+                <tr><td>มผ</td><td>ไม่ผ่าน</td></tr>
+            </table>
+        </div>
+    </div>
+    
+    <p class="text-right" style="margin-top: 40px;">ขอขอบพระคุณ</p>
 </div>
 
 <?php endforeach; ?>
