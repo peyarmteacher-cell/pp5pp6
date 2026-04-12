@@ -172,6 +172,14 @@ if ($classroom_id) {
 ?>
 
 <style>
+    /* --- ปรับขอบกระดาษ (บน ขวา ล่าง ซ้าย) --- */
+    .page {
+        padding-top: 10mm !important;    /* ปรับระยะขอบบน */
+        padding-bottom: 10mm !important; /* ปรับระยะขอบล่าง */
+        padding-left: 15mm !important;   /* ปรับระยะขอบซ้าย */
+        padding-right: 15mm !important;  /* ปรับระยะขอบขวา */
+    }
+
     /* --- พื้นที่หลักของหน้าปก --- */
     .cover-container {
         padding: 0;
@@ -185,8 +193,8 @@ if ($classroom_id) {
         margin-bottom: 5px; /* ปรับระยะห่างใต้โลโก้ */
     }
     .logo-img {
-        width: 90px; /* ปรับขนาดความกว้างโลโก้ */
-        height: 90px; /* ปรับขนาดความสูงโลโก้ */
+        width: 120px; /* ปรับขนาดความกว้างโลโก้ */
+        height: 120px; /* ปรับขนาดความสูงโลโก้ */
         object-fit: contain;
     }
     /* --- หัวข้อรายงาน --- */
@@ -203,7 +211,7 @@ if ($classroom_id) {
         margin-bottom: 2px;
     }
     .affiliation {
-        font-size: 14px; /* ปรับขนาดชื่อสังกัด */
+        font-size: 16px; /* ปรับขนาดชื่อสังกัด */
         text-align: center;
         margin-bottom: 10px;
     }
@@ -212,7 +220,7 @@ if ($classroom_id) {
     .flex-row {
         display: flex;
         align-items: baseline;
-        font-size: 14px; /* ปรับขนาดตัวอักษรแถวข้อมูล */
+        font-size: 16px; /* ปรับขนาดตัวอักษรแถวข้อมูล */
         margin-bottom: 5px; /* ปรับระยะห่างระหว่างแถว */
         width: 100%;
         white-space: nowrap;
@@ -238,7 +246,7 @@ if ($classroom_id) {
         justify-content: space-between;
         align-items: baseline;
         margin-bottom: 6px;
-        font-size: 14px;
+        font-size: 16px;
     }
     .teacher-label {
         width: 180px;
@@ -258,7 +266,7 @@ if ($classroom_id) {
         text-align: center;
         margin: 8px 0 4px 0; /* ปรับระยะห่างหัวข้อส่วน */
         text-decoration: underline;
-        font-size: 14px;
+        font-size: 16px;
     }
     /* --- ตารางสถิตินักเรียน --- */
     .stats-table {
@@ -270,7 +278,7 @@ if ($classroom_id) {
     .stats-table td {
         border: 1px solid #000;
         padding: 4px 8px; /* ปรับความกว้างช่องในตารางสถิติ */
-        font-size: 14px;
+        font-size: 16px;
         white-space: nowrap;
     }
     /* --- ตารางสรุปผลการเรียน --- */
@@ -282,7 +290,7 @@ if ($classroom_id) {
     .summary-table th, .summary-table td {
         border: 1px solid #000;
         padding: 3px;
-        font-size: 11px; /* ปรับขนาดตัวเลขในตารางเกรด */
+        font-size: 14px; /* ปรับขนาดตัวเลขในตารางเกรด */
         white-space: nowrap;
     }
     /* --- ส่วนการอนุมัติ (ท้ายหน้า) --- */
@@ -301,7 +309,7 @@ if ($classroom_id) {
         flex-direction: column;
         align-items: center;
         width: 100%;
-        margin-bottom: 8px; /* ปรับระยะห่างระหว่างชุดลงชื่อ */
+        margin-bottom: 12px; /* ปรับระยะห่างระหว่างชุดลงชื่อ */
     }
     .signature-row {
         display: grid;
@@ -321,14 +329,14 @@ if ($classroom_id) {
     .sig-pos {
         text-align: left;
         padding-left: 10px;
-        font-size: 14px;
+        font-size: 16px;
     }
     .sig-name {
         width: 100%;
         text-align: center;
         font-weight: bold;
         margin-top: 2px;
-        font-size: 14px; /* ปรับขนาดชื่อในวงเล็บ */
+        font-size: 16px; /* ปรับขนาดชื่อในวงเล็บ */
     }
     /* --- ช่องติ๊ก อนุมัติ/ไม่อนุมัติ --- */
     .approval-box {
@@ -396,7 +404,7 @@ if ($classroom_id) {
 
         <table class="stats-table">
             <tr>
-                <td class="font-bold" style="font-size: 18px;">จำนวนนักเรียนทั้งหมด</td>
+                <td class="font-bold" style="font-size: 16px;">จำนวนนักเรียนทั้งหมด</td>
                 <td style="text-align: center;">ชาย <span style="display: inline-block; width: 50px; border-bottom: 1px dotted #000;"><?= $male_count ?></span> คน</td>
                 <td style="text-align: center;">หญิง <span style="display: inline-block; width: 50px; border-bottom: 1px dotted #000;"><?= $female_count ?></span> คน</td>
                 <td style="text-align: center;">รวม <span style="display: inline-block; width: 50px; border-bottom: 1px dotted #000;"><?= $total_count ?></span> คน</td>
@@ -547,11 +555,11 @@ if ($classroom_id) {
                 <div class="check-box"></div> ไม่อนุมัติ
             </div>
 
-            <div style="text-align: center; margin-top: 20px;">
-                <p style="margin-bottom: 10px;">..........................................................</p>
-                <p class="font-bold" style="font-size: 20px;">( <?= $director_name ?: '..........................................................' ?> )</p>
-                <p style="font-size: 18px;">ผู้อำนวยการโรงเรียน<?= $school_name ?></p>
-                <p style="margin-top: 15px;">วันที่ <span style="display: inline-block; width: 40px; border-bottom: 1px dotted #000;"></span> เดือน <span style="display: inline-block; width: 120px; border-bottom: 1px dotted #000;"></span> พ.ศ. <span style="display: inline-block; width: 60px; border-bottom: 1px dotted #000;"></span></p>
+            <div style="text-align: center; margin-top: 40px;">
+				<p style="margin-bottom: 5px;visibility:hidden;">..........................................................</p>                
+                <p class="font-bold" style="font-size: 16px;">( <?= $director_name ?: '..........................................................' ?> )</p>
+                <p style="font-size: 16px;">ผู้อำนวยการโรงเรียน<?= $school_name ?></p>
+                <p style="margin-top: 16px;">วันที่ <span style="display: inline-block; width: 40px; border-bottom: 1px dotted #000;"></span> เดือน <span style="display: inline-block; width: 120px; border-bottom: 1px dotted #000;"></span> พ.ศ. <span style="display: inline-block; width: 60px; border-bottom: 1px dotted #000;"></span></p>
             </div>
         </div>
     </div>
