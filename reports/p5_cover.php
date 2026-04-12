@@ -565,5 +565,7 @@ $approval_date = formatThaiDate($approval_date_raw);
     </div>
 </div>
 
+<?php if (!isset($no_footer)): ?>
 </body>
 </html>
+<?php endif; ?>

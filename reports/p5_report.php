@@ -79,6 +79,12 @@ if ($type === 'subject' && !isset($teacher_pos)) {
 if ($type === 'class' && $classroom_id) {
     include 'p5_classroom_cover.php';
     // หลังจากแสดงหน้าปกรายชั้นแล้ว ให้แสดงหน้ารายงานนักเรียนต่อ
+} else if ($type === 'subject' && $assignment_id) {
+    $no_footer = true;
+    include 'p5_cover.php';
+    include 'p5_subject_pages.php';
+    echo '</body></html>';
+    exit;
 }
 
 // ดึงรายชื่อนักเรียน
