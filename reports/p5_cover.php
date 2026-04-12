@@ -18,6 +18,11 @@ $teacher_position = '';
 $class_teacher_name = '';
 $class_teacher_position = '';
 
+if ($type === 'classroom' && $classroom_id) {
+    include 'p5_classroom_cover.php';
+    exit;
+}
+
 if ($type === 'subject' && $assignment_id) {
     try {
         $stmt = $pdo->prepare('
