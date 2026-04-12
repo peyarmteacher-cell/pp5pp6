@@ -53,6 +53,30 @@ function formatTeacherPosition($position) {
     return $position;
 }
 
+/**
+ * ฟังก์ชันจัดรูปแบบวันที่เป็นภาษาไทย
+ * @param string $date YYYY-MM-DD
+ * @return array [day, month, year]
+ */
+function formatThaiDate($date) {
+    if (empty($date)) return ['day' => '', 'month' => '', 'year' => ''];
+    
+    $months = [
+        '01' => 'มกราคม', '02' => 'กุมภาพันธ์', '03' => 'มีนาคม', '04' => 'เมษายน',
+        '05' => 'พฤษภาคม', '06' => 'มิถุนายน', '07' => 'กรกฎาคม', '08' => 'สิงหาคม',
+        '09' => 'กันยายน', '10' => 'ตุลาคม', '11' => 'พฤศจิกายน', '12' => 'ธันวาคม'
+    ];
+    
+    $parts = explode('-', $date);
+    if (count($parts) !== 3) return ['day' => '', 'month' => '', 'year' => ''];
+    
+    return [
+        'day' => (int)$parts[2],
+        'month' => $months[$parts[1]] ?? '',
+        'year' => (int)$parts[0] + 543
+    ];
+}
+
 // ดึงข้อมูลผู้บริหารจากตาราง school_officials
 $director_name = '';
 $academic_head_name = '';

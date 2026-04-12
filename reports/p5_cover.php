@@ -175,6 +175,9 @@ if ($classroom_id) {
     } catch (Exception $e) {}
 }
 
+$approval_date_raw = $_GET['approval_date'] ?? '';
+$approval_date = formatThaiDate($approval_date_raw);
+
 ?>
 
 <style>
@@ -556,7 +559,7 @@ if ($classroom_id) {
 				<p style="margin-bottom: 5px;visibility:hidden;">..........................................................</p>                
                 <p class="font-bold" style="font-size: 16px;">( <?= $director_name ?: '..........................................................' ?> )</p>
                 <p style="font-size: 16px;">ผู้อำนวยการโรงเรียน<?= $school_name ?></p>
-                <p style="margin-top: 16px;">วันที่ <span style="display: inline-block; width: 40px; border-bottom: 1px dotted #000;"></span> เดือน <span style="display: inline-block; width: 120px; border-bottom: 1px dotted #000;"></span> พ.ศ. <span style="display: inline-block; width: 60px; border-bottom: 1px dotted #000;"></span></p>
+                <p style="margin-top: 16px;">วันที่ <span style="display: inline-block; width: 40px; border-bottom: 1px dotted #000;"><?= $approval_date['day'] ?: '&nbsp;' ?></span> เดือน <span style="display: inline-block; width: 120px; border-bottom: 1px dotted #000;"><?= $approval_date['month'] ?: '&nbsp;' ?></span> พ.ศ. <span style="display: inline-block; width: 60px; border-bottom: 1px dotted #000;"><?= $approval_date['year'] ?: '&nbsp;' ?></span></p>
             </div>
         </div>
     </div>

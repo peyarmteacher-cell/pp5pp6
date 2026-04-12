@@ -108,6 +108,9 @@ while ($row = $stmt_ld->fetch()) {
     if ($row['social_result'] === 'F') $ld_stats['social']['F'] += $row['count'];
 }
 
+$approval_date_raw = $_GET['approval_date'] ?? '';
+$approval_date = formatThaiDate($approval_date_raw);
+
 ?>
 
 <style>
@@ -520,7 +523,7 @@ while ($row = $stmt_ld->fetch()) {
             </div>
 
             <div class="date-row">
-                วันที่ <span class="dotted-line" style="min-width: 40px;"></span> เดือน <span class="dotted-line" style="min-width: 120px;"></span> พ.ศ. <span class="dotted-line" style="min-width: 60px;"></span>
+                วันที่ <span class="dotted-line" style="min-width: 40px;"><?= $approval_date['day'] ?: '&nbsp;' ?></span> เดือน <span class="dotted-line" style="min-width: 120px;"><?= $approval_date['month'] ?: '&nbsp;' ?></span> พ.ศ. <span class="dotted-line" style="min-width: 60px;"><?= $approval_date['year'] ?: '&nbsp;' ?></span>
             </div>
         </div>
     </div>

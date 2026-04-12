@@ -6,6 +6,8 @@ $semester = $_GET['semester'] ?? '1';
 $type = $_GET['type'] ?? 'subject';
 $assignment_id = $_GET['assignment_id'] ?? '';
 $classroom_id = $_GET['classroom_id'] ?? '';
+$approval_date_raw = $_GET['approval_date'] ?? '';
+$approval_date = formatThaiDate($approval_date_raw);
 
 if ($type === 'subject' && $assignment_id) {
     // ดึงข้อมูลการสอน
@@ -227,6 +229,11 @@ $female_students = $total_students - $male_students;
                 </td>
             </tr>
         </table>
+        <?php if ($approval_date['day']): ?>
+        <div style="text-align: center; margin-top: 15px;">
+            วันที่ <?= $approval_date['day'] ?> เดือน <?= $approval_date['month'] ?> พ.ศ. <?= $approval_date['year'] ?>
+        </div>
+        <?php endif; ?>
     </div>
 </div>
 

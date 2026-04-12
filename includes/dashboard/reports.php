@@ -55,6 +55,11 @@
                     </select>
                 </div>
 
+                <div class="space-y-1">
+                    <label class="text-xs font-semibold text-slate-500">วันที่อนุมัติผลการเรียน</label>
+                    <input type="date" id="report_p5_approval_date" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-green-500/20">
+                </div>
+
                 <div class="pt-4 grid grid-cols-2 gap-2">
                     <button onclick="printP5()" class="bg-green-600 text-white py-3 rounded-xl font-bold hover:bg-green-700 shadow-lg shadow-green-600/20 transition-all flex items-center justify-center gap-2 cursor-pointer">
                         <i data-lucide="printer" class="w-4 h-4"></i>
@@ -233,7 +238,8 @@
         console.log('Printing P5...');
         const year = document.getElementById('report_p5_year').value;
         const semester = document.getElementById('report_p5_semester').value;
-        let url = `reports/p5_report.php?year=${year}&semester=${semester}&type=${p5Type}`;
+        const approvalDate = document.getElementById('report_p5_approval_date').value;
+        let url = `reports/p5_report.php?year=${year}&semester=${semester}&type=${p5Type}&approval_date=${approvalDate}`;
 
         if (p5Type === 'subject') {
             const assignId = document.getElementById('report_p5_assignment').value;
@@ -252,7 +258,8 @@
         console.log('Printing P5 Cover...');
         const year = document.getElementById('report_p5_year').value;
         const semester = document.getElementById('report_p5_semester').value;
-        let url = `reports/p5_cover.php?year=${year}&semester=${semester}&type=${p5Type}`;
+        const approvalDate = document.getElementById('report_p5_approval_date').value;
+        let url = `reports/p5_cover.php?year=${year}&semester=${semester}&type=${p5Type}&approval_date=${approvalDate}`;
 
         if (p5Type === 'subject') {
             const assignId = document.getElementById('report_p5_assignment').value;
