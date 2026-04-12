@@ -98,6 +98,13 @@ foreach ($students_to_print as $student):
         if ($avg >= 0.5) return 'ผ่าน';
         return 'ไม่ผ่าน';
     }
+
+    function formatPassFail($val) {
+        if (empty($val)) return '-';
+        if ($val === 'P' || $val === 'ผ่าน') return 'ผ่าน';
+        if ($val === 'F' || $val === 'ไม่ผ่าน') return 'ไม่ผ่าน';
+        return $val;
+    }
 ?>
 
 <style>
@@ -259,19 +266,19 @@ foreach ($students_to_print as $student):
                 </tr>
                 <tr>
                     <td class="text-left">&nbsp;&nbsp;&nbsp;แนะแนว</td>
-                    <td><?= $ld_result['guidance_result'] ?: '-' ?></td>
+                    <td><?= formatPassFail($ld_result['guidance_result']) ?></td>
                 </tr>
                 <tr>
                     <td class="text-left">&nbsp;&nbsp;&nbsp;ลูกเสือ-เนตรนารี</td>
-                    <td><?= $ld_result['scout_result'] ?: '-' ?></td>
+                    <td><?= formatPassFail($ld_result['scout_result']) ?></td>
                 </tr>
                 <tr>
                     <td class="text-left">&nbsp;&nbsp;&nbsp;ชุมนุม กีฬาและนันทนาการ</td>
-                    <td><?= $ld_result['club_result'] ?: '-' ?></td>
+                    <td><?= formatPassFail($ld_result['club_result']) ?></td>
                 </tr>
                 <tr>
                     <td class="text-left">&nbsp;&nbsp;&nbsp;กิจกรรมเพื่อสังคมและสาธารณประโยชน์</td>
-                    <td><?= $ld_result['social_result'] ?: '-' ?></td>
+                    <td><?= formatPassFail($ld_result['social_result']) ?></td>
                 </tr>
                 <tr>
                     <td class="text-left">ผลการประเมินคุณลักษณะอันพึงประสงค์</td>
