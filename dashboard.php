@@ -37,6 +37,49 @@ try {
     <style>
         body { font-family: 'Sarabun', sans-serif; }
         button, a, select, input[type="checkbox"], input[type="radio"], input[type="submit"], input[type="button"] { cursor: pointer; }
+        
+        /* Sidebar Custom Scrollbar */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+
+        /* Sidebar Item Hover Effect */
+        .nav-item {
+            position: relative;
+            overflow: hidden;
+        }
+        .nav-item::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 0;
+            background: #3b82f6;
+            transition: width 0.3s ease;
+            opacity: 0.1;
+            pointer-events: none;
+        }
+        .nav-item:hover::after {
+            width: 100%;
+        }
+        .nav-item.active {
+            background: #1e293b;
+            border-left: 4px solid #3b82f6;
+        }
+        .nav-item.active i {
+            color: #3b82f6;
+        }
     </style>
 </head>
 <body class="bg-slate-50 min-h-screen flex">
@@ -135,6 +178,26 @@ try {
                 };
                 const titleEl = document.getElementById('section-title');
                 if (titleEl) titleEl.innerText = titles[targetId] || 'ระบบบริหารจัดการ';
+
+                // Update Sidebar Active State
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    item.classList.remove('active');
+                    if (item.getAttribute('onclick')?.includes(`'${sectionId}'`)) {
+                        item.classList.add('active');
+                    }
+                });
+                
+                // Special case for profile button at bottom
+                const profileBtn = document.getElementById('profile-btn-bottom');
+                if (profileBtn) {
+                    if (sectionId === 'profile') {
+                        profileBtn.classList.add('bg-blue-600/20', 'text-blue-400', 'border-blue-500/30');
+                        profileBtn.classList.remove('bg-slate-700/50', 'text-slate-300');
+                    } else {
+                        profileBtn.classList.remove('bg-blue-600/20', 'text-blue-400', 'border-blue-500/30');
+                        profileBtn.classList.add('bg-slate-700/50', 'text-slate-300');
+                    }
+                }
             } catch (e) {
                 console.error('Error in showSection:', e);
             }
@@ -142,9 +205,9 @@ try {
     </script>
 
     <!-- Sidebar -->
-    <aside class="w-64 bg-slate-900 text-white flex flex-col">
+    <aside class="w-64 bg-slate-900 text-white flex flex-col h-screen sticky top-0">
         <div class="p-6 border-b border-slate-800">
-            <div class="flex items-center gap-3 mb-4">
+            <div class="flex items-center gap-3">
                 <div class="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center font-bold overflow-hidden shadow-lg shadow-blue-900/20">
                     <?php if ($app_logo): ?>
                         <img src="<?= $app_logo ?>" alt="App Logo" class="w-full h-full object-cover" referrerPolicy="no-referrer">
@@ -156,7 +219,118 @@ try {
                     <h1 class="text-lg font-bold text-blue-400 truncate"><?= $app_name ?></h1>
                 </div>
             </div>
+        </div>
+        
+        <nav class="flex-1 p-4 space-y-1 overflow-y-auto custom-scrollbar">
+            <?php if ($role !== 'teacher' || $_SESSION['is_academic']): ?>
+                <a href="javascript:void(0)" onclick="showSection('overview')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">
+                    <i data-lucide="layout-dashboard" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
+                    <span class="text-sm font-medium">ภาพรวม</span>
+                </a>
+            <?php endif; ?>
             
+            <?php if ($role === 'super_admin'): ?>
+                <div class="pt-4 pb-2 px-4 text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Super Admin</div>
+                <a href="javascript:void(0)" onclick="showSection('manage-schools')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">
+                    <i data-lucide="school" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
+                    <span class="text-sm font-medium">จัดการโรงเรียน</span>
+                </a>
+                <a href="javascript:void(0)" onclick="showSection('approve-admins')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">
+                    <i data-lucide="user-check" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
+                    <span class="text-sm font-medium">อนุมัติ Admin โรงเรียน</span>
+                </a>
+                <a href="javascript:void(0)" onclick="showSection('manage-super-admins')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">
+                    <i data-lucide="shield-check" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
+                    <span class="text-sm font-medium">จัดการ Super Admin</span>
+                </a>
+                <a href="javascript:void(0)" onclick="showSection('app-settings')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">
+                    <i data-lucide="settings" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
+                    <span class="text-sm font-medium">ตั้งค่าระบบ</span>
+                </a>
+                <a href="javascript:void(0)" onclick="fixDatabase()" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group text-yellow-500/80 hover:text-yellow-400">
+                    <i data-lucide="database" class="w-4 h-4 transition-colors"></i>
+                    <span class="text-sm font-medium">ปรับปรุงฐานข้อมูล</span>
+                </a>
+            <?php endif; ?>
+
+            <?php if ($role === 'admin'): ?>
+                <div class="pt-4 pb-2 px-4 text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">School Admin</div>
+                <a href="javascript:void(0)" onclick="showSection('manage-teachers')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">
+                    <i data-lucide="users" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
+                    <span class="text-sm font-medium">จัดการข้อมูลครู</span>
+                </a>
+                <a href="javascript:void(0)" onclick="showSection('approve-teachers')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">
+                    <i data-lucide="user-plus" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
+                    <span class="text-sm font-medium">อนุมัติครู</span>
+                </a>
+                <a href="javascript:void(0)" onclick="showSection('manage-students')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">
+                    <i data-lucide="graduation-cap" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
+                    <span class="text-sm font-medium">จัดการนักเรียน</span>
+                </a>
+                <a href="javascript:void(0)" onclick="showSection('manage-subjects')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">
+                    <i data-lucide="book-open" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
+                    <span class="text-sm font-medium">จัดการรายวิชา</span>
+                </a>
+                <a href="javascript:void(0)" onclick="showSection('academic-management')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">
+                    <i data-lucide="calendar" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
+                    <span class="text-sm font-medium">จัดการปีการศึกษา</span>
+                </a>
+                <a href="javascript:void(0)" onclick="showSection('school-settings')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">
+                    <i data-lucide="settings-2" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
+                    <span class="text-sm font-medium">ตั้งค่าโรงเรียน</span>
+                </a>
+            <?php endif; ?>
+
+            <?php if ($role === 'teacher' && $_SESSION['is_academic']): ?>
+                <div class="pt-4 pb-2 px-4 text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">งานวิชาการ</div>
+                <a href="javascript:void(0)" onclick="showSection('manage-students')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">
+                    <i data-lucide="graduation-cap" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
+                    <span class="text-sm font-medium">จัดการนักเรียน</span>
+                </a>
+                <a href="javascript:void(0)" onclick="showSection('manage-subjects')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">
+                    <i data-lucide="book-open" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
+                    <span class="text-sm font-medium">จัดการรายวิชา</span>
+                </a>
+                <a href="javascript:void(0)" onclick="showSection('academic-management')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">
+                    <i data-lucide="calendar" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
+                    <span class="text-sm font-medium">จัดการปีการศึกษา</span>
+                </a>
+            <?php endif; ?>
+
+            <?php if ($role === 'teacher' || $role === 'admin'): ?>
+                <div class="pt-4 pb-2 px-4 text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">เมนูครู</div>
+                <a href="javascript:void(0)" onclick="showSection('record-grades')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">
+                    <i data-lucide="edit-3" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
+                    <span class="text-sm font-medium">บันทึกผลการเรียน</span>
+                </a>
+                <a href="javascript:void(0)" onclick="showSection('record-learner-development')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">
+                    <i data-lucide="star" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
+                    <span class="text-sm font-medium">กิจกรรมพัฒนาผู้เรียน</span>
+                </a>
+                <a href="javascript:void(0)" onclick="showSection('record-health')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">
+                    <i data-lucide="activity" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
+                    <span class="text-sm font-medium">น้ำหนัก-ส่วนสูง</span>
+                </a>
+                <a href="javascript:void(0)" onclick="showSection('manage-timetable')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">
+                    <i data-lucide="clock" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
+                    <span class="text-sm font-medium">จัดการตารางสอน</span>
+                </a>
+                <a href="javascript:void(0)" onclick="showSection('record-attendance')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">
+                    <i data-lucide="clipboard-check" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
+                    <span class="text-sm font-medium">บันทึกการมาเรียน</span>
+                </a>
+                <a href="javascript:void(0)" onclick="showSection('record-behavior')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">
+                    <i data-lucide="smile" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
+                    <span class="text-sm font-medium">บันทึกพฤติกรรม</span>
+                </a>
+                <a href="javascript:void(0)" onclick="showSection('reports')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group text-green-400/90 hover:text-green-400">
+                    <i data-lucide="file-text" class="w-4 h-4 transition-colors"></i>
+                    <span class="text-sm font-medium">รายงานเอกสาร (ปพ.)</span>
+                </a>
+            <?php endif; ?>
+        </nav>
+
+        <div class="p-4 border-t border-slate-800 bg-slate-900/50">
             <div class="bg-slate-800/40 rounded-2xl p-4 border border-slate-700/50 shadow-inner">
                 <div class="flex items-center gap-3 mb-4">
                     <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-600 to-blue-400 flex items-center justify-center text-sm font-bold shadow-lg border-2 border-slate-700">
@@ -168,7 +342,7 @@ try {
                     </div>
                 </div>
                 <div class="flex gap-2">
-                    <button onclick="showSection('profile')" class="flex-1 flex items-center justify-center gap-1.5 py-2 bg-slate-700/50 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-[10px] font-semibold transition-all border border-slate-600/50">
+                    <button id="profile-btn-bottom" onclick="showSection('profile')" class="flex-1 flex items-center justify-center gap-1.5 py-2 bg-slate-700/50 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-[10px] font-semibold transition-all border border-slate-600/50">
                         <i data-lucide="user" class="w-3 h-3"></i> โปรไฟล์
                     </button>
                     <a href="logout.php" class="flex-1 flex items-center justify-center gap-1.5 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl text-[10px] font-semibold transition-all border border-red-500/20">
@@ -177,50 +351,6 @@ try {
                 </div>
             </div>
         </div>
-        
-        <nav class="flex-1 p-4 space-y-1 overflow-y-auto custom-scrollbar">
-            <?php if ($role !== 'teacher' || $_SESSION['is_academic']): ?>
-                <a href="javascript:void(0)" onclick="showSection('overview')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">ภาพรวม</a>
-            <?php endif; ?>
-            
-            <?php if ($role === 'super_admin'): ?>
-                <div class="pt-4 pb-2 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Super Admin</div>
-                <a href="javascript:void(0)" onclick="showSection('manage-schools')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">จัดการโรงเรียน</a>
-                <a href="javascript:void(0)" onclick="showSection('approve-admins')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">อนุมัติ Admin โรงเรียน</a>
-                <a href="javascript:void(0)" onclick="showSection('manage-super-admins')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">จัดการ Super Admin</a>
-                <a href="javascript:void(0)" onclick="showSection('app-settings')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">ตั้งค่าระบบ</a>
-                <a href="javascript:void(0)" onclick="fixDatabase()" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors text-yellow-400 cursor-pointer">ปรับปรุงฐานข้อมูล</a>
-                <a href="javascript:void(0)" onclick="showSection('profile')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">แก้ไขโปรไฟล์</a>
-<?php endif; ?>
-
-            <?php if ($role === 'admin'): ?>
-                <div class="pt-4 pb-2 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">School Admin</div>
-                <a href="javascript:void(0)" onclick="showSection('manage-teachers')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">จัดการข้อมูลครู</a>
-                <a href="javascript:void(0)" onclick="showSection('approve-teachers')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">อนุมัติครู</a>
-                <a href="javascript:void(0)" onclick="showSection('manage-students')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">จัดการนักเรียน</a>
-                <a href="javascript:void(0)" onclick="showSection('manage-subjects')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">จัดการรายวิชา</a>
-                <a href="javascript:void(0)" onclick="showSection('academic-management')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">จัดการปีการศึกษา/จบการศึกษา</a>
-                <a href="javascript:void(0)" onclick="showSection('school-settings')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">ตั้งค่าโรงเรียน/โลโก้</a>
-            <?php endif; ?>
-
-            <?php if ($role === 'teacher' && $_SESSION['is_academic']): ?>
-                <div class="pt-4 pb-2 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">งานวิชาการ</div>
-                <a href="javascript:void(0)" onclick="showSection('manage-students')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">จัดการนักเรียน</a>
-                <a href="javascript:void(0)" onclick="showSection('manage-subjects')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">จัดการรายวิชา</a>
-                <a href="javascript:void(0)" onclick="showSection('academic-management')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">จัดการปีการศึกษา/จบการศึกษา</a>
-            <?php endif; ?>
-
-            <?php if ($role === 'teacher' || $role === 'admin'): ?>
-                <div class="pt-4 pb-2 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">เมนูครู</div>
-                <a href="javascript:void(0)" onclick="showSection('record-grades')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">บันทึกผลการเรียน</a>
-                <a href="javascript:void(0)" onclick="showSection('record-learner-development')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">บันทึกกิจกรรมพัฒนาผู้เรียน</a>
-                <a href="javascript:void(0)" onclick="showSection('record-health')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">บันทึกน้ำหนัก-ส่วนสูง</a>
-                <a href="javascript:void(0)" onclick="showSection('manage-timetable')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">จัดการตารางสอน</a>
-                <a href="javascript:void(0)" onclick="showSection('record-attendance')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">บันทึกการมาเรียน</a>
-                <a href="javascript:void(0)" onclick="showSection('record-behavior')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">บันทึกพฤติกรรม</a>
-                <a href="javascript:void(0)" onclick="showSection('reports')" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer text-green-400">รายงานเอกสาร (ปพ.5/ปพ.6)</a>
-            <?php endif; ?>
-        </nav>
     </aside>
 
     <!-- Main Content -->
@@ -250,6 +380,46 @@ try {
                     <h3 class="text-xl font-bold text-slate-800"><?= $username ?></h3>
                     <p class="text-xs text-slate-400 mt-2">คุณกำลังใช้งานในสิทธิ์: <span class="text-blue-600 font-semibold"><?= $role ?></span></p>
                 </div>
+            </div>
+        </div>
+
+        <div id="profile" class="section hidden space-y-6">
+            <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
+                <div class="flex items-center gap-4 mb-8">
+                    <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center">
+                        <i data-lucide="user-cog" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-slate-800">แก้ไขโปรไฟล์ส่วนตัว</h3>
+                        <p class="text-sm text-slate-500">จัดการข้อมูลชื่อและรหัสผ่านของคุณ</p>
+                    </div>
+                </div>
+
+                <form id="updateProfileForm" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-2">
+                            <label class="block text-sm font-semibold text-slate-700 ml-1">ชื่อ-นามสกุล</label>
+                            <div class="relative">
+                                <i data-lucide="user" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                                <input type="text" id="prof_name" value="<?= $username ?>" required class="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all">
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="block text-sm font-semibold text-slate-700 ml-1">รหัสผ่านใหม่ <span class="text-slate-400 font-normal">(เว้นว่างไว้หากไม่ต้องการเปลี่ยน)</span></label>
+                            <div class="relative">
+                                <i data-lucide="lock" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                                <input type="password" id="prof_password" placeholder="ระบุรหัสผ่านใหม่" class="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="pt-4 flex justify-end">
+                        <button type="submit" class="bg-blue-600 text-white px-8 py-3 rounded-2xl font-bold hover:bg-blue-700 shadow-lg shadow-blue-600/20 transition-all cursor-pointer flex items-center gap-2">
+                            <i data-lucide="save" class="w-4 h-4"></i>
+                            บันทึกการเปลี่ยนแปลง
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
 
@@ -393,25 +563,6 @@ try {
             </div>
         </div>
 
-        <div id="profile" class="section hidden space-y-6">
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                <h3 class="text-lg font-bold mb-4">แก้ไขโปรไฟล์ส่วนตัว</h3>
-                <form id="updateProfileForm" class="space-y-4">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1">ชื่อ-นามสกุล</label>
-                            <input type="text" id="prof_name" value="<?= $username ?>" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1">รหัสผ่านใหม่ (เว้นว่างไว้หากไม่ต้องการเปลี่ยน)</label>
-                            <input type="password" id="prof_password" placeholder="ระบุรหัสผ่านใหม่" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none">
-                        </div>
-                    </div>
-                    <div class="flex justify-end">
-                        <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-xl font-semibold hover:bg-blue-700 transition-all cursor-pointer">บันทึกการเปลี่ยนแปลง</button>
-                    </div>
-                </form>
-            </div>
         </div>
         <?php endif; ?>
 
@@ -859,6 +1010,9 @@ try {
         <?php else: ?>
             showSection('overview');
         <?php endif; ?>
+
+        // Initialize Lucide Icons
+        lucide.createIcons();
     </script>
 </body>
 </html>
