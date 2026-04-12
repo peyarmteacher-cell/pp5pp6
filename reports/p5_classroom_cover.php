@@ -323,10 +323,13 @@ while ($row = $stmt_ld->fetch()) {
 
     .director-sig {
         text-align: center;
-        margin-top: 25px; /* เพิ่มพื้นที่สำหรับเซ็นชื่อ */
+        margin-top: 45px; /* เพิ่มพื้นที่ว่างสำหรับเซ็นชื่อให้มากขึ้น */
+    }
+    .director-sig p {
+        margin: 2px 0; /* ปรับให้ชื่อและตำแหน่งอยู่ชิดกัน */
     }
     .date-row {
-        margin-top: 15px; /* เพิ่มพื้นที่ */
+        margin-top: 5px; /* ปรับให้ตำแหน่งผู้อำนวยการอยู่เกือบติดกับวันที่ */
         text-align: center;
         font-size: 16px;
     }
