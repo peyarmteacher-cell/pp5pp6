@@ -235,12 +235,11 @@ while ($row = $stmt_ld->fetch()) {
 
     /* --- ตารางประเมิน 3 ตารางด้านล่าง --- */
     .evaluation-grid {
-        margin-bottom: 15px;
+        margin-bottom: 15px; /* ระยะห่างระหว่างตารางวิชาการกับตารางคุณลักษณะ */
     }
     .eval-table {
         width: 100%;
         border-collapse: collapse;
-        margin-bottom: 10px;
     }
     .eval-table th, .eval-table td {
         border: 1px solid #000;
@@ -255,7 +254,7 @@ while ($row = $stmt_ld->fetch()) {
         padding-top: 10px;
         display: flex;
         flex-direction: column;
-        align-items: center; /* จัดกึ่งกลางทั้งหมดเพื่อให้ตรงกับผู้อำนวยการ */
+        align-items: center;
     }
     .approval-title {
         font-weight: bold;
@@ -274,7 +273,7 @@ while ($row = $stmt_ld->fetch()) {
         display: flex;
         align-items: baseline;
         margin-bottom: 5px;
-        width: 400px; /* ปรับความกว้างให้พอดี */
+        width: 550px; /* ขยายความกว้างรวมของแถวลงชื่อ */
     }
     .sig-line {
         flex-grow: 1;
@@ -282,16 +281,17 @@ while ($row = $stmt_ld->fetch()) {
         margin-right: 10px;
     }
     .sig-label {
-        width: 180px;
+        width: 280px; /* ขยายความกว้างของตำแหน่งเพื่อไม่ให้ข้อความตกบรรทัด */
         text-align: left;
         font-size: 15px;
+        white-space: nowrap; /* ป้องกันข้อความขึ้นบรรทัดใหม่ */
     }
     .sig-name-box {
         text-align: center;
-        width: 400px;
+        width: 550px;
         margin-top: -2px;
         margin-bottom: 10px;
-        padding-right: 180px; /* ขยับชื่อให้ตรงกับเส้นลงชื่อ */
+        padding-right: 280px; /* ปรับให้ชื่อตรงกับเส้นลงชื่อ */
     }
 
     .approval-check-row {
@@ -445,7 +445,7 @@ while ($row = $stmt_ld->fetch()) {
             </table>
         </div>
 
-        <div style="width: 50%; margin: 0 auto;">
+        <div style="width: 50%; margin-top: 15px;">
             <table class="eval-table">
                 <tr>
                     <th colspan="5">สมรรถนะสำคัญของผู้เรียน</th>
