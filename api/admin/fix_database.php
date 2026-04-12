@@ -661,6 +661,29 @@ try {
         UNIQUE KEY unique_behavior (student_id, category_id, check_date)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
+    // 16.5 เพิ่มตารางบันทึกสมรรถนะสำคัญของผู้เรียน 5 ด้าน
+    $pdo->exec("CREATE TABLE IF NOT EXISTS competency_scores (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        student_id INT,
+        classroom_id INT,
+        teacher_id INT,
+        academic_year VARCHAR(4),
+        semester INT,
+        item1 INT DEFAULT 0, -- ความสามารถในการสื่อสาร
+        item2 INT DEFAULT 0, -- ความสามารถในการคิด
+        item3 INT DEFAULT 0, -- ความสามารถในการแก้ปัญหา
+        item4 INT DEFAULT 0, -- ความสามารถในการใช้ทักษะชีวิต
+        item5 INT DEFAULT 0, -- ความสามารถในการใช้เทคโนโลยี
+        average_score FLOAT DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+        FOREIGN KEY (classroom_id) REFERENCES classrooms(id) ON DELETE CASCADE,
+        FOREIGN KEY (teacher_id) REFERENCES users(id) ON DELETE SET NULL,
+        UNIQUE KEY unique_competency (student_id, academic_year, semester)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    $results[] = "ตรวจสอบ/สร้างตาราง competency_scores สำเร็จ";
+
     // เพิ่มหมวดหมู่พฤติกรรมเริ่มต้น (ถ้ายังไม่มี)
     $default_categories = [
         'หน้าที่รับผิดชอบ ความเอาใจใส่การเรียน',

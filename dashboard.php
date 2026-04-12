@@ -139,6 +139,9 @@ try {
                 } else if (sectionId === 'record-behavior') {
                     targetId = sectionId;
                     if (typeof initBehaviorSection === 'function') initBehaviorSection();
+                } else if (sectionId === 'competency-assessment') {
+                    targetId = sectionId;
+                    if (typeof initCompetencySection === 'function') initCompetencySection();
                 } else if (sectionId === 'academic-management') {
                     targetId = sectionId;
                     if (typeof loadAcademicYears === 'function') loadAcademicYears();
@@ -310,6 +313,10 @@ try {
                 <a href="javascript:void(0)" onclick="showSection('record-health')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">
                     <i data-lucide="activity" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
                     <span class="text-sm font-medium">น้ำหนัก-ส่วนสูง</span>
+                </a>
+                <a href="javascript:void(0)" onclick="showSection('competency-assessment')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">
+                    <i data-lucide="award" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
+                    <span class="text-sm font-medium">ประเมินสมรรถนะ</span>
                 </a>
                 <a href="javascript:void(0)" onclick="showSection('manage-timetable')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">
                     <i data-lucide="clock" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
@@ -582,6 +589,7 @@ try {
         <?php include 'includes/dashboard/grading.php'; ?>
         <?php include 'includes/dashboard/learner_development.php'; ?>
         <?php include 'includes/dashboard/health_records.php'; ?>
+        <?php include 'includes/dashboard/competency.php'; ?>
         <?php include 'includes/dashboard/timetable.php'; ?>
         <?php include 'includes/dashboard/attendance.php'; ?>
         <?php include 'includes/dashboard/behavior.php'; ?>
