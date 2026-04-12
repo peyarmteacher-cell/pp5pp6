@@ -235,14 +235,12 @@ while ($row = $stmt_ld->fetch()) {
 
     /* --- ตารางประเมิน 3 ตารางด้านล่าง --- */
     .evaluation-grid {
-        display: grid;
-        grid-template-columns: 1.2fr 1fr;
-        gap: 15px;
         margin-bottom: 15px;
     }
     .eval-table {
         width: 100%;
         border-collapse: collapse;
+        margin-bottom: 10px;
     }
     .eval-table th, .eval-table td {
         border: 1px solid #000;
@@ -255,6 +253,9 @@ while ($row = $stmt_ld->fetch()) {
     .approval-section {
         margin-top: auto;
         padding-top: 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: center; /* จัดกึ่งกลางทั้งหมดเพื่อให้ตรงกับผู้อำนวยการ */
     }
     .approval-title {
         font-weight: bold;
@@ -265,15 +266,15 @@ while ($row = $stmt_ld->fetch()) {
     .sig-container {
         display: flex;
         flex-direction: column;
-        align-items: flex-end;
+        align-items: center;
         width: 100%;
         margin-bottom: 15px;
     }
     .sig-row {
         display: flex;
         align-items: baseline;
-        margin-bottom: 8px;
-        width: 450px;
+        margin-bottom: 5px;
+        width: 400px; /* ปรับความกว้างให้พอดี */
     }
     .sig-line {
         flex-grow: 1;
@@ -284,6 +285,13 @@ while ($row = $stmt_ld->fetch()) {
         width: 180px;
         text-align: left;
         font-size: 15px;
+    }
+    .sig-name-box {
+        text-align: center;
+        width: 400px;
+        margin-top: -2px;
+        margin-bottom: 10px;
+        padding-right: 180px; /* ขยับชื่อให้ตรงกับเส้นลงชื่อ */
     }
 
     .approval-check-row {
@@ -413,37 +421,31 @@ while ($row = $stmt_ld->fetch()) {
         </table>
 
         <div class="evaluation-grid">
-            <div>
-                <table class="eval-table">
-                    <tr>
-                        <th colspan="5">คุณลักษณะอันพึงประสงค์</th>
-                    </tr>
-                    <tr>
-                        <td width="30%" class="font-bold">จำนวนนักเรียน</td>
-                        <td width="17.5%">ไม่ผ่าน<br>-</td>
-                        <td width="17.5%">ผ่าน<br>-</td>
-                        <td width="17.5%">ดี<br>-</td>
-                        <td width="17.5%">ดีเยี่ยม<br>-</td>
-                    </tr>
-                </table>
-            </div>
-            <div>
-                <table class="eval-table">
-                    <tr>
-                        <th colspan="5">การอ่าน คิดวิเคราะห์ และเขียน</th>
-                    </tr>
-                    <tr>
-                        <td width="30%" class="font-bold">จำนวนนักเรียน</td>
-                        <td width="17.5%">ไม่ผ่าน<br>-</td>
-                        <td width="17.5%">ผ่าน<br>-</td>
-                        <td width="17.5%">ดี<br>-</td>
-                        <td width="17.5%">ดีเยี่ยม<br>-</td>
-                    </tr>
-                </table>
-            </div>
+            <table class="eval-table">
+                <tr>
+                    <th rowspan="2" width="20%">สรุปการประเมิน</th>
+                    <th colspan="4">คุณลักษณะอันพึงประสงค์</th>
+                    <th colspan="4">การอ่าน คิดวิเคราะห์ และเขียน</th>
+                </tr>
+                <tr>
+                    <th width="10%">ไม่ผ่าน</th>
+                    <th width="10%">ผ่าน</th>
+                    <th width="10%">ดี</th>
+                    <th width="10%">ดีเยี่ยม</th>
+                    <th width="10%">ไม่ผ่าน</th>
+                    <th width="10%">ผ่าน</th>
+                    <th width="10%">ดี</th>
+                    <th width="10%">ดีเยี่ยม</th>
+                </tr>
+                <tr>
+                    <td class="font-bold">จำนวนนักเรียน</td>
+                    <td>-</td><td>-</td><td>-</td><td>-</td>
+                    <td>-</td><td>-</td><td>-</td><td>-</td>
+                </tr>
+            </table>
         </div>
 
-        <div style="width: 54.5%;">
+        <div style="width: 50%; margin: 0 auto;">
             <table class="eval-table">
                 <tr>
                     <th colspan="5">สมรรถนะสำคัญของผู้เรียน</th>
@@ -463,27 +465,27 @@ while ($row = $stmt_ld->fetch()) {
             
             <div class="sig-container">
                 <div class="sig-row">
-                    <div class="sig-line"></div>
+                    ลงชื่อ <div class="sig-line"></div>
                     <div class="sig-label">ครูประจำชั้น/ครูที่ปรึกษา</div>
                 </div>
-                <div style="text-align: right; width: 450px; padding-right: 190px; margin-top: -5px; margin-bottom: 5px;">
+                <div class="sig-name-box">
                     ( <?= $class_teacher_1 ?: '..........................................................' ?> )
                 </div>
 
                 <?php if ($deputy_director_name): ?>
                 <div class="sig-row">
-                    <div class="sig-line"></div>
+                    ลงชื่อ <div class="sig-line"></div>
                     <div class="sig-label"><?= $deputy_director_position ?></div>
                 </div>
-                <div style="text-align: right; width: 450px; padding-right: 190px; margin-top: -5px; margin-bottom: 5px;">
+                <div class="sig-name-box">
                     ( <?= $deputy_director_name ?> )
                 </div>
                 <?php else: ?>
                 <div class="sig-row">
-                    <div class="sig-line"></div>
+                    ลงชื่อ <div class="sig-line"></div>
                     <div class="sig-label"><?= $academic_head_position ?></div>
                 </div>
-                <div style="text-align: right; width: 450px; padding-right: 190px; margin-top: -5px; margin-bottom: 5px;">
+                <div class="sig-name-box">
                     ( <?= $academic_head_name ?: '..........................................................' ?> )
                 </div>
                 <?php endif; ?>
@@ -500,7 +502,7 @@ while ($row = $stmt_ld->fetch()) {
             </div>
 
             <div class="date-row">
-                วันที่ <span class="dotted-line" style="min-width: 30px;"></span> เดือน <span class="dotted-line" style="min-width: 100px;"></span> พ.ศ. <span class="dotted-line" style="min-width: 50px;"></span>
+                วันที่ <span class="dotted-line" style="min-width: 40px;"></span> เดือน <span class="dotted-line" style="min-width: 120px;"></span> พ.ศ. <span class="dotted-line" style="min-width: 60px;"></span>
             </div>
         </div>
     </div>
