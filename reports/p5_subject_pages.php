@@ -33,7 +33,29 @@ foreach ($grades_raw as $g) {
 ?>
 
 <!-- Page 1: Unit Scores -->
-<div class="page">
+<style>
+    .page-unit-summary {
+        padding-left: 10mm !important;
+        padding-right: 10mm !important;
+    }
+    .page-unit-summary table {
+        font-size: 12px; /* ลดขนาดตัวอักษร */
+    }
+    .page-unit-summary th, .page-unit-summary td {
+        padding: 3px 2px !important; /* ลด padding */
+    }
+    .col-unit {
+        width: 30px !important; /* ปรับคอลัมน์หน่วยให้แคบลง */
+    }
+    .col-name {
+        width: auto !important; /* ให้ชื่อขยายตามพื้นที่ */
+        min-width: 180px;
+    }
+    .col-summary {
+        width: 45px !important;
+    }
+</style>
+<div class="page page-unit-summary">
     <div class="header">
         <h3 style="margin: 0;">สรุปผลการเรียนรายหน่วยการเรียนรู้</h3>
         <p style="margin: 5px 0;">รายวิชา <?= $subject_code ?> <?= $subject_name ?> ชั้น <?= $level ?>/<?= $room ?> ภาคเรียนที่ <?= $semester ?> ปีการศึกษา <?= $year ?></p>
@@ -42,15 +64,15 @@ foreach ($grades_raw as $g) {
     <table class="table-bordered">
         <thead>
             <tr>
-                <th style="width: 40px;">เลขที่</th>
-                <th>ชื่อ - นามสกุล</th>
+                <th style="width: 35px;">เลขที่</th>
+                <th class="col-name">ชื่อ - นามสกุล</th>
                 <?php foreach ($units as $index => $unit): ?>
-                    <th style="width: 40px;">น.<?= $index + 1 ?></th>
+                    <th class="col-unit">น.<?= $index + 1 ?></th>
                 <?php endforeach; ?>
-                <th style="width: 50px;">รวมหน่วย</th>
-                <th style="width: 50px;">ปลายภาค</th>
-                <th style="width: 50px;">รวม</th>
-                <th style="width: 40px;">เกรด</th>
+                <th class="col-summary">รวมหน่วย</th>
+                <th class="col-summary">ปลายภาค</th>
+                <th class="col-summary">รวม</th>
+                <th style="width: 35px;">เกรด</th>
             </tr>
         </thead>
         <tbody>
