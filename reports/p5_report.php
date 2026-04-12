@@ -83,7 +83,7 @@ $students = $stmt->fetchAll();
 
 if ($type === 'class' && $classroom_id) {
     include 'p5_classroom_cover.php';
-    // หลังจากแสดงหน้าปกรายชั้นแล้ว ให้แสดงหน้ารายงานนักเรียนต่อ
+    exit;
 } else if ($type === 'subject' && $assignment_id) {
     $no_footer = true;
     include 'p5_cover.php';
