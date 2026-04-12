@@ -174,16 +174,28 @@ if ($classroom_id) {
 <style>
     .cover-container {
         border: 2px solid #000;
-        padding: 40px;
+        padding: 30px 40px;
         height: 100%;
         display: flex;
         flex-direction: column;
+        position: relative;
+    }
+    .logo-container {
+        position: absolute;
+        top: 30px;
+        left: 40px;
+    }
+    .logo-img {
+        width: 80px;
+        height: 80px;
+        object-fit: contain;
     }
     .main-title {
         font-size: 24px;
         font-weight: bold;
         text-align: center;
         margin-bottom: 5px;
+        margin-top: 10px;
     }
     .school-name {
         font-size: 22px;
@@ -196,19 +208,48 @@ if ($classroom_id) {
         text-align: center;
         margin-bottom: 20px;
     }
-    .info-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
-        gap: 10px;
+    
+    .flex-row {
+        display: flex;
+        align-items: baseline;
+        font-size: 18px;
+        margin-bottom: 12px;
+        width: 100%;
+        white-space: nowrap;
+    }
+    .flex-fill {
+        flex-grow: 1;
+        border-bottom: 1px dotted #000;
+        margin: 0 5px;
+        text-align: center;
+        min-height: 1.2em;
+    }
+    .flex-fixed {
+        flex-shrink: 0;
+    }
+
+    .teacher-section {
+        margin: 20px 0;
+        width: 100%;
+    }
+    .teacher-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
         margin-bottom: 10px;
     }
-    .info-line {
+    .teacher-label {
+        width: 200px;
+        text-align: left;
+        padding-left: 10px;
+        flex-shrink: 0;
+    }
+    .teacher-dotted {
+        flex-grow: 1;
         border-bottom: 1px dotted #000;
-        padding: 0 5px;
-        display: inline-block;
-        min-width: 50px;
         text-align: center;
     }
+
     .section-title {
         font-weight: bold;
         text-align: center;
@@ -219,12 +260,13 @@ if ($classroom_id) {
         width: 100%;
         border-collapse: collapse;
         margin-bottom: 15px;
+        border: 1px solid #000;
     }
     .stats-table td {
-        border: none;
-        text-align: left;
-        padding: 2px 5px;
-        font-size: 16px;
+        border: 1px solid #000;
+        padding: 8px 10px;
+        font-size: 15px;
+        white-space: nowrap;
     }
     .summary-table {
         width: 100%;
@@ -234,98 +276,113 @@ if ($classroom_id) {
     .summary-table th, .summary-table td {
         border: 1px solid #000;
         padding: 4px;
-        font-size: 14px;
+        font-size: 13px;
+        white-space: nowrap;
     }
     .approval-section {
         margin-top: auto;
-        padding-top: 20px;
+        padding-top: 10px;
     }
-    .signature-line {
-        margin-bottom: 15px;
+    .signature-group {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        margin-right: 20px;
+    }
+    .signature-item {
+        display: flex;
+        align-items: baseline;
+        margin-bottom: 12px;
+        width: 100%;
+        justify-content: flex-end;
+    }
+    .sig-label {
+        width: 60px;
         text-align: right;
-        padding-right: 50px;
+    }
+    .sig-dotted {
+        width: 250px;
+        border-bottom: 1px dotted #000;
+        margin: 0 10px;
+    }
+    .sig-pos {
+        width: 220px;
+        text-align: left;
     }
     .approval-box {
         display: flex;
         align-items: center;
-        gap: 10px;
-        margin: 10px 0;
+        gap: 15px;
+        margin: 15px 0;
         justify-content: center;
     }
     .check-box {
-        width: 20px;
-        height: 20px;
+        width: 18px;
+        height: 18px;
         border: 1px solid #000;
         display: inline-block;
-    }
-    .dotted-line {
-        border-bottom: 1px dotted #000;
-        display: inline-block;
-        width: 250px;
     }
 </style>
 
 <div class="page">
     <div class="cover-container">
+        <?php if ($logo_url): ?>
+        <div class="logo-container">
+            <img src="<?= $logo_url ?>" class="logo-img" referrerPolicy="no-referrer">
+        </div>
+        <?php endif; ?>
+
         <div class="main-title">สมุดบันทึกการพัฒนาคุณภาพผู้เรียน (ปพ.๕)</div>
         <div class="school-name">โรงเรียน<?= $school_name ?></div>
         <div class="affiliation"><?= $affiliation ?></div>
 
-        <div style="font-size: 18px; margin-bottom: 15px;">
-            ชั้น <span class="info-line" style="width: 150px;"><?= $level_name ?>/<?= $room_name ?></span>
-            ภาคเรียนที่ <span class="info-line" style="width: 50px;"><?= $semester === 'annual' ? '1-2' : $semester ?></span>
-            ปีการศึกษา <span class="info-line" style="width: 80px;"><?= $year ?></span>
+        <div class="flex-row">
+            <div class="flex-fixed">ชั้น</div>
+            <div class="flex-fill"><?= $level_name ?>/<?= $room_name ?></div>
+            <div class="flex-fixed">ภาคเรียนที่</div>
+            <div class="flex-fill"><?= $semester === 'annual' ? '1-2' : $semester ?></div>
+            <div class="flex-fixed">ปีการศึกษา</div>
+            <div class="flex-fill"><?= $year ?></div>
         </div>
 
-        <div style="font-size: 18px; margin-bottom: 15px;">
-            รายวิชา <span class="info-line" style="width: 200px;"><?= $subject_name ?></span>
-            รหัส <span class="info-line" style="width: 100px;"><?= $subject_code ?></span>
-            เวลาเรียน <span class="info-line" style="width: 50px;"><?= $subject_hours ?></span> ชั่วโมง/ปี
+        <div class="flex-row">
+            <div class="flex-fixed">รายวิชา</div>
+            <div class="flex-fill"><?= $subject_name ?></div>
+            <div class="flex-fixed">รหัส</div>
+            <div class="flex-fill"><?= $subject_code ?></div>
+            <div class="flex-fixed">เวลาเรียน</div>
+            <div class="flex-fill"><?= $subject_hours ?></div>
+            <div class="flex-fixed">ชั่วโมง/ปี</div>
         </div>
 
-        <div style="font-size: 18px; margin-bottom: 25px;">
-            กลุ่มสาระการเรียนรู้ <span class="info-line" style="width: 300px;"><?= $learning_area ?></span>
+        <div class="flex-row">
+            <div class="flex-fixed">กลุ่มสาระการเรียนรู้</div>
+            <div class="flex-fill"><?= $learning_area ?></div>
         </div>
 
-        <div style="text-align: center; margin-bottom: 30px;">
-            <div style="margin-bottom: 10px;">
-                <span class="dotted-line" style="width: 400px;"><?= $teacher_name ?></span> ครูประจำวิชา
+        <div class="teacher-section">
+            <div class="teacher-row">
+                <div class="teacher-dotted"><?= $teacher_name ?></div>
+                <div class="teacher-label">ครูประจำวิชา</div>
             </div>
-            <div>
-                <span class="dotted-line" style="width: 400px;"><?= $class_teacher_name ?></span> ครูที่ปรึกษา/ครูประจำชั้น
+            <div class="teacher-row">
+                <div class="teacher-dotted"><?= $class_teacher_name ?></div>
+                <div class="teacher-label">ครูที่ปรึกษา/ครูประจำชั้น</div>
             </div>
         </div>
 
         <table class="stats-table">
             <tr>
-                <td width="30%">นักเรียนต้นปีการศึกษา</td>
-                <td>ชาย <span class="info-line" style="width: 40px;"><?= $male_count ?></span> คน</td>
-                <td>หญิง <span class="info-line" style="width: 40px;"><?= $female_count ?></span> คน</td>
-                <td>รวม <span class="info-line" style="width: 40px;"><?= $total_count ?></span> คน</td>
-            </tr>
-            <tr>
-                <td>ออกระหว่างปีการศึกษา</td>
-                <td>ชาย <span class="info-line" style="width: 40px;">0</span> คน</td>
-                <td>หญิง <span class="info-line" style="width: 40px;">0</span> คน</td>
-                <td>รวม <span class="info-line" style="width: 40px;">0</span> คน</td>
-            </tr>
-            <tr>
-                <td>เข้าระหว่างปีการศึกษา</td>
-                <td>ชาย <span class="info-line" style="width: 40px;">0</span> คน</td>
-                <td>หญิง <span class="info-line" style="width: 40px;">0</span> คน</td>
-                <td>รวม <span class="info-line" style="width: 40px;">0</span> คน</td>
-            </tr>
-            <tr>
-                <td class="font-bold">รวมสิ้นปีการศึกษา</td>
-                <td>ชาย <span class="info-line" style="width: 40px;"><?= $male_count ?></span> คน</td>
-                <td>หญิง <span class="info-line" style="width: 40px;"><?= $female_count ?></span> คน</td>
-                <td>รวม <span class="info-line" style="width: 40px;"><?= $total_count ?></span> คน</td>
+                <td class="font-bold" style="font-size: 15px;">จำนวนนักเรียนทั้งหมด</td>
+                <td style="text-align: center;">ชาย <span style="display: inline-block; width: 40px; border-bottom: 1px dotted #000;"><?= $male_count ?></span> คน</td>
+                <td style="text-align: center;">หญิง <span style="display: inline-block; width: 40px; border-bottom: 1px dotted #000;"><?= $female_count ?></span> คน</td>
+                <td style="text-align: center;">รวม <span style="display: inline-block; width: 40px; border-bottom: 1px dotted #000;"><?= $total_count ?></span> คน</td>
             </tr>
         </table>
 
         <div class="section-title">สรุปผลสัมฤทธิ์ทางการเรียนรู้</div>
         <table class="summary-table">
-            <tr class="bg-slate-50">
+            <tr style="background-color: #f8fafc;">
                 <th width="15%">ระดับ</th>
                 <th>มส</th>
                 <th>ร</th>
@@ -339,105 +396,130 @@ if ($classroom_id) {
                 <th>4</th>
             </tr>
             <tr>
-                <td class="font-bold">จำนวนนักเรียน</td>
-                <td><?= $grade_dist['มส'] ?: '-' ?></td>
-                <td><?= $grade_dist['ร'] ?: '-' ?></td>
-                <td><?= $grade_dist['0'] ?: '-' ?></td>
-                <td><?= $grade_dist['1'] ?: '-' ?></td>
-                <td><?= $grade_dist['1.5'] ?: '-' ?></td>
-                <td><?= $grade_dist['2'] ?: '-' ?></td>
-                <td><?= $grade_dist['2.5'] ?: '-' ?></td>
-                <td><?= $grade_dist['3'] ?: '-' ?></td>
-                <td><?= $grade_dist['3.5'] ?: '-' ?></td>
-                <td><?= $grade_dist['4'] ?: '-' ?></td>
+                <td class="font-bold" style="text-align: center;">จำนวนนักเรียน</td>
+                <td style="text-align: center;"><?= $grade_dist['มส'] ?: '-' ?></td>
+                <td style="text-align: center;"><?= $grade_dist['ร'] ?: '-' ?></td>
+                <td style="text-align: center;"><?= $grade_dist['0'] ?: '-' ?></td>
+                <td style="text-align: center;"><?= $grade_dist['1'] ?: '-' ?></td>
+                <td style="text-align: center;"><?= $grade_dist['1.5'] ?: '-' ?></td>
+                <td style="text-align: center;"><?= $grade_dist['2'] ?: '-' ?></td>
+                <td style="text-align: center;"><?= $grade_dist['2.5'] ?: '-' ?></td>
+                <td style="text-align: center;"><?= $grade_dist['3'] ?: '-' ?></td>
+                <td style="text-align: center;"><?= $grade_dist['3.5'] ?: '-' ?></td>
+                <td style="text-align: center;"><?= $grade_dist['4'] ?: '-' ?></td>
             </tr>
         </table>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
             <div>
                 <table class="summary-table">
-                    <tr class="bg-slate-50">
+                    <tr style="background-color: #f8fafc;">
                         <th rowspan="2">สรุปการประเมิน</th>
                         <th colspan="4">คุณลักษณะอันพึงประสงค์</th>
                     </tr>
-                    <tr class="bg-slate-50">
+                    <tr style="background-color: #f8fafc;">
                         <th width="20%">ไม่ผ่าน</th>
                         <th width="20%">ผ่าน</th>
                         <th width="20%">ดี</th>
                         <th width="20%">ดีเยี่ยม</th>
                     </tr>
                     <tr>
-                        <td class="font-bold">จำนวนนักเรียน</td>
-                        <td><?= $char_dist['0'] ?: '-' ?></td>
-                        <td><?= $char_dist['1'] ?: '-' ?></td>
-                        <td><?= $char_dist['2'] ?: '-' ?></td>
-                        <td><?= $char_dist['3'] ?: '-' ?></td>
+                        <td class="font-bold" style="text-align: center;">จำนวนนักเรียน</td>
+                        <td style="text-align: center;"><?= $char_dist['0'] ?: '-' ?></td>
+                        <td style="text-align: center;"><?= $char_dist['1'] ?: '-' ?></td>
+                        <td style="text-align: center;"><?= $char_dist['2'] ?: '-' ?></td>
+                        <td style="text-align: center;"><?= $char_dist['3'] ?: '-' ?></td>
                     </tr>
                 </table>
             </div>
             <div>
                 <table class="summary-table">
-                    <tr class="bg-slate-50">
+                    <tr style="background-color: #f8fafc;">
                         <th rowspan="2">สรุปการประเมิน</th>
                         <th colspan="4">การอ่าน คิดวิเคราะห์ และเขียน</th>
                     </tr>
-                    <tr class="bg-slate-50">
+                    <tr style="background-color: #f8fafc;">
                         <th width="20%">ไม่ผ่าน</th>
                         <th width="20%">ผ่าน</th>
                         <th width="20%">ดี</th>
                         <th width="20%">ดีเยี่ยม</th>
                     </tr>
                     <tr>
-                        <td class="font-bold">จำนวนนักเรียน</td>
-                        <td><?= $anal_dist['0'] ?: '-' ?></td>
-                        <td><?= $anal_dist['1'] ?: '-' ?></td>
-                        <td><?= $anal_dist['2'] ?: '-' ?></td>
-                        <td><?= $anal_dist['3'] ?: '-' ?></td>
+                        <td class="font-bold" style="text-align: center;">จำนวนนักเรียน</td>
+                        <td style="text-align: center;"><?= $anal_dist['0'] ?: '-' ?></td>
+                        <td style="text-align: center;"><?= $anal_dist['1'] ?: '-' ?></td>
+                        <td style="text-align: center;"><?= $anal_dist['2'] ?: '-' ?></td>
+                        <td style="text-align: center;"><?= $anal_dist['3'] ?: '-' ?></td>
                     </tr>
                 </table>
             </div>
         </div>
 
         <table class="summary-table">
-            <tr class="bg-slate-50">
+            <tr style="background-color: #f8fafc;">
                 <th rowspan="2" width="25%">สรุปการประเมิน</th>
                 <th colspan="4">สมรรถนะสำคัญของผู้เรียน</th>
             </tr>
-            <tr class="bg-slate-50">
+            <tr style="background-color: #f8fafc;">
                 <th>ปรับปรุง</th>
                 <th>พอใช้</th>
                 <th>ดี</th>
                 <th>ดีเยี่ยม</th>
             </tr>
             <tr>
-                <td class="font-bold">จำนวนนักเรียน</td>
-                <td><?= $comp_dist['0'] ?: '-' ?></td>
-                <td><?= $comp_dist['1'] ?: '-' ?></td>
-                <td><?= $comp_dist['2'] ?: '-' ?></td>
-                <td><?= $comp_dist['3'] ?: '-' ?></td>
+                <td class="font-bold" style="text-align: center;">จำนวนนักเรียน</td>
+                <td style="text-align: center;"><?= $comp_dist['0'] ?: '-' ?></td>
+                <td style="text-align: center;"><?= $comp_dist['1'] ?: '-' ?></td>
+                <td style="text-align: center;"><?= $comp_dist['2'] ?: '-' ?></td>
+                <td style="text-align: center;"><?= $comp_dist['3'] ?: '-' ?></td>
             </tr>
         </table>
 
         <div class="approval-section">
-            <div class="section-title" style="text-decoration: none;">การอนุมัติผลการเรียน</div>
+            <div class="section-title" style="text-decoration: none; margin-bottom: 15px;">การอนุมัติผลการเรียน</div>
             
-            <div style="margin-top: 10px;">
-                <div class="signature-line">ลงชื่อ.......................................................... ครูประจำวิชา</div>
-                <div class="signature-line">ลงชื่อ.......................................................... <?= $academic_head_position ?></div>
-                <div class="signature-line">ลงชื่อ.......................................................... รองผู้อำนวยการโรงเรียน</div>
+            <div class="signature-group">
+                <div class="signature-item">
+                    <div class="sig-label">ลงชื่อ</div>
+                    <div class="sig-dotted"></div>
+                    <div class="sig-pos">ครูประจำวิชา</div>
+                </div>
+
+                <div class="signature-item">
+                    <div class="sig-label">ลงชื่อ</div>
+                    <div class="sig-dotted"></div>
+                    <div class="sig-pos"><?= $academic_head_position ?></div>
+                </div>
+                
+                <?php
+                // ตรวจสอบ รองผู้อำนวยการ
+                $deputy = null;
+                try {
+                    $stmt_dep = $pdo->prepare("SELECT * FROM school_officials WHERE school_id = ? AND role_key = 'deputy_director' AND is_active = 1 LIMIT 1");
+                    $stmt_dep->execute([$school_id]);
+                    $deputy = $stmt_dep->fetch();
+                } catch (Exception $e) {}
+
+                if ($deputy): ?>
+                    <div class="signature-item">
+                        <div class="sig-label">ลงชื่อ</div>
+                        <div class="sig-dotted"></div>
+                        <div class="sig-pos"><?= formatTeacherPosition($deputy['position']) ?></div>
+                    </div>
+                <?php endif; ?>
             </div>
 
             <div class="approval-box">
                 <div class="check-box"></div> อนุมัติ
-                <div style="width: 50px;"></div>
+                <div style="width: 40px;"></div>
                 <div class="check-box"></div> ไม่อนุมัติ
             </div>
 
-            <div style="text-align: center; margin-top: 20px;">
-                <p>..........................................................</p>
-                <p class="font-bold">( <?= $director_name ?: '..........................................................' ?> )</p>
-                <p>ผู้อำนวยการโรงเรียน<?= $school_name ?></p>
-                <p>วันที่ <span class="info-line" style="width: 30px;"></span> เดือน <span class="info-line" style="width: 80px;"></span> พ.ศ. <span class="info-line" style="width: 50px;"></span></p>
+            <div style="text-align: center; margin-top: 15px;">
+                <p style="margin-bottom: 10px;">..........................................................</p>
+                <p class="font-bold" style="font-size: 18px;">( <?= $director_name ?: '..........................................................' ?> )</p>
+                <p style="font-size: 16px;">ผู้อำนวยการโรงเรียน<?= $school_name ?></p>
+                <p style="margin-top: 10px;">วันที่ <span style="display: inline-block; width: 30px; border-bottom: 1px dotted #000;"></span> เดือน <span style="display: inline-block; width: 100px; border-bottom: 1px dotted #000;"></span> พ.ศ. <span style="display: inline-block; width: 50px; border-bottom: 1px dotted #000;"></span></p>
             </div>
         </div>
     </div>
