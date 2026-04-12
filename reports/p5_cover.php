@@ -180,36 +180,36 @@ if ($classroom_id) {
     }
     .logo-container {
         text-align: center;
-        margin-bottom: 10px;
+        margin-bottom: 5px;
     }
     .logo-img {
-        width: 80px;
-        height: 80px;
+        width: 90px;
+        height: 90px;
         object-fit: contain;
     }
     .main-title {
-        font-size: 26px;
+        font-size: 20px;
         font-weight: bold;
         text-align: center;
-        margin-bottom: 8px;
+        margin-bottom: 2px;
     }
     .school-name {
-        font-size: 24px;
+        font-size: 18px;
         font-weight: bold;
         text-align: center;
-        margin-bottom: 8px;
+        margin-bottom: 2px;
     }
     .affiliation {
-        font-size: 18px;
+        font-size: 14px;
         text-align: center;
-        margin-bottom: 20px;
+        margin-bottom: 10px;
     }
     
     .flex-row {
         display: flex;
         align-items: baseline;
-        font-size: 18px;
-        margin-bottom: 15px;
+        font-size: 14px;
+        margin-bottom: 5px;
         width: 100%;
         white-space: nowrap;
     }
@@ -225,18 +225,18 @@ if ($classroom_id) {
     }
 
     .teacher-section {
-        margin: 20px 0;
+        margin: 8px 0;
         width: 100%;
     }
     .teacher-row {
         display: flex;
         justify-content: space-between;
         align-items: baseline;
-        margin-bottom: 12px;
-        font-size: 18px;
+        margin-bottom: 6px;
+        font-size: 14px;
     }
     .teacher-label {
-        width: 200px;
+        width: 180px;
         text-align: left;
         padding-left: 10px;
         flex-shrink: 0;
@@ -250,88 +250,88 @@ if ($classroom_id) {
     .section-title {
         font-weight: bold;
         text-align: center;
-        margin: 20px 0 10px 0;
+        margin: 8px 0 4px 0;
         text-decoration: underline;
-        font-size: 18px;
+        font-size: 14px;
     }
     .stats-table {
         width: 100%;
         border-collapse: collapse;
-        margin-bottom: 15px;
+        margin-bottom: 8px;
         border: 1px solid #000;
     }
     .stats-table td {
         border: 1px solid #000;
-        padding: 8px 10px;
-        font-size: 16px;
+        padding: 4px 8px;
+        font-size: 14px;
         white-space: nowrap;
     }
     .summary-table {
         width: 100%;
         border-collapse: collapse;
-        margin-bottom: 15px;
+        margin-bottom: 8px;
     }
     .summary-table th, .summary-table td {
         border: 1px solid #000;
-        padding: 5px;
-        font-size: 14px;
+        padding: 3px;
+        font-size: 11px;
         white-space: nowrap;
     }
     .approval-section {
         margin-top: auto;
-        padding-top: 10px;
+        padding-top: 5px;
     }
     .signature-group {
         display: flex;
         flex-direction: column;
         align-items: center;
-        margin: 10px 0;
+        margin: 5px 0;
     }
     .signature-item-container {
         display: flex;
         flex-direction: column;
         align-items: center;
         width: 100%;
-        margin-bottom: 15px;
+        margin-bottom: 8px;
     }
     .signature-row {
-        display: flex;
+        display: grid;
+        grid-template-columns: 1fr 250px 1fr;
         align-items: baseline;
-        justify-content: center;
         width: 100%;
     }
     .sig-label {
-        width: 60px;
         text-align: right;
+        padding-right: 10px;
+        font-size: 14px;
     }
     .sig-dotted {
         width: 250px;
         border-bottom: 1px dotted #000;
-        margin: 0 10px;
     }
     .sig-pos {
-        width: 220px;
         text-align: left;
+        padding-left: 10px;
+        font-size: 14px;
     }
     .sig-name {
-        width: 550px;
+        width: 100%;
         text-align: center;
-        padding-right: 210px;
-        box-sizing: border-box;
         font-weight: bold;
-        margin-top: 5px;
-        font-size: 16px;
+        margin-top: 2px;
+        font-size: 14px;
     }
     .approval-box {
         display: flex;
         align-items: center;
         gap: 15px;
-        margin: 15px 0;
+        margin: 8px 0;
         justify-content: center;
+        font-size: 14px;
     }
     .check-box {
-        width: 18px;
-        height: 18px;
+        width: 14px;
+        height: 14px;
         border: 1px solid #000;
         display: inline-block;
     }
