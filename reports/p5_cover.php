@@ -173,47 +173,44 @@ if ($classroom_id) {
 
 <style>
     .cover-container {
-        border: 2px solid #000;
-        padding: 30px 40px;
-        height: 100%;
+        padding: 0;
         display: flex;
         flex-direction: column;
         position: relative;
     }
     .logo-container {
         position: absolute;
-        top: 30px;
-        left: 40px;
+        top: 0;
+        left: 0;
     }
     .logo-img {
-        width: 80px;
-        height: 80px;
+        width: 70px;
+        height: 70px;
         object-fit: contain;
     }
     .main-title {
-        font-size: 24px;
-        font-weight: bold;
-        text-align: center;
-        margin-bottom: 5px;
-        margin-top: 10px;
-    }
-    .school-name {
         font-size: 22px;
         font-weight: bold;
         text-align: center;
         margin-bottom: 5px;
     }
-    .affiliation {
-        font-size: 18px;
+    .school-name {
+        font-size: 20px;
+        font-weight: bold;
         text-align: center;
-        margin-bottom: 20px;
+        margin-bottom: 5px;
+    }
+    .affiliation {
+        font-size: 16px;
+        text-align: center;
+        margin-bottom: 15px;
     }
     
     .flex-row {
         display: flex;
         align-items: baseline;
-        font-size: 18px;
-        margin-bottom: 12px;
+        font-size: 16px;
+        margin-bottom: 8px;
         width: 100%;
         white-space: nowrap;
     }
@@ -229,14 +226,14 @@ if ($classroom_id) {
     }
 
     .teacher-section {
-        margin: 20px 0;
+        margin: 10px 0;
         width: 100%;
     }
     .teacher-row {
         display: flex;
         justify-content: space-between;
         align-items: baseline;
-        margin-bottom: 10px;
+        margin-bottom: 8px;
     }
     .teacher-label {
         width: 200px;
@@ -253,48 +250,49 @@ if ($classroom_id) {
     .section-title {
         font-weight: bold;
         text-align: center;
-        margin: 15px 0 10px 0;
+        margin: 10px 0 5px 0;
         text-decoration: underline;
+        font-size: 16px;
     }
     .stats-table {
         width: 100%;
         border-collapse: collapse;
-        margin-bottom: 15px;
+        margin-bottom: 10px;
         border: 1px solid #000;
     }
     .stats-table td {
         border: 1px solid #000;
-        padding: 8px 10px;
-        font-size: 15px;
+        padding: 5px 10px;
+        font-size: 14px;
         white-space: nowrap;
     }
     .summary-table {
         width: 100%;
         border-collapse: collapse;
-        margin-bottom: 15px;
+        margin-bottom: 10px;
     }
     .summary-table th, .summary-table td {
         border: 1px solid #000;
-        padding: 4px;
-        font-size: 13px;
+        padding: 3px;
+        font-size: 12px;
         white-space: nowrap;
     }
     .approval-section {
         margin-top: auto;
-        padding-top: 10px;
+        padding-top: 5px;
     }
     .signature-group {
         display: flex;
         flex-direction: column;
-        align-items: flex-end;
-        margin-right: 20px;
+        align-items: center;
+        margin: 5px 0;
     }
     .signature-item {
         display: flex;
         align-items: baseline;
-        margin-bottom: 12px;
+        margin-bottom: 8px;
         width: 100%;
-        justify-content: flex-end;
+        justify-content: center;
     }
     .sig-label {
         width: 60px;
@@ -313,12 +311,12 @@ if ($classroom_id) {
         display: flex;
         align-items: center;
         gap: 15px;
-        margin: 15px 0;
+        margin: 10px 0;
         justify-content: center;
     }
     .check-box {
-        width: 18px;
-        height: 18px;
+        width: 16px;
+        height: 16px;
         border: 1px solid #000;
         display: inline-block;
     }
