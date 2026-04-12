@@ -16,7 +16,18 @@
         <form id="addSubjectForm" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
             <input type="text" id="sub_code" placeholder="รหัสวิชา" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
             <input type="text" id="sub_name" placeholder="ชื่อวิชา" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
-            <input type="text" id="sub_learning_area" placeholder="กลุ่มสาระฯ" class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
+            <select id="sub_learning_area" class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none cursor-pointer">
+                <option value="">กลุ่มสาระการเรียนรู้</option>
+                <option value="ภาษาไทย">ภาษาไทย</option>
+                <option value="คณิตศาสตร์">คณิตศาสตร์</option>
+                <option value="วิทยาศาสตร์และเทคโนโลยี">วิทยาศาสตร์และเทคโนโลยี</option>
+                <option value="สังคมศึกษา ศาสนา และวัฒนธรรม">สังคมศึกษา ศาสนา และวัฒนธรรม</option>
+                <option value="สุขศึกษาและพลศึกษา">สุขศึกษาและพลศึกษา</option>
+                <option value="ศิลปะ">ศิลปะ</option>
+                <option value="การงานอาชีพ">การงานอาชีพ</option>
+                <option value="ภาษาต่างประเทศ">ภาษาต่างประเทศ</option>
+                <option value="กิจกรรมพัฒนาผู้เรียน">กิจกรรมพัฒนาผู้เรียน</option>
+            </select>
             <select id="sub_level" required class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none cursor-pointer">
                 <option value="">ระดับชั้น</option>
                 <option value="ป.1">ป.1</option><option value="ป.2">ป.2</option><option value="ป.3">ป.3</option>
@@ -111,7 +122,18 @@
             </div>
             <div>
                 <label class="block text-sm font-medium text-slate-700 mb-1">กลุ่มสาระการเรียนรู้</label>
-                <input type="text" id="edit_sub_learning_area" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
+                <select id="edit_sub_learning_area" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none cursor-pointer">
+                    <option value="">เลือกกลุ่มสาระฯ</option>
+                    <option value="ภาษาไทย">ภาษาไทย</option>
+                    <option value="คณิตศาสตร์">คณิตศาสตร์</option>
+                    <option value="วิทยาศาสตร์และเทคโนโลยี">วิทยาศาสตร์และเทคโนโลยี</option>
+                    <option value="สังคมศึกษา ศาสนา และวัฒนธรรม">สังคมศึกษา ศาสนา และวัฒนธรรม</option>
+                    <option value="สุขศึกษาและพลศึกษา">สุขศึกษาและพลศึกษา</option>
+                    <option value="ศิลปะ">ศิลปะ</option>
+                    <option value="การงานอาชีพ">การงานอาชีพ</option>
+                    <option value="ภาษาต่างประเทศ">ภาษาต่างประเทศ</option>
+                    <option value="กิจกรรมพัฒนาผู้เรียน">กิจกรรมพัฒนาผู้เรียน</option>
+                </select>
             </div>
             <div>
                 <label class="block text-sm font-medium text-slate-700 mb-1">ระดับชั้น</label>
