@@ -43,7 +43,6 @@ foreach ($grades_raw as $g) {
         <thead>
             <tr>
                 <th style="width: 40px;">เลขที่</th>
-                <th style="width: 80px;">เลขประจำตัว</th>
                 <th>ชื่อ - นามสกุล</th>
                 <?php foreach ($units as $index => $unit): ?>
                     <th style="width: 40px;">น.<?= $index + 1 ?></th>
@@ -59,7 +58,6 @@ foreach ($grades_raw as $g) {
                 <?php $g = $student_grades[$student['id']] ?? null; ?>
                 <tr>
                     <td><?= $index + 1 ?></td>
-                    <td><?= $student['student_code'] ?></td>
                     <td class="text-left"><?= $student['prefix'] ?><?= $student['name'] ?> <?= $student['last_name'] ?></td>
                     <?php foreach ($units as $unit): ?>
                         <td><?= $unit_scores[$student['id']][$unit['id']] ?? '-' ?></td>
@@ -343,5 +341,74 @@ foreach ($stmt_ana->fetchAll() as $row) {
         <div>3. สามารถวิเคราะห์สิ่งที่ผู้เขียนต้องการสื่อสารกับผู้อ่าน และสามารถวิพากษ์ให้ข้อเสนอแนะในแง่มุมต่างๆ</div>
         <div>4. สามารถประเมินความถูกต้องเหมาะสม ความน่าเชื่อถือของสิ่งที่อ่านในแง่มุมต่างๆ</div>
         <div>5. สามารถเขียนแสดงความคิดเห็น วางแผน ตัดสินใจ แก้ปัญหา และถ่ายทอดผ่านการเขียนที่มีขั้นตอน</div>
+    </div>
+</div>
+
+<?php
+/**
+ * หน้าที่ 6: สมรรถนะสำคัญของผู้เรียน
+ */
+$stmt_comp = $pdo->prepare('SELECT * FROM competency_scores WHERE classroom_id = ? AND academic_year = ? AND semester = ?');
+$stmt_comp->execute([$classroom_id, $year, $semester]);
+$comp_scores = [];
+foreach ($stmt_comp->fetchAll() as $row) {
+    $comp_scores[$row['student_id']] = $row;
+}
+?>
+
+<div class="page">
+    <div class="header">
+        <h3 style="margin: 0;">บันทึกผลการประเมินสมรรถนะสำคัญของผู้เรียน</h3>
+        <p style="margin: 5px 0;">ชั้น <?= $level ?>/<?= $room ?> ภาคเรียนที่ <?= $semester ?> ปีการศึกษา <?= $year ?></p>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th rowspan="2" style="width: 40px;">เลขที่</th>
+                <th rowspan="2">ชื่อ - นามสกุล</th>
+                <th colspan="5">สมรรถนะสำคัญ (ข้อที่)</th>
+                <th rowspan="2">เฉลี่ย</th>
+                <th rowspan="2">สรุป</th>
+            </tr>
+            <tr>
+                <?php for($i=1; $i<=5; $i++): ?>
+                    <th style="width: 40px;"><?= $i ?></th>
+                <?php endfor; ?>
+            </tr>
+        </thead>
+        <tbody>
+            <?php foreach ($students as $index => $student): ?>
+                <?php 
+                $s = $comp_scores[$student['id']] ?? null; 
+                $avg = $s ? $s['average_score'] : 0;
+                $result = '-';
+                if ($s) {
+                    if ($avg >= 2.5) $result = 'ดีเยี่ยม (3)';
+                    else if ($avg >= 1.5) $result = 'ดี (2)';
+                    else if ($avg >= 0.5) $result = 'ผ่าน (1)';
+                    else $result = 'ไม่ผ่าน (0)';
+                }
+                ?>
+                <tr>
+                    <td><?= $index + 1 ?></td>
+                    <td class="text-left"><?= $student['prefix'] ?><?= $student['name'] ?> <?= $student['last_name'] ?></td>
+                    <?php for($i=1; $i<=5; $i++): ?>
+                        <td><?= $s ? $s['item'.$i] : '-' ?></td>
+                    <?php endfor; ?>
+                    <td><?= $s ? round($avg, 2) : '-' ?></td>
+                    <td><?= $result ?></td>
+                </tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
+
+    <div style="margin-top: 20px; font-size: 13px;">
+        <p class="font-bold">รายการประเมิน:</p>
+        <div>1. ความสามารถในการสื่อสาร</div>
+        <div>2. ความสามารถในการคิด</div>
+        <div>3. ความสามารถในการแก้ปัญหา</div>
+        <div>4. ความสามารถในการใช้ทักษะชีวิต</div>
+        <div>5. ความสามารถในการใช้เทคโนโลยี</div>
     </div>
 </div>
