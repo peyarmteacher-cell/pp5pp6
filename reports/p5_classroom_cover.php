@@ -169,7 +169,7 @@ while ($row = $stmt_ld->fetch()) {
         display: flex;
         align-items: baseline;
         font-size: 16px;
-        margin-bottom: 5px; /* ปรับระยะห่างให้เท่ากัน */
+        margin-bottom: 4px; /* ปรับให้แคบลงเล็กน้อย */
         width: 100%;
     }
     .flex-fill {
@@ -185,14 +185,14 @@ while ($row = $stmt_ld->fetch()) {
 
     /* --- ตารางสถิตินักเรียนแบบละเอียด --- */
     .stats-section {
-        margin: 10px 0;
+        margin: 5px 0; /* ลดระยะห่าง */
         width: 100%;
     }
     .stats-row {
         display: grid;
         grid-template-columns: 150px 1fr 1fr 1fr;
         gap: 10px;
-        margin-bottom: 5px; /* ปรับระยะห่างให้เท่ากัน */
+        margin-bottom: 4px; /* ลดระยะห่าง */
         font-size: 16px;
     }
     .stats-label { text-align: left; }
@@ -211,7 +211,7 @@ while ($row = $stmt_ld->fetch()) {
     .section-title {
         font-weight: bold;
         text-align: center;
-        margin: 10px 0 5px 0; /* ปรับระยะห่างให้เท่ากัน */
+        margin: 5px 0 3px 0; /* ลดระยะห่าง */
         font-size: 16px;
     }
 
@@ -219,7 +219,7 @@ while ($row = $stmt_ld->fetch()) {
     .summary-table {
         width: 100%;
         border-collapse: collapse;
-        margin-bottom: 10px; /* ปรับระยะห่างให้เท่ากัน */
+        margin-bottom: 5px; /* ลดระยะห่าง */
     }
     .summary-table th, .summary-table td {
         border: 1px solid #000;
@@ -235,12 +235,12 @@ while ($row = $stmt_ld->fetch()) {
 
     /* --- ตารางประเมิน 3 ตารางด้านล่าง --- */
     .evaluation-grid {
-        margin-bottom: 10px; /* ปรับระยะห่างให้เท่ากัน */
+        margin-bottom: 5px; /* ลดระยะห่างให้แคบลง */
     }
     .eval-table {
         width: 100%;
         border-collapse: collapse;
-        margin-bottom: 10px; /* ปรับระยะห่างให้เท่ากัน */
+        margin-bottom: 5px; /* ลดระยะห่างให้แคบลง */
     }
     .eval-table th, .eval-table td {
         border: 1px solid #000;
@@ -253,6 +253,14 @@ while ($row = $stmt_ld->fetch()) {
     .approval-section {
         margin-top: auto;
         padding-top: 5px;
+        width: 100%; /* เพิ่มความกว้างเต็ม */
+    }
+    .approval-title {
+        font-weight: bold;
+        text-align: center;
+        margin-bottom: 10px;
+        font-size: 16px;
+        width: 100%;
     }
     .signature-group {
         display: flex;
@@ -315,10 +323,10 @@ while ($row = $stmt_ld->fetch()) {
 
     .director-sig {
         text-align: center;
-        margin-top: 10px;
+        margin-top: 25px; /* เพิ่มพื้นที่สำหรับเซ็นชื่อ */
     }
     .date-row {
-        margin-top: 10px;
+        margin-top: 15px; /* เพิ่มพื้นที่ */
         text-align: center;
         font-size: 16px;
     }
@@ -448,7 +456,7 @@ while ($row = $stmt_ld->fetch()) {
             </table>
         </div>
 
-        <div style="width: 50%; margin-top: 15px;">
+        <div style="width: 50%; margin-top: 5px;">
             <table class="eval-table">
                 <tr>
                     <th colspan="5">สมรรถนะสำคัญของผู้เรียน</th>
