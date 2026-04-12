@@ -4,18 +4,21 @@
  */
 
 // 1. ดึงข้อมูลหน่วยการเรียนรู้
-$stmt_units = $pdo->prepare('SELECT * FROM learning_units WHERE subject_id = ? AND classroom_id = ? AND academic_year = ? AND semester = ? ORDER BY id ASC');
-$stmt_units->execute([$subject_id, $classroom_id, $year, $semester]);
+$semester_query = $semester === 'annual' ? "IN (1, 2)" : "= ?";
+$semester_params = $semester === 'annual' ? [] : [$semester];
+
+$stmt_units = $pdo->prepare("SELECT * FROM learning_units WHERE subject_id = ? AND classroom_id = ? AND academic_year = ? AND semester $semester_query ORDER BY id ASC");
+$stmt_units->execute(array_merge([$subject_id, $classroom_id, $year], $semester_params));
 $units = $stmt_units->fetchAll();
 
 // 2. ดึงคะแนนรายหน่วย
-$stmt_scores = $pdo->prepare('
+$stmt_scores = $pdo->prepare("
     SELECT us.* 
     FROM unit_scores us
     JOIN learning_units lu ON us.learning_unit_id = lu.id
-    WHERE lu.subject_id = ? AND lu.classroom_id = ? AND lu.academic_year = ? AND lu.semester = ?
-');
-$stmt_scores->execute([$subject_id, $classroom_id, $year, $semester]);
+    WHERE lu.subject_id = ? AND lu.classroom_id = ? AND lu.academic_year = ? AND lu.semester $semester_query
+");
+$stmt_scores->execute(array_merge([$subject_id, $classroom_id, $year], $semester_params));
 $unit_scores_raw = $stmt_scores->fetchAll();
 $unit_scores = [];
 foreach ($unit_scores_raw as $s) {
@@ -23,8 +26,8 @@ foreach ($unit_scores_raw as $s) {
 }
 
 // 3. ดึงคะแนนสรุปและเกรด
-$stmt_grades = $pdo->prepare('SELECT * FROM grades WHERE subject_id = ? AND classroom_id = ? AND academic_year = ? AND semester = ?');
-$stmt_grades->execute([$subject_id, $classroom_id, $year, $semester]);
+$stmt_grades = $pdo->prepare("SELECT * FROM grades WHERE subject_id = ? AND classroom_id = ? AND academic_year = ? AND semester $semester_query");
+$stmt_grades->execute(array_merge([$subject_id, $classroom_id, $year], $semester_params));
 $grades_raw = $stmt_grades->fetchAll();
 $student_grades = [];
 foreach ($grades_raw as $g) {
@@ -114,8 +117,8 @@ foreach ($grades_raw as $g) {
                 <?php foreach ($units as $index => $unit): ?>
                     <tr>
                         <td><?= $index + 1 ?></td>
-                        <td class="text-left"><?= $unit['name'] ?></td>
-                        <td><?= $unit['full_score'] ?></td>
+                        <td class="text-left"><?= $unit['unit_name'] ?></td>
+                        <td><?= $unit['max_score'] ?></td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
