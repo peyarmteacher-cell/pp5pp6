@@ -172,50 +172,54 @@ if ($classroom_id) {
 ?>
 
 <style>
+    /* --- พื้นที่หลักของหน้าปก --- */
     .cover-container {
         padding: 0;
         display: flex;
         flex-direction: column;
         position: relative;
     }
+    /* --- โลโก้โรงเรียน --- */
     .logo-container {
         text-align: center;
-        margin-bottom: 5px;
+        margin-bottom: 5px; /* ปรับระยะห่างใต้โลโก้ */
     }
     .logo-img {
-        width: 90px;
-        height: 90px;
+        width: 90px; /* ปรับขนาดความกว้างโลโก้ */
+        height: 90px; /* ปรับขนาดความสูงโลโก้ */
         object-fit: contain;
     }
+    /* --- หัวข้อรายงาน --- */
     .main-title {
-        font-size: 20px;
+        font-size: 20px; /* ปรับขนาดตัวอักษรหัวข้อ ปพ.5 */
         font-weight: bold;
         text-align: center;
         margin-bottom: 2px;
     }
     .school-name {
-        font-size: 18px;
+        font-size: 18px; /* ปรับขนาดชื่อโรงเรียน */
         font-weight: bold;
         text-align: center;
         margin-bottom: 2px;
     }
     .affiliation {
-        font-size: 14px;
+        font-size: 14px; /* ปรับขนาดชื่อสังกัด */
         text-align: center;
         margin-bottom: 10px;
     }
     
+    /* --- แถวข้อมูลทั่วไป (ชั้น, ภาคเรียน, วิชา ฯลฯ) --- */
     .flex-row {
         display: flex;
         align-items: baseline;
-        font-size: 14px;
-        margin-bottom: 5px;
+        font-size: 14px; /* ปรับขนาดตัวอักษรแถวข้อมูล */
+        margin-bottom: 5px; /* ปรับระยะห่างระหว่างแถว */
         width: 100%;
         white-space: nowrap;
     }
     .flex-fill {
         flex-grow: 1;
-        border-bottom: 1px dotted #000;
+        border-bottom: 0.5pt dotted #666; /* ปรับลักษณะเส้นจุดไข่ปลา (0.5pt คือความหนา) */
         margin: 0 5px;
         text-align: center;
         min-height: 1.2em;
@@ -224,8 +228,9 @@ if ($classroom_id) {
         flex-shrink: 0;
     }
 
+    /* --- ส่วนชื่อครูประจำวิชา/ประจำชั้น --- */
     .teacher-section {
-        margin: 8px 0;
+        margin: 8px 0; /* ปรับระยะห่างบน-ล่าง ของส่วนชื่อครู */
         width: 100%;
     }
     .teacher-row {
@@ -243,17 +248,19 @@ if ($classroom_id) {
     }
     .teacher-dotted {
         flex-grow: 1;
-        border-bottom: 1px dotted #000;
+        border-bottom: 0.5pt dotted #666; /* เส้นจุดไข่ปลาชื่อครู */
         text-align: center;
     }
 
+    /* --- หัวข้อส่วนต่างๆ (สรุปผลสัมฤทธิ์ ฯลฯ) --- */
     .section-title {
         font-weight: bold;
         text-align: center;
-        margin: 8px 0 4px 0;
+        margin: 8px 0 4px 0; /* ปรับระยะห่างหัวข้อส่วน */
         text-decoration: underline;
         font-size: 14px;
     }
+    /* --- ตารางสถิตินักเรียน --- */
     .stats-table {
         width: 100%;
         border-collapse: collapse;
@@ -262,10 +269,11 @@ if ($classroom_id) {
     }
     .stats-table td {
         border: 1px solid #000;
-        padding: 4px 8px;
+        padding: 4px 8px; /* ปรับความกว้างช่องในตารางสถิติ */
         font-size: 14px;
         white-space: nowrap;
     }
+    /* --- ตารางสรุปผลการเรียน --- */
     .summary-table {
         width: 100%;
         border-collapse: collapse;
@@ -274,9 +282,10 @@ if ($classroom_id) {
     .summary-table th, .summary-table td {
         border: 1px solid #000;
         padding: 3px;
-        font-size: 11px;
+        font-size: 11px; /* ปรับขนาดตัวเลขในตารางเกรด */
         white-space: nowrap;
     }
+    /* --- ส่วนการอนุมัติ (ท้ายหน้า) --- */
     .approval-section {
         margin-top: auto;
         padding-top: 5px;
@@ -292,7 +301,7 @@ if ($classroom_id) {
         flex-direction: column;
         align-items: center;
         width: 100%;
-        margin-bottom: 8px;
+        margin-bottom: 8px; /* ปรับระยะห่างระหว่างชุดลงชื่อ */
     }
     .signature-row {
         display: grid;
@@ -307,7 +316,7 @@ if ($classroom_id) {
     }
     .sig-dotted {
         width: 250px;
-        border-bottom: 1px dotted #000;
+        border-bottom: 0.5pt dotted #666; /* เส้นลงชื่อ */
     }
     .sig-pos {
         text-align: left;
@@ -319,8 +328,9 @@ if ($classroom_id) {
         text-align: center;
         font-weight: bold;
         margin-top: 2px;
-        font-size: 14px;
+        font-size: 14px; /* ปรับขนาดชื่อในวงเล็บ */
     }
+    /* --- ช่องติ๊ก อนุมัติ/ไม่อนุมัติ --- */
     .approval-box {
         display: flex;
         align-items: center;
