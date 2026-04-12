@@ -55,17 +55,17 @@ foreach ($students_to_print as $student):
     $ld_result = $stmt->fetch();
 
     // ดึงคะแนนคุณลักษณะ
-    $stmt = $pdo->prepare('SELECT average_score FROM behavior_scores WHERE student_id = ? AND academic_year = ? AND semester = ?');
+    $stmt = $pdo->prepare('SELECT average_score FROM characteristics_scores WHERE student_id = ? AND academic_year = ? AND semester = ? LIMIT 1');
     $stmt->execute([$student['id'], $year, $semester === 'annual' ? 0 : $semester]);
     $behavior = $stmt->fetch();
 
     // ดึงคะแนนอ่านคิดวิเคราะห์
-    $stmt = $pdo->prepare('SELECT average_score FROM analytical_scores WHERE student_id = ? AND academic_year = ? AND semester = ?');
+    $stmt = $pdo->prepare('SELECT average_score FROM analytical_scores WHERE student_id = ? AND academic_year = ? AND semester = ? LIMIT 1');
     $stmt->execute([$student['id'], $year, $semester === 'annual' ? 0 : $semester]);
     $analytical = $stmt->fetch();
 
     // ดึงคะแนนสมรรถนะ
-    $stmt = $pdo->prepare('SELECT average_score FROM competency_scores WHERE student_id = ? AND academic_year = ? AND semester = ?');
+    $stmt = $pdo->prepare('SELECT average_score FROM competency_scores WHERE student_id = ? AND academic_year = ? AND semester = ? LIMIT 1');
     $stmt->execute([$student['id'], $year, $semester === 'annual' ? 0 : $semester]);
     $competency = $stmt->fetch();
 
