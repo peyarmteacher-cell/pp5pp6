@@ -3,13 +3,22 @@ session_start();
 require_once '../api/config.php';
 
 if (!isset($_SESSION['user_id'])) {
-    die('Unauthorized');
+    die('กรุณาเข้าสู่ระบบก่อนใช้งาน');
 }
 
-$school_id = $_SESSION['school_id'];
-$stmt = $pdo->prepare('SELECT * FROM schools WHERE id = ?');
-$stmt->execute([$school_id]);
-$school = $stmt->fetch();
+$school_id = $_SESSION['school_id'] ?? null;
+if (!$school_id) {
+    die('ไม่พบข้อมูลโรงเรียนในเซสชัน');
+}
+
+$school = null;
+try {
+    $stmt = $pdo->prepare('SELECT * FROM schools WHERE id = ?');
+    $stmt->execute([$school_id]);
+    $school = $stmt->fetch();
+} catch (Exception $e) {
+    // Handle error or leave $school as null
+}
 
 $logo_url = $school['logo_url'] ?? '';
 if ($logo_url && !preg_match('/^https?:\/\//', $logo_url)) {

@@ -32,70 +32,78 @@ if ($type === 'subject' && $assignment_id) {
     $stmt->execute([$assignment_id]);
     $assignment = $stmt->fetch();
     
-    $subject_name = $assignment['subject_name'];
-    $subject_code = $assignment['subject_code'];
-    $subject_hours = $assignment['hours'];
-    $learning_area = $assignment['learning_area'];
-    $level_name = $assignment['level'];
-    $room_name = $assignment['room'];
-    $teacher_name = $assignment['teacher_name'] . ' ' . $assignment['teacher_last'];
-    $teacher_position = formatTeacherPosition($assignment['teacher_pos']);
-    $classroom_id = $assignment['cid'];
-    $subject_id = $assignment['subject_id'];
+    if ($assignment) {
+        $subject_name = $assignment['subject_name'];
+        $subject_code = $assignment['subject_code'];
+        $subject_hours = $assignment['hours'];
+        $learning_area = $assignment['learning_area'];
+        $level_name = $assignment['level'];
+        $room_name = $assignment['room'];
+        $teacher_name = $assignment['teacher_name'] . ' ' . $assignment['teacher_last'];
+        $teacher_position = formatTeacherPosition($assignment['teacher_pos']);
+        $classroom_id = $assignment['cid'];
+        $subject_id = $assignment['subject_id'];
 
-    // ดึงชื่อครูประจำชั้น
-    $stmt_ct = $pdo->prepare('
-        SELECT u1.name as t1_name, u1.last_name as t1_last, u1.position as t1_pos
-        FROM classrooms c
-        LEFT JOIN users u1 ON c.teacher_id_1 = u1.id
-        WHERE c.id = ?
-    ');
-    $stmt_ct->execute([$classroom_id]);
-    $ct = $stmt_ct->fetch();
-    $class_teacher_name = $ct['t1_name'] ? $ct['t1_name'] . ' ' . $ct['t1_last'] : '';
-    $class_teacher_position = formatTeacherPosition($ct['t1_pos'] ?? '');
-} else {
+        // ดึงชื่อครูประจำชั้น
+        $stmt_ct = $pdo->prepare('
+            SELECT u1.name as t1_name, u1.last_name as t1_last, u1.position as t1_pos
+            FROM classrooms c
+            LEFT JOIN users u1 ON c.teacher_id_1 = u1.id
+            WHERE c.id = ?
+        ');
+        $stmt_ct->execute([$classroom_id]);
+        $ct = $stmt_ct->fetch();
+        $class_teacher_name = $ct['t1_name'] ? $ct['t1_name'] . ' ' . $ct['t1_last'] : '';
+        $class_teacher_position = formatTeacherPosition($ct['t1_pos'] ?? '');
+    }
+} else if ($classroom_id) {
     $stmt = $pdo->prepare('SELECT * FROM classrooms WHERE id = ?');
     $stmt->execute([$classroom_id]);
     $classroom = $stmt->fetch();
-    $level_name = $classroom['level'];
-    $room_name = $classroom['room'];
-    
-    // ดึงชื่อครูประจำชั้น
-    $stmt_t = $pdo->prepare('
-        SELECT u1.name as t1_name, u1.last_name as t1_last, u1.position as t1_pos
-        FROM classrooms c
-        LEFT JOIN users u1 ON c.teacher_id_1 = u1.id
-        WHERE c.id = ?
-    ');
-    $stmt_t->execute([$classroom_id]);
-    $ct = $stmt_t->fetch();
-    $class_teacher_name = $ct['t1_name'] ? $ct['t1_name'] . ' ' . $ct['t1_last'] : '';
-    $class_teacher_position = formatTeacherPosition($ct['t1_pos'] ?? '');
-    $teacher_name = $class_teacher_name;
-    $teacher_position = $class_teacher_position;
+    if ($classroom) {
+        $level_name = $classroom['level'];
+        $room_name = $classroom['room'];
+        
+        // ดึงชื่อครูประจำชั้น
+        $stmt_t = $pdo->prepare('
+            SELECT u1.name as t1_name, u1.last_name as t1_last, u1.position as t1_pos
+            FROM classrooms c
+            LEFT JOIN users u1 ON c.teacher_id_1 = u1.id
+            WHERE c.id = ?
+        ');
+        $stmt_t->execute([$classroom_id]);
+        $ct = $stmt_t->fetch();
+        $class_teacher_name = $ct['t1_name'] ? $ct['t1_name'] . ' ' . $ct['t1_last'] : '';
+        $class_teacher_position = formatTeacherPosition($ct['t1_pos'] ?? '');
+        $teacher_name = $class_teacher_name;
+        $teacher_position = $class_teacher_position;
+    }
 }
 
 // 1. สถิตินักเรียน
-$stmt_stats = $pdo->prepare("SELECT gender, COUNT(*) as count FROM students WHERE classroom_id = ? AND status = 'studying' GROUP BY gender");
-$stmt_stats->execute([$classroom_id]);
-$stats_rows = $stmt_stats->fetchAll();
 $male_count = 0;
 $female_count = 0;
-foreach ($stats_rows as $row) {
-    if ($row['gender'] === 'ชาย') $male_count = $row['count'];
-    if ($row['gender'] === 'หญิง') $female_count = $row['count'];
+if ($classroom_id) {
+    $stmt_stats = $pdo->prepare("SELECT gender, COUNT(*) as count FROM students WHERE classroom_id = ? AND status = 'studying' GROUP BY gender");
+    $stmt_stats->execute([$classroom_id]);
+    $stats_rows = $stmt_stats->fetchAll();
+    foreach ($stats_rows as $row) {
+        if ($row['gender'] === 'ชาย') $male_count = $row['count'];
+        if ($row['gender'] === 'หญิง') $female_count = $row['count'];
+    }
 }
 $total_count = $male_count + $female_count;
 
 // 2. สรุปผลสัมฤทธิ์ (ถ้าเป็นรายวิชา)
 $grade_dist = array_fill_keys(['4', '3.5', '3', '2.5', '2', '1.5', '1', '0', 'ร', 'มส'], 0);
-if ($type === 'subject' && isset($subject_id)) {
-    $stmt_grades = $pdo->prepare("SELECT grade, COUNT(*) as count FROM grades WHERE subject_id = ? AND classroom_id = ? AND academic_year = ? AND semester = ? GROUP BY grade");
-    $stmt_grades->execute([$subject_id, $classroom_id, $year, $semester]);
-    while ($row = $stmt_grades->fetch()) {
-        if (isset($grade_dist[$row['grade']])) $grade_dist[$row['grade']] = $row['count'];
-    }
+if ($type === 'subject' && isset($subject_id) && $classroom_id) {
+    try {
+        $stmt_grades = $pdo->prepare("SELECT grade, COUNT(*) as count FROM grades WHERE subject_id = ? AND classroom_id = ? AND academic_year = ? AND semester = ? GROUP BY grade");
+        $stmt_grades->execute([$subject_id, $classroom_id, $year, $semester]);
+        while ($row = $stmt_grades->fetch()) {
+            if (isset($grade_dist[$row['grade']])) $grade_dist[$row['grade']] = $row['count'];
+        }
+    } catch (Exception $e) {}
 }
 
 // 3. สรุปคุณลักษณะฯ และ อ่านคิดวิเคราะห์
@@ -103,26 +111,35 @@ $char_dist = array_fill_keys(['0', '1', '2', '3'], 0);
 $anal_dist = array_fill_keys(['0', '1', '2', '3'], 0);
 $comp_dist = array_fill_keys(['0', '1', '2', '3'], 0);
 
-if ($type === 'subject' && isset($subject_id)) {
-    // คุณลักษณะ
-    $stmt_c = $pdo->prepare("SELECT ROUND(average_score) as score, COUNT(*) as count FROM characteristics_scores WHERE subject_id = ? AND classroom_id = ? AND academic_year = ? AND semester = ? GROUP BY score");
-    $stmt_c->execute([$subject_id, $classroom_id, $year, $semester]);
-    while ($row = $stmt_c->fetch()) {
-        if (isset($char_dist[$row['score']])) $char_dist[$row['score']] = $row['count'];
-    }
-    // อ่านคิดวิเคราะห์
-    $stmt_a = $pdo->prepare("SELECT ROUND(average_score) as score, COUNT(*) as count FROM analytical_scores WHERE subject_id = ? AND classroom_id = ? AND academic_year = ? AND semester = ? GROUP BY score");
-    $stmt_a->execute([$subject_id, $classroom_id, $year, $semester]);
-    while ($row = $stmt_a->fetch()) {
-        if (isset($anal_dist[$row['score']])) $anal_dist[$row['score']] = $row['count'];
-    }
+if ($type === 'subject' && isset($subject_id) && $classroom_id) {
+    try {
+        // คุณลักษณะ
+        $stmt_c = $pdo->prepare("SELECT ROUND(average_score) as score, COUNT(*) as count FROM characteristics_scores WHERE subject_id = ? AND classroom_id = ? AND academic_year = ? AND semester = ? GROUP BY score");
+        $stmt_c->execute([$subject_id, $classroom_id, $year, $semester]);
+        while ($row = $stmt_c->fetch()) {
+            $s = (string)round($row['score']);
+            if (isset($char_dist[$s])) $char_dist[$s] = $row['count'];
+        }
+        // อ่านคิดวิเคราะห์
+        $stmt_a = $pdo->prepare("SELECT ROUND(average_score) as score, COUNT(*) as count FROM analytical_scores WHERE subject_id = ? AND classroom_id = ? AND academic_year = ? AND semester = ? GROUP BY score");
+        $stmt_a->execute([$subject_id, $classroom_id, $year, $semester]);
+        while ($row = $stmt_a->fetch()) {
+            $s = (string)round($row['score']);
+            if (isset($anal_dist[$s])) $anal_dist[$s] = $row['count'];
+        }
+    } catch (Exception $e) {}
 }
 
 // สมรรถนะ (มักจะเป็นรายเทอม/รายปี ของห้องเรียน)
-$stmt_comp = $pdo->prepare("SELECT ROUND(average_score) as score, COUNT(*) as count FROM competency_scores WHERE classroom_id = ? AND academic_year = ? AND semester = ? GROUP BY score");
-$stmt_comp->execute([$classroom_id, $year, $semester]);
-while ($row = $stmt_comp->fetch()) {
-    if (isset($comp_dist[$row['score']])) $comp_dist[$row['score']] = $row['count'];
+if ($classroom_id) {
+    try {
+        $stmt_comp = $pdo->prepare("SELECT ROUND(average_score) as score, COUNT(*) as count FROM competency_scores WHERE classroom_id = ? AND academic_year = ? AND semester = ? GROUP BY score");
+        $stmt_comp->execute([$classroom_id, $year, $semester]);
+        while ($row = $stmt_comp->fetch()) {
+            $s = (string)round($row['score']);
+            if (isset($comp_dist[$s])) $comp_dist[$s] = $row['count'];
+        }
+    } catch (Exception $e) {}
 }
 
 ?>
