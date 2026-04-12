@@ -113,13 +113,13 @@ while ($row = $stmt_ld->fetch()) {
 <style>
     /* --- ปรับขอบกระดาษ (บน ขวา ล่าง ซ้าย) --- */
     .page {
-        padding-top: 15mm !important;    /* ปรับระยะขอบบน */
-        padding-bottom: 15mm !important; /* ปรับระยะขอบล่าง */
-        padding-left: 20mm !important;   /* ปรับระยะขอบซ้าย */
-        padding-right: 15mm !important;  /* ปรับระยะขอบขวา */
+        padding-top: 10mm !important;    /* ปรับระยะขอบบนให้เท่ากับปกรายวิชา */
+        padding-bottom: 10mm !important; /* ปรับระยะขอบล่างให้เท่ากับปกรายวิชา */
+        padding-left: 15mm !important;   /* ปรับระยะขอบซ้ายให้เท่ากับปกรายวิชา */
+        padding-right: 15mm !important;  /* ปรับระยะขอบขวาให้เท่ากับปกรายวิชา */
         box-shadow: none !important;
         margin: 0 auto !important;
-        border: none !important; /* ไม่มีเส้นขอบหน้ากระดาษ */
+        border: none !important;
     }
 
     /* --- พื้นที่หลักของหน้าปก --- */
@@ -169,7 +169,7 @@ while ($row = $stmt_ld->fetch()) {
         display: flex;
         align-items: baseline;
         font-size: 16px;
-        margin-bottom: 6px;
+        margin-bottom: 5px; /* ปรับระยะห่างให้เท่ากัน */
         width: 100%;
     }
     .flex-fill {
@@ -190,9 +190,9 @@ while ($row = $stmt_ld->fetch()) {
     }
     .stats-row {
         display: grid;
-        grid-template-columns: 220px 1fr 1fr 1fr;
+        grid-template-columns: 150px 1fr 1fr 1fr;
         gap: 10px;
-        margin-bottom: 4px;
+        margin-bottom: 5px; /* ปรับระยะห่างให้เท่ากัน */
         font-size: 16px;
     }
     .stats-label { text-align: left; }
@@ -211,7 +211,7 @@ while ($row = $stmt_ld->fetch()) {
     .section-title {
         font-weight: bold;
         text-align: center;
-        margin: 10px 0 8px 0;
+        margin: 10px 0 5px 0; /* ปรับระยะห่างให้เท่ากัน */
         font-size: 16px;
     }
 
@@ -219,11 +219,11 @@ while ($row = $stmt_ld->fetch()) {
     .summary-table {
         width: 100%;
         border-collapse: collapse;
-        margin-bottom: 15px;
+        margin-bottom: 10px; /* ปรับระยะห่างให้เท่ากัน */
     }
     .summary-table th, .summary-table td {
         border: 1px solid #000;
-        padding: 4px 2px;
+        padding: 3px 2px; /* ลด padding */
         font-size: 14px;
         text-align: center;
     }
@@ -235,75 +235,78 @@ while ($row = $stmt_ld->fetch()) {
 
     /* --- ตารางประเมิน 3 ตารางด้านล่าง --- */
     .evaluation-grid {
-        margin-bottom: 15px; /* ระยะห่างระหว่างตารางวิชาการกับตารางคุณลักษณะ */
+        margin-bottom: 10px; /* ปรับระยะห่างให้เท่ากัน */
     }
     .eval-table {
         width: 100%;
         border-collapse: collapse;
+        margin-bottom: 10px; /* ปรับระยะห่างให้เท่ากัน */
     }
     .eval-table th, .eval-table td {
         border: 1px solid #000;
-        padding: 4px;
+        padding: 3px; /* ลด padding */
         font-size: 14px;
         text-align: center;
     }
 
-    /* --- ส่วนการอนุมัติ --- */
+    /* --- ส่วนการอนุมัติ (ปรับให้เหมือนปกรายวิชา) --- */
     .approval-section {
         margin-top: auto;
-        padding-top: 10px;
+        padding-top: 5px;
+    }
+    .signature-group {
         display: flex;
         flex-direction: column;
         align-items: center;
+        margin: 5px 0;
     }
-    .approval-title {
-        font-weight: bold;
-        text-align: center;
-        margin-bottom: 15px;
-        font-size: 16px;
-    }
-    .sig-container {
+    .signature-item-container {
         display: flex;
         flex-direction: column;
         align-items: center;
         width: 100%;
-        margin-bottom: 15px;
+        margin-bottom: 10px;
     }
-    .sig-row {
-        display: flex;
+    .signature-row {
+        display: grid;
+        grid-template-columns: 1fr 250px 1fr;
         align-items: baseline;
-        margin-bottom: 5px;
-        width: 550px; /* ขยายความกว้างรวมของแถวลงชื่อ */
-    }
-    .sig-line {
-        flex-grow: 1;
-        border-bottom: 0.5pt dotted #000;
-        margin-right: 10px;
+        width: 100%;
     }
     .sig-label {
-        width: 280px; /* ขยายความกว้างของตำแหน่งเพื่อไม่ให้ข้อความตกบรรทัด */
+        text-align: right;
+        padding-right: 10px;
+        font-size: 14px;
+    }
+    .sig-dotted {
+        width: 250px;
+        border-bottom: 0.5pt dotted #000;
+    }
+    .sig-pos {
         text-align: left;
-        font-size: 15px;
-        white-space: nowrap; /* ป้องกันข้อความขึ้นบรรทัดใหม่ */
+        padding-left: 10px;
+        font-size: 16px;
+        white-space: nowrap;
     }
-    .sig-name-box {
+    .sig-name {
+        width: 100%;
         text-align: center;
-        width: 550px;
-        margin-top: -2px;
-        margin-bottom: 10px;
-        padding-right: 280px; /* ปรับให้ชื่อตรงกับเส้นลงชื่อ */
-    }
-
-    .approval-check-row {
-        display: flex;
-        justify-content: center;
-        gap: 60px;
-        margin: 15px 0;
+        font-weight: bold;
+        margin-top: 2px;
         font-size: 16px;
     }
+
+    .approval-box {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin: 8px 0;
+        justify-content: center;
+        font-size: 14px;
+    }
     .check-box {
-        width: 18px;
-        height: 18px;
+        width: 14px;
+        height: 14px;
         border: 1px solid #000;
         display: inline-block;
         vertical-align: middle;
@@ -315,7 +318,7 @@ while ($row = $stmt_ld->fetch()) {
         margin-top: 10px;
     }
     .date-row {
-        margin-top: 15px;
+        margin-top: 10px;
         text-align: center;
         font-size: 16px;
     }
@@ -463,41 +466,45 @@ while ($row = $stmt_ld->fetch()) {
         <div class="approval-section">
             <div class="approval-title">การอนุมัติผลการเรียน</div>
             
-            <div class="sig-container">
-                <div class="sig-row">
-                    ลงชื่อ <div class="sig-line"></div>
-                    <div class="sig-label">ครูประจำชั้น/ครูที่ปรึกษา</div>
-                </div>
-                <div class="sig-name-box">
-                    ( <?= $class_teacher_1 ?: '..........................................................' ?> )
+            <div class="signature-group">
+                <div class="signature-item-container">
+                    <div class="signature-row">
+                        <div class="sig-label">ลงชื่อ</div>
+                        <div class="sig-dotted"></div>
+                        <div class="sig-pos">ครูประจำชั้น/ครูที่ปรึกษา</div>
+                    </div>
+                    <div class="sig-name">( <?= $class_teacher_1 ?: '..........................................................' ?> )</div>
                 </div>
 
                 <?php if ($deputy_director_name): ?>
-                <div class="sig-row">
-                    ลงชื่อ <div class="sig-line"></div>
-                    <div class="sig-label"><?= $deputy_director_position ?></div>
-                </div>
-                <div class="sig-name-box">
-                    ( <?= $deputy_director_name ?> )
+                <div class="signature-item-container">
+                    <div class="signature-row">
+                        <div class="sig-label">ลงชื่อ</div>
+                        <div class="sig-dotted"></div>
+                        <div class="sig-pos"><?= $deputy_director_position ?></div>
+                    </div>
+                    <div class="sig-name">( <?= $deputy_director_name ?> )</div>
                 </div>
                 <?php else: ?>
-                <div class="sig-row">
-                    ลงชื่อ <div class="sig-line"></div>
-                    <div class="sig-label"><?= $academic_head_position ?></div>
-                </div>
-                <div class="sig-name-box">
-                    ( <?= $academic_head_name ?: '..........................................................' ?> )
+                <div class="signature-item-container">
+                    <div class="signature-row">
+                        <div class="sig-label">ลงชื่อ</div>
+                        <div class="sig-dotted"></div>
+                        <div class="sig-pos"><?= $academic_head_position ?></div>
+                    </div>
+                    <div class="sig-name">( <?= $academic_head_name ?: '..........................................................' ?> )</div>
                 </div>
                 <?php endif; ?>
             </div>
 
-            <div class="approval-check-row">
-                <div><span class="check-box"></span> อนุมัติ</div>
-                <div><span class="check-box"></span> ไม่อนุมัติ</div>
+            <div class="approval-box">
+                <div class="check-box"></div> อนุมัติ
+                <div style="width: 40px;"></div>
+                <div class="check-box"></div> ไม่อนุมัติ
             </div>
 
             <div class="director-sig">
-                <p>( <?= $director_name ?: '..........................................................' ?> )</p>
+                <p class="font-bold">( <?= $director_name ?: '..........................................................' ?> )</p>
                 <p class="font-bold">ผู้อำนวยการโรงเรียน<?= $school_name ?></p>
             </div>
 
