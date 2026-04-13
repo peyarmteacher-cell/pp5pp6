@@ -20,13 +20,13 @@
         </div>
         <div style="display: flex; margin-bottom: 20px;">
             <span style="white-space: nowrap;">เพศ</span> 
-            <span class="dotted-line" style="width: 100px; margin: 0 5px;"><?= $student['gender'] === 'male' ? 'ชาย' : 'หญิง' ?></span> 
+            <span class="dotted-line" style="width: 100px; margin: 0 5px;"><?= $student['gender'] === 'male' || $student['gender'] === 'ชาย' ? 'ชาย' : 'หญิง' ?></span> 
             <span style="white-space: nowrap;">เชื้อชาติ</span> 
-            <span class="dotted-line" style="flex: 1; margin: 0 5px;"><?= $student['race'] ?? 'ไทย' ?></span> 
+            <span class="dotted-line" style="flex: 1; margin: 0 5px;"><?= $student['race'] ?: 'ไทย' ?></span> 
             <span style="white-space: nowrap;">สัญชาติ</span> 
-            <span class="dotted-line" style="flex: 1; margin: 0 5px;"><?= $student['nationality'] ?? 'ไทย' ?></span> 
+            <span class="dotted-line" style="flex: 1; margin: 0 5px;"><?= $student['nationality'] ?: 'ไทย' ?></span> 
             <span style="white-space: nowrap;">ศาสนา</span> 
-            <span class="dotted-line" style="flex: 1; margin-left: 5px;"><?= $student['religion'] ?? 'พุทธ' ?></span>
+            <span class="dotted-line" style="flex: 1; margin-left: 5px;"><?= $student['religion'] ?: 'พุทธ' ?></span>
         </div>
         <div style="display: flex; margin-bottom: 20px;">
             <span style="white-space: nowrap;">เลขประจำตัวนักเรียน</span> 
@@ -36,33 +36,36 @@
         </div>
         <div style="display: flex; margin-bottom: 20px;">
             <span style="white-space: nowrap;">ที่อยู่ปัจจุบัน</span> 
-            <span class="dotted-line" style="flex: 1; margin-left: 5px;"><?= $student['address'] ?></span>
+            <span class="dotted-line" style="flex: 1; margin-left: 5px; text-align: left;">
+                <?= trim(($student['house_no'] ?? '') . ' ' . 
+                    (!empty($student['moo']) ? 'หมู่ที่ ' . $student['moo'] : '') . ' ' . 
+                    (!empty($student['road_soi']) ? 'ถ./ซอย ' . $student['road_soi'] : '') . ' ' . 
+                    (!empty($student['sub_district']) ? 'ต.' . $student['sub_district'] : '') . ' ' . 
+                    (!empty($student['district']) ? 'อ.' . $student['district'] : '') . ' ' . 
+                    (!empty($student['province_name']) ? 'จ.' . $student['province_name'] : '')) ?>
+            </span>
         </div>
         <div style="display: flex; margin-bottom: 20px;">
             <span style="white-space: nowrap;">ชื่อ-สกุลบิดา</span> 
-            <span class="dotted-line" style="flex: 1; margin: 0 5px;"><?= $student['father_name'] ?></span> 
+            <span class="dotted-line" style="flex: 1; margin: 0 5px;"><?= $student['father_name'] ?> <?= $student['father_last_name'] ?></span> 
             <span style="white-space: nowrap;">อาชีพ</span> 
-            <span class="dotted-line" style="flex: 1; margin-left: 5px;"><?= $student['father_job'] ?></span>
+            <span class="dotted-line" style="flex: 1; margin-left: 5px;"><?= $student['father_occupation'] ?></span>
         </div>
         <div style="display: flex; margin-bottom: 20px;">
             <span style="white-space: nowrap;">ชื่อ-สกุลมารดา</span> 
-            <span class="dotted-line" style="flex: 1; margin: 0 5px;"><?= $student['mother_name'] ?></span> 
+            <span class="dotted-line" style="flex: 1; margin: 0 5px;"><?= $student['mother_name'] ?> <?= $student['mother_last_name'] ?></span> 
             <span style="white-space: nowrap;">อาชีพ</span> 
-            <span class="dotted-line" style="flex: 1; margin-left: 5px;"><?= $student['mother_job'] ?></span>
-        </div>
-        <div style="display: flex; margin-bottom: 20px;">
-            <span style="white-space: nowrap;">สถานภาพสมรสของบิดา-มารดา</span> 
-            <span class="dotted-line" style="flex: 1; margin-left: 5px;"><?= $student['parents_status'] ?? '' ?></span>
+            <span class="dotted-line" style="flex: 1; margin-left: 5px;"><?= $student['mother_occupation'] ?></span>
         </div>
         <div style="display: flex; margin-bottom: 20px;">
             <span style="white-space: nowrap;">ชื่อ-สกุลผู้ปกครอง</span> 
-            <span class="dotted-line" style="flex: 1; margin: 0 5px;"><?= $student['guardian_name'] ?></span> 
+            <span class="dotted-line" style="flex: 1; margin: 0 5px;"><?= $student['parent_name'] ?> <?= $student['parent_last_name'] ?></span> 
             <span style="white-space: nowrap;">อาชีพ</span> 
-            <span class="dotted-line" style="flex: 1; margin-left: 5px;"><?= $student['guardian_job'] ?></span>
+            <span class="dotted-line" style="flex: 1; margin-left: 5px;"><?= $student['parent_occupation'] ?></span>
         </div>
         <div style="display: flex; margin-bottom: 20px;">
             <span style="white-space: nowrap;">ความเกี่ยวข้องกับนักเรียน</span> 
-            <span class="dotted-line" style="flex: 1; margin-left: 5px;"><?= $student['guardian_relation'] ?></span>
+            <span class="dotted-line" style="flex: 1; margin-left: 5px;"><?= $student['parent_relationship'] ?></span>
         </div>
     </div>
 
