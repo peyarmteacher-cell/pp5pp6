@@ -77,6 +77,35 @@ function formatThaiDate($date) {
     ];
 }
 
+/**
+ * ฟังก์ชันจัดรูปแบบระดับชั้นให้เป็นทางการ
+ * เช่น "ป.1" -> "ประถมศึกษาปีที่ 1"
+ * @param string $level
+ * @return string
+ */
+function formatLevelName($level) {
+    if (empty($level)) return '';
+    
+    $level = trim($level);
+    
+    // ป. -> ประถมศึกษาปีที่
+    if (preg_match('/^ป\.?\s*(\d+)$/u', $level, $matches)) {
+        return 'ประถมศึกษาปีที่ ' . $matches[1];
+    }
+    
+    // ม. -> มัธยมศึกษาปีที่
+    if (preg_match('/^ม\.?\s*(\d+)$/u', $level, $matches)) {
+        return 'มัธยมศึกษาปีที่ ' . $matches[1];
+    }
+    
+    // อ. -> อนุบาล
+    if (preg_match('/^อ\.?\s*(\d+)$/u', $level, $matches)) {
+        return 'อนุบาล ' . $matches[1];
+    }
+    
+    return $level;
+}
+
 // ดึงข้อมูลผู้บริหารจากตาราง school_officials
 $director_name = '';
 $academic_head_name = '';

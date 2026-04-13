@@ -70,7 +70,7 @@ if ($type === 'subject' && $assignment_id) {
         $subject_code = $assignment['subject_code'];
         $subject_hours = $assignment['hours'];
         $learning_area = $assignment['learning_area'];
-        $level_name = $assignment['level'];
+        $level_name = formatLevelName($assignment['level']);
         $room_name = $assignment['room'];
         $teacher_name = $assignment['teacher_name'] . ' ' . $assignment['teacher_last'];
         $teacher_position = formatTeacherPosition($assignment['teacher_pos']);
@@ -94,7 +94,7 @@ if ($type === 'subject' && $assignment_id) {
     $stmt->execute([$classroom_id]);
     $classroom = $stmt->fetch();
     if ($classroom) {
-        $level_name = $classroom['level'];
+        $level_name = formatLevelName($classroom['level']);
         $room_name = $classroom['room'];
         
         // ดึงชื่อครูประจำชั้น

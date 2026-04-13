@@ -27,7 +27,7 @@ if ($type === 'subject' && $assignment_id) {
     
     $classroom_id = $assignment['classroom_id'];
     $subject_id = $assignment['subject_id'];
-    $level = $assignment['level'];
+    $level = formatLevelName($assignment['level']);
     $room = $assignment['room'];
     $subject_name = $assignment['subject_name'];
     $subject_code = $assignment['subject_code'];
@@ -40,7 +40,7 @@ if ($type === 'subject' && $assignment_id) {
     
     if (!$classroom) die('Classroom not found');
     
-    $level = $classroom['level'];
+    $level = formatLevelName($classroom['level']);
     $room = $classroom['room'];
     
     // ดึงชื่อครูประจำชั้น

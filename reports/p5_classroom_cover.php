@@ -25,7 +25,7 @@ if (!$classroom) {
     die('ไม่พบข้อมูลห้องเรียน');
 }
 
-$level_name = $classroom['level'];
+$level_name = formatLevelName($classroom['level']);
 $room_name = $classroom['room'];
 $class_teacher_1 = $classroom['t1_name'] ? $classroom['t1_name'] . ' ' . $classroom['t1_last'] : '';
 $class_teacher_2 = $classroom['t2_name'] ? $classroom['t2_name'] . ' ' . $classroom['t2_last'] : '';
