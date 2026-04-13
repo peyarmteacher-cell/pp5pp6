@@ -43,9 +43,10 @@
                         <tr class="text-slate-500 border-b border-slate-100">
                             <th class="pb-3 font-medium w-16">เลขที่</th>
                             <th class="pb-3 font-medium">ชื่อ-นามสกุล</th>
-                            <th class="pb-3 font-medium text-center w-32">น้ำหนัก (กก.)</th>
-                            <th class="pb-3 font-medium text-center w-32">ส่วนสูง (ซม.)</th>
-                            <th class="pb-3 font-medium text-center w-24">กราฟ</th>
+                            <th class="pb-3 font-medium text-center w-24">น้ำหนัก (กก.)</th>
+                            <th class="pb-3 font-medium text-center w-24">ส่วนสูง (ซม.)</th>
+                            <th class="pb-3 font-medium text-center">ผลการประเมิน (น./อ. | ส./อ. | น./ส.)</th>
+                            <th class="pb-3 font-medium text-center w-20">กราฟ</th>
                         </tr>
                     </thead>
                     <tbody id="health-table-body">
@@ -180,28 +181,47 @@
         const tbody = document.getElementById('health-table-body');
         if (!tbody) return;
 
-        tbody.innerHTML = healthStudents.map((s, index) => `
-            <tr class="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
-                <td class="py-3 text-slate-600 font-mono text-xs">${index + 1}</td>
-                <td class="py-3 font-medium text-slate-800 text-sm">${s.prefix || ''}${s.name} ${s.last_name || ''}</td>
-                <td class="py-3 text-center">
-                    <input type="number" step="0.1" value="${s.weight || ''}" 
-                        onchange="updateHealthData(${s.id}, 'weight', this.value)"
-                        class="w-24 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500/20 text-center text-sm font-bold text-blue-600">
-                </td>
-                <td class="py-3 text-center">
-                    <input type="number" step="0.1" value="${s.height || ''}" 
-                        onchange="updateHealthData(${s.id}, 'height', this.value)"
-                        class="w-24 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500/20 text-center text-sm font-bold text-green-600">
-                </td>
-                <td class="py-3 text-center">
-                    <button onclick="viewGrowthChart(${s.id}, '${s.prefix || ''}${s.name} ${s.last_name || ''}')" 
-                        class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all cursor-pointer">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-                    </button>
-                </td>
-            </tr>
-        `).join('');
+        tbody.innerHTML = healthStudents.map((s, index) => {
+            const w_a = s.weight_age_result || '-';
+            const h_a = s.height_age_result || '-';
+            const w_h = s.weight_height_result || '-';
+            
+            const getBadgeClass = (res) => {
+                if (res === 'ตามเกณฑ์' || res === 'สมส่วน') return 'bg-green-100 text-green-700';
+                if (res === 'ผอม' || res === 'เตี้ย' || res === 'น้อยกว่าเกณฑ์' || res === 'อ้วน') return 'bg-red-100 text-red-700';
+                return 'bg-yellow-100 text-yellow-700';
+            };
+
+            return `
+                <tr class="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
+                    <td class="py-3 text-slate-600 font-mono text-xs">${index + 1}</td>
+                    <td class="py-3 font-medium text-slate-800 text-sm">${s.prefix || ''}${s.name} ${s.last_name || ''}</td>
+                    <td class="py-3 text-center">
+                        <input type="number" step="0.1" value="${s.weight || ''}" 
+                            onchange="updateHealthData(${s.id}, 'weight', this.value)"
+                            class="w-20 px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500/20 text-center text-sm font-bold text-blue-600">
+                    </td>
+                    <td class="py-3 text-center">
+                        <input type="number" step="0.1" value="${s.height || ''}" 
+                            onchange="updateHealthData(${s.id}, 'height', this.value)"
+                            class="w-20 px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500/20 text-center text-sm font-bold text-green-600">
+                    </td>
+                    <td class="py-3 text-center">
+                        <div class="flex items-center justify-center gap-1 text-[10px] font-bold">
+                            <span class="px-1.5 py-0.5 rounded ${getBadgeClass(w_a)}" title="น้ำหนักตามเกณฑ์อายุ">${w_a}</span>
+                            <span class="px-1.5 py-0.5 rounded ${getBadgeClass(h_a)}" title="ส่วนสูงตามเกณฑ์อายุ">${h_a}</span>
+                            <span class="px-1.5 py-0.5 rounded ${getBadgeClass(w_h)}" title="น้ำหนักตามเกณฑ์ส่วนสูง">${w_h}</span>
+                        </div>
+                    </td>
+                    <td class="py-3 text-center">
+                        <button onclick="viewGrowthChart(${s.id}, '${s.prefix || ''}${s.name} ${s.last_name || ''}')" 
+                            class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all cursor-pointer">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
     }
 
     function updateHealthData(studentId, field, value) {

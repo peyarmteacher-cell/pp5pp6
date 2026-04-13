@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once '../config.php';
+require_once 'growth_calc.php';
 
 header('Content-Type: application/json');
 
@@ -26,33 +27,73 @@ if (!$classroom_id || empty($academic_year) || empty($records)) {
 try {
     $pdo->beginTransaction();
 
+    // เตรียมคำสั่งดึงข้อมูลนักเรียนเพื่อใช้คำนวณอายุและเพศ
+    $stmt_student = $pdo->prepare('SELECT gender, birthday FROM students WHERE id = ?');
+
     $stmt = $pdo->prepare('
         INSERT INTO student_health_records 
-        (student_id, classroom_id, academic_year, semester, record_number, weight, height, recorded_date, teacher_id)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        (student_id, classroom_id, academic_year, semester, record_number, weight, height, weight_age_result, height_age_result, weight_height_result, recorded_date, teacher_id)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON DUPLICATE KEY UPDATE 
         weight = VALUES(weight),
         height = VALUES(height),
+        weight_age_result = VALUES(weight_age_result),
+        height_age_result = VALUES(height_age_result),
+        weight_height_result = VALUES(weight_height_result),
         recorded_date = VALUES(recorded_date),
         teacher_id = VALUES(teacher_id)
     ');
 
     foreach ($records as $r) {
+        $weight = floatval($r['weight'] ?? 0);
+        $height = floatval($r['height'] ?? 0);
+        
+        $weight_age_result = '-';
+        $height_age_result = '-';
+        $weight_height_result = '-';
+
+        if ($weight > 0 || $height > 0) {
+            // ดึงข้อมูลนักเรียนมาคำนวณอายุ
+            $stmt_student->execute([$r['student_id']]);
+            $student = $stmt_student->fetch();
+            
+            if ($student && !empty($student['birthday'])) {
+                $birthDate = new DateTime($student['birthday']);
+                $checkDate = new DateTime($recorded_date);
+                $diff = $checkDate->diff($birthDate);
+                $ageMonths = ($diff->y * 12) + $diff->m;
+                $gender = $student['gender'];
+
+                if ($weight > 0) {
+                    $weight_age_result = GrowthCalc::getWeightForAge($gender, $ageMonths, $weight);
+                }
+                if ($height > 0) {
+                    $height_age_result = GrowthCalc::getHeightForAge($gender, $ageMonths, $height);
+                }
+                if ($weight > 0 && $height > 0) {
+                    $weight_height_result = GrowthCalc::getWeightForHeight($gender, $ageMonths, $weight, $height);
+                }
+            }
+        }
+
         $stmt->execute([
             $r['student_id'],
             $classroom_id,
             $academic_year,
             $semester,
             $record_number,
-            $r['weight'],
-            $r['height'],
+            $weight,
+            $height,
+            $weight_age_result,
+            $height_age_result,
+            $weight_height_result,
             $recorded_date,
             $teacher_id
         ]);
     }
 
     $pdo->commit();
-    echo json_encode(['message' => 'บันทึกข้อมูลน้ำหนัก-ส่วนสูงเรียบร้อยแล้ว']);
+    echo json_encode(['message' => 'บันทึกข้อมูลและประเมินภาวะโภชนาการเรียบร้อยแล้ว']);
 } catch (PDOException $e) {
     if ($pdo->inTransaction()) $pdo->rollBack();
     http_response_code(500);

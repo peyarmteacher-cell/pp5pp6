@@ -24,7 +24,8 @@ try {
     // ดึงรายชื่อนักเรียนในห้อง
     $stmt = $pdo->prepare('
         SELECT s.id, s.student_code, s.prefix, s.name, s.last_name,
-               hr.weight, hr.height, hr.recorded_date
+               hr.weight, hr.height, hr.recorded_date,
+               hr.weight_age_result, hr.height_age_result, hr.weight_height_result
         FROM students s
         LEFT JOIN student_health_records hr ON s.id = hr.student_id 
              AND hr.academic_year = ? 
