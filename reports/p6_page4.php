@@ -78,7 +78,7 @@
 
     <h3 class="text-center" style="font-size: 18px; margin-top: 30px; margin-bottom: 15px;">บันทึกการเปลี่ยนแปลงหรือแก้ไขข้อมูล</h3>
     <div style="padding: 0 40px;">
-        <?php for($i=0; $i<8; $i++): ?>
+        <?php for($i=0; $i<11; $i++): ?>
             <div class="dotted-line" style="width: 100%; height: 25px; margin-bottom: 5px;"></div>
         <?php endfor; ?>
     </div>
