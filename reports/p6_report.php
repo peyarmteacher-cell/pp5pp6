@@ -229,7 +229,7 @@ foreach ($students_to_print as $student):
         <?php endif; ?>
         <h3 style="margin: 0; font-size: 18px; padding-top: 10px;">แบบรายงานประจำตัวนักเรียน : ผลการพัฒนาคุณภาพผู้เรียนรายบุคคล (ปพ.๖)</h3>
         <p style="margin: 5px 0; font-size: 16px;">โรงเรียน<?= $school_name ?> <?= $affiliation ?></p>
-        <p style="margin: 5px 0; font-size: 16px;">ชั้นประถมศึกษาปีที่ <?= $classroom['level'] ?> ภาคเรียนที่ <?= $semester === 'annual' ? '๑-๒' : $semester ?> ปีการศึกษา <?= $year ?></p>
+        <p style="margin: 5px 0; font-size: 16px;">ชั้นประถมศึกษาปีที่ <?= $classroom['level'] ?> ภาคเรียนที่ <?= $semester === 'annual' ? '1-2' : $semester ?> ปีการศึกษา <?= $year ?></p>
     </div>
 
     <div style="margin-bottom: 10px; font-size: 14px; display: flex; justify-content: space-between;">
@@ -271,7 +271,7 @@ foreach ($students_to_print as $student):
                 <td><?= $g ? $g['code'] : '' ?></td>
                 <td class="text-left"><?= $g ? $g['name'] : '' ?></td>
                 <td><?= $g ? $g['hours'] : '' ?></td>
-                <td><?= $g ? '๑๐๐.๐๐' : '' ?></td>
+                <td><?= $g ? '100.00' : '' ?></td>
                 <td><?= $g ? '-' : '' ?></td>
                 <td><?= $g ? number_format($g['score_total'], 2) : '' ?></td>
                 <td><?= $g ? number_format($g['score_percent'], 2) : '' ?></td>
@@ -384,11 +384,26 @@ foreach ($students_to_print as $student):
     <p style="font-size: 18px; margin: 5px 0;"><?= $district ?> <?= $province ?></p>
 
     <div style="margin-top: 50px; text-align: left; padding-left: 50px; font-size: 18px; line-height: 2.5;">
-        <div>ชื่อ <span class="dotted-line" style="min-width: 250px;"><?= $student['prefix'] ?><?= $student['name'] ?></span> นามสกุล <span class="dotted-line" style="min-width: 250px;"><?= $student['last_name'] ?></span></div>
-        <div>วันเกิด <span class="dotted-line" style="min-width: 200px;"><?= $bday['day'] ?> <?= $bday['month'] ?> <?= $bday['year'] ?></span> อายุ <span class="dotted-line" style="min-width: 50px;"><?= $age_years ?></span> ปี <span class="dotted-line" style="min-width: 50px;"><?= $age_months ?></span> เดือน</div>
-        <div>เลขประจำตัวนักเรียน <span class="dotted-line" style="min-width: 150px;"><?= $student['student_code'] ?></span> เลขประจำตัวประชาชน <span class="dotted-line" style="min-width: 250px;"><?= $student['national_id'] ?></span></div>
-        <div>ชั้น <span class="dotted-line" style="min-width: 200px;">ประถมศึกษาปีที่ <?= $classroom['level'] ?></span> เลขที่ <span class="dotted-line" style="min-width: 100px;"><?= array_search($student['id'], array_column($students_to_print, 'id')) + 1 ?></span></div>
-        <div>ปีการศึกษา <span class="dotted-line" style="min-width: 150px;"><?= $year ?></span></div>
+        <div style="display: flex; gap: 10px; margin-bottom: 5px;">
+            <span>ชื่อ</span> <span class="dotted-line" style="flex: 1; min-width: 150px;"><?= $student['prefix'] ?><?= $student['name'] ?></span> 
+            <span>นามสกุล</span> <span class="dotted-line" style="flex: 1; min-width: 150px;"><?= $student['last_name'] ?></span>
+        </div>
+        <div style="display: flex; gap: 10px; margin-bottom: 5px;">
+            <span>วันเกิด</span> <span class="dotted-line" style="min-width: 180px;"><?= $bday['day'] ?> <?= $bday['month'] ?> <?= $bday['year'] ?></span> 
+            <span>อายุ</span> <span class="dotted-line" style="min-width: 40px;"><?= $age_years ?></span> <span>ปี</span> 
+            <span class="dotted-line" style="min-width: 40px;"><?= $age_months ?></span> <span>เดือน</span>
+        </div>
+        <div style="display: flex; gap: 10px; margin-bottom: 5px;">
+            <span>เลขประจำตัวนักเรียน</span> <span class="dotted-line" style="min-width: 120px;"><?= $student['student_code'] ?></span> 
+            <span>เลขประจำตัวประชาชน</span> <span class="dotted-line" style="min-width: 200px;"><?= $student['national_id'] ?></span>
+        </div>
+        <div style="display: flex; gap: 10px; margin-bottom: 5px;">
+            <span>ชั้น</span> <span class="dotted-line" style="min-width: 180px;">ประถมศึกษาปีที่ <?= $classroom['level'] ?></span> 
+            <span>เลขที่</span> <span class="dotted-line" style="min-width: 80px;"><?= array_search($student['id'], array_column($students_to_print, 'id')) + 1 ?></span>
+        </div>
+        <div style="display: flex; gap: 10px; margin-bottom: 5px;">
+            <span>ปีการศึกษา</span> <span class="dotted-line" style="min-width: 120px;"><?= $year ?></span>
+        </div>
     </div>
 
     <div style="margin-top: 60px; text-align: right; padding-right: 50px;">
@@ -420,38 +435,38 @@ foreach ($students_to_print as $student):
     <h3 class="text-center" style="font-size: 20px; margin-bottom: 20px;">คำแนะนำสำหรับผู้ปกครอง</h3>
     <p>เรียน ท่านผู้ปกครองนักเรียน</p>
     <p style="text-indent: 50px;">เมื่อท่านได้รับแบบรายงานประจำตัวนักเรียนนี้แล้ว โปรดสละเวลาพิจารณาข้อมูลต่าง ๆ ดังนี้</p>
-    <p>๑. โปรดตรวจสอบความถูกต้องของข้อมูลนักเรียน และบันทึกหากมีการเปลี่ยนแปลงแก้ไขข้อมูล</p>
-    <p>๒. โปรดตรวจสอบผลการประเมินภาวะโภชนาการ จากน้ำหนัก - ส่วนสูง ตามเกณฑ์มาตรฐาน ถ้ามีผลผิดปกติ เช่น น้ำหนักน้อยกว่าเกณฑ์ เตี้ย อ้วน เริ่มอ้วน หรือ ผอม ควรหาทางช่วยเหลือ หรือปรึกษาแพทย์ ในกรณีที่บุตรหลานของท่านมีโรคประจำตัว หรือมีสิ่งผิดปกติโปรดแจ้งครูประจำชั้นทราบด้วย</p>
-    <p>๓. โปรดตรวจสอบผลการไปโรงเรียนของเด็กอย่างสม่ำเสมอ ติดต่อกับโรงเรียนทันทีเมื่อทราบว่าเด็กหยุดเรียนโดยไม่ได้รับอนุญาต ทั้งนี้เพื่อป้องกันไม่ให้เกิดปัญหาพฤติกรรมหรือขาดเรียนนาน</p>
-    <p>๔. โปรดตรวจสอบผลการเรียนรายวิชา ผลการประเมินกิจกรรมพัฒนาผู้เรียน ผลการประเมินคุณลักษณะอันพึงประสงค์ ผลการประเมินการอ่าน คิดวิเคราะห์และเขียน ผลการประเมินค่านิยม ๑๒ ประการ และผลการประเมินสมรรถนะสำคัญของผู้เรียน โดยตรวจสอบว่านักเรียนมีผลการประเมินด้านใด อยู่ในระดับใด ผ่านเกณฑ์การประเมินการศึกษาของสถานศึกษาหรือไม่ และควรได้รับการช่วยเหลือด้านใด</p>
-    <p>๕. เกณฑ์การประเมิน</p>
+    <p>1. โปรดตรวจสอบความถูกต้องของข้อมูลนักเรียน และบันทึกหากมีการเปลี่ยนแปลงแก้ไขข้อมูล</p>
+    <p>2. โปรดตรวจสอบผลการประเมินภาวะโภชนาการ จากน้ำหนัก - ส่วนสูง ตามเกณฑ์มาตรฐาน ถ้ามีผลผิดปกติ เช่น น้ำหนักน้อยกว่าเกณฑ์ เตี้ย อ้วน เริ่มอ้วน หรือ ผอม ควรหาทางช่วยเหลือ หรือปรึกษาแพทย์ ในกรณีที่บุตรหลานของท่านมีโรคประจำตัว หรือมีสิ่งผิดปกติโปรดแจ้งครูประจำชั้นทราบด้วย</p>
+    <p>3. โปรดตรวจสอบผลการไปโรงเรียนของเด็กอย่างสม่ำเสมอ ติดต่อกับโรงเรียนทันทีเมื่อทราบว่าเด็กหยุดเรียนโดยไม่ได้รับอนุญาต ทั้งนี้เพื่อป้องกันไม่ให้เกิดปัญหาพฤติกรรมหรือขาดเรียนนาน</p>
+    <p>4. โปรดตรวจสอบผลการเรียนรายวิชา ผลการประเมินกิจกรรมพัฒนาผู้เรียน ผลการประเมินคุณลักษณะอันพึงประสงค์ ผลการประเมินการอ่าน คิดวิเคราะห์และเขียน ผลการประเมินค่านิยม 12 ประการ และผลการประเมินสมรรถนะสำคัญของผู้เรียน โดยตรวจสอบว่านักเรียนมีผลการประเมินด้านใด อยู่ในระดับใด ผ่านเกณฑ์การประเมินการศึกษาของสถานศึกษาหรือไม่ และควรได้รับการช่วยเหลือด้านใด</p>
+    <p>5. เกณฑ์การประเมิน</p>
     <div style="padding-left: 30px;">
-        <p>๕.๑ นักเรียนต้องมีผลการประเมินรายวิชาตั้งแต่ระดับ ๑ ขึ้นไปทุกวิชา</p>
-        <p>๕.๒ นักเรียนมีผลการประเมินการอ่าน คิดวิเคราะห์ และเขียน ผ่านเกณฑ์การประเมินในระดับดีเยี่ยม/ดี/ผ่าน</p>
-        <p>๕.๓ นักเรียนมีผลการประเมินคุณลักษณะอันพึงประสงค์ ผ่านเกณฑ์การประเมินในระดับ ดีเยี่ยม/ดี/ผ่าน</p>
-        <p>๕.๔ นักเรียนเข้าร่วมกิจกรรมพัฒนาผู้เรียน และได้ผลการประเมิน 'ผ' ทุกกิจกรรม</p>
-        <p>๕.๕ นักเรียนมีผลการประเมินค่านิยม ๑๒ ประการ ผ่านเกณฑ์การประเมินในระดับ ดีเยี่ยม/ดี/ผ่าน</p>
-        <p>๕.๖ นักเรียนมีผลการประเมินสมรรถนะสำคัญของผู้เรียน ผ่านเกณฑ์การประเมินในระดับ ดีเยี่ยม/ดี/ผ่าน</p>
+        <p>5.1 นักเรียนต้องมีผลการประเมินรายวิชาตั้งแต่ระดับ 1 ขึ้นไปทุกวิชา</p>
+        <p>5.2 นักเรียนมีผลการประเมินการอ่าน คิดวิเคราะห์ และเขียน ผ่านเกณฑ์การประเมินในระดับดีเยี่ยม/ดี/ผ่าน</p>
+        <p>5.3 นักเรียนมีผลการประเมินคุณลักษณะอันพึงประสงค์ ผ่านเกณฑ์การประเมินในระดับ ดีเยี่ยม/ดี/ผ่าน</p>
+        <p>5.4 นักเรียนเข้าร่วมกิจกรรมพัฒนาผู้เรียน และได้ผลการประเมิน 'ผ' ทุกกิจกรรม</p>
+        <p>5.5 นักเรียนมีผลการประเมินค่านิยม 12 ประการ ผ่านเกณฑ์การประเมินในระดับ ดีเยี่ยม/ดี/ผ่าน</p>
+        <p>5.6 นักเรียนมีผลการประเมินสมรรถนะสำคัญของผู้เรียน ผ่านเกณฑ์การประเมินในระดับ ดีเยี่ยม/ดี/ผ่าน</p>
     </div>
-    <p>๖. โปรดตรวจสอบความคิดเห็นและข้อเสนอแนะของครูประจำชั้นต่อนักเรียน</p>
-    <p>๗. โปรดสละเวลาให้ความคิดเห็นและเสนอแนะเกี่ยวกับตัวนักเรียน ความเห็นของท่านจะเป็นประโยชน์ต่อตัวนักเรียนในปกครองของท่านเอง เพราะจะช่วยให้ครูเข้าใจนักเรียนได้ดียิ่งขึ้น และจะช่วยพัฒนานักเรียนได้ถูกต้องต่อไป</p>
+    <p>6. โปรดตรวจสอบความคิดเห็นและข้อเสนอแนะของครูประจำชั้นต่อนักเรียน</p>
+    <p>7. โปรดสละเวลาให้ความคิดเห็นและเสนอแนะเกี่ยวกับตัวนักเรียน ความเห็นของท่านจะเป็นประโยชน์ต่อตัวนักเรียนในปกครองของท่านเอง เพราะจะช่วยให้ครูเข้าใจนักเรียนได้ดียิ่งขึ้น และจะช่วยพัฒนานักเรียนได้ถูกต้องต่อไป</p>
     
     <div style="margin-top: 20px;">
         <p class="font-bold">คำอธิบายเกณฑ์ ผลการประเมินรายวิชา</p>
         <div style="display: flex; justify-content: space-between;">
             <table class="guide-table" style="width: 32%;">
                 <tr><td>คะแนน</td><td>ผลการเรียน</td><td>ความหมาย</td></tr>
-                <tr><td>๘๐-๑๐๐</td><td>๔</td><td>ดีเยี่ยม</td></tr>
-                <tr><td>๗๕-๗๙</td><td>๓.๕</td><td>ดีมาก</td></tr>
-                <tr><td>๗๐-๗๔</td><td>๓</td><td>ดี</td></tr>
-                <tr><td>๖๕-๖๙</td><td>๒.๕</td><td>ค่อนข้างดี</td></tr>
+                <tr><td>80-100</td><td>4</td><td>ดีเยี่ยม</td></tr>
+                <tr><td>75-79</td><td>3.5</td><td>ดีมาก</td></tr>
+                <tr><td>70-74</td><td>3</td><td>ดี</td></tr>
+                <tr><td>65-69</td><td>2.5</td><td>ค่อนข้างดี</td></tr>
             </table>
             <table class="guide-table" style="width: 32%;">
                 <tr><td>คะแนน</td><td>ผลการเรียน</td><td>ความหมาย</td></tr>
-                <tr><td>๖๐-๖๔</td><td>๒</td><td>ปานกลาง</td></tr>
-                <tr><td>๕๕-๕๙</td><td>๑.๕</td><td>พอใช้</td></tr>
-                <tr><td>๕๐-๕๔</td><td>๑</td><td>ผ่านเกณฑ์ขั้นต่ำ</td></tr>
-                <tr><td>๐-๔๙</td><td>๐</td><td>ต่ำกว่าเกณฑ์</td></tr>
+                <tr><td>60-64</td><td>2</td><td>ปานกลาง</td></tr>
+                <tr><td>55-59</td><td>1.5</td><td>พอใช้</td></tr>
+                <tr><td>50-54</td><td>1</td><td>ผ่านเกณฑ์ขั้นต่ำ</td></tr>
+                <tr><td>0-49</td><td>0</td><td>ต่ำกว่าเกณฑ์</td></tr>
             </table>
             <table class="guide-table" style="width: 32%;">
                 <tr><td>ผลการเรียน</td><td>ความหมาย</td></tr>
