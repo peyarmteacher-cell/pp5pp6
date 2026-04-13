@@ -224,12 +224,9 @@ foreach ($students_to_print as $student):
     }
 
     // ดึงหน้าต่างๆ มาแสดง
-    include 'p6_page1.php'; // หน้าสรุปคะแนน
-    echo '<div class="page-break"></div>';
-    include 'p6_page2.php'; // หน้าปก
-    echo '<div class="page-break"></div>';
-    include 'p6_page3.php'; // หน้าคู่มือ
-    echo '<div class="page-break"></div>';
+    include 'p6_page2.php'; // หน้าปก (ขึ้นก่อนเป็นหน้าที่ 1)
+    include 'p6_page1.php'; // หน้าสรุปคะแนน (เป็นหน้าที่ 2)
+    include 'p6_page3.php'; // หน้าคู่มือ (เป็นหน้าที่ 3)
 endforeach;
 ?>
 </body>
