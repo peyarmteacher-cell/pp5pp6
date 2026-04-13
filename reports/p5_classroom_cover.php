@@ -358,8 +358,10 @@ $approval_date = formatThaiDate($approval_date_raw);
         <div class="flex-row">
             <div class="flex-fixed">ชั้น</div>
             <div class="flex-fill"><?= $level_name ?>/<?= $room_name ?></div>
-            <div class="flex-fixed"><?= $semester === 'annual' ? '' : 'ภาคเรียนที่' ?></div>
-            <div class="flex-fill"><?= $semester === 'annual' ? '' : $semester ?></div>
+            <?php if ($semester !== 'annual'): ?>
+                <div class="flex-fixed">ภาคเรียนที่</div>
+                <div class="flex-fill"><?= $semester ?></div>
+            <?php endif; ?>
             <div class="flex-fixed">ปีการศึกษา</div>
             <div class="flex-fill"><?= $year ?></div>
         </div>
