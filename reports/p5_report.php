@@ -113,7 +113,7 @@ $female_students = $total_students - $male_students;
         <table class="border-none no-border">
             <tr>
                 <td class="text-left">ชั้น <?= $level ?>/<?= $room ?></td>
-                <td class="text-left">ภาคเรียนที่ <?= $semester === 'annual' ? '1-2' : $semester ?></td>
+                <td class="text-left"><?= $semester === 'annual' ? '' : 'ภาคเรียนที่ ' . $semester ?></td>
                 <td class="text-left">ปีการศึกษา <?= $year ?></td>
             </tr>
             <?php if ($type === 'subject'): ?>

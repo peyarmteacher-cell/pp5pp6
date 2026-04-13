@@ -61,7 +61,7 @@ foreach ($grades_raw as $g) {
 <div class="page page-unit-summary">
     <div class="header">
         <h3 style="margin: 0;">สรุปผลการเรียนรายหน่วยการเรียนรู้</h3>
-        <p style="margin: 5px 0;">รายวิชา <?= $subject_code ?> <?= $subject_name ?> ชั้น <?= $level ?>/<?= $room ?> ภาคเรียนที่ <?= $semester ?> ปีการศึกษา <?= $year ?></p>
+        <p style="margin: 5px 0;">รายวิชา <?= $subject_code ?> <?= $subject_name ?> ชั้น <?= $level ?>/<?= $room ?> <?= $semester === 'annual' ? '' : 'ภาคเรียนที่ ' . $semester ?> ปีการศึกษา <?= $year ?></p>
     </div>
 
     <table class="table-bordered">
@@ -101,7 +101,7 @@ foreach ($grades_raw as $g) {
 <div class="page">
     <div class="header">
         <h3 style="margin: 0;">หมายเหตุหน่วยการเรียนรู้</h3>
-        <p style="margin: 5px 0;">รายวิชา <?= $subject_code ?> <?= $subject_name ?> ชั้น <?= $level ?>/<?= $room ?> ภาคเรียนที่ <?= $semester ?> ปีการศึกษา <?= $year ?></p>
+        <p style="margin: 5px 0;">รายวิชา <?= $subject_code ?> <?= $subject_name ?> ชั้น <?= $level ?>/<?= $room ?> <?= $semester === 'annual' ? '' : 'ภาคเรียนที่ ' . $semester ?> ปีการศึกษา <?= $year ?></p>
     </div>
 
     <div style="margin-top: 20px; font-size: 16px;">
@@ -177,7 +177,7 @@ foreach ($months as $m) $total_school_days += count($m['days']);
 <div class="page">
     <div class="header">
         <h3 style="margin: 0;">บันทึกเวลาเรียน</h3>
-        <p style="margin: 5px 0;">รายวิชา <?= $subject_code ?> <?= $subject_name ?> ชั้น <?= $level ?>/<?= $room ?> ภาคเรียนที่ <?= $semester ?> ปีการศึกษา <?= $year ?></p>
+        <p style="margin: 5px 0;">รายวิชา <?= $subject_code ?> <?= $subject_name ?> ชั้น <?= $level ?>/<?= $room ?> <?= $semester === 'annual' ? '' : 'ภาคเรียนที่ ' . $semester ?> ปีการศึกษา <?= $year ?></p>
     </div>
 
     <table>
@@ -241,7 +241,7 @@ foreach ($stmt_char->fetchAll() as $row) {
 <div class="page">
     <div class="header">
         <h3 style="margin: 0;">บันทึกผลการประเมินคุณลักษณะอันพึงประสงค์</h3>
-        <p style="margin: 5px 0;">รายวิชา <?= $subject_code ?> <?= $subject_name ?> ชั้น <?= $level ?>/<?= $room ?> ภาคเรียนที่ <?= $semester ?> ปีการศึกษา <?= $year ?></p>
+        <p style="margin: 5px 0;">รายวิชา <?= $subject_code ?> <?= $subject_name ?> ชั้น <?= $level ?>/<?= $room ?> <?= $semester === 'annual' ? '' : 'ภาคเรียนที่ ' . $semester ?> ปีการศึกษา <?= $year ?></p>
     </div>
 
     <table>
@@ -315,7 +315,7 @@ foreach ($stmt_ana->fetchAll() as $row) {
 <div class="page">
     <div class="header">
         <h3 style="margin: 0;">บันทึกผลการประเมินการอ่าน คิดวิเคราะห์ และเขียน</h3>
-        <p style="margin: 5px 0;">รายวิชา <?= $subject_code ?> <?= $subject_name ?> ชั้น <?= $level ?>/<?= $room ?> ภาคเรียนที่ <?= $semester ?> ปีการศึกษา <?= $year ?></p>
+        <p style="margin: 5px 0;">รายวิชา <?= $subject_code ?> <?= $subject_name ?> ชั้น <?= $level ?>/<?= $room ?> <?= $semester === 'annual' ? '' : 'ภาคเรียนที่ ' . $semester ?> ปีการศึกษา <?= $year ?></p>
     </div>
 
     <table>
@@ -384,7 +384,7 @@ foreach ($stmt_comp->fetchAll() as $row) {
 <div class="page">
     <div class="header">
         <h3 style="margin: 0;">บันทึกผลการประเมินสมรรถนะสำคัญของผู้เรียน</h3>
-        <p style="margin: 5px 0;">ชั้น <?= $level ?>/<?= $room ?> ภาคเรียนที่ <?= $semester ?> ปีการศึกษา <?= $year ?></p>
+        <p style="margin: 5px 0;">ชั้น <?= $level ?>/<?= $room ?> <?= $semester === 'annual' ? '' : 'ภาคเรียนที่ ' . $semester ?> ปีการศึกษา <?= $year ?></p>
     </div>
 
     <table>
