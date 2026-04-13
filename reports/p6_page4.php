@@ -1,11 +1,13 @@
 <!-- หน้าที่ 4: ข้อมูลนักเรียน และ บันทึกการเปลี่ยนแปลง -->
-<div class="page student-info-page" style="position: relative;">
-    <!-- ช่องติดรูปถ่าย -->
-    <div style="position: absolute; right: 40px; top: 20px; width: 3cm; height: 4cm; border: 1px solid #ccc; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 12px; padding: 5px; color: #666;">
-        รูปถ่ายนักเรียน<br>ขนาด 1.5 นิ้ว<br>(3 x 4 ซม.)
+<div class="page student-info-page">
+    <!-- ส่วนหัวและช่องติดรูปถ่าย -->
+    <div style="display: flex; justify-content: flex-end; padding: 20px 40px 0 0;">
+        <div style="width: 2.5cm; height: 3.2cm; border: 1px solid #ccc; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 11px; padding: 2px; color: #666; line-height: 1.4;">
+            รูปถ่ายนักเรียน<br>ขนาด 1 นิ้ว
+        </div>
     </div>
 
-    <h3 class="text-center" style="font-size: 20px; margin-bottom: 30px;">ข้อมูลนักเรียน</h3>
+    <h3 class="text-center" style="font-size: 20px; margin-top: -20px; margin-bottom: 30px;">ข้อมูลนักเรียน</h3>
 
     <div style="text-align: left; padding: 0 40px; font-size: 16px; line-height: 1.2;">
         <div style="display: flex; margin-bottom: 20px;">
