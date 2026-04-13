@@ -269,12 +269,36 @@ foreach ($students_to_print as $student):
         $attendance_summary[$row['y'] . '-' . $row['m']]['present'] = $row['present_days'];
     }
 
+    // ดึงบันทึกพฤติกรรม (ความคิดเห็นครู)
+    $stmt_behavior = $pdo->prepare('
+        SELECT bc.name as category_name, sbr.behavior_text
+        FROM behavior_categories bc
+        LEFT JOIN student_behavior_records sbr ON bc.id = sbr.category_id 
+            AND sbr.student_id = ? 
+            AND sbr.academic_year = ?
+            AND sbr.semester = ?
+            AND sbr.id = (
+                SELECT id FROM student_behavior_records 
+                WHERE student_id = ? AND category_id = bc.id AND academic_year = ? AND semester = ?
+                ORDER BY check_date DESC LIMIT 1
+            )
+        WHERE bc.name IN ("หน้าที่รับผิดชอบ ความเอาใจใส่การเรียน", "การใช้เวลาว่าง", "ความสัมพันธ์กับบุคคลรอบข้าง", "อุปนิสัย บุคลิกภาพ", "สุขภาพ")
+        ORDER BY FIELD(bc.name, "หน้าที่รับผิดชอบ ความเอาใจใส่การเรียน", "การใช้เวลาว่าง", "ความสัมพันธ์กับบุคคลรอบข้าง", "อุปนิสัย บุคลิกภาพ", "สุขภาพ")
+    ');
+    $target_sem = $semester === 'annual' ? 2 : $semester;
+    $stmt_behavior->execute([
+        $student['id'], $year, $target_sem,
+        $student['id'], $year, $target_sem
+    ]);
+    $behavior_comments = $stmt_behavior->fetchAll();
+
     // ดึงหน้าต่างๆ มาแสดงตามลำดับใหม่
     include 'p6_page2.php'; // หน้าปก (หน้าที่ 1)
     include 'p6_page3.php'; // หน้าคู่มือ (หน้าที่ 2)
     include 'p6_page4.php'; // ข้อมูลนักเรียน (หน้าที่ 3)
     include 'p6_page1.php'; // หน้าสรุปคะแนน (หน้าที่ 4)
     include 'p6_page5.php'; // สุขภาพและเวลาเรียน (หน้าที่ 5)
+    include 'p6_page6.php'; // ความคิดเห็นครูและผู้ปกครอง (หน้าที่ 6)
 endforeach;
 ?>
 </body>
