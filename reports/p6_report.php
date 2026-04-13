@@ -223,11 +223,58 @@ foreach ($students_to_print as $student):
         $age_months = $age_diff->m;
     }
 
-    // ดึงหน้าต่างๆ มาแสดง
+    // ดึงข้อมูลสุขภาพ (student_health_records)
+    $stmt_h = $pdo->prepare('SELECT * FROM student_health_records WHERE student_id = ? AND academic_year = ? ORDER BY semester ASC, record_number ASC');
+    $stmt_h->execute([$student['id'], $year]);
+    $health_records = $stmt_h->fetchAll();
+    
+    // จัดกลุ่มข้อมูลสุขภาพ
+    $health_data = [
+        1 => [1 => null, 2 => null],
+        2 => [1 => null, 2 => null]
+    ];
+    foreach ($health_records as $hr) {
+        $health_data[$hr['semester']][$hr['record_number']] = $hr;
+    }
+
+    // ดึงสรุปเวลาเรียน (attendance)
+    // นับวันที่มีการเช็คชื่อในห้องเรียนนี้ทั้งหมดเป็น "เวลาเต็ม"
+    $stmt_att_total = $pdo->prepare('
+        SELECT 
+            MONTH(check_date) as m, 
+            YEAR(check_date) as y,
+            COUNT(DISTINCT check_date) as total_days
+        FROM attendance
+        WHERE classroom_id = ? AND academic_year = ?
+        GROUP BY y, m
+    ');
+    $stmt_att_total->execute([$classroom_id, $year]);
+    $attendance_summary = [];
+    foreach ($stmt_att_total->fetchAll() as $row) {
+        $attendance_summary[$row['y'] . '-' . $row['m']]['total'] = $row['total_days'];
+    }
+
+    // นับวันที่นักเรียนมาเรียน (present/late)
+    $stmt_att_present = $pdo->prepare('
+        SELECT 
+            MONTH(check_date) as m, 
+            YEAR(check_date) as y,
+            COUNT(DISTINCT check_date) as present_days
+        FROM attendance
+        WHERE student_id = ? AND academic_year = ? AND status IN ("present", "late")
+        GROUP BY y, m
+    ');
+    $stmt_att_present->execute([$student['id'], $year]);
+    foreach ($stmt_att_present->fetchAll() as $row) {
+        $attendance_summary[$row['y'] . '-' . $row['m']]['present'] = $row['present_days'];
+    }
+
+    // ดึงหน้าต่างๆ มาแสดงตามลำดับใหม่
     include 'p6_page2.php'; // หน้าปก (หน้าที่ 1)
-    include 'p6_page1.php'; // หน้าสรุปคะแนน (หน้าที่ 2)
-    include 'p6_page3.php'; // หน้าคู่มือ (หน้าที่ 3)
-    include 'p6_page4.php'; // ข้อมูลนักเรียน (หน้าที่ 4 - ย้ายมาหน้าสุดท้าย)
+    include 'p6_page3.php'; // หน้าคู่มือ (หน้าที่ 2)
+    include 'p6_page4.php'; // ข้อมูลนักเรียน (หน้าที่ 3)
+    include 'p6_page1.php'; // หน้าสรุปคะแนน (หน้าที่ 4)
+    include 'p6_page5.php'; // สุขภาพและเวลาเรียน (หน้าที่ 5)
 endforeach;
 ?>
 </body>

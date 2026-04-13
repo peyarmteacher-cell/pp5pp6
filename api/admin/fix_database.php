@@ -537,6 +537,9 @@ try {
         record_number INT,
         weight FLOAT,
         height FLOAT,
+        weight_age_result VARCHAR(100) NULL,
+        height_age_result VARCHAR(100) NULL,
+        weight_height_result VARCHAR(100) NULL,
         recorded_date DATE,
         teacher_id INT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -546,6 +549,20 @@ try {
         FOREIGN KEY (teacher_id) REFERENCES users(id) ON DELETE SET NULL,
         UNIQUE KEY unique_health_record (student_id, academic_year, semester, record_number)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+    // ตรวจสอบและเพิ่มคอลัมน์ผลการประเมินหากยังไม่มี
+    $health_cols = [
+        'weight_age_result' => "VARCHAR(100) NULL AFTER height",
+        'height_age_result' => "VARCHAR(100) NULL AFTER weight_age_result",
+        'weight_height_result' => "VARCHAR(100) NULL AFTER height_age_result"
+    ];
+    foreach ($health_cols as $col => $def) {
+        $stmt = $pdo->query("SHOW COLUMNS FROM student_health_records LIKE '$col'");
+        if (!$stmt->fetch()) {
+            $pdo->exec("ALTER TABLE student_health_records ADD COLUMN $col $def");
+            $results[] = "เพิ่มคอลัมน์ $col ในตาราง student_health_records สำเร็จ";
+        }
+    }
     $results[] = "ตรวจสอบ/สร้างตาราง student_health_records สำเร็จ";
 
     // 14. เพิ่มตารางตารางสอน
