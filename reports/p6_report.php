@@ -96,6 +96,8 @@ function formatPassFail($val) {
         min-width: 100px;
         padding: 0 5px;
         text-align: center;
+        line-height: 1.1;
+        vertical-align: bottom;
     }
     .summary-section {
         display: flex;
@@ -381,50 +383,59 @@ foreach ($students_to_print as $student):
     
     <h3 style="margin: 30px 0 10px; font-size: 22px;">โรงเรียน<?= $school_name ?></h3>
     <p style="font-size: 18px; margin: 5px 0;"><?= $affiliation ?></p>
-    <p style="font-size: 18px; margin: 5px 0;"><?= $district ?> <?= $province ?></p>
+    <p style="font-size: 18px; margin: 5px 0;">อำเภอ<?= $district ?> จังหวัด<?= $province ?></p>
 
-    <div style="margin-top: 50px; text-align: left; padding-left: 50px; font-size: 18px; line-height: 2.5;">
-        <div style="display: flex; gap: 10px; margin-bottom: 5px;">
-            <span>ชื่อ</span> <span class="dotted-line" style="flex: 1; min-width: 150px;"><?= $student['prefix'] ?><?= $student['name'] ?></span> 
-            <span>นามสกุล</span> <span class="dotted-line" style="flex: 1; min-width: 150px;"><?= $student['last_name'] ?></span>
+    <div style="margin-top: 50px; text-align: left; padding: 0 60px; font-size: 18px; line-height: 2.2;">
+        <div style="display: flex; margin-bottom: 10px;">
+            <span style="white-space: nowrap;">ชื่อ</span> 
+            <span class="dotted-line" style="flex: 1; margin: 0 5px;"><?= $student['prefix'] ?><?= $student['name'] ?></span> 
+            <span style="white-space: nowrap;">นามสกุล</span> 
+            <span class="dotted-line" style="flex: 1; margin-left: 5px;"><?= $student['last_name'] ?></span>
         </div>
-        <div style="display: flex; gap: 10px; margin-bottom: 5px;">
-            <span>วันเกิด</span> <span class="dotted-line" style="min-width: 180px;"><?= $bday['day'] ?> <?= $bday['month'] ?> <?= $bday['year'] ?></span> 
-            <span>อายุ</span> <span class="dotted-line" style="min-width: 40px;"><?= $age_years ?></span> <span>ปี</span> 
-            <span class="dotted-line" style="min-width: 40px;"><?= $age_months ?></span> <span>เดือน</span>
+        <div style="display: flex; margin-bottom: 10px;">
+            <span style="white-space: nowrap;">วันเกิด</span> 
+            <span class="dotted-line" style="flex: 1; margin: 0 5px;"><?= $bday['day'] ?> <?= $bday['month'] ?> <?= $bday['year'] ?></span> 
+            <span style="white-space: nowrap;">อายุ</span> 
+            <span class="dotted-line" style="width: 60px; margin: 0 5px;"><?= $age_years ?></span> 
+            <span style="white-space: nowrap;">ปี</span> 
+            <span class="dotted-line" style="width: 60px; margin: 0 5px;"><?= $age_months ?></span> 
+            <span style="white-space: nowrap;">เดือน</span>
         </div>
-        <div style="display: flex; gap: 10px; margin-bottom: 5px;">
-            <span>เลขประจำตัวนักเรียน</span> <span class="dotted-line" style="min-width: 120px;"><?= $student['student_code'] ?></span> 
-            <span>เลขประจำตัวประชาชน</span> <span class="dotted-line" style="min-width: 200px;"><?= $student['national_id'] ?></span>
+        <div style="display: flex; margin-bottom: 10px;">
+            <span style="white-space: nowrap;">เลขประจำตัวนักเรียน</span> 
+            <span class="dotted-line" style="width: 150px; margin: 0 5px;"><?= $student['student_code'] ?></span> 
+            <span style="white-space: nowrap;">เลขประจำตัวประชาชน</span> 
+            <span class="dotted-line" style="flex: 1; margin-left: 5px;"><?= $student['national_id'] ?></span>
         </div>
-        <div style="display: flex; gap: 10px; margin-bottom: 5px;">
-            <span>ชั้น</span> <span class="dotted-line" style="min-width: 180px;">ประถมศึกษาปีที่ <?= $classroom['level'] ?></span> 
-            <span>เลขที่</span> <span class="dotted-line" style="min-width: 80px;"><?= array_search($student['id'], array_column($students_to_print, 'id')) + 1 ?></span>
+        <div style="display: flex; margin-bottom: 10px;">
+            <span style="white-space: nowrap;">ชั้น</span> 
+            <span class="dotted-line" style="flex: 1; margin: 0 5px;">ประถมศึกษาปีที่ <?= $classroom['level'] ?></span> 
+            <span style="white-space: nowrap;">เลขที่</span> 
+            <span class="dotted-line" style="width: 100px; margin-left: 5px;"><?= array_search($student['id'], array_column($students_to_print, 'id')) + 1 ?></span>
         </div>
-        <div style="display: flex; gap: 10px; margin-bottom: 5px;">
-            <span>ปีการศึกษา</span> <span class="dotted-line" style="min-width: 120px;"><?= $year ?></span>
+        <div style="display: flex; margin-bottom: 10px;">
+            <span style="white-space: nowrap;">ปีการศึกษา</span> 
+            <span class="dotted-line" style="flex: 1; margin-left: 5px;"><?= $year ?></span>
         </div>
     </div>
 
-    <div style="margin-top: 60px; text-align: right; padding-right: 50px;">
-        <div class="sig-block" style="display: inline-block; text-align: center; margin-left: 50px;">
+    <div style="margin-top: 50px; text-align: center;">
+        <div class="sig-block" style="margin-bottom: 25px;">
             <p>ลงชื่อ..........................................................</p>
             <p>( <?= $teacher_name ?> )</p>
             <p>ครูประจำชั้น/ครูที่ปรึกษา</p>
         </div>
-        <br>
-        <div class="sig-block" style="display: inline-block; text-align: center; margin-left: 50px;">
+        <div class="sig-block" style="margin-bottom: 25px;">
             <p>ลงชื่อ..........................................................</p>
             <p>( <?= $acad_name ?> )</p>
             <p><?= $acad_pos ?></p>
         </div>
-        <br>
-        <div class="sig-block" style="display: inline-block; text-align: center; margin-left: 50px;">
+        <div class="sig-block" style="margin-bottom: 25px;">
             <p>ลงชื่อ..........................................................</p>
             <p>( <?= $director_name ?> )</p>
             <p>ผู้อำนวยการโรงเรียน</p>
         </div>
-        <div style="margin-top: 20px; text-align: center; width: 300px; float: right;">
+        <div style="margin-top: 20px;">
             วันที่ <span class="dotted-line" style="min-width: 150px;"><?= $approval_date['day'] ?> <?= $approval_date['month'] ?> <?= $approval_date['year'] ?></span>
         </div>
     </div>
