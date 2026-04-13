@@ -37,35 +37,35 @@
             foreach ($categories as $cat):
                 $text = $behavior_map[$cat] ?? '';
             ?>
-            <tr>
-                <td class="font-bold" style="width: 25%; padding: 12px 10px; text-align: center; line-height: 1.4;"><?= $cat ?></td>
-                <td class="text-left" style="padding: 12px 15px; vertical-align: middle; min-height: 50px;">
+            <tr style="height: 65px;">
+                <td class="font-bold" style="width: 25%; padding: 5px 10px; text-align: center; line-height: 1.3;"><?= $cat ?></td>
+                <td class="text-left" style="padding: 10px 15px; vertical-align: top;">
                     <?= nl2br(htmlspecialchars($text)) ?>
                 </td>
             </tr>
             <?php endforeach; ?>
         </table>
 
-        <div class="sig-block" style="margin-top: 20px; text-align: center; margin-left: 40%;">
+        <div class="sig-block" style="margin-top: 35px; text-align: center; margin-left: 45%;">
             ลงชื่อ........................................................................ครูประจำชั้น/ครูที่ปรึกษา
         </div>
 
         <!-- Parent Comments Section -->
-        <h3 class="text-center font-bold mb-4" style="font-size: 18px; margin-top: 50px;">ความคิดเห็นและข้อเสนอแนะของผู้ปกครอง</h3>
+        <h3 class="text-center font-bold mb-4" style="font-size: 18px; margin-top: 45px;">ความคิดเห็นและข้อเสนอแนะของผู้ปกครอง</h3>
         
         <table class="p6-table mb-4">
             <?php foreach ($categories as $cat): ?>
-            <tr>
-                <td class="font-bold" style="width: 25%; padding: 12px 10px; text-align: center; line-height: 1.4;"><?= $cat ?></td>
-                <td class="text-left" style="padding: 12px 15px; vertical-align: middle; min-height: 50px;">
+            <tr style="height: 65px;">
+                <td class="font-bold" style="width: 25%; padding: 5px 10px; text-align: center; line-height: 1.3;"><?= $cat ?></td>
+                <td class="text-left" style="padding: 10px 15px; vertical-align: top;">
                     &nbsp;
                 </td>
             </tr>
             <?php endforeach; ?>
         </table>
 
-        <div class="sig-block" style="margin-top: 20px; text-align: center; margin-left: 40%;">
-            ลงชื่อ........................................................................ผู้ปกครอง<br>
+        <div class="sig-block" style="margin-top: 35px; text-align: center; margin-left: 45%;">
+            ลงชื่อ........................................................................ผู้ปกครอง
             <div style="margin-top: 10px;">
                 (........................................................................)
             </div>
