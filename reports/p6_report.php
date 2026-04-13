@@ -224,9 +224,10 @@ foreach ($students_to_print as $student):
     }
 
     // ดึงหน้าต่างๆ มาแสดง
-    include 'p6_page2.php'; // หน้าปก (ขึ้นก่อนเป็นหน้าที่ 1)
-    include 'p6_page1.php'; // หน้าสรุปคะแนน (เป็นหน้าที่ 2)
-    include 'p6_page3.php'; // หน้าคู่มือ (เป็นหน้าที่ 3)
+    include 'p6_page2.php'; // หน้าปก (หน้าที่ 1)
+    include 'p6_page4.php'; // ข้อมูลนักเรียน (หน้าที่ 2)
+    include 'p6_page1.php'; // หน้าสรุปคะแนน (หน้าที่ 3)
+    include 'p6_page3.php'; // หน้าคู่มือ (หน้าที่ 4)
 endforeach;
 ?>
 </body>
