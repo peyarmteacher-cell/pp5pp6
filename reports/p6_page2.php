@@ -11,14 +11,14 @@
     <p style="font-size: 18px; margin: 5px 0;"><?= $affiliation ?></p>
     <p style="font-size: 18px; margin: 5px 0;">อำเภอ<?= $district ?> จังหวัด<?= $province ?></p>
 
-    <div style="margin-top: 50px; text-align: left; padding: 0 60px; font-size: 18px; line-height: 2.2;">
-        <div style="display: flex; margin-bottom: 10px;">
+    <div style="margin-top: 40px; text-align: left; padding: 0 20px; font-size: 17px; line-height: 1.2;">
+        <div style="display: flex; margin-bottom: 25px;">
             <span style="white-space: nowrap;">ชื่อ</span> 
             <span class="dotted-line" style="flex: 1; margin: 0 5px;"><?= $student['prefix'] ?><?= $student['name'] ?></span> 
             <span style="white-space: nowrap;">นามสกุล</span> 
             <span class="dotted-line" style="flex: 1; margin-left: 5px;"><?= $student['last_name'] ?></span>
         </div>
-        <div style="display: flex; margin-bottom: 10px;">
+        <div style="display: flex; margin-bottom: 25px;">
             <span style="white-space: nowrap;">วันเกิด</span> 
             <span class="dotted-line" style="flex: 1; margin: 0 5px;"><?= $bday['day'] ?> <?= $bday['month'] ?> <?= $bday['year'] ?></span> 
             <span style="white-space: nowrap;">อายุ</span> 
@@ -27,19 +27,19 @@
             <span class="dotted-line" style="width: 60px; margin: 0 5px;"><?= $age_months ?></span> 
             <span style="white-space: nowrap;">เดือน</span>
         </div>
-        <div style="display: flex; margin-bottom: 10px;">
+        <div style="display: flex; margin-bottom: 25px;">
             <span style="white-space: nowrap;">เลขประจำตัวนักเรียน</span> 
-            <span class="dotted-line" style="width: 150px; margin: 0 5px;"><?= $student['student_code'] ?></span> 
+            <span class="dotted-line" style="width: 120px; margin: 0 5px;"><?= $student['student_code'] ?></span> 
             <span style="white-space: nowrap;">เลขประจำตัวประชาชน</span> 
             <span class="dotted-line" style="flex: 1; margin-left: 5px;"><?= $student['national_id'] ?></span>
         </div>
-        <div style="display: flex; margin-bottom: 10px;">
+        <div style="display: flex; margin-bottom: 25px;">
             <span style="white-space: nowrap;">ชั้น</span> 
-            <span class="dotted-line" style="flex: 1; margin: 0 5px;">ประถมศึกษาปีที่ <?= $classroom['level'] ?></span> 
+            <span class="dotted-line" style="flex: 1; margin: 0 5px;">ประถมศึกษาปีที่ <?= $clean_level ?></span> 
             <span style="white-space: nowrap;">เลขที่</span> 
             <span class="dotted-line" style="width: 100px; margin-left: 5px;"><?= array_search($student['id'], array_column($students_to_print, 'id')) + 1 ?></span>
         </div>
-        <div style="display: flex; margin-bottom: 10px;">
+        <div style="display: flex; margin-bottom: 25px;">
             <span style="white-space: nowrap;">ปีการศึกษา</span> 
             <span class="dotted-line" style="flex: 1; margin-left: 5px;"><?= $year ?></span>
         </div>

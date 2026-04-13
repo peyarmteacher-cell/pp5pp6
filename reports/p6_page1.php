@@ -6,7 +6,7 @@
         <?php endif; ?>
         <h3 style="margin: 0; font-size: 18px; padding-top: 10px;">แบบรายงานประจำตัวนักเรียน : ผลการพัฒนาคุณภาพผู้เรียนรายบุคคล (ปพ.6)</h3>
         <p style="margin: 5px 0; font-size: 16px;">โรงเรียน<?= $school_name ?> <?= $affiliation ?></p>
-        <p style="margin: 5px 0; font-size: 16px;">ชั้นประถมศึกษาปีที่ <?= $classroom['level'] ?> ภาคเรียนที่ <?= $semester === 'annual' ? '1-2' : $semester ?> ปีการศึกษา <?= $year ?></p>
+        <p style="margin: 5px 0; font-size: 16px;">ชั้นประถมศึกษาปีที่ <?= $clean_level ?> ภาคเรียนที่ <?= $semester === 'annual' ? '1-2' : $semester ?> ปีการศึกษา <?= $year ?></p>
     </div>
 
     <div style="margin-bottom: 10px; font-size: 14px; display: flex; justify-content: space-between;">

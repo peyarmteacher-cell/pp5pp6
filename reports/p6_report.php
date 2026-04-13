@@ -20,6 +20,7 @@ $school = $stmt->fetch();
 $stmt = $pdo->prepare('SELECT * FROM classrooms WHERE id = ?');
 $stmt->execute([$classroom_id]);
 $classroom = $stmt->fetch();
+$clean_level = str_replace(['ป.', 'ม.'], '', $classroom['level'] ?? '');
 
 // ดึงข้อมูลนักเรียน
 $students_to_print = [];
