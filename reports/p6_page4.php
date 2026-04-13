@@ -1,5 +1,10 @@
 <!-- หน้าที่ 4: ข้อมูลนักเรียน และ บันทึกการเปลี่ยนแปลง -->
-<div class="page student-info-page">
+<div class="page student-info-page" style="position: relative;">
+    <!-- ช่องติดรูปถ่าย -->
+    <div style="position: absolute; right: 40px; top: 20px; width: 3cm; height: 4cm; border: 1px solid #ccc; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 12px; padding: 5px; color: #666;">
+        รูปถ่ายนักเรียน<br>ขนาด 1.5 นิ้ว<br>(3 x 4 ซม.)
+    </div>
+
     <h3 class="text-center" style="font-size: 20px; margin-bottom: 30px;">ข้อมูลนักเรียน</h3>
 
     <div style="text-align: left; padding: 0 40px; font-size: 16px; line-height: 1.2;">
@@ -20,11 +25,11 @@
         </div>
         <div style="display: flex; margin-bottom: 20px;">
             <span style="white-space: nowrap;">เพศ</span> 
-            <span class="dotted-line" style="width: 100px; margin: 0 5px;"><?= $student['gender'] === 'male' || $student['gender'] === 'ชาย' ? 'ชาย' : 'หญิง' ?></span> 
+            <span class="dotted-line" style="width: 60px; margin: 0 5px;"><?= $student['gender'] === 'male' || $student['gender'] === 'ชาย' ? 'ชาย' : 'หญิง' ?></span> 
             <span style="white-space: nowrap;">เชื้อชาติ</span> 
-            <span class="dotted-line" style="flex: 1; margin: 0 5px;"><?= $student['race'] ?: 'ไทย' ?></span> 
+            <span class="dotted-line" style="width: 100px; margin: 0 5px;"><?= $student['race'] ?: 'ไทย' ?></span> 
             <span style="white-space: nowrap;">สัญชาติ</span> 
-            <span class="dotted-line" style="flex: 1; margin: 0 5px;"><?= $student['nationality'] ?: 'ไทย' ?></span> 
+            <span class="dotted-line" style="width: 100px; margin: 0 5px;"><?= $student['nationality'] ?: 'ไทย' ?></span> 
             <span style="white-space: nowrap;">ศาสนา</span> 
             <span class="dotted-line" style="flex: 1; margin-left: 5px;"><?= $student['religion'] ?: 'พุทธ' ?></span>
         </div>
