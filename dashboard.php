@@ -270,25 +270,13 @@ try {
                     <i data-lucide="user-plus" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
                     <span class="text-sm font-medium">อนุมัติครู</span>
                 </a>
-                <a href="javascript:void(0)" onclick="showSection('manage-students')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">
-                    <i data-lucide="graduation-cap" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
-                    <span class="text-sm font-medium">จัดการนักเรียน</span>
-                </a>
-                <a href="javascript:void(0)" onclick="showSection('manage-subjects')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">
-                    <i data-lucide="book-open" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
-                    <span class="text-sm font-medium">จัดการรายวิชา</span>
-                </a>
-                <a href="javascript:void(0)" onclick="showSection('academic-management')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">
-                    <i data-lucide="calendar" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
-                    <span class="text-sm font-medium">จัดการปีการศึกษา</span>
-                </a>
                 <a href="javascript:void(0)" onclick="showSection('school-settings')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">
                     <i data-lucide="settings-2" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
                     <span class="text-sm font-medium">ตั้งค่าโรงเรียน</span>
                 </a>
             <?php endif; ?>
 
-            <?php if ($role === 'teacher' && $_SESSION['is_academic']): ?>
+            <?php if ($role === 'admin' || (isset($_SESSION['is_academic']) && $_SESSION['is_academic'])): ?>
                 <div class="pt-4 pb-2 px-4 text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">งานวิชาการ</div>
                 <a href="javascript:void(0)" onclick="showSection('manage-students')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">
                     <i data-lucide="graduation-cap" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
