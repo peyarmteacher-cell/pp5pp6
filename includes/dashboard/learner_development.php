@@ -184,42 +184,42 @@
                 <td class="px-4 py-3 border-r border-slate-100 sticky left-0 bg-white group-hover:bg-slate-50 z-10">
                     <div class="flex flex-col">
                         <span class="text-xs font-bold text-slate-400">เลขที่ ${index + 1}</span>
-                        <span class="font-medium text-slate-800">${s.prefix || ''}${s.name} ${s.last_name || ''}</span>
+                        <span class="text-xs font-medium text-slate-800">${s.prefix || ''}${s.name} ${s.last_name || ''}</span>
                         <span class="text-[10px] text-slate-400 font-mono">${s.student_code}</span>
                     </div>
                 </td>
                 <td class="px-4 py-3 text-center">
-                    <select onchange="updateLDValue(${s.id}, 'guidance_result', this.value)" class="w-full px-2 py-1 bg-slate-50 border border-slate-200 rounded-lg text-sm outline-none cursor-pointer">
+                    <select onchange="updateLDValue(${s.id}, 'guidance_result', this.value)" class="w-full px-2 py-1 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none cursor-pointer">
                         <option value="" ${s.guidance_result === '' ? 'selected' : ''}>-</option>
-                        <option value="P" ${s.guidance_result === 'P' ? 'selected' : ''} class="text-green-600 font-bold">ผ่าน (P)</option>
-                        <option value="F" ${s.guidance_result === 'F' ? 'selected' : ''} class="text-red-600 font-bold">ไม่ผ่าน (F)</option>
+                        <option value="P" ${s.guidance_result === 'P' ? 'selected' : ''} class="text-green-600 font-bold">ผ่าน</option>
+                        <option value="F" ${s.guidance_result === 'F' ? 'selected' : ''} class="text-red-600 font-bold">ไม่ผ่าน</option>
                     </select>
                 </td>
                 <td class="px-4 py-3 text-center">
-                    <select onchange="updateLDValue(${s.id}, 'scout_result', this.value)" class="w-full px-2 py-1 bg-slate-50 border border-slate-200 rounded-lg text-sm outline-none cursor-pointer">
+                    <select onchange="updateLDValue(${s.id}, 'scout_result', this.value)" class="w-full px-2 py-1 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none cursor-pointer">
                         <option value="" ${s.scout_result === '' ? 'selected' : ''}>-</option>
-                        <option value="P" ${s.scout_result === 'P' ? 'selected' : ''} class="text-green-600 font-bold">ผ่าน (P)</option>
-                        <option value="F" ${s.scout_result === 'F' ? 'selected' : ''} class="text-red-600 font-bold">ไม่ผ่าน (F)</option>
+                        <option value="P" ${s.scout_result === 'P' ? 'selected' : ''} class="text-green-600 font-bold">ผ่าน</option>
+                        <option value="F" ${s.scout_result === 'F' ? 'selected' : ''} class="text-red-600 font-bold">ไม่ผ่าน</option>
                     </select>
                 </td>
                 <td class="px-4 py-3">
-                    <select onchange="updateLDValue(${s.id}, 'club_id', this.value)" class="w-full px-2 py-1 bg-slate-50 border border-slate-200 rounded-lg text-sm outline-none cursor-pointer">
+                    <select onchange="updateLDValue(${s.id}, 'club_id', this.value)" class="w-full px-2 py-1 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none cursor-pointer">
                         <option value="">เลือกชุมนุม</option>
                         ${currentClubs.map(c => `<option value="${c.id}" ${s.club_id == c.id ? 'selected' : ''}>${c.name}</option>`).join('')}
                     </select>
                 </td>
                 <td class="px-4 py-3 text-center">
-                    <select onchange="updateLDValue(${s.id}, 'club_result', this.value)" class="w-full px-2 py-1 bg-slate-50 border border-slate-200 rounded-lg text-sm outline-none cursor-pointer">
+                    <select onchange="updateLDValue(${s.id}, 'club_result', this.value)" class="w-full px-2 py-1 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none cursor-pointer">
                         <option value="" ${s.club_result === '' ? 'selected' : ''}>-</option>
-                        <option value="P" ${s.club_result === 'P' ? 'selected' : ''} class="text-green-600 font-bold">ผ่าน (P)</option>
-                        <option value="F" ${s.club_result === 'F' ? 'selected' : ''} class="text-red-600 font-bold">ไม่ผ่าน (F)</option>
+                        <option value="P" ${s.club_result === 'P' ? 'selected' : ''} class="text-green-600 font-bold">ผ่าน</option>
+                        <option value="F" ${s.club_result === 'F' ? 'selected' : ''} class="text-red-600 font-bold">ไม่ผ่าน</option>
                     </select>
                 </td>
                 <td class="px-4 py-3 text-center">
-                    <select onchange="updateLDValue(${s.id}, 'social_result', this.value)" class="w-full px-2 py-1 bg-slate-50 border border-slate-200 rounded-lg text-sm outline-none cursor-pointer">
+                    <select onchange="updateLDValue(${s.id}, 'social_result', this.value)" class="w-full px-2 py-1 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none cursor-pointer">
                         <option value="" ${s.social_result === '' ? 'selected' : ''}>-</option>
-                        <option value="P" ${s.social_result === 'P' ? 'selected' : ''} class="text-green-600 font-bold">ผ่าน (P)</option>
-                        <option value="F" ${s.social_result === 'F' ? 'selected' : ''} class="text-red-600 font-bold">ไม่ผ่าน (F)</option>
+                        <option value="P" ${s.social_result === 'P' ? 'selected' : ''} class="text-green-600 font-bold">ผ่าน</option>
+                        <option value="F" ${s.social_result === 'F' ? 'selected' : ''} class="text-red-600 font-bold">ไม่ผ่าน</option>
                     </select>
                 </td>
             </tr>
