@@ -146,6 +146,9 @@ try {
                 } else if (sectionId === 'academic-management') {
                     targetId = sectionId;
                     if (typeof loadAcademicYears === 'function') loadAcademicYears();
+                } else if (sectionId === 'academic-documents') {
+                    targetId = sectionId;
+                    if (typeof initAcademicDocuments === 'function') initAcademicDocuments();
                 } else if (sectionId === 'reports') {
                     targetId = sectionId;
                     if (typeof loadReportOptions === 'function') loadReportOptions();
@@ -298,6 +301,10 @@ try {
                 <a href="javascript:void(0)" onclick="showSection('academic-management')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">
                     <i data-lucide="calendar" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
                     <span class="text-sm font-medium">จัดการปีการศึกษา</span>
+                </a>
+                <a href="javascript:void(0)" onclick="showSection('academic-documents')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">
+                    <i data-lucide="file-text" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
+                    <span class="text-sm font-medium">เอกสารวิชาการ</span>
                 </a>
             <?php endif; ?>
 
@@ -594,6 +601,7 @@ try {
 
         <!-- Academic Management -->
         <?php include 'includes/dashboard/academic_management.php'; ?>
+        <?php include 'includes/dashboard/academic_documents.php'; ?>
 
         <!-- Teacher: Record Grades -->
         <?php include 'includes/dashboard/grading.php'; ?>
