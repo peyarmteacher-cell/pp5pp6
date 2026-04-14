@@ -25,6 +25,7 @@ $school = $stmt->fetch();
 $school_name = $school['name'] ?? '';
 $school_district = $school['district'] ?? '';
 $school_province = $school['province'] ?? '';
+$garuda_url = $school['garuda_url'] ?? 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Garuda_Emb_of_Thailand.svg/1200px-Garuda_Emb_of_Thailand.svg.png';
 
 // Helper to format date
 function formatDocDateThai($dateStr = null) {
@@ -127,6 +128,9 @@ list($day, $month, $year) = formatDocDateThai();
 <?php if ($type === 'transfer_request'): ?>
     <!-- แบบ บค.๑๙ คำร้องขอย้ายนักเรียน -->
     <div class="doc-page">
+        <div class="header-logo">
+            <img src="<?= $garuda_url ?>" alt="Garuda">
+        </div>
         <div class="form-label">แบบ บค.๑๙</div>
         <div class="doc-title">คำร้องขอย้ายนักเรียน</div>
         
@@ -207,7 +211,7 @@ list($day, $month, $year) = formatDocDateThai();
     <!-- ใบรับรองผลการเรียน -->
     <div class="doc-page">
         <div class="header-logo">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Garuda_Emb_of_Thailand.svg/1200px-Garuda_Emb_of_Thailand.svg.png" alt="Garuda">
+            <img src="<?= $garuda_url ?>" alt="Garuda">
         </div>
         <div class="doc-title">ใบรับรองผลการเรียน</div>
         
@@ -293,7 +297,7 @@ list($day, $month, $year) = formatDocDateThai();
     <div class="doc-page">
         <div class="form-label">แบบ บค.๒๐</div>
         <div class="header-logo">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Garuda_Emb_of_Thailand.svg/1200px-Garuda_Emb_of_Thailand.svg.png" alt="Garuda">
+            <img src="<?= $garuda_url ?>" alt="Garuda">
         </div>
         
         <div class="content-row">
@@ -355,7 +359,7 @@ list($day, $month, $year) = formatDocDateThai();
     <div class="doc-page">
         <div class="form-label">แบบ บค.๒๑</div>
         <div class="header-logo">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Garuda_Emb_of_Thailand.svg/1200px-Garuda_Emb_of_Thailand.svg.png" alt="Garuda">
+            <img src="<?= $garuda_url ?>" alt="Garuda">
         </div>
         
         <div class="content-row">
@@ -406,6 +410,9 @@ list($day, $month, $year) = formatDocDateThai();
 <?php elseif ($type === 'no_existence'): ?>
     <!-- แบบ บค.๒๗ หนังสือรับรองการไม่มีตัวตน -->
     <div class="doc-page">
+        <div class="header-logo">
+            <img src="<?= $garuda_url ?>" alt="Garuda">
+        </div>
         <div class="form-label">แบบ บค.๒๗</div>
         <div class="doc-title">หนังสือรับรองการไม่มีตัวตน</div>
         

@@ -16,6 +16,7 @@ $affiliation = $data['affiliation'] ?? '';
 $district = $data['district'] ?? '';
 $province = $data['province'] ?? '';
 $logo_url = $data['logo_url'] ?? '';
+$garuda_url = $data['garuda_url'] ?? '';
 $director_name = $data['director_name'] ?? '';
 $academic_head_name = $data['academic_head_name'] ?? '';
 $academic_head_position = $data['academic_head_position'] ?? 'หัวหน้างานวิชาการ';
@@ -26,8 +27,15 @@ if (empty($name) || empty($province)) {
 }
 
 try {
-    $stmt = $pdo->prepare('UPDATE schools SET name = ?, affiliation = ?, district = ?, province = ?, logo_url = ?, director_name = ?, academic_head_name = ?, academic_head_position = ? WHERE id = ?');
-    $stmt->execute([$name, $affiliation, $district, $province, $logo_url, $director_name, $academic_head_name, $academic_head_position, $_SESSION['school_id']]);
+    // Check if garuda_url column exists, if not add it
+    try {
+        $pdo->query("SELECT garuda_url FROM schools LIMIT 1");
+    } catch (Exception $e) {
+        $pdo->exec("ALTER TABLE schools ADD COLUMN garuda_url VARCHAR(255) DEFAULT NULL AFTER logo_url");
+    }
+
+    $stmt = $pdo->prepare('UPDATE schools SET name = ?, affiliation = ?, district = ?, province = ?, logo_url = ?, garuda_url = ?, director_name = ?, academic_head_name = ?, academic_head_position = ? WHERE id = ?');
+    $stmt->execute([$name, $affiliation, $district, $province, $logo_url, $garuda_url, $director_name, $academic_head_name, $academic_head_position, $_SESSION['school_id']]);
 
     // Update session school name
     $_SESSION['school_name'] = $name;
