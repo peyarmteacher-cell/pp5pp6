@@ -148,13 +148,13 @@ list($day, $month, $year) = formatDocDateThai();
         
         <div class="content-row" style="margin-top: 20px;">
             <span class="indent"></span>ด้วยข้าพเจ้า <span class="dotted-line" style="min-width: 200px;"><?= $_GET['parent_name'] ?? '................................' ?></span> 
-            อยู่บ้านเลขที่ <span class="dotted-line" style="min-width: 50px;">.........</span> 
-            หมู่ที่ <span class="dotted-line" style="min-width: 30px;">.....</span> 
-            แขวง/ตำบล <span class="dotted-line" style="min-width: 100px;">................</span>
+            อยู่บ้านเลขที่ <span class="dotted-line" style="min-width: 50px;"><?= $student['house_no'] ?? '.........' ?></span> 
+            หมู่ที่ <span class="dotted-line" style="min-width: 30px;"><?= $student['moo'] ?? '.....' ?></span> 
+            แขวง/ตำบล <span class="dotted-line" style="min-width: 100px;"><?= $student['sub_district'] ?? '................' ?></span>
         </div>
         <div class="content-row">
-            เขต/อำเภอ <span class="dotted-line" style="min-width: 100px;">................</span> 
-            จังหวัด <span class="dotted-line" style="min-width: 100px;">................</span> 
+            เขต/อำเภอ <span class="dotted-line" style="min-width: 100px;"><?= $student['district'] ?? '................' ?></span> 
+            จังหวัด <span class="dotted-line" style="min-width: 100px;"><?= $student['province_name'] ?? '................' ?></span> 
             มีความประสงค์ขอย้ายนักเรียนในปกครองของข้าพเจ้า ซึ่งปัจจุบันเรียนอยู่ในสถานศึกษานี้
         </div>
         <div class="content-row">

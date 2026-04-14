@@ -87,13 +87,26 @@
             <!-- Student Selection -->
             <div class="space-y-4">
                 <h4 class="text-sm font-bold text-slate-400 uppercase tracking-wider">2. เลือกนักเรียน</h4>
-                <div class="relative">
-                    <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
-                    <input type="text" id="doc_student_search" placeholder="ค้นหาชื่อ หรือ รหัสประจำตัวนักเรียน..." onkeyup="searchDocStudents()" class="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all">
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">ระดับชั้น</label>
+                        <select id="doc_filter_level" onchange="loadDocRooms()" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer text-sm">
+                            <option value="">เลือกระดับชั้น</option>
+                            <option value="ป.1">ป.1</option><option value="ป.2">ป.2</option><option value="ป.3">ป.3</option>
+                            <option value="ป.4">ป.4</option><option value="ป.5">ป.5</option><option value="ป.6">ป.6</option>
+                            <option value="ม.1">ม.1</option><option value="ม.2">ม.2</option><option value="ม.3">ม.3</option>
+                        </select>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">ห้อง</label>
+                        <select id="doc_filter_room" onchange="loadDocStudents()" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer text-sm">
+                            <option value="">เลือกห้อง</option>
+                        </select>
+                    </div>
                 </div>
-                <div id="doc-student-list" class="max-h-[400px] overflow-y-auto border border-slate-100 rounded-2xl divide-y divide-slate-50">
+                <div id="doc-student-list" class="max-h-[350px] overflow-y-auto border border-slate-100 rounded-2xl divide-y divide-slate-50 bg-slate-50/30">
                     <div class="p-8 text-center text-slate-400">
-                        <p class="text-sm">กรุณาพิมพ์เพื่อค้นหานักเรียน</p>
+                        <p class="text-sm">กรุณาเลือกระดับชั้นและห้องเรียน</p>
                     </div>
                 </div>
             </div>
@@ -167,16 +180,52 @@
         checkDocFormVisibility();
     }
 
-    async function searchDocStudents() {
-        const query = document.getElementById('doc_student_search').value;
-        if (query.length < 2) return;
+    async function loadDocRooms() {
+        const level = document.getElementById('doc_filter_level').value;
+        const roomSelect = document.getElementById('doc_filter_room');
+        roomSelect.innerHTML = '<option value="">เลือกห้อง</option>';
+        
+        if (!level) {
+            document.getElementById('doc-student-list').innerHTML = '<div class="p-8 text-center text-slate-400 text-sm">กรุณาเลือกระดับชั้นและห้องเรียน</div>';
+            return;
+        }
 
         try {
-            const res = await fetch(`api/admin/search_students.php?q=${encodeURIComponent(query)}`);
+            const res = await fetch(`api/teacher/get_rooms.php?level=${encodeURIComponent(level)}`);
+            const rooms = await res.json();
+            rooms.forEach(room => {
+                const opt = document.createElement('option');
+                opt.value = room;
+                opt.textContent = `ห้อง ${room}`;
+                roomSelect.appendChild(opt);
+            });
+            
+            // Auto load students if only one room
+            if (rooms.length === 1) {
+                roomSelect.value = rooms[0];
+                loadDocStudents();
+            }
+        } catch (e) {
+            console.error('Error loading rooms:', e);
+        }
+    }
+
+    async function loadDocStudents() {
+        const level = document.getElementById('doc_filter_level').value;
+        const room = document.getElementById('doc_filter_room').value;
+        const container = document.getElementById('doc-student-list');
+        
+        if (!level) return;
+
+        container.innerHTML = '<div class="p-8 text-center text-slate-400 text-sm">กำลังโหลดรายชื่อ...</div>';
+
+        try {
+            const res = await fetch(`api/admin/get_students_by_class.php?level=${encodeURIComponent(level)}&room=${encodeURIComponent(room)}`);
             docStudents = await res.json();
             renderDocStudentList();
         } catch (e) {
-            console.error('Error searching students:', e);
+            console.error('Error loading students:', e);
+            container.innerHTML = '<div class="p-8 text-center text-red-400 text-sm">เกิดข้อผิดพลาดในการโหลดข้อมูล</div>';
         }
     }
 
@@ -188,17 +237,17 @@
         }
 
         container.innerHTML = docStudents.map(s => `
-            <div onclick="selectDocStudent(${JSON.stringify(s).replace(/"/g, '&quot;')})" class="p-4 hover:bg-slate-50 cursor-pointer transition-all flex items-center justify-between group">
+            <div onclick="selectDocStudent(${JSON.stringify(s).replace(/"/g, '&quot;')})" class="p-4 hover:bg-white cursor-pointer transition-all flex items-center justify-between group border-l-4 border-transparent hover:border-blue-500">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center font-bold text-slate-500 group-hover:bg-blue-100 group-hover:text-blue-600 transition-all">
+                    <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center font-bold text-slate-500 group-hover:text-blue-600 shadow-sm transition-all">
                         ${s.name.charAt(0)}
                     </div>
                     <div>
                         <p class="font-bold text-slate-700 group-hover:text-blue-700">${s.prefix}${s.name} ${s.last_name || ''}</p>
-                        <p class="text-xs text-slate-400">ชั้น ${s.level}/${s.room} | รหัส: ${s.student_code}</p>
+                        <p class="text-xs text-slate-400">รหัส: ${s.student_code} | เลขบัตร: ${s.national_id}</p>
                     </div>
                 </div>
-                <i data-lucide="check-circle" class="w-5 h-5 text-blue-500 opacity-0 group-hover:opacity-100 transition-all"></i>
+                <i data-lucide="chevron-right" class="w-4 h-4 text-slate-300 group-hover:text-blue-400 transition-all"></i>
             </div>
         `).join('');
         lucide.createIcons();
@@ -210,6 +259,7 @@
         document.getElementById('selected-student-info').innerText = `ชั้น ${student.level}/${student.room} | รหัส: ${student.student_code}`;
         document.getElementById('selected-student-avatar').innerText = student.name.charAt(0);
         
+        updateDocFormFields();
         checkDocFormVisibility();
     }
 
@@ -227,6 +277,8 @@
         const form = document.getElementById('docDetailsForm');
         form.innerHTML = '';
         
+        if (!selectedDocType || !selectedStudent) return;
+
         if (selectedDocType === 'cert_performance') {
             form.innerHTML = `
                 <div class="space-y-2">
@@ -243,18 +295,21 @@
                 </div>
             `;
         } else if (selectedDocType === 'transfer_request') {
+            const parentName = selectedStudent.father_name ? `${selectedStudent.father_name} ${selectedStudent.father_last_name || ''}` : 
+                             (selectedStudent.mother_name ? `${selectedStudent.mother_name} ${selectedStudent.mother_last_name || ''}` : '');
+            
             form.innerHTML = `
+                <div class="space-y-2">
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">ชื่อผู้ปกครอง</label>
+                    <input type="text" id="doc_parent_name" value="${parentName}" placeholder="ระบุชื่อผู้ปกครอง" class="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+                </div>
                 <div class="space-y-2">
                     <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">ย้ายไปโรงเรียน</label>
                     <input type="text" id="doc_dest_school" placeholder="ระบุชื่อโรงเรียนปลายทาง" class="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
                 </div>
-                <div class="space-y-2">
+                <div class="space-y-2 md:col-span-2">
                     <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">เหตุผลที่ขอย้าย</label>
                     <input type="text" id="doc_reason" placeholder="เช่น ย้ายที่อยู่อาศัยตามผู้ปกครอง" class="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
-                </div>
-                <div class="space-y-2">
-                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">ชื่อผู้ปกครอง</label>
-                    <input type="text" id="doc_parent_name" placeholder="ระบุชื่อผู้ปกครอง" class="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
                 </div>
             `;
         } else if (selectedDocType === 'transfer_letter') {
@@ -285,10 +340,11 @@
                 </div>
             `;
         } else if (selectedDocType === 'no_existence') {
+            const location = `บ้านเลขที่ ${selectedStudent.house_no || ''} หมู่ที่ ${selectedStudent.moo || ''} ต.${selectedStudent.sub_district || ''} อ.${selectedStudent.district || ''} จ.${selectedStudent.province_name || ''}`;
             form.innerHTML = `
-                <div class="space-y-2">
-                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">เขียนที่</label>
-                    <input type="text" id="doc_location" placeholder="ระบุสถานที่เขียนหนังสือ" class="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+                <div class="space-y-2 md:col-span-2">
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">เขียนที่ (ที่อยู่ปัจจุบัน)</label>
+                    <input type="text" id="doc_location" value="${location}" placeholder="ระบุสถานที่เขียนหนังสือ" class="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
                 </div>
             `;
         }
@@ -300,8 +356,9 @@
         document.querySelectorAll('.doc-type-btn').forEach(btn => {
             btn.classList.remove('border-blue-500', 'bg-blue-50', 'ring-2', 'ring-blue-500/20');
         });
-        document.getElementById('doc_student_search').value = '';
-        document.getElementById('doc-student-list').innerHTML = '<div class="p-8 text-center text-slate-400 text-sm">กรุณาพิมพ์เพื่อค้นหานักเรียน</div>';
+        document.getElementById('doc_filter_level').value = '';
+        document.getElementById('doc_filter_room').innerHTML = '<option value="">เลือกห้อง</option>';
+        document.getElementById('doc-student-list').innerHTML = '<div class="p-8 text-center text-slate-400 text-sm">กรุณาเลือกระดับชั้นและห้องเรียน</div>';
         document.getElementById('doc-form-container').classList.add('hidden');
     }
 
