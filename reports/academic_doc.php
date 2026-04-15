@@ -133,6 +133,72 @@ list($day, $month, $year) = formatDocDateThai();
         padding: 8px;
         text-align: center;
     }
+
+    .photo-box {
+        width: 3cm;
+        height: 4cm;
+        border: 1px solid black;
+        margin-top: 20px;
+        margin-left: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        text-align: center;
+    }
+
+    .p7-header {
+        position: absolute;
+        top: 15mm;
+        right: 25mm;
+        font-weight: bold;
+        font-size: 16px;
+    }
+
+    .p7-garuda {
+        text-align: center;
+        margin-bottom: 10px;
+    }
+
+    .p7-garuda img {
+        height: 3cm;
+    }
+
+    .p7-title {
+        text-align: center;
+        font-weight: bold;
+        font-size: 24px;
+        margin-bottom: 20px;
+    }
+
+    .p7-content {
+        font-size: 18px;
+        line-height: 2.2;
+    }
+
+    .p7-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 5px;
+        align-items: baseline;
+    }
+
+    .p7-line {
+        flex: 1;
+        border-bottom: 1px dotted black;
+        margin: 0 5px;
+        padding: 0 10px;
+        text-align: center;
+        min-height: 1.2em;
+    }
+
+    .p7-footer-note {
+        position: absolute;
+        bottom: 20mm;
+        width: calc(100% - 50mm);
+        text-align: center;
+        font-size: 14px;
+    }
 </style>
 
 <?php if ($type === 'transfer_request'): ?>
@@ -218,87 +284,87 @@ list($day, $month, $year) = formatDocDateThai();
     </div>
 
 <?php elseif ($type === 'cert_performance'): ?>
-    <!-- ใบรับรองผลการเรียน -->
+    <!-- ใบรับรองผลการศึกษา (ปพ.7) -->
     <div class="doc-page">
-        <div class="header-logo">
+        <div class="p7-header">ปพ.7</div>
+        <div class="p7-garuda">
             <img src="<?= $garuda_url ?>" alt="Garuda" referrerPolicy="no-referrer">
         </div>
-        <div class="doc-title">ใบรับรองผลการเรียน</div>
+        <div class="p7-title">ใบรับรองผลการศึกษา</div>
         
-        <div class="content-row text-center" style="margin-bottom: 40px;">
-            โรงเรียน <span class="dotted-line" style="min-width: 200px;"><?= $school_name ?></span>
+        <div class="p7-content">
+            <div class="p7-row">
+                โรงเรียน <span class="p7-line"><?= $school_name ?></span>
+            </div>
+            <div class="p7-row">
+                อำเภอ / เขต <span class="p7-line"><?= $school_district ?: '................' ?></span> 
+                จังหวัด <span class="p7-line"><?= $school_province ?: '................' ?></span>
+            </div>
+            <div class="p7-row">
+                ขอรับรองว่า <span class="p7-line"><?= $student['prefix'] ?><?= $student['name'] ?> <?= $student['last_name'] ?></span>
+            </div>
+            <div class="p7-row">
+                เลขประจำตัวนักเรียน <span class="p7-line"><?= $student['student_code'] ?: '................' ?></span> 
+                เลขประจำตัวประชาชน <span class="p7-line"><?= $student['national_id'] ?></span>
+            </div>
+            <div class="p7-row">
+                เกิดเมื่อวันที่ <span class="p7-line" style="flex: 0 0 50px;"><?= formatDocDateThai($student['birthday'])[0] ?></span> 
+                เดือน <span class="p7-line"><?= formatDocDateThai($student['birthday'])[1] ?></span> 
+                พ.ศ. <span class="p7-line" style="flex: 0 0 80px;"><?= formatDocDateThai($student['birthday'])[2] ?></span>
+                เชื้อชาติ <span class="p7-line" style="flex: 0 0 80px;"><?= $student['race'] ?: 'ไทย' ?></span>
+                สัญชาติ <span class="p7-line" style="flex: 0 0 80px;"><?= $student['nationality'] ?: 'ไทย' ?></span>
+            </div>
+            <div class="p7-row">
+                ชื่อ – ชื่อสกุลบิดา <span class="p7-line"><?= $student['father_name'] ?> <?= $student['father_last_name'] ?></span> 
+                ชื่อ – ชื่อสกุลมารดา <span class="p7-line"><?= $student['mother_name'] ?> <?= $student['mother_last_name'] ?></span>
+            </div>
+            
+            <div style="margin-top: 10px;">มีสภาพทางการเรียน ดังนี้</div>
+            <div class="p7-row">
+                กำลังศึกษาอยู่ในโรงเรียน <span class="p7-line"><?= $school_name ?></span>
+            </div>
+            
+            <?php
+            // Fetch GPA for level 4 and 5
+            $stmt_gpa4 = $pdo->prepare('SELECT AVG(gpa) FROM student_gpa WHERE student_id = ? AND level = 4');
+            $stmt_gpa4->execute([$student_id]);
+            $gpa4 = $stmt_gpa4->fetchColumn();
+
+            $stmt_gpa5 = $pdo->prepare('SELECT AVG(gpa) FROM student_gpa WHERE student_id = ? AND level = 5');
+            $stmt_gpa5->execute([$student_id]);
+            $gpa5 = $stmt_gpa5->fetchColumn();
+
+            $avg_gpa = '-';
+            if ($gpa4 && $gpa5) {
+                $avg_gpa = number_format(($gpa4 + $gpa5) / 2, 2);
+            } elseif ($gpa4 || $gpa5) {
+                $avg_gpa = number_format($gpa4 ?: $gpa5, 2);
+            }
+            ?>
+            <div class="p7-row">
+                ได้ผลการเรียนเฉลี่ยสะสม ระดับชั้นประถมศึกษาปีที่ 4 และ 5 (2 ปีการศึกษา) <span class="p7-line" style="flex: 0 0 100px;"><?= $avg_gpa ?></span>
+            </div>
+            
+            <div class="p7-row" style="margin-top: 20px;">
+                ออกให้ ณ วันที่ <span class="p7-line" style="flex: 0 0 50px;"><?= $day ?></span> 
+                เดือน <span class="p7-line"><?= $month ?></span> 
+                พ.ศ. <span class="p7-line" style="flex: 0 0 80px;"><?= $year ?></span>
+            </div>
         </div>
-        
-        <div class="content-row">
-            <span class="indent"></span>หนังสือฉบับนี้ให้ไว้เพื่อรับรองว่า <span class="dotted-line" style="min-width: 200px;"><?= $student['prefix'] ?><?= $student['name'] ?> <?= $student['last_name'] ?></span>
+
+        <div style="display: flex; justify-content: space-between; margin-top: 30px;">
+            <div class="photo-box">
+                รูปถ่าย<br>1.5 นิ้ว
+            </div>
+            <div class="signature-section" style="margin-top: 80px;">
+                .......................................................<br>
+                ( ....................................................... )<br>
+                นายทะเบียน
+            </div>
         </div>
-        <div class="content-row">
-            เลขประจำตัวประชาชน <span class="dotted-line" style="min-width: 150px;"><?= $student['national_id'] ?></span> 
-            เป็นนักเรียนชั้น <span class="dotted-line" style="min-width: 80px;"><?= formatLevelName($student['level']) ?></span> 
-            ห้อง <span class="dotted-line" style="min-width: 30px;"><?= $student['room'] ?></span>
-        </div>
-        <div class="content-row">
-            ปีการศึกษา <span class="dotted-line" style="min-width: 50px;"><?= $_GET['year'] ?? $currentAcademicYear ?></span> 
-            ของโรงเรียน <span class="dotted-line" style="min-width: 200px;"><?= $school_name ?></span>
-        </div>
-        
-        <div class="content-row" style="margin-top: 20px;">
-            <span class="indent"></span>มีผลการเรียนเฉลี่ย ดังนี้
-        </div>
-        
-        <table class="table-data">
-            <thead>
-                <tr>
-                    <th>ภาคเรียน</th>
-                    <th>ปีการศึกษา</th>
-                    <th>เกรดเฉลี่ย (GPA)</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php
-                $sem = $_GET['semester'] ?? 'annual';
-                $year = $_GET['year'] ?? '';
-                
-                if ($sem === 'annual') {
-                    // Fetch for both semesters
-                    $stmt_g = $pdo->prepare('SELECT semester, gpa FROM student_gpa WHERE student_id = ? AND academic_year = ? ORDER BY semester');
-                    $stmt_g->execute([$student_id, $year]);
-                    $gpas = $stmt_g->fetchAll();
-                    if (count($gpas) > 0) {
-                        foreach ($gpas as $g) {
-                            echo "<tr>
-                                    <td>{$g['semester']}</td>
-                                    <td>{$year}</td>
-                                    <td>".number_format($g['gpa'], 2)."</td>
-                                  </tr>";
-                        }
-                    } else {
-                        echo "<tr><td colspan='3'>ไม่พบข้อมูลผลการเรียน</td></tr>";
-                    }
-                } else {
-                    $stmt_g = $pdo->prepare('SELECT gpa FROM student_gpa WHERE student_id = ? AND academic_year = ? AND semester = ?');
-                    $stmt_g->execute([$student_id, $year, $sem]);
-                    $gpa = $stmt_g->fetchColumn();
-                    echo "<tr>
-                            <td>{$sem}</td>
-                            <td>{$year}</td>
-                            <td>".($gpa ? number_format($gpa, 2) : '-')."</td>
-                          </tr>";
-                }
-                ?>
-            </tbody>
-        </table>
-        
-        <div class="content-row" style="margin-top: 30px;">
-            <span class="indent"></span>ให้ไว้ ณ วันที่ <span class="dotted-line"><?= $day ?></span> 
-            เดือน <span class="dotted-line"><?= $month ?></span> 
-            พ.ศ. <span class="dotted-line"><?= $year ?></span>
-        </div>
-        
-        <div class="signature-section" style="margin-top: 80px;">
-            (ลงชื่อ).......................................................<br>
-            ( <?= $director_name ?> )<br>
-            ผู้อำนวยการโรงเรียน <span class="dotted-line" style="min-width: 150px;"><?= $school_name ?></span>
+
+        <div class="p7-footer-note">
+            ( หมายเหตุ : ใบรับรองนี้มีกำหนดใช้ภายใน 120 วัน นับตั้งแต่วันออก )
         </div>
     </div>
 
