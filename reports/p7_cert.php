@@ -154,7 +154,7 @@ if ($gpa_level) {
             ชื่อ – ชื่อสกุลมารดา <span class="p7-line"><?= trim(($student['mother_name'] ?? '') . ' ' . ($student['mother_last_name'] ?? '')) ?: '-' ?></span>
         </div>
         
-        <div style="margin-top: 25px; margin-bottom: 10px; padding-left: 60px;">มีสภาพทางการเรียน ดังนี้</div>
+        <div style="margin-top: 25px; margin-bottom: 10px;">มีสภาพทางการเรียน ดังนี้</div>
         <div class="p7-row" style="padding-left: 60px;">
             กำลังศึกษาอยู่ในโรงเรียน <span class="p7-line"><?= $school_name ?></span>
         </div>
