@@ -80,7 +80,7 @@ list($day, $month, $year) = formatDocDateThai();
     }
     
     .header-logo img {
-        width: 60px;
+        height: 3cm;
     }
     
     .doc-title {
@@ -171,22 +171,29 @@ list($day, $month, $year) = formatDocDateThai();
         margin-bottom: 20px;
     }
 
+    /* Adjustable spacing variables */
+    :root {
+        --p7-line-height: 2.2;
+        --p7-row-margin: 5px;
+        --p7-dotted-spacing: 5px;
+    }
+
     .p7-content {
         font-size: 18px;
-        line-height: 2.2;
+        line-height: var(--p7-line-height);
     }
 
     .p7-row {
         display: flex;
         justify-content: space-between;
-        margin-bottom: 5px;
+        margin-bottom: var(--p7-row-margin);
         align-items: baseline;
     }
 
     .p7-line {
         flex: 1;
         border-bottom: 1px dotted black;
-        margin: 0 5px;
+        margin: 0 var(--p7-dotted-spacing);
         padding: 0 10px;
         text-align: center;
         min-height: 1.2em;
@@ -352,14 +359,21 @@ list($day, $month, $year) = formatDocDateThai();
             </div>
         </div>
 
-        <div style="display: flex; justify-content: space-between; margin-top: 30px;">
+        <div style="display: flex; justify-content: space-between; margin-top: 30px; align-items: flex-start;">
             <div class="photo-box">
                 รูปถ่าย<br>1.5 นิ้ว
             </div>
-            <div class="signature-section" style="margin-top: 80px;">
-                .......................................................<br>
-                ( ....................................................... )<br>
-                นายทะเบียน
+            <div style="width: 350px;">
+                <div style="text-align: center; margin-bottom: 40px;">
+                    .......................................................<br>
+                    ( <?= $registrar_name ?: '.......................................................' ?> )<br>
+                    นายทะเบียน
+                </div>
+                <div style="text-align: center;">
+                    .......................................................<br>
+                    ( <?= $director_name ?: '.......................................................' ?> )<br>
+                    ผู้อำนวยการโรงเรียน<?= $school_name ?>
+                </div>
             </div>
         </div>
 
@@ -532,8 +546,8 @@ list($day, $month, $year) = formatDocDateThai();
         <div class="signature-section" style="margin-top: 80px;">
             ขอแสดงความนับถือ<br><br><br>
             (ลงชื่อ).......................................................<br>
-            (.......................................................)<br>
-            ตำแหน่ง.......................................................
+            ( <?= $registrar_name ?: '.......................................................' ?> )<br>
+            ตำแหน่ง นายทะเบียน
         </div>
     </div>
 

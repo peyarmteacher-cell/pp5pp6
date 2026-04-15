@@ -121,6 +121,7 @@ $academic_head_name = '';
 $academic_head_position = 'หัวหน้างานวิชาการ';
 $deputy_director_name = '';
 $deputy_director_position = 'รองผู้อำนวยการโรงเรียน';
+$registrar_name = '';
 
 try {
     $stmt_off = $pdo->prepare("SELECT * FROM school_officials WHERE school_id = ? AND is_active = 1");
@@ -136,6 +137,8 @@ try {
         } else if (($off['role_key'] === 'academic_head' || $off['role_key'] === 'deputy_academic') && empty($academic_head_name)) {
             $academic_head_name = $off['name'];
             $academic_head_position = formatTeacherPosition($off['position']);
+        } else if ($off['role_key'] === 'registrar' && empty($registrar_name)) {
+            $registrar_name = $off['name'];
         }
     }
 } catch (Exception $e) {
