@@ -87,14 +87,14 @@ list($day, $month, $year) = formatDocDateThai();
     .doc-page {
         width: 210mm;
         min-height: 297mm;
-        padding: 20mm 25mm;
+        padding: 15mm 25mm 10mm 25mm;
         margin: 10mm auto;
         background: white;
         box-shadow: 0 0 10px rgba(0,0,0,0.1);
         position: relative;
         box-sizing: border-box;
         color: #000;
-        line-height: 1.8;
+        line-height: 1.6;
     }
     
     @media print {
@@ -116,7 +116,7 @@ list($day, $month, $year) = formatDocDateThai();
         text-align: center;
         font-weight: bold;
         font-size: 20px;
-        margin-bottom: 30px;
+        margin-bottom: 20px;
     }
     
     .content-row {
@@ -130,7 +130,7 @@ list($day, $month, $year) = formatDocDateThai();
     }
     
     .signature-section {
-        margin-top: 50px;
+        margin-top: 30px;
         float: right;
         width: 350px;
         text-align: center;
