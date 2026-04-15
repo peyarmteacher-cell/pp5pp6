@@ -157,7 +157,7 @@ list($day, $month, $year) = formatDocDateThai();
 
     .p7-garuda {
         text-align: center;
-        margin-bottom: 10px;
+        margin-bottom: 5px;
     }
 
     .p7-garuda img {
@@ -168,18 +168,18 @@ list($day, $month, $year) = formatDocDateThai();
         text-align: center;
         font-weight: bold;
         font-size: 24px;
-        margin-bottom: 20px;
+        margin-bottom: 10px;
     }
 
     /* Adjustable spacing variables */
     :root {
-        --p7-line-height: 2.2;
-        --p7-row-margin: 5px;
+        --p7-line-height: 1.8;
+        --p7-row-margin: 2px;
         --p7-dotted-spacing: 5px;
     }
 
     .p7-content {
-        font-size: 18px;
+        font-size: 16pt; /* User requested 16 Point */
         line-height: var(--p7-line-height);
     }
 
@@ -194,9 +194,11 @@ list($day, $month, $year) = formatDocDateThai();
         flex: 1;
         border-bottom: 1px dotted black;
         margin: 0 var(--p7-dotted-spacing);
-        padding: 0 10px;
+        padding: 0 5px;
         text-align: center;
-        min-height: 1.2em;
+        min-height: 1em;
+        line-height: 0.8; /* Bring underline extremely close to text */
+        display: inline-block;
     }
 
     .p7-footer-note {
@@ -315,11 +317,11 @@ list($day, $month, $year) = formatDocDateThai();
                 เลขประจำตัวประชาชน <span class="p7-line"><?= $student['national_id'] ?></span>
             </div>
             <div class="p7-row">
-                เกิดเมื่อวันที่ <span class="p7-line" style="flex: 0 0 50px;"><?= formatDocDateThai($student['birthday'])[0] ?></span> 
+                เกิดเมื่อวันที่ <span class="p7-line" style="min-width: 40px; flex: 0 0 auto;"><?= formatDocDateThai($student['birthday'])[0] ?></span> 
                 เดือน <span class="p7-line"><?= formatDocDateThai($student['birthday'])[1] ?></span> 
-                พ.ศ. <span class="p7-line" style="flex: 0 0 80px;"><?= formatDocDateThai($student['birthday'])[2] ?></span>
-                เชื้อชาติ <span class="p7-line" style="flex: 0 0 80px;"><?= $student['race'] ?: 'ไทย' ?></span>
-                สัญชาติ <span class="p7-line" style="flex: 0 0 80px;"><?= $student['nationality'] ?: 'ไทย' ?></span>
+                พ.ศ. <span class="p7-line" style="min-width: 60px; flex: 0 0 auto;"><?= formatDocDateThai($student['birthday'])[2] ?></span>
+                เชื้อชาติ <span class="p7-line" style="min-width: 60px; flex: 0 0 auto;"><?= $student['race'] ?: 'ไทย' ?></span>
+                สัญชาติ <span class="p7-line" style="min-width: 60px; flex: 0 0 auto;"><?= $student['nationality'] ?: 'ไทย' ?></span>
             </div>
             <div class="p7-row">
                 ชื่อ – ชื่อสกุลบิดา <span class="p7-line"><?= $student['father_name'] ?> <?= $student['father_last_name'] ?></span> 
@@ -359,12 +361,12 @@ list($day, $month, $year) = formatDocDateThai();
             </div>
         </div>
 
-        <div style="display: flex; justify-content: space-between; margin-top: 30px; align-items: flex-start;">
-            <div class="photo-box">
+        <div style="display: flex; justify-content: space-between; margin-top: 15px; align-items: flex-start;">
+            <div class="photo-box" style="margin-top: 0;">
                 รูปถ่าย<br>1.5 นิ้ว
             </div>
             <div style="width: 350px;">
-                <div style="text-align: center; margin-bottom: 40px;">
+                <div style="text-align: center; margin-bottom: 25px;">
                     .......................................................<br>
                     ( <?= $registrar_name ?: '.......................................................' ?> )<br>
                     นายทะเบียน
