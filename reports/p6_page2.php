@@ -1,6 +1,6 @@
 <!-- หน้าที่ 2: ปก (Cover Page) -->
 <div class="page cover-page">
-    <img src="<?= $garuda_url ?>" class="p6-logo-center" referrerPolicy="no-referrer">
+    <img src="<?= !empty($logo_url) ? $logo_url : $garuda_url ?>" class="p6-logo-center" referrerPolicy="no-referrer">
     
     <h2 style="margin: 20px 0 10px; font-size: 24px;">แบบรายงานประจำตัวนักเรียน</h2>
     <h3 style="margin: 0 0 20px; font-size: 20px;">ผลการพัฒนาคุณภาพผู้เรียนรายบุคคล (ปพ.6)</h3>

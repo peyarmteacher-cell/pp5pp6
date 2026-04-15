@@ -101,9 +101,7 @@ $female_students = $total_students - $male_students;
 
 <div class="page">
     <div class="header">
-        <?php if ($logo_url): ?>
-            <img src="<?= $garuda_url ?>" class="logo" referrerPolicy="no-referrer">
-        <?php endif; ?>
+        <img src="<?= !empty($logo_url) ? $logo_url : $garuda_url ?>" class="logo" referrerPolicy="no-referrer">
         <h2 style="margin: 5px 0;">สมุดบันทึกการพัฒนาคุณภาพผู้เรียน (ปพ.5)</h2>
         <h3 style="margin: 5px 0;"><?= $school_name ?></h3>
         <p><?= $affiliation ?></p>
