@@ -1,29 +1,49 @@
 <?php
 // ใบรับรองผลการศึกษา (ปพ.7)
-// Fetch GPA for level 4 and 5 from grades and subjects tables
-$stmt_gpa4 = $pdo->prepare('
-    SELECT SUM(g.grade_point * s.credits) / NULLIF(SUM(s.credits), 0)
-    FROM grades g 
-    JOIN subjects s ON g.subject_id = s.id 
-    WHERE g.student_id = ? AND s.level = "ป.4"
-');
-$stmt_gpa4->execute([$student_id]);
-$gpa4 = $stmt_gpa4->fetchColumn();
+$gpa_level = $_GET['gpa_level'] ?? ''; // e.g. "ป.4"
+$gpa_semester = $_GET['gpa_semester'] ?? 'annual'; // "1", "2", or "annual"
 
-$stmt_gpa5 = $pdo->prepare('
-    SELECT SUM(g.grade_point * s.credits) / NULLIF(SUM(s.credits), 0)
-    FROM grades g 
-    JOIN subjects s ON g.subject_id = s.id 
-    WHERE g.student_id = ? AND s.level = "ป.5"
-');
-$stmt_gpa5->execute([$student_id]);
-$gpa5 = $stmt_gpa5->fetchColumn();
+if ($gpa_level) {
+    $sem_query = ($gpa_semester === 'annual') ? "" : "AND g.semester = " . (int)$gpa_semester;
+    $stmt_gpa = $pdo->prepare("
+        SELECT SUM(g.grade_point * s.credits) / NULLIF(SUM(s.credits), 0)
+        FROM grades g 
+        JOIN subjects s ON g.subject_id = s.id 
+        WHERE g.student_id = ? AND s.level = ? $sem_query
+    ");
+    $stmt_gpa->execute([$student_id, $gpa_level]);
+    $avg_gpa = $stmt_gpa->fetchColumn();
+    $avg_gpa = $avg_gpa ? number_format($avg_gpa, 2) : '-';
+    
+    $gpa_text = "ได้ผลการเรียนเฉลี่ยสะสม ระดับชั้น" . $gpa_level;
+    if ($gpa_semester !== 'annual') $gpa_text .= " ภาคเรียนที่ " . $gpa_semester;
+} else {
+    // Default: Fetch GPA for level 4 and 5 from grades and subjects tables
+    $stmt_gpa4 = $pdo->prepare('
+        SELECT SUM(g.grade_point * s.credits) / NULLIF(SUM(s.credits), 0)
+        FROM grades g 
+        JOIN subjects s ON g.subject_id = s.id 
+        WHERE g.student_id = ? AND s.level = "ป.4"
+    ');
+    $stmt_gpa4->execute([$student_id]);
+    $gpa4 = $stmt_gpa4->fetchColumn();
 
-$avg_gpa = '-';
-if ($gpa4 && $gpa5) {
-    $avg_gpa = number_format(($gpa4 + $gpa5) / 2, 2);
-} elseif ($gpa4 || $gpa5) {
-    $avg_gpa = number_format($gpa4 ?: $gpa5, 2);
+    $stmt_gpa5 = $pdo->prepare('
+        SELECT SUM(g.grade_point * s.credits) / NULLIF(SUM(s.credits), 0)
+        FROM grades g 
+        JOIN subjects s ON g.subject_id = s.id 
+        WHERE g.student_id = ? AND s.level = "ป.5"
+    ');
+    $stmt_gpa5->execute([$student_id]);
+    $gpa5 = $stmt_gpa5->fetchColumn();
+
+    $avg_gpa = '-';
+    if ($gpa4 && $gpa5) {
+        $avg_gpa = number_format(($gpa4 + $gpa5) / 2, 2);
+    } elseif ($gpa4 || $gpa5) {
+        $avg_gpa = number_format($gpa4 ?: $gpa5, 2);
+    }
+    $gpa_text = "ได้ผลการเรียนเฉลี่ยสะสม ระดับชั้นประถมศึกษาปีที่ 4 และ 5 (2 ปีการศึกษา)";
 }
 ?>
 <style>
@@ -49,7 +69,7 @@ if ($gpa4 && $gpa5) {
         text-align: center;
         font-weight: bold;
         font-size: 18pt;
-        margin-bottom: 10px;
+        margin-bottom: 25px; /* Increased spacing */
     }
 
     :root {
@@ -116,54 +136,56 @@ if ($gpa4 && $gpa5) {
             โรงเรียน <span class="p7-line"><?= $school_name ?></span>
         </div>
         <div class="p7-row">
-            อำเภอ / เขต <span class="p7-line"><?= $school_district ?: '................' ?></span> 
-            จังหวัด <span class="p7-line"><?= $school_province ?: '................' ?></span>
+            อำเภอ / เขต <span class="p7-line"><?= $school_district ?: '-' ?></span> 
+            จังหวัด <span class="p7-line"><?= $school_province ?: '-' ?></span>
         </div>
         <div class="p7-row">
-            ขอรับรองว่า <span class="p7-line"><?= $student['prefix'] ?><?= $student['name'] ?> <?= $student['last_name'] ?></span>
+            ขอรับรองว่า <span class="p7-line"><?= trim(($student['prefix'] ?? '') . ($student['name'] ?? '') . ' ' . ($student['last_name'] ?? '')) ?: '-' ?></span>
         </div>
         <div class="p7-row">
-            เลขประจำตัวนักเรียน <span class="p7-line"><?= $student['student_code'] ?: '................' ?></span> 
-            เลขประจำตัวประชาชน <span class="p7-line"><?= $student['national_id'] ?></span>
+            เลขประจำตัวนักเรียน <span class="p7-line"><?= $student['student_code'] ?: '-' ?></span> 
+            เลขประจำตัวประชาชน <span class="p7-line"><?= $student['national_id'] ?: '-' ?></span>
         </div>
         <div class="p7-row">
-            เกิดเมื่อวันที่ <span class="p7-line" style="min-width: 40px; flex: 0 0 auto;"><?= formatDocDateThai($student['birthday'])[0] ?></span> 
-            เดือน <span class="p7-line"><?= formatDocDateThai($student['birthday'])[1] ?></span> 
-            พ.ศ. <span class="p7-line" style="min-width: 60px; flex: 0 0 auto;"><?= formatDocDateThai($student['birthday'])[2] ?></span>
-            เชื้อชาติ <span class="p7-line" style="min-width: 60px; flex: 0 0 auto;"><?= $student['race'] ?: 'ไทย' ?></span>
-            สัญชาติ <span class="p7-line" style="min-width: 60px; flex: 0 0 auto;"><?= $student['nationality'] ?: 'ไทย' ?></span>
+            เกิดเมื่อวันที่ <span class="p7-line" style="min-width: 40px; flex: 0 0 auto;"><?= formatDocDateThai($student['birthday'])[0] ?: '-' ?></span> 
+            เดือน <span class="p7-line"><?= formatDocDateThai($student['birthday'])[1] ?: '-' ?></span> 
+            พ.ศ. <span class="p7-line" style="min-width: 60px; flex: 0 0 auto;"><?= formatDocDateThai($student['birthday'])[2] ?: '-' ?></span>
+            เชื้อชาติ <span class="p7-line" style="min-width: 60px; flex: 0 0 auto;"><?= $student['race'] ?: '-' ?></span>
+            สัญชาติ <span class="p7-line" style="min-width: 60px; flex: 0 0 auto;"><?= $student['nationality'] ?: '-' ?></span>
         </div>
         <div class="p7-row">
-            ชื่อ – ชื่อสกุลบิดา <span class="p7-line"><?= $student['father_name'] ?> <?= $student['father_last_name'] ?></span> 
-            ชื่อ – ชื่อสกุลมารดา <span class="p7-line"><?= $student['mother_name'] ?> <?= $student['mother_last_name'] ?></span>
+            ชื่อ – ชื่อสกุลบิดา <span class="p7-line"><?= trim(($student['father_name'] ?? '') . ' ' . ($student['father_last_name'] ?? '')) ?: '-' ?></span> 
+            ชื่อ – ชื่อสกุลมารดา <span class="p7-line"><?= trim(($student['mother_name'] ?? '') . ' ' . ($student['mother_last_name'] ?? '')) ?: '-' ?></span>
         </div>
         
-        <div style="margin-top: 10px;">มีสภาพทางการเรียน ดังนี้</div>
+        <div style="margin-top: 25px; margin-bottom: 10px;">มีสภาพทางการเรียน ดังนี้</div>
         <div class="p7-row">
             กำลังศึกษาอยู่ในโรงเรียน <span class="p7-line"><?= $school_name ?></span>
         </div>
         
         <div class="p7-row">
-            ได้ผลการเรียนเฉลี่ยสะสม ระดับชั้นประถมศึกษาปีที่ 4 และ 5 (2 ปีการศึกษา) <span class="p7-line" style="flex: 0 0 100px;"><?= $avg_gpa ?></span>
+            <?= $gpa_text ?> <span class="p7-line" style="flex: 0 0 100px;"><?= $avg_gpa ?></span>
         </div>
         
-        <div class="p7-row" style="margin-top: 15px;">
-            ออกให้ ณ วันที่ <span class="p7-line" style="flex: 0 0 50px;"><?= $day ?></span> 
-            เดือน <span class="p7-line"><?= $month ?></span> 
-            พ.ศ. <span class="p7-line" style="flex: 0 0 80px;"><?= $year ?></span>
+        <div class="p7-row" style="margin-top: 35px; padding-left: 60px;">
+            ออกให้ ณ วันที่ <span class="p7-line" style="flex: 0 0 40px;"><?= $day ?></span> 
+            เดือน <span class="p7-line" style="flex: 0 0 120px;"><?= $month ?></span> 
+            พ.ศ. <span class="p7-line" style="flex: 0 0 60px;"><?= $year ?></span>
         </div>
     </div>
 
-    <div style="display: flex; justify-content: space-between; margin-top: 20px; align-items: flex-start;">
-        <div class="p7-photo-box">
-            รูปถ่าย<br>1.5 นิ้ว
-        </div>
-        <div style="width: 350px;">
-            <div style="text-align: center; margin-bottom: 25px;">
+    <div style="display: flex; justify-content: space-between; margin-top: 50px; align-items: flex-start;">
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 15px;">
+            <div class="p7-photo-box">
+                รูปถ่าย<br>1.5 นิ้ว
+            </div>
+            <div style="text-align: center; width: 250px;">
                 .......................................................<br>
                 ( <?= $registrar_name ?: '.......................................................' ?> )<br>
                 นายทะเบียน
             </div>
+        </div>
+        <div style="width: 350px; margin-top: 60px;">
             <div style="text-align: center;">
                 .......................................................<br>
                 ( <?= $director_name ?: '.......................................................' ?> )<br>
