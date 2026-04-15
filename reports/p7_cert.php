@@ -13,10 +13,7 @@ if ($gpa_level) {
     ");
     $stmt_gpa->execute([$student_id, $gpa_level]);
     $avg_gpa = $stmt_gpa->fetchColumn();
-    $avg_gpa = $avg_gpa ? number_format($avg_gpa, 2) : '-';
-    
-    $gpa_text = "ได้ผลการเรียนเฉลี่ยสะสม ระดับชั้น" . $gpa_level;
-    if ($gpa_semester !== 'annual') $gpa_text .= " ภาคเรียนที่ " . $gpa_semester;
+    $avg_gpa = $avg_gpa ? number_format($avg_gpa, 2) : '';
 } else {
     // Default: Fetch GPA for level 4 and 5 from grades and subjects tables
     $stmt_gpa4 = $pdo->prepare('
@@ -37,13 +34,12 @@ if ($gpa_level) {
     $stmt_gpa5->execute([$student_id]);
     $gpa5 = $stmt_gpa5->fetchColumn();
 
-    $avg_gpa = '-';
+    $avg_gpa = '';
     if ($gpa4 && $gpa5) {
         $avg_gpa = number_format(($gpa4 + $gpa5) / 2, 2);
     } elseif ($gpa4 || $gpa5) {
         $avg_gpa = number_format($gpa4 ?: $gpa5, 2);
     }
-    $gpa_text = "ได้ผลการเรียนเฉลี่ยสะสม ระดับชั้นประถมศึกษาปีที่ 4 และ 5 (2 ปีการศึกษา)";
 }
 ?>
 <style>
@@ -158,13 +154,13 @@ if ($gpa_level) {
             ชื่อ – ชื่อสกุลมารดา <span class="p7-line"><?= trim(($student['mother_name'] ?? '') . ' ' . ($student['mother_last_name'] ?? '')) ?: '-' ?></span>
         </div>
         
-        <div style="margin-top: 25px; margin-bottom: 10px;">มีสภาพทางการเรียน ดังนี้</div>
-        <div class="p7-row">
+        <div style="margin-top: 25px; margin-bottom: 10px; padding-left: 60px;">มีสภาพทางการเรียน ดังนี้</div>
+        <div class="p7-row" style="padding-left: 60px;">
             กำลังศึกษาอยู่ในโรงเรียน <span class="p7-line"><?= $school_name ?></span>
         </div>
         
         <div class="p7-row">
-            <?= $gpa_text ?> <span class="p7-line" style="flex: 0 0 100px;"><?= $avg_gpa ?></span>
+            ได้ผลการเรียนเฉลี่ยสะสม <span class="p7-line"><?= $avg_gpa ?></span>
         </div>
         
         <div class="p7-row" style="margin-top: 35px; padding-left: 60px;">
