@@ -24,6 +24,15 @@ $logo_url = $school['logo_url'] ?? '';
 if ($logo_url && !preg_match('/^https?:\/\//', $logo_url)) {
     $logo_url = '../' . $logo_url;
 }
+
+$garuda_url = $school['garuda_url'] ?? '';
+if (empty($garuda_url)) {
+    $garuda_url = 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Garuda_Emb_of_Thailand.svg/1200px-Garuda_Emb_of_Thailand.svg.png';
+}
+if ($garuda_url && !preg_match('/^https?:\/\//', $garuda_url)) {
+    $garuda_url = '../' . $garuda_url;
+}
+
 $school_name = $school['name'] ?? '';
 $affiliation = $school['affiliation'] ?? '';
 $district = $school['district'] ?? '';

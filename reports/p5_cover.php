@@ -366,11 +366,9 @@ $approval_date = formatThaiDate($approval_date_raw);
 
 <div class="page">
     <div class="cover-container">
-        <?php if ($logo_url): ?>
         <div class="logo-container">
-            <img src="<?= $logo_url ?>" class="logo-img" referrerPolicy="no-referrer">
+            <img src="<?= $garuda_url ?>" class="logo-img" referrerPolicy="no-referrer">
         </div>
-        <?php endif; ?>
 
         <div class="main-title">สมุดบันทึกการพัฒนาคุณภาพผู้เรียน (ปพ.๕)</div>
         <div class="school-name">โรงเรียน<?= $school_name ?></div>
