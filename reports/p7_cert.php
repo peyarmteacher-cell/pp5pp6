@@ -1,11 +1,21 @@
 <?php
 // ใบรับรองผลการศึกษา (ปพ.7)
-// Fetch GPA for level 4 and 5
-$stmt_gpa4 = $pdo->prepare('SELECT AVG(gpa) FROM student_gpa WHERE student_id = ? AND level = 4');
+// Fetch GPA for level 4 and 5 from grades and subjects tables
+$stmt_gpa4 = $pdo->prepare('
+    SELECT SUM(g.grade_point * s.credits) / NULLIF(SUM(s.credits), 0)
+    FROM grades g 
+    JOIN subjects s ON g.subject_id = s.id 
+    WHERE g.student_id = ? AND s.level = "ป.4"
+');
 $stmt_gpa4->execute([$student_id]);
 $gpa4 = $stmt_gpa4->fetchColumn();
 
-$stmt_gpa5 = $pdo->prepare('SELECT AVG(gpa) FROM student_gpa WHERE student_id = ? AND level = 5');
+$stmt_gpa5 = $pdo->prepare('
+    SELECT SUM(g.grade_point * s.credits) / NULLIF(SUM(s.credits), 0)
+    FROM grades g 
+    JOIN subjects s ON g.subject_id = s.id 
+    WHERE g.student_id = ? AND s.level = "ป.5"
+');
 $stmt_gpa5->execute([$student_id]);
 $gpa5 = $stmt_gpa5->fetchColumn();
 
