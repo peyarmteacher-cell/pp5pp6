@@ -38,18 +38,19 @@ if ($garuda_url && !preg_match('/^https?:\/\//', $garuda_url)) {
 }
 
 // Fetch Director and Registrar names
-$director_name = '.......................................................';
-$registrar_name = '.......................................................';
+$director_name = $director_name ?: '.......................................................';
+$registrar_name = $registrar_name ?: '.......................................................';
 
-$stmt_director = $pdo->prepare("SELECT name FROM school_officials WHERE school_id = ? AND position = 'director' LIMIT 1");
-$stmt_director->execute([$student['school_id']]);
-$director = $stmt_director->fetch();
-if ($director) $director_name = $director['name'];
-
-$stmt_registrar = $pdo->prepare("SELECT name FROM school_officials WHERE school_id = ? AND position = 'registrar' LIMIT 1");
-$stmt_registrar->execute([$student['school_id']]);
-$registrar = $stmt_registrar->fetch();
-if ($registrar) $registrar_name = $registrar['name'];
+// Re-fetch using student's school_id to ensure correctness if it differs from session
+if ($student['school_id']) {
+    $stmt_off = $pdo->prepare("SELECT name, role_key FROM school_officials WHERE school_id = ? AND is_active = 1");
+    $stmt_off->execute([$student['school_id']]);
+    $officials = $stmt_off->fetchAll();
+    foreach ($officials as $off) {
+        if ($off['role_key'] === 'director') $director_name = $off['name'];
+        if ($off['role_key'] === 'registrar') $registrar_name = $off['name'];
+    }
+}
 
 // Helper to format date
 function formatDocDateThai($dateStr = null) {
