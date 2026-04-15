@@ -4,23 +4,36 @@ require_once 'report_header.php';
 $type = $_GET['type'] ?? '';
 $student_id = $_GET['student_id'] ?? '';
 
-if (!$student_id) {
+if (!$student_id && $type !== 'transfer_request') {
     die('Student ID is required');
 }
 
-// Fetch student data
-$stmt = $pdo->prepare('SELECT * FROM students WHERE id = ?');
-$stmt->execute([$student_id]);
-$student = $stmt->fetch();
+$student = null;
+$school = null;
 
-if (!$student) {
-    die('Student not found');
+if ($student_id) {
+    // Fetch student data
+    $stmt = $pdo->prepare('SELECT * FROM students WHERE id = ?');
+    $stmt->execute([$student_id]);
+    $student = $stmt->fetch();
+
+    if (!$student) {
+        die('Student not found');
+    }
+
+    // Fetch school data
+    $stmt = $pdo->prepare('SELECT * FROM schools WHERE id = ?');
+    $stmt->execute([$student['school_id']]);
+    $school = $stmt->fetch();
+} else {
+    // For blank forms, use school from session
+    $school_id = $_SESSION['school_id'] ?? null;
+    if ($school_id) {
+        $stmt = $pdo->prepare('SELECT * FROM schools WHERE id = ?');
+        $stmt->execute([$school_id]);
+        $school = $stmt->fetch();
+    }
 }
-
-// Fetch school data
-$stmt = $pdo->prepare('SELECT * FROM schools WHERE id = ?');
-$stmt->execute([$student['school_id']]);
-$school = $stmt->fetch();
 
 $school_name = $school['name'] ?? '';
 $school_district = $school['district'] ?? '';
@@ -41,10 +54,11 @@ if ($garuda_url && !preg_match('/^https?:\/\//', $garuda_url)) {
 $director_name = $director_name ?: '.......................................................';
 $registrar_name = $registrar_name ?: '.......................................................';
 
-// Re-fetch using student's school_id to ensure correctness if it differs from session
-if ($student['school_id']) {
+// Re-fetch using school_id to ensure correctness
+$target_school_id = $student['school_id'] ?? ($school['id'] ?? null);
+if ($target_school_id) {
     $stmt_off = $pdo->prepare("SELECT name, role_key FROM school_officials WHERE school_id = ? AND is_active = 1");
-    $stmt_off->execute([$student['school_id']]);
+    $stmt_off->execute([$target_school_id]);
     $officials = $stmt_off->fetchAll();
     foreach ($officials as $off) {
         if ($off['role_key'] === 'director') $director_name = $off['name'];

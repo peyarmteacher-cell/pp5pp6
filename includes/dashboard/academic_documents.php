@@ -159,6 +159,12 @@
     }
 
     function selectDocType(type) {
+        if (type === 'transfer_request') {
+            const url = `reports/academic_doc.php?type=transfer_request`;
+            window.open(url, '_blank');
+            return;
+        }
+
         selectedDocType = type;
         document.querySelectorAll('.doc-type-btn').forEach(btn => {
             btn.classList.remove('border-blue-500', 'bg-blue-50', 'ring-2', 'ring-blue-500/20');
