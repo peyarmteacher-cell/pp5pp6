@@ -4,7 +4,7 @@ require_once 'report_header.php';
 $type = $_GET['type'] ?? '';
 $student_id = $_GET['student_id'] ?? '';
 
-if (!$student_id && $type !== 'transfer_request') {
+if (!$student_id && $type !== 'transfer_request' && $type !== 'identity_cert') {
     die('Student ID is required');
 }
 
