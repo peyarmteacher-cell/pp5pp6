@@ -194,6 +194,9 @@ switch ($type) {
     case 'no_existence':
         include 'bk27_no_existence.php';
         break;
+    case 'identity_cert':
+        include 'identity_cert.php';
+        break;
     default:
         echo '<div class="doc-page">ไม่พบประเภทเอกสารที่ระบุ</div>';
         break;

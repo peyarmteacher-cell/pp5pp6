@@ -81,6 +81,19 @@
                         </div>
                         <i data-lucide="chevron-right" class="w-4 h-4 text-slate-300 group-hover:text-blue-400"></i>
                     </button>
+
+                    <button onclick="selectDocType('identity_cert')" id="btn-doc-identity_cert" class="doc-type-btn flex items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded-2xl hover:border-blue-400 hover:bg-blue-50 transition-all group">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm group-hover:text-blue-600">
+                                <i data-lucide="user-check" class="w-5 h-5"></i>
+                            </div>
+                            <div class="text-left">
+                                <p class="font-bold text-slate-700 group-hover:text-blue-700">หนังสือรับรองตัวตน</p>
+                                <p class="text-[10px] text-slate-400">แบบฟอร์มหนังสือรับรองตัวตน (กรอกมือ)</p>
+                            </div>
+                        </div>
+                        <i data-lucide="chevron-right" class="w-4 h-4 text-slate-300 group-hover:text-blue-400"></i>
+                    </button>
                 </div>
             </div>
 
@@ -159,8 +172,8 @@
     }
 
     function selectDocType(type) {
-        if (type === 'transfer_request') {
-            const url = `reports/academic_doc.php?type=transfer_request`;
+        if (type === 'transfer_request' || type === 'identity_cert') {
+            const url = `reports/academic_doc.php?type=${type}`;
             window.open(url, '_blank');
             return;
         }
@@ -178,7 +191,8 @@
             'transfer_request': 'คำร้องขอย้ายนักเรียน (บค.๑๙)',
             'transfer_letter': 'หนังสือส่งนักเรียน (บค.๒๐)',
             'remove_request': 'ขออนุญาตจำหน่ายนักเรียน (บค.๒๑)',
-            'no_existence': 'หนังสือรับรองไม่มีตัวตน (บค.๒๗)'
+            'no_existence': 'หนังสือรับรองไม่มีตัวตน (บค.๒๗)',
+            'identity_cert': 'หนังสือรับรองตัวตน'
         };
         document.getElementById('selected-doc-title').innerText = titles[type];
         
