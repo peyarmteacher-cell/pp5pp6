@@ -34,19 +34,23 @@
         <span class="indent" style="width: 2.8cm;"></span> ๓. แบบ ปพ.๙ จำนวน ๑ ฉบับ
     </div>
     
-    <div class="content-row" style="margin-top: 20px;">
-        <span class="indent"></span>ด้วย <span class="dotted-line" style="min-width: 200px;"><?= $student['prefix'] ?><?= $student['name'] ?> <?= $student['last_name'] ?></span> 
-        ได้ขอย้ายนักเรียนในปกครองมาเข้าเรียนในสถานศึกษานี้ ได้แก่
+    <div class="content-row" style="margin-top: 20px; display: flex;">
+        <span class="indent"></span>ด้วย <span class="dotted-line" style="flex: 1;"><?= $student['prefix'] ?? '' ?><?= $student['name'] ?? '................' ?> <?= $student['last_name'] ?? '................' ?></span> 
+        ได้ขอย้ายนักเรียนในปกครองมาเข้าเรียน
     </div>
     <div class="content-row">
-        ๑. <?= $student['prefix'] ?><?= $student['name'] ?> <?= $student['last_name'] ?>
-        เกิดวันที่ <span class="dotted-line"><?= formatDocDateThai($student['birthday'])[0] ?></span> 
-        เดือน <span class="dotted-line"><?= formatDocDateThai($student['birthday'])[1] ?></span> 
-        พ.ศ. <span class="dotted-line"><?= formatDocDateThai($student['birthday'])[2] ?></span>
+        ในสถานศึกษานี้ ได้แก่
     </div>
-    <div class="content-row">
-        เลขประจำตัวประชาชน <span class="dotted-line" style="min-width: 150px;"><?= $student['national_id'] ?></span> 
-        นักเรียนชั้น <span class="dotted-line" style="min-width: 50px;"><?= formatLevelName($student['level']) ?></span>
+    
+    <div class="content-row" style="display: flex; margin-top: 10px;">
+        <span class="indent"></span>๑. <span class="dotted-line" style="flex: 1;"><?= $student['prefix'] ?? '' ?><?= $student['name'] ?? '................' ?> <?= $student['last_name'] ?? '................' ?></span>
+        เกิดวันที่ <span class="dotted-line" style="min-width: 30px;"><?= $student['birthday'] ? formatDocDateThai($student['birthday'])[0] : '....' ?></span> 
+        เดือน <span class="dotted-line" style="min-width: 100px;"><?= $student['birthday'] ? formatDocDateThai($student['birthday'])[1] : '................' ?></span> 
+        พ.ศ. <span class="dotted-line" style="min-width: 50px;"><?= $student['birthday'] ? formatDocDateThai($student['birthday'])[2] : '........' ?></span>
+    </div>
+    <div class="content-row" style="display: flex;">
+        เลขประจำตัวประชาชน <span class="dotted-line" style="flex: 1;"><?= $student['national_id'] ?? '...........................' ?></span> 
+        นักเรียนชั้น <span class="dotted-line" style="flex: 1;"><?= formatLevelName($student['level'] ?? '................') ?></span>
     </div>
     
     <div class="content-row" style="margin-top: 20px;">
