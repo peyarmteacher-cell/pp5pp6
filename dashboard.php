@@ -421,6 +421,10 @@ try {
                             <h4 class="text-3xl font-black text-slate-800" id="ov_student_count">0</h4>
                             <span class="text-xs font-bold text-slate-400">คน</span>
                         </div>
+                        <!-- Student breakdown -->
+                        <div id="ov_student_breakdown" class="flex flex-wrap gap-x-2 mt-2">
+                            <!-- Levels will be injected here -->
+                        </div>
                     </div>
                 </div>
 
@@ -447,7 +451,7 @@ try {
                             <h3 class="text-xl font-black text-slate-800">เปรียบเทียบผลทดสอบระดับชาติ</h3>
                             <p class="text-sm text-slate-500 font-medium">คะแนนเฉลี่ย RT, NT และ O-NET แต่ละปีการศึกษา</p>
                         </div>
-                        <div class="flex items-center gap-4">
+                        <div class="flex items-center gap-4" id="chart_legend">
                             <div class="flex items-center gap-1.5">
                                 <div class="w-3 h-3 rounded-full bg-blue-500"></div>
                                 <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">RT (ป.1)</span>
@@ -460,7 +464,7 @@ try {
                                 <div class="w-3 h-3 rounded-full bg-amber-500"></div>
                                 <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">O-NET (ป.6)</span>
                             </div>
-                            <div class="flex items-center gap-1.5">
+                            <div class="flex items-center gap-1.5" id="legend_onet_m3">
                                 <div class="w-3 h-3 rounded-full bg-rose-500"></div>
                                 <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">O-NET (ม.3)</span>
                             </div>
@@ -1153,6 +1157,8 @@ try {
         }
         
         // Data for National Test Chart
+        let hasHighSchoolGlobal = false;
+
         async function loadOverviewData() {
             try {
                 const res = await fetch('api/admin/get_overview_data.php');
@@ -1164,7 +1170,28 @@ try {
                 document.getElementById('ov_student_count').innerText = data.stats.student_count.toLocaleString();
                 document.getElementById('ov_teacher_count').innerText = data.stats.teacher_count.toLocaleString();
                 document.getElementById('ov_current_year').innerText = `ปีการศึกษา ${data.stats.academic_year}`;
+                hasHighSchoolGlobal = data.stats.has_high_school;
+
+                // Student Breakdown
+                const breakdown = document.getElementById('ov_student_breakdown');
+                breakdown.innerHTML = data.stats.students_by_level.map(l => `
+                    <span class="text-[9px] font-bold px-1.5 py-0.5 bg-slate-50 border border-slate-100 rounded text-slate-400">
+                        ${l.level}: <span class="text-blue-600">${l.count}</span>
+                    </span>
+                `).join('');
                 
+                // Hide M3 O-NET if no high school
+                const legendM3 = document.getElementById('legend_onet_m3');
+                const optionM3 = document.querySelector('#nt_type option[value="onet_m3"]');
+                
+                if (!hasHighSchoolGlobal) {
+                    if (legendM3) legendM3.classList.add('hidden');
+                    if (optionM3) optionM3.classList.add('hidden');
+                } else {
+                    if (legendM3) legendM3.classList.remove('hidden');
+                    if (optionM3) optionM3.classList.remove('hidden');
+                }
+
                 // Render Chart
                 renderNationalTestChart(data.chart_data);
 
@@ -1199,9 +1226,12 @@ try {
                 .paddingInner(0.2)
                 .domain(data.map(d => d.year));
 
+            const testTypes = hasHighSchoolGlobal ? ['RT', 'NT', 'ONET_P6', 'ONET_M3'] : ['RT', 'NT', 'ONET_P6'];
+            const colorsList = hasHighSchoolGlobal ? ["#3b82f6", "#10b981", "#f59e0b", "#f43f5e"] : ["#3b82f6", "#10b981", "#f59e0b"];
+
             const x1 = d3.scaleBand()
                 .padding(0.05)
-                .domain(['RT', 'NT', 'ONET_P6', 'ONET_M3'])
+                .domain(testTypes)
                 .rangeRound([0, x0.bandwidth()]);
 
             const y = d3.scaleLinear()
@@ -1209,8 +1239,8 @@ try {
                 .domain([0, 100]);
 
             const color = d3.scaleOrdinal()
-                .domain(['RT', 'NT', 'ONET_P6', 'ONET_M3'])
-                .range(["#3b82f6", "#10b981", "#f59e0b", "#f43f5e"]);
+                .domain(testTypes)
+                .range(colorsList);
 
             // Axes
             svg.append("g")
@@ -1238,7 +1268,7 @@ try {
                 .attr("transform", d => `translate(${x0(d.year)},0)`);
 
             yearGroup.selectAll("rect")
-                .data(d => ['RT', 'NT', 'ONET_P6', 'ONET_M3'].map(key => ({key, value: d[key] || 0})))
+                .data(d => testTypes.map(key => ({key, value: d[key] || 0})))
                 .enter().append("rect")
                 .attr("x", d => x1(d.key))
                 .attr("y", height)
@@ -1253,7 +1283,7 @@ try {
 
             // Tooltips or Value Labels
             yearGroup.selectAll(".bar-label")
-                .data(d => ['RT', 'NT', 'ONET_P6', 'ONET_M3'].map(key => ({key, value: d[key] || 0})))
+                .data(d => testTypes.map(key => ({key, value: d[key] || 0})))
                 .enter().append("text")
                 .attr("x", d => x1(d.key) + x1.bandwidth()/2)
                 .attr("y", d => y(d.value) - 5)
