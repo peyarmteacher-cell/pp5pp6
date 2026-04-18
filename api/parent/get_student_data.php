@@ -131,6 +131,11 @@ try {
     $stmt->execute([$student_id]);
     $health_history = $stmt->fetchAll();
 
+    // 7. Get System Current Year for visibility logic
+    $stmt = $pdo->prepare("SELECT year FROM academic_years WHERE school_id = ? AND is_current = 1 LIMIT 1");
+    $stmt->execute([$school_id]);
+    $sys_year = $stmt->fetchColumn();
+
     echo json_encode([
         'student' => $student,
         'attendance' => $attendance,
@@ -141,7 +146,8 @@ try {
         'filters' => [
             'available_years' => $available_years,
             'current_year' => $academic_year,
-            'current_semester' => $semester
+            'current_semester' => $semester,
+            'system_current_year' => $sys_year // Added this
         ]
     ]);
 

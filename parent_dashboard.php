@@ -72,7 +72,7 @@ $school_name = $_SESSION['school_name'];
     </style>
 
     <main id="content" class="p-4 space-y-6 mt-2">
-        <!-- Academic Filters (Persistent) -->
+        <!-- Academic Filters -->
         <div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-3">
              <div class="flex-1 space-y-1">
                  <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">ปีการศึกษา</label>
@@ -91,7 +91,7 @@ $school_name = $_SESSION['school_name'];
 
         <!-- TAB 1: ผลการเรียน -->
         <div id="tab_academic" class="section-tab active space-y-6">
-            <!-- Attendance Section (Restored) -->
+            <!-- Attendance Section -->
             <section class="space-y-3">
                 <div class="flex items-center gap-2 mx-2">
                     <i data-lucide="calendar-check" class="w-4 h-4 text-blue-600"></i>
@@ -129,10 +129,6 @@ $school_name = $_SESSION['school_name'];
                     </div>
                 </div>
                 <div id="grades_list" class="space-y-2">
-                     <div class="animate-pulse flex flex-col gap-3">
-                         <div class="h-16 bg-white rounded-2xl shadow-sm"></div>
-                         <div class="h-16 bg-white rounded-2xl shadow-sm"></div>
-                     </div>
                 </div>
             </section>
         </div>
@@ -216,7 +212,6 @@ $school_name = $_SESSION['school_name'];
                 </div>
             </section>
         </div>
-
     </main>
 
     <script src="https://d3js.org/d3.v7.min.js"></script>
@@ -234,7 +229,6 @@ $school_name = $_SESSION['school_name'];
             event.currentTarget.classList.add('active');
             
             if (tabId === 'health') {
-                // Render charts when tab is visible
                 setTimeout(renderHealthCharts, 100);
             }
         }
@@ -250,36 +244,20 @@ $school_name = $_SESSION['school_name'];
 
             try {
                 const res = await fetch(url);
-                const text = await res.text();
-                let data;
+                const data = await res.json();
                 
-                try {
-                    data = JSON.parse(text);
-                } catch (e) {
-                    console.error('Non-JSON Response:', text);
-                    return alert('ไม่สามารถโหลดข้อมูลได้: รูปแบบข้อมูลไม่ถูกต้อง');
-                }
-                
-                if (!res.ok) {
-                    return alert('ไม่สามารถโหลดข้อมูลได้: ' + (data.error || 'Server Error (' + res.status + ')'));
-                }
-                
-                if (data.error) {
-                    console.error('API Error:', data.error);
-                    return alert('ไม่สามารถโหลดข้อมูลได้: ' + data.error);
+                if (!res.ok || data.error) {
+                    return alert('ไม่สามารถโหลดข้อมูลได้: ' + (data.error || 'Server Error'));
                 }
 
-                // Update Profile Header
+                // Profile Header
                 const student = data.student;
                 const full_name = student.name + (student.last_name ? ' ' + student.last_name : '');
                 document.getElementById('header_student_name').innerText = full_name;
-                const level_info = 'ชั้น: ' + (student.level || '-') + (student.classroom_name ? ' ห้อง: ' + student.classroom_name : '');
-                document.getElementById('header_student_level').innerText = level_info;
+                document.getElementById('header_student_level').innerText = 'ชั้น: ' + (student.level || '-') + (student.classroom_name ? ' ห้อง: ' + student.classroom_name : '');
                 
-                // Gender Icon
                 const avatarIcon = document.getElementById('avatar_icon');
-                const nameStr = student.name || '';
-                if (nameStr.includes('เด็กชาย') || nameStr.includes('นาย') || nameStr.includes('ด.ช.')) {
+                if (student.name.includes('เด็กชาย') || student.name.includes('นาย') || student.name.includes('ด.ช.')) {
                     avatarIcon.setAttribute('data-lucide', 'user');
                 } else {
                     avatarIcon.setAttribute('data-lucide', 'user-round-plus');
@@ -291,106 +269,77 @@ $school_name = $_SESSION['school_name'];
                     if (data.filters && data.filters.available_years) {
                         const years = [...data.filters.available_years];
                         const currentY = data.filters.current_year ? data.filters.current_year.toString() : '';
-                        
-                        // If current year is not in the list of years with grades, add it as a default option
-                        if (currentY && !years.includes(currentY)) {
-                            years.unshift(currentY);
-                        }
-                        
+                        if (currentY && !years.includes(currentY)) years.unshift(currentY);
                         yearSelect.innerHTML = years.map(y => `<option value="${y}" ${y == currentY ? 'selected' : ''}>ปีการศึกษา ${y}</option>`).join('');
                     }
-                    if (data.filters.current_semester) {
-                        semesterSelect.value = data.filters.current_semester;
-                    }
+                    if (data.filters.current_semester) semesterSelect.value = data.filters.current_semester;
                     isFirstLoad = false;
                 }
 
-                // Update Attendance (Restored)
+                // Attendance
                 let counts = { present: 0, late: 0, absent: 0, leave: 0, sick: 0 };
                 data.attendance.forEach(a => { counts[a.status] = a.count; });
-                
                 document.getElementById('att_present').innerText = counts.present;
                 document.getElementById('att_late').innerText = counts.late;
                 document.getElementById('att_absent').innerText = counts.absent;
-                document.getElementById('att_leave').innerText = parseInt(counts.leave) + parseInt(counts.sick);
+                document.getElementById('att_leave').innerText = (parseInt(counts.leave) || 0) + (parseInt(counts.sick) || 0);
 
-                // Calc average GPA
+                // Grades & Visibility
                 const list = document.getElementById('grades_list');
                 const showGrades = student.school_show_grades == 1;
+                const systemYear = data.filters.system_current_year ? data.filters.system_current_year.toString() : '';
+                const selectedYear = (yearSelect ? yearSelect.value : '').toString();
+                
+                // Restriction: Only hide if SELECTED year matches SYSTEM current year AND setting is OFF
+                const isHidden = !showGrades && (selectedYear === systemYear || !selectedYear);
 
-                if (!showGrades) {
+                if (isHidden) {
                     list.innerHTML = `
                         <div class="bg-amber-50 p-8 rounded-3xl border border-amber-100 text-center space-y-3">
                             <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto shadow-sm">
                                 <i data-lucide="lock" class="w-6 h-6"></i>
                             </div>
                             <div class="space-y-1">
-                                <h3 class="font-bold text-amber-900 text-sm">ยังไม่เปิดให้ดูผลการเรียน</h3>
-                                <p class="text-xs text-amber-700 leading-relaxed px-4">เจ้าหน้าที่วิชาการกำลังอยู่ระหว่างการประมวลผลข้อมูล<br>กรุณาตรวจสอบอีกครั้งภายหลังครับ</p>
+                                <h3 class="font-bold text-amber-900 text-sm">ยังไม่เปิดให้ดูผลการเรียนในปีการศึกษา ${systemYear}</h3>
+                                <p class="text-xs text-amber-700 leading-relaxed px-4">เจ้าหน้าที่วิชาการกำลังอยู่ระหว่างการประมวลผลข้อมูลปีล่าสุดครับ<br>ท่านยังสามารถเลือกดูผลการเรียน "ปีการศึกษาก่อนหน้า" ได้ตามปกติครับ</p>
                             </div>
                         </div>
                     `;
                     document.getElementById('header_avg_gpa').innerText = '-';
                     if (typeof lucide !== 'undefined') lucide.createIcons();
                 } else if (!data.grades || data.grades.length === 0) {
-                    list.innerHTML = '<div class="bg-white p-8 text-center text-slate-400 rounded-2xl italic shadow-sm">ไม่มีข้อมูลในเทอมนี้</div>';
+                    list.innerHTML = '<div class="bg-white p-8 text-center text-slate-400 rounded-2xl italic shadow-sm">ไม่มีข้อมูลในคัดเลือกนี้</div>';
                     document.getElementById('header_avg_gpa').innerText = '-';
                 } else {
-                    // Filter numeric grades for GPA calc
                     let totalWeightedGrade = 0;
                     let totalCredits = 0;
-
                     const processedGrades = data.grades.map(g => {
-                        // Priority: grade string > grade_point
                         let displayGrade = '-';
                         let numericGrade = null;
                         const credits = parseFloat(g.credits) || 0;
-                        
                         if (g.grade !== null && g.grade !== undefined && g.grade !== '') {
                             displayGrade = g.grade;
                             const parsed = parseFloat(g.grade);
-                            if (!isNaN(parsed)) {
-                                numericGrade = parsed;
-                                totalWeightedGrade += (numericGrade * credits);
-                                totalCredits += credits;
-                            }
+                            if (!isNaN(parsed)) { numericGrade = parsed; totalWeightedGrade += (numericGrade * credits); totalCredits += credits; }
                         } else if (g.grade_point !== undefined && g.grade_point !== null) {
                             displayGrade = g.grade_point;
                             numericGrade = parseFloat(g.grade_point);
-                            if (!isNaN(numericGrade)) {
-                                totalWeightedGrade += (numericGrade * credits);
-                                totalCredits += credits;
-                            }
+                            if (!isNaN(numericGrade)) { totalWeightedGrade += (numericGrade * credits); totalCredits += credits; }
                         }
-                        
                         return { ...g, displayGrade, numericGrade };
                     });
 
-                    const avg = totalCredits > 0 ? totalWeightedGrade / totalCredits : 0;
-                    document.getElementById('header_avg_gpa').innerText = totalCredits > 0 ? avg.toFixed(2) : '-';
-                    
-                    list.innerHTML = processedGrades.map(g => {
-                        const score = g.score_total !== undefined && g.score_total !== null ? g.score_total : '0';
-                        
-                        return `
-                            <div class="bg-white p-3 pr-4 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-3">
-                                <div class="flex-1 flex items-center gap-3 overflow-hidden">
-                                    <div class="w-8 h-8 shrink-0 bg-slate-50 flex items-center justify-center rounded-lg font-black text-blue-500 text-[9px] border border-slate-100 shadow-inner">
-                                        ${g.subject_code}
-                                    </div>
-                                    <div class="truncate">
-                                        <h4 class="text-xs font-bold text-slate-700 truncate leading-tight">${g.subject_name}</h4>
-                                    </div>
-                                </div>
-                                <div class="w-16 text-center">
-                                    <span class="bg-slate-50 px-2 py-1 rounded-lg text-xs font-black text-slate-600 border border-slate-100">${score}</span>
-                                </div>
-                                <div class="w-12 text-center">
-                                    <div class="text-base font-black text-blue-600 leading-none">${g.displayGrade}</div>
-                                </div>
+                    document.getElementById('header_avg_gpa').innerText = totalCredits > 0 ? (totalWeightedGrade / totalCredits).toFixed(2) : '-';
+                    list.innerHTML = processedGrades.map(g => `
+                        <div class="bg-white p-3 pr-4 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-3">
+                            <div class="flex-1 flex items-center gap-3 overflow-hidden">
+                                <div class="w-8 h-8 shrink-0 bg-slate-50 flex items-center justify-center rounded-lg font-black text-blue-500 text-[9px] border border-slate-100 shadow-inner">${g.subject_code}</div>
+                                <div class="truncate"><h4 class="text-xs font-bold text-slate-700 truncate leading-tight">${g.subject_name}</h4></div>
                             </div>
-                        `;
-                    }).join('');
+                            <div class="w-16 text-center"><span class="bg-slate-50 px-2 py-1 rounded-lg text-xs font-black text-slate-600 border border-slate-100">${g.score_total || '0'}</span></div>
+                            <div class="w-12 text-center"><div class="text-base font-black text-blue-600 leading-none">${g.displayGrade}</div></div>
+                        </div>
+                    `).join('');
                 }
 
                 // Feedback
@@ -402,39 +351,29 @@ $school_name = $_SESSION['school_name'];
                     document.getElementById('fb_health').value = data.parent_feedback.health_comment || '';
                 } else {
                     ['fb_responsibility','fb_spare_time','fb_relationship','fb_personality','fb_health'].forEach(id => {
-                        document.getElementById(id).value = '';
+                        const el = document.getElementById(id); if (el) el.value = '';
                     });
                 }
 
-                // Health - Robust lookup for latest non-zero measurements
+                // Health
                 healthHistory = data.health_history || [];
-                let displayWeight = 0;
-                let displayHeight = 0;
-
-                // 1. Check history first (it contains the most detailed records)
+                let weight = 0, height = 0;
                 if (healthHistory.length > 0) {
                     for (let i = healthHistory.length - 1; i >= 0; i--) {
                         const w = parseFloat(healthHistory[i].weight) || 0;
                         const h = parseFloat(healthHistory[i].height) || 0;
-                        if (w > 0 && displayWeight === 0) displayWeight = w;
-                        if (h > 0 && displayHeight === 0) displayHeight = h;
-                        if (displayWeight > 0 && displayHeight > 0) break;
+                        if (w > 0 && weight === 0) weight = w;
+                        if (h > 0 && height === 0) height = h;
+                        if (weight > 0 && height > 0) break;
                     }
                 }
-
-                // 2. Fallback to student profile only if history didn't provide a value
-                if (displayWeight === 0) displayWeight = parseFloat(student.weight) || 0;
-                if (displayHeight === 0) displayHeight = parseFloat(student.height) || 0;
-                
-                // 3. Update UI - ensure we don't show literal "0" if we can show "-"
-                document.getElementById('health_weight').textContent = displayWeight > 0 ? displayWeight : '-';
-                document.getElementById('health_height').textContent = displayHeight > 0 ? displayHeight : '-';
+                if (weight === 0) weight = parseFloat(student.weight) || 0;
+                if (height === 0) height = parseFloat(student.height) || 0;
+                document.getElementById('health_weight').textContent = weight > 0 ? weight : '-';
+                document.getElementById('health_height').textContent = height > 0 ? height : '-';
 
                 if (typeof lucide !== 'undefined') lucide.createIcons();
-
-            } catch (err) {
-                console.error(err);
-            }
+            } catch (err) { console.error(err); }
         }
 
         function renderHealthCharts() {
@@ -444,129 +383,54 @@ $school_name = $_SESSION['school_name'];
                 document.getElementById('weight_chart').innerHTML = msg;
                 return;
             }
-
-            // Height Chart
             renderSingleChart('height_chart', healthHistory, 'height', '#3b82f6');
-            // Weight Chart
             renderSingleChart('weight_chart', healthHistory, 'weight', '#f43f5e');
         }
 
         function renderSingleChart(containerId, data, key, color) {
             const container = document.getElementById(containerId);
             container.innerHTML = '';
-            
             const margin = {top: 20, right: 30, bottom: 35, left: 40},
                   width = container.clientWidth - margin.left - margin.right,
                   height = container.clientHeight - margin.top - margin.bottom;
 
-            const svg = d3.select("#" + containerId)
-                .append("svg")
+            const svg = d3.select("#" + containerId).append("svg")
                 .attr("width", width + margin.left + margin.right)
                 .attr("height", height + margin.top + margin.bottom)
-                .append("g")
-                .attr("transform", `translate(${margin.left},${margin.top})`);
+                .append("g").attr("transform", `translate(${margin.left},${margin.top})`);
 
-            // Order data by time if not already
-            const chartData = data.map((d, i) => ({
-                index: i,
-                value: parseFloat(d[key]),
-                label: d.record_number ? "ครั้งที่ " + d.record_number : "ครั้งที่ " + (i+1)
-            })).filter(d => !isNaN(d.value));
+            const chartData = data.map((d, i) => ({ index: i, value: parseFloat(d[key]), label: "ครั้งที่ " + (d.record_number || (i+1)) })).filter(d => !isNaN(d.value));
+            const x = d3.scaleLinear().domain([0, chartData.length - 1]).range([0, width]);
+            const minV = d3.min(chartData, d => d.value), maxV = d3.max(chartData, d => d.value);
+            const pad = (maxV - minV) * 0.2 || 5;
+            const y = d3.scaleLinear().domain([minV - pad, maxV + pad]).range([height, 0]);
 
-            const x = d3.scaleLinear()
-                .domain([0, chartData.length - 1])
-                .range([0, width]);
+            svg.append("g").attr("transform", `translate(0,${height})`).attr("class", "text-[8px] text-slate-300").call(d3.axisBottom(x).ticks(5).tickFormat(i => chartData[i] ? chartData[i].label : '')).select(".domain").attr("stroke", "#e2e8f0");
+            svg.append("g").attr("class", "text-[8px] text-slate-300").call(d3.axisLeft(y).ticks(5)).select(".domain").attr("stroke", "#e2e8f0");
 
-            const minVal = d3.min(chartData, d => d.value);
-            const maxVal = d3.max(chartData, d => d.value);
-            const padding = (maxVal - minVal) * 0.2 || 5;
+            const line = d3.line().x(d => x(d.index)).y(d => y(d.value)).curve(d3.curveMonotoneX);
+            const area = d3.area().x(d => x(d.index)).y1(d => y(d.value)).y0(height).curve(d3.curveMonotoneX);
 
-            const y = d3.scaleLinear()
-                .domain([minVal - padding, maxVal + padding])
-                .range([height, 0]);
-
-            // Axes
-            svg.append("g")
-                .attr("transform", `translate(0,${height})`)
-                .attr("class", "text-[8px] text-slate-300")
-                .call(d3.axisBottom(x).ticks(Math.min(chartData.length, 5)).tickFormat(i => chartData[i] ? chartData[i].label : ''))
-                .select(".domain").attr("stroke", "#e2e8f0");
-
-            svg.append("g")
-                .attr("class", "text-[8px] text-slate-300")
-                .call(d3.axisLeft(y).ticks(5))
-                .select(".domain").attr("stroke", "#e2e8f0");
-
-            // Line
-            const line = d3.line()
-                .x(d => x(d.index))
-                .y(d => y(d.value))
-                .curve(d3.curveMonotoneX);
-
-            // Gradient Area
-            const area = d3.area()
-                .x(d => x(d.index))
-                .y1(d => y(d.value))
-                .y0(height)
-                .curve(d3.curveMonotoneX);
-
-            const gradientId = "gradient-" + containerId;
+            const gradId = "grad-" + containerId;
             const defs = svg.append("defs");
-            const gradient = defs.append("linearGradient")
-                .attr("id", gradientId)
-                .attr("x1", "0%").attr("y1", "0%")
-                .attr("x2", "0%").attr("y2", "100%");
-            gradient.append("stop").attr("offset", "0%").attr("stop-color", color).attr("stop-opacity", 0.2);
-            gradient.append("stop").attr("offset", "100%").attr("stop-color", color).attr("stop-opacity", 0);
+            const grad = defs.append("linearGradient").attr("id", gradId).attr("x1", "0%").attr("y1", "0%").attr("x2", "0%").attr("y2", "100%");
+            grad.append("stop").attr("offset", "0%").attr("stop-color", color).attr("stop-opacity", 0.2);
+            grad.append("stop").attr("offset", "100%").attr("stop-color", color).attr("stop-opacity", 0);
 
-            svg.append("path")
-                .datum(chartData)
-                .attr("fill", "url(#" + gradientId + ")")
-                .attr("d", area);
-
-            svg.append("path")
-                .datum(chartData)
-                .attr("fill", "none")
-                .attr("stroke", color)
-                .attr("stroke-width", 2.5)
-                .attr("stroke-linecap", "round")
-                .attr("d", line);
-
-            // Dots
-            svg.selectAll("dot")
-                .data(chartData)
-                .enter().append("circle")
-                .attr("cx", d => x(d.index))
-                .attr("cy", d => y(d.value))
-                .attr("r", 3.5)
-                .attr("fill", "white")
-                .attr("stroke", color)
-                .attr("stroke-width", 2);
-
-            // Labels on dots
-            svg.selectAll("text.label")
-                .data(chartData)
-                .enter().append("text")
-                .attr("x", d => x(d.index))
-                .attr("y", d => y(d.value) - 10)
-                .attr("text-anchor", "middle")
-                .attr("class", "text-[9px] font-bold")
-                .attr("fill", color)
-                .text(d => d.value);
+            svg.append("path").datum(chartData).attr("fill", "url(#" + gradId + ")").attr("d", area);
+            svg.append("path").datum(chartData).attr("fill", "none").attr("stroke", color).attr("stroke-width", 2.5).attr("d", line);
+            svg.selectAll("dot").data(chartData).enter().append("circle").attr("cx", d => x(d.index)).attr("cy", d => y(d.value)).attr("r", 3.5).attr("fill", "white").attr("stroke", color).attr("stroke-width", 2);
+            svg.selectAll("text").data(chartData).enter().append("text").attr("x", d => x(d.index)).attr("y", d => y(d.value) - 10).attr("text-anchor", "middle").attr("class", "text-[9px] font-bold").attr("fill", color).text(d => d.value);
         }
 
         async function saveFeedback() {
             const btn = document.getElementById('saveFeedbackBtn');
             const original = btn.innerText;
-            const year = document.getElementById('filter_year').value;
-            const semester = document.getElementById('filter_semester').value;
-            
-            btn.disabled = true;
-            btn.innerText = 'กำลังบันทึก...';
+            btn.disabled = true; btn.innerText = 'กำลังบันทึก...';
 
             const payload = {
-                academic_year: year,
-                semester: semester,
+                academic_year: document.getElementById('filter_year').value,
+                semester: document.getElementById('filter_semester').value,
                 responsibility: document.getElementById('fb_responsibility').value,
                 spare_time: document.getElementById('fb_spare_time').value,
                 relationship: document.getElementById('fb_relationship').value,
@@ -575,28 +439,13 @@ $school_name = $_SESSION['school_name'];
             };
 
             try {
-                const res = await fetch('api/parent/save_feedback.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                const result = await res.json();
-                if (result.success) alert('บันทึกข้อมูลเรียบร้อยแล้ว ขอบคุณสำหรับข้อมูลครับ');
-            } catch (e) {
-                alert('เกิดข้อผิดพลาด');
-            } finally {
-                btn.disabled = false;
-                btn.innerText = original;
-            }
+                const res = await fetch('api/parent/save_feedback.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                if ((await res.json()).success) alert('บันทึกข้อมูลเรียบร้อยแล้ว ขอบคุณสำหรับข้อมูลครับ');
+            } catch (e) { alert('เกิดข้อผิดพลาด'); } finally { btn.disabled = false; btn.innerText = original; }
         }
 
-        function logout() {
-            if (confirm('คุณต้องการออกจากระบบใช่หรือไม่?')) {
-                window.location.href = 'parent_logout.php';
-            }
-        }
+        function logout() { if (confirm('คุณต้องการออกจากระบบใช่หรือไม่?')) window.location.href = 'parent_logout.php'; }
 
-        // Auto load
         loadData();
     </script>
 </body>
