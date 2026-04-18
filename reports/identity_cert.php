@@ -1,85 +1,98 @@
 <?php
-// หนังสือรับรองการมีตัวตนของนักเรียน (แบบฟอร์มเปล่า)
+// หนังสือรับรองการมีตัวตนของนักเรียน (แบบฟอร์มเปล่า - ปรับปรุงเลย์เอาต์ตามภาพ)
 ?>
+<style>
+    .nowrap { white-space: nowrap; }
+    .flex-row { display: flex; align-items: baseline; margin-bottom: 8px; width: 100%; }
+    .line-fill { border-bottom: 1px dotted #000; flex: 1; margin: 0 4px; height: 1.2em; }
+    .line-stretch { border-bottom: 1px dotted #000; display: inline-block; padding: 0 4px; height: 1.2em; }
+</style>
+
 <div class="doc-page">
     <div class="header-logo">
         <img src="<?= $garuda_url ?>" alt="Garuda" referrerPolicy="no-referrer">
     </div>
     <div class="doc-title" style="margin-top: 10px;">หนังสือรับรองการมีตัวตนของนักเรียน</div>
     
-    <div class="text-right" style="margin-top: 20px; margin-bottom: 20px; padding-right: 50px;">
-        วันที่ <span class="dotted-line" style="display: inline-block; min-width: 60px;"></span> 
-        เดือน <span class="dotted-line" style="display: inline-block; min-width: 150px;"></span> 
-        ปี <span class="dotted-line" style="display: inline-block; min-width: 80px;"></span>
+    <div style="text-align: center; margin-top: 25px; margin-bottom: 30px;">
+        <span class="nowrap">วันที่</span> <span class="line-stretch" style="min-width: 60px;"></span> 
+        <span class="nowrap">เดือน</span> <span class="line-stretch" style="min-width: 150px;"></span> 
+        <span class="nowrap">ปี</span> <span class="line-stretch" style="min-width: 80px;"></span>
     </div>
     
-    <div class="content-row" style="display: flex; align-items: baseline; margin-top: 20px;">
-        <span style="margin-left: 80px;">ข้าพเจ้า</span>
-        <span class="dotted-line" style="flex: 1; margin: 0 5px;"></span>
-        <span>อยู่บ้านเลขที่</span>
-        <span class="dotted-line" style="width: 70px; margin: 0 5px;"></span>
-        <span>หมู่ที่</span>
-        <span class="dotted-line" style="width: 50px; margin: 0 5px;"></span>
-        <span>ตำบล</span>
-        <span class="dotted-line" style="width: 120px; margin: 0 5px;"></span>
+    <div class="flex-row" style="margin-top: 20px;">
+        <span class="nowrap" style="margin-left: 80px;">ข้าพเจ้า</span>
+        <div class="line-fill"></div>
+        <span class="nowrap">อยู่บ้านเลขที่</span>
+        <div class="line-stretch" style="min-width: 70px;"></div>
+        <span class="nowrap">หมู่ที่</span>
+        <div class="line-stretch" style="min-width: 40px;"></div>
+        <span class="nowrap">ตำบล</span>
+        <div class="line-stretch" style="min-width: 140px;"></div>
     </div>
     
-    <div class="content-row" style="display: flex; align-items: baseline;">
-        <span>อำเภอ</span>
-        <span class="dotted-line" style="width: 150px; margin: 0 5px;"></span>
-        <span>จังหวัด</span>
-        <span class="dotted-line" style="width: 200px; margin: 0 5px;"></span>
-        <span>ขอรับรองว่า</span>
-        <span class="dotted-line" style="flex: 1; margin: 0 5px;"></span>
+    <div class="flex-row">
+        <span class="nowrap">อำเภอ</span>
+        <div class="line-stretch" style="min-width: 160px;"></div>
+        <span class="nowrap">จังหวัด</span>
+        <div class="line-stretch" style="min-width: 160px;"></div>
+        <span class="nowrap">ขอรับรองว่า</span>
+        <div class="line-fill"></div>
     </div>
     
-    <div class="content-row" style="display: flex; align-items: baseline;">
-        <span>เกิดวันที่</span>
-        <span class="dotted-line" style="width: 60px; margin: 0 5px;"></span>
-        <span>เดือน</span>
-        <span class="dotted-line" style="width: 150px; margin: 0 5px;"></span>
-        <span>พ.ศ.</span>
-        <span class="dotted-line" style="width: 60px; margin: 0 5px;"></span>
-        <span>เป็นบุตร/อยู่ในความปกครองของ</span>
-        <span class="dotted-line" style="flex: 1; margin: 0 5px;"></span>
+    <div class="flex-row">
+        <span class="nowrap">เกิดวันที่</span>
+        <div class="line-stretch" style="min-width: 50px;"></div>
+        <span class="nowrap">เดือน</span>
+        <div class="line-stretch" style="min-width: 140px;"></div>
+        <span class="nowrap">พ.ศ.</span>
+        <div class="line-stretch" style="min-width: 60px;"></div>
+        <span class="nowrap">เป็นบุตร/อยู่ในความปกครองของ</span>
+        <div class="line-fill"></div>
     </div>
     
-    <div class="content-row" style="display: flex; align-items: baseline;">
-        <span>อาศัยอยู่บ้านเลขที่</span>
-        <span class="dotted-line" style="width: 80px; margin: 0 5px;"></span>
-        <span>หมู่ที่</span>
-        <span class="dotted-line" style="width: 50px; margin: 0 5px;"></span>
-        <span>ตำบล</span>
-        <span class="dotted-line" style="width: 150px; margin: 0 5px;"></span>
-        <span>อำเภอ</span>
-        <span class="dotted-line" style="width: 150px; margin: 0 5px;"></span>
-        <span>จังหวัด</span>
-        <span class="dotted-line" style="width: 150px; margin: 0 5px;"></span>
+    <div class="flex-row">
+        <span class="nowrap">อาศัยอยู่บ้านเลขที่</span>
+        <div class="line-stretch" style="min-width: 70px;"></div>
+        <span class="nowrap">หมู่ที่</span>
+        <div class="line-stretch" style="min-width: 40px;"></div>
+        <span class="nowrap">ตำบล</span>
+        <div class="line-stretch" style="min-width: 120px;"></div>
+        <span class="nowrap">อำเภอ</span>
+        <div class="line-stretch" style="min-width: 120px;"></div>
+        <span class="nowrap">จังหวัด</span>
+        <div class="line-fill"></div>
     </div>
     
-    <div class="content-row" style="display: flex; align-items: baseline;">
-        <span>ซึ่งปัจจุบันมีตัวตน ผู้ปกครองและนักเรียนอยู่ในท้องที่หมู่บ้าน</span>
-        <span class="dotted-line" style="flex: 1; margin: 0 5px;"></span>
-        <span>จริง</span>
+    <div class="flex-row">
+        <span class="nowrap">ซึ่งปัจจุบันมีตัวตน ผู้ปกครองและนักเรียนอยู่ในท้องที่หมู่บ้าน</span>
+        <div class="line-fill"></div>
+        <span class="nowrap">จริง</span>
     </div>
 
-    <div style="margin-top: 50px;">
-        <div class="signature-section" style="margin-bottom: 40px; float: right; clear: both;">
-            (ลงชื่อ)..........................................................ผู้รับรอง<br>
-            (..........................................................)<br>
-            ตำแหน่ง..........................................................
+    <div style="margin-top: 60px;">
+        <div class="signature-section" style="margin-bottom: 50px; float: right; clear: both;">
+            <div style="text-align: left; display: inline-block;">
+                (ลงชื่อ)..........................................................ผู้รับรอง<br>
+                (..........................................................)<br>
+                ตำแหน่ง..........................................................
+            </div>
         </div>
 
-        <div class="signature-section" style="margin-bottom: 40px; float: right; clear: both;">
-            (ลงชื่อ)..........................................................ผู้รับรอง<br>
-            (..........................................................)<br>
-            ตำแหน่ง..........................................................
+        <div class="signature-section" style="margin-bottom: 50px; float: right; clear: both;">
+            <div style="text-align: left; display: inline-block;">
+                (ลงชื่อ)..........................................................ผู้รับรอง<br>
+                (..........................................................)<br>
+                ตำแหน่ง..........................................................
+            </div>
         </div>
 
-        <div class="signature-section" style="margin-bottom: 40px; float: right; clear: both;">
-            (ลงชื่อ)..........................................................ผู้รับรอง<br>
-            (..........................................................)<br>
-            ตำแหน่ง..........................................................
+        <div class="signature-section" style="margin-bottom: 50px; float: right; clear: both;">
+            <div style="text-align: left; display: inline-block;">
+                (ลงชื่อ)..........................................................ผู้รับรอง<br>
+                (..........................................................)<br>
+                ตำแหน่ง..........................................................
+            </div>
         </div>
     </div>
 </div>
