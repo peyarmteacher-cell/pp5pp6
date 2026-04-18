@@ -19,10 +19,26 @@ $current_year = $current_year_row ? $current_year_row['year'] : (date('Y') + 543
 
 try {
     // 1. Student counts by level and total
-    // Strictly follow current_year
-    $stmt = $pdo->prepare("SELECT level, COUNT(*) as count FROM students WHERE school_id = ? AND academic_year = ? AND (status = 'studying' OR status IS NULL) GROUP BY level ORDER BY level");
-    $stmt->execute([$school_id, $current_year]);
+    // Strictly follow current_year but be robust with spaces and NULLs if no specific year data exists
+    $stmt = $pdo->prepare("SELECT level, COUNT(*) as count FROM students 
+                           WHERE school_id = ? 
+                           AND (TRIM(academic_year) = ? OR (academic_year IS NULL AND ? = (SELECT year FROM academic_years WHERE school_id = ? AND is_current = 1 LIMIT 1)))
+                           AND (status = 'studying' OR status IS NULL OR status = '') 
+                           GROUP BY level ORDER BY level");
+    $stmt->execute([$school_id, $current_year, $current_year, $school_id]);
     $students_by_level = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // If still 0, maybe the Admin hasn't set 'is_current' or students have different year strings
+    if (empty($students_by_level)) {
+        // Fallback: If no students in current year, show whatever students exist for this school as a "draft" view
+        // but only if NO students at all exist for the current year.
+        $stmt = $pdo->prepare("SELECT level, COUNT(*) as count FROM students 
+                               WHERE school_id = ? 
+                               AND (status = 'studying' OR status IS NULL OR status = '') 
+                               GROUP BY level ORDER BY level");
+        $stmt->execute([$school_id]);
+        $students_by_level = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 
     $total_students = 0;
     $has_high_school = false; // Check if school has M.1-M.3
