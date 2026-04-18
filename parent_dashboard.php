@@ -28,35 +28,31 @@ $school_name = $_SESSION['school_name'];
 
     <!-- Header -->
     <header id="app_header" class="bg-blue-600 text-white rounded-b-[40px] p-6 pt-10 shadow-lg shadow-blue-500/20 sticky top-0 z-40">
-        <div class="flex justify-between items-start">
-            <div class="flex items-center gap-4">
-                <div id="student_avatar" class="w-16 h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/30 shadow-inner">
-                    <i id="avatar_icon" data-lucide="user" class="w-10 h-10"></i>
+        <div class="flex justify-between items-center gap-4">
+            <div class="flex items-center gap-4 min-w-0">
+                <div id="student_avatar" class="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/30 shadow-inner shrink-0">
+                    <i id="avatar_icon" data-lucide="user" class="w-8 h-8"></i>
                 </div>
-                <div class="space-y-0.5">
-                    <p class="text-blue-200 text-[10px] font-bold uppercase tracking-widest">ข้อมูลนักเรียน</p>
-                    <h1 id="header_student_name" class="text-lg font-bold leading-tight"><?= $student_name ?></h1>
+                <div class="space-y-0.5 min-w-0">
+                    <h1 id="header_student_name" class="text-base font-bold leading-tight truncate"><?= $student_name ?></h1>
                     <div class="flex items-center gap-2">
-                        <span id="header_student_level" class="bg-white/20 px-2 py-0.5 rounded-lg text-[10px] font-bold backdrop-blur-sm">ชั้น: -</span>
-                        <span id="header_student_id" class="text-[10px] text-blue-100 opacity-80">รหัส: <?= $_SESSION['student_code'] ?></span>
+                        <span id="header_student_level" class="bg-white/20 px-2 py-0.5 rounded-lg text-[9px] font-bold backdrop-blur-sm">ชั้น: -</span>
+                        <span id="header_student_id" class="text-[9px] text-blue-100/70">รหัส: <?= $_SESSION['student_code'] ?></span>
                     </div>
                 </div>
             </div>
-            <button onclick="logout()" class="p-2 bg-white/10 rounded-2xl hover:bg-white/20 transition-all cursor-pointer">
-                <i data-lucide="log-out" class="w-5 h-5 text-blue-100"></i>
-            </button>
-        </div>
-
-        <!-- Prominent GPA Card -->
-        <div class="mt-8 flex justify-center">
-            <div class="bg-white/10 backdrop-blur-xl border border-white/30 rounded-[35px] p-6 w-full max-w-[200px] text-center shadow-2xl relative overflow-hidden group">
-                <div class="absolute -right-4 -top-4 w-16 h-16 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-all duration-700"></div>
-                <p class="text-[10px] text-blue-100 font-black uppercase tracking-[0.2em] mb-1 opacity-80">GPA เทอมนี้</p>
-                <div id="header_avg_gpa" class="text-4xl font-black text-white drop-shadow-lg tracking-tighter">-</div>
-                <div class="mt-2 inline-flex items-center gap-1 bg-white/20 px-3 py-1 rounded-full border border-white/20">
-                    <i data-lucide="star" class="w-2.5 h-2.5 text-amber-300 fill-amber-300"></i>
-                    <span class="text-[9px] font-bold text-white">ผลการเรียนดีเยี่ยม</span>
+            
+            <div class="flex items-center gap-3 shrink-0">
+                <!-- Compact GPA Pill -->
+                <div class="bg-white/10 backdrop-blur-xl border border-white/30 px-4 py-2 rounded-2xl text-center shadow-lg relative overflow-hidden">
+                    <p class="text-[8px] text-blue-100 font-black uppercase tracking-widest mb-1 opacity-80">GPA เทอมนี้</p>
+                    <div id="header_avg_gpa" class="text-xl font-black text-white leading-none tracking-tighter">-</div>
+                    <div class="absolute -right-2 -top-2 w-6 h-6 bg-white/10 rounded-full blur-md"></div>
                 </div>
+                
+                <button onclick="logout()" class="p-2.5 bg-white/10 rounded-2xl hover:bg-white/20 transition-all cursor-pointer">
+                    <i data-lucide="log-out" class="w-4 h-4 text-blue-100"></i>
+                </button>
             </div>
         </div>
         
