@@ -152,6 +152,9 @@ try {
                 } else if (sectionId === 'reports') {
                     targetId = sectionId;
                     if (typeof loadReportOptions === 'function') loadReportOptions();
+                } else if (sectionId === 'grading-progress') {
+                    targetId = sectionId;
+                    if (typeof initGradingProgress === 'function') initGradingProgress();
                 } else if (sectionId === 'school-settings') {
                     targetId = sectionId;
                     if (typeof loadSchoolSettings === 'function') loadSchoolSettings();
@@ -180,6 +183,7 @@ try {
                     'reports': 'รายงานเอกสาร (ปพ.5/ปพ.6)',
                     'school-settings': 'ตั้งค่าโรงเรียน/โลโก้',
                     'manage-super-admins': 'จัดการ Super Admin',
+                    'grading-progress': 'ความคืบหน้าการบันทึกคะแนน',
                     'profile': 'แก้ไขโปรไฟล์',
                     'academic-management': 'จัดการปีการศึกษา/จบการศึกษา'
                 };
@@ -260,12 +264,22 @@ try {
                 </a>
             <?php endif; ?>
 
-            <?php if ($role === 'admin'): ?>
-                <div class="pt-4 pb-2 px-4 text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">School Admin</div>
+            <?php 
+            $is_director = (isset($_SESSION['position']) && strpos($_SESSION['position'], 'ผู้อำนวยการ') !== false);
+            if ($role === 'admin' || $is_director): 
+            ?>
+                <div class="pt-4 pb-2 px-4 text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">เมนูบริหาร</div>
+                <?php if ($role === 'admin'): ?>
                 <a href="javascript:void(0)" onclick="showSection('manage-teachers')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">
                     <i data-lucide="users" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
                     <span class="text-sm font-medium">จัดการข้อมูลครู</span>
                 </a>
+                <?php endif; ?>
+                <a href="javascript:void(0)" onclick="showSection('grading-progress')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">
+                    <i data-lucide="trending-up" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
+                    <span class="text-sm font-medium">ความคืบหน้าการทำงาน</span>
+                </a>
+                <?php if ($role === 'admin'): ?>
                 <a href="javascript:void(0)" onclick="showSection('approve-teachers')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">
                     <i data-lucide="user-plus" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
                     <span class="text-sm font-medium">อนุมัติครู</span>
@@ -274,6 +288,7 @@ try {
                     <i data-lucide="settings-2" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
                     <span class="text-sm font-medium">ตั้งค่าโรงเรียน</span>
                 </a>
+                <?php endif; ?>
             <?php endif; ?>
 
             <?php if ($role === 'admin' || (isset($_SESSION['is_academic']) && $_SESSION['is_academic'])): ?>
@@ -590,6 +605,7 @@ try {
         <!-- Academic Management -->
         <?php include 'includes/dashboard/academic_management.php'; ?>
         <?php include 'includes/dashboard/academic_documents.php'; ?>
+        <?php include 'includes/dashboard/grading_progress.php'; ?>
 
         <!-- Teacher: Record Grades -->
         <?php include 'includes/dashboard/grading.php'; ?>

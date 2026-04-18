@@ -15,9 +15,9 @@
     <div class="doc-title" style="margin-top: 10px;">หนังสือรับรองการมีตัวตนของนักเรียน</div>
     
     <div style="text-align: right; margin-top: 25px; margin-bottom: 30px; padding-right: 20px;">
-        <span class="nowrap">วันที่</span> <span class="line-stretch" style="min-width: 60px;"></span> 
-        <span class="nowrap">เดือน</span> <span class="line-stretch" style="min-width: 150px;"></span> 
-        <span class="nowrap">ปี</span> <span class="line-stretch" style="min-width: 80px;"></span>
+        <span class="nowrap">วันที่</span> <span class="line-stretch" style="min-width: 20px;"></span> 
+        <span class="nowrap">เดือน</span> <span class="line-stretch" style="min-width: 80px;"></span> 
+        <span class="nowrap">ปี</span> <span class="line-stretch" style="min-width: 40px;"></span>
     </div>
     
     <div class="flex-row" style="margin-top: 20px;">
@@ -35,31 +35,34 @@
         <span class="nowrap">อำเภอ</span>
         <div class="line-stretch" style="min-width: 160px;"></div>
         <span class="nowrap">จังหวัด</span>
-        <div class="line-stretch" style="min-width: 160px;"></div>
-        <span class="nowrap">ขอรับรองว่า</span>
         <div class="line-fill"></div>
     </div>
     
     <div class="flex-row">
+		<span class="nowrap">ขอรับรองว่า</span>
+		<div class="line-stretch" style="min-width: 220px;"></div>
         <span class="nowrap">เกิดวันที่</span>
-        <div class="line-stretch" style="min-width: 50px;"></div>
+        <div class="line-stretch" style="min-width: 30px;"></div>
         <span class="nowrap">เดือน</span>
-        <div class="line-stretch" style="min-width: 140px;"></div>
-        <span class="nowrap">พ.ศ.</span>
         <div class="line-stretch" style="min-width: 60px;"></div>
+        <span class="nowrap">พ.ศ.</span>
+        <div class="line-fill"></div>
+    </div>
+	
+	    <div class="flex-row">
         <span class="nowrap">เป็นบุตร/อยู่ในความปกครองของ</span>
         <div class="line-fill"></div>
     </div>
     
     <div class="flex-row">
         <span class="nowrap">อาศัยอยู่บ้านเลขที่</span>
-        <div class="line-stretch" style="min-width: 70px;"></div>
+        <div class="line-stretch" style="min-width: 20px;"></div>
         <span class="nowrap">หมู่ที่</span>
-        <div class="line-stretch" style="min-width: 40px;"></div>
+        <div class="line-stretch" style="min-width: 20px;"></div>
         <span class="nowrap">ตำบล</span>
-        <div class="line-stretch" style="min-width: 120px;"></div>
+        <div class="line-stretch" style="min-width: 80px;"></div>
         <span class="nowrap">อำเภอ</span>
-        <div class="line-stretch" style="min-width: 120px;"></div>
+        <div class="line-stretch" style="min-width: 80px;"></div>
         <span class="nowrap">จังหวัด</span>
         <div class="line-fill"></div>
     </div>
