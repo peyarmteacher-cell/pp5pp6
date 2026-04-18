@@ -270,31 +270,53 @@ foreach ($students_to_print as $student):
     }
 
     // ดึงบันทึกพฤติกรรม (ความคิดเห็นครู)
+    $target_sem = $semester === 'annual' ? 2 : $semester;
+    
+    // หากเป็นรายปี ให้ลองหาเทอม 2 ก่อน ถ้าไม่มีให้เอาเทอม 1
     $stmt_behavior = $pdo->prepare('
         SELECT bc.name as category_name, sbr.behavior_text
         FROM behavior_categories bc
         LEFT JOIN student_behavior_records sbr ON bc.id = sbr.category_id 
             AND sbr.student_id = ? 
             AND sbr.academic_year = ?
-            AND sbr.semester = ?
             AND sbr.id = (
                 SELECT id FROM student_behavior_records 
-                WHERE student_id = ? AND category_id = bc.id AND academic_year = ? AND semester = ?
+                WHERE student_id = ? AND category_id = bc.id AND academic_year = ? 
+                AND semester = (
+                    CASE 
+                        WHEN ? = 2 THEN (
+                            IFNULL((SELECT semester FROM student_behavior_records WHERE student_id = ? AND category_id = bc.id AND academic_year = ? AND semester = 2 LIMIT 1), 1)
+                        )
+                        ELSE ?
+                    END
+                )
                 ORDER BY check_date DESC LIMIT 1
             )
         WHERE bc.name IN ("หน้าที่รับผิดชอบ ความเอาใจใส่การเรียน", "การใช้เวลาว่าง", "ความสัมพันธ์กับบุคคลรอบข้าง", "อุปนิสัย บุคลิกภาพ", "สุขภาพ")
         ORDER BY FIELD(bc.name, "หน้าที่รับผิดชอบ ความเอาใจใส่การเรียน", "การใช้เวลาว่าง", "ความสัมพันธ์กับบุคคลรอบข้าง", "อุปนิสัย บุคลิกภาพ", "สุขภาพ")
     ');
-    $target_sem = $semester === 'annual' ? 2 : $semester;
+    
     $stmt_behavior->execute([
+        $student['id'], $year,
         $student['id'], $year, $target_sem,
         $student['id'], $year, $target_sem
     ]);
     $behavior_comments = $stmt_behavior->fetchAll();
 
     // ดึงความคิดเห็นผู้ปกครอง (parent_feedback)
-    $stmt_parent = $pdo->prepare('SELECT * FROM parent_feedback WHERE student_id = ? AND academic_year = ? AND semester = ?');
-    $stmt_parent->execute([$student['id'], $year, $target_sem]);
+    // หากเป็นรายปี (target_sem = 2) ให้ดึงของเทอม 2 มาก่อน ถ้าไม่มีให้ดึงเทอม 1
+    if ($semester === 'annual') {
+        $stmt_parent = $pdo->prepare('
+            SELECT * FROM parent_feedback 
+            WHERE student_id = ? AND academic_year = ? 
+            ORDER BY semester DESC 
+            LIMIT 1
+        ');
+        $stmt_parent->execute([$student['id'], $year]);
+    } else {
+        $stmt_parent = $pdo->prepare('SELECT * FROM parent_feedback WHERE student_id = ? AND academic_year = ? AND semester = ?');
+        $stmt_parent->execute([$student['id'], $year, $semester]);
+    }
     $parent_feedback = $stmt_parent->fetch();
 
     // ดึงหน้าต่างๆ มาแสดงตามลำดับใหม่
