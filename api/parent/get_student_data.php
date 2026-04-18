@@ -36,7 +36,7 @@ try {
     }
 
     // 1. Student Info
-    $stmt = $pdo->prepare("SELECT s.*, sch.name as school_name, cl.name as classroom_name 
+    $stmt = $pdo->prepare("SELECT s.*, sch.name as school_name, CONCAT(cl.level, '/', cl.room) as classroom_name 
                            FROM students s 
                            JOIN schools sch ON s.school_id = sch.id 
                            LEFT JOIN classrooms cl ON s.classroom_id = cl.id
