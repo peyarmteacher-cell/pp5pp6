@@ -290,36 +290,45 @@ $school_name = $_SESSION['school_name'];
 
                 // Calc average GPA
                 const list = document.getElementById('grades_list');
-                if (data.grades.length === 0) {
+                if (!data.grades || data.grades.length === 0) {
                     list.innerHTML = '<div class="bg-white p-8 text-center text-slate-400 rounded-2xl italic shadow-sm">ไม่มีข้อมูลในเทอมนี้</div>';
                     document.getElementById('header_avg_gpa').innerText = '-';
                 } else {
                     // Filter numeric grades for GPA calc
-                    const validGrades = data.grades.filter(g => !isNaN(parseFloat(g.grade)));
+                    const validGrades = data.grades.filter(g => {
+                        const val = g.grade_point !== undefined ? g.grade_point : g.grade;
+                        return !isNaN(parseFloat(val)) && val !== null && val !== '';
+                    });
+                    
                     const avg = validGrades.length > 0 
-                        ? validGrades.reduce((acc, curr) => acc + parseFloat(curr.grade), 0) / validGrades.length 
+                        ? validGrades.reduce((acc, curr) => acc + parseFloat(curr.grade_point !== undefined ? curr.grade_point : curr.grade), 0) / validGrades.length 
                         : 0;
                     
-                    document.getElementById('header_avg_gpa').innerText = avg > 0 ? avg.toFixed(2) : '-';
+                    document.getElementById('header_avg_gpa').innerText = validGrades.length > 0 ? avg.toFixed(2) : '-';
                     
-                    list.innerHTML = data.grades.map(g => `
-                        <div class="bg-white p-3 pr-4 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-3">
-                            <div class="flex-1 flex items-center gap-3 overflow-hidden">
-                                <div class="w-8 h-8 shrink-0 bg-slate-50 flex items-center justify-center rounded-lg font-black text-blue-500 text-[9px] border border-slate-100 shadow-inner">
-                                    ${g.subject_code}
+                    list.innerHTML = data.grades.map(g => {
+                        const displayGrade = g.grade !== null && g.grade !== undefined && g.grade !== '' ? g.grade : (g.grade_point !== undefined ? g.grade_point : '-');
+                        const score = g.score_total !== undefined && g.score_total !== null ? g.score_total : '0';
+                        
+                        return `
+                            <div class="bg-white p-3 pr-4 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-3">
+                                <div class="flex-1 flex items-center gap-3 overflow-hidden">
+                                    <div class="w-8 h-8 shrink-0 bg-slate-50 flex items-center justify-center rounded-lg font-black text-blue-500 text-[9px] border border-slate-100 shadow-inner">
+                                        ${g.subject_code}
+                                    </div>
+                                    <div class="truncate">
+                                        <h4 class="text-xs font-bold text-slate-700 truncate leading-tight">${g.subject_name}</h4>
+                                    </div>
                                 </div>
-                                <div class="truncate">
-                                    <h4 class="text-xs font-bold text-slate-700 truncate leading-tight">${g.subject_name}</h4>
+                                <div class="w-16 text-center">
+                                    <span class="bg-slate-50 px-2 py-1 rounded-lg text-xs font-black text-slate-600 border border-slate-100">${score}</span>
+                                </div>
+                                <div class="w-12 text-center">
+                                    <div class="text-base font-black text-blue-600 leading-none">${displayGrade}</div>
                                 </div>
                             </div>
-                            <div class="w-16 text-center">
-                                <span class="bg-slate-50 px-2 py-1 rounded-lg text-xs font-black text-slate-600 border border-slate-100">${g.score_total || '0'}</span>
-                            </div>
-                            <div class="w-12 text-center">
-                                <div class="text-base font-black text-blue-600 leading-none">${g.grade || '-'}</div>
-                            </div>
-                        </div>
-                    `).join('');
+                        `;
+                    }).join('');
                 }
 
                 // Feedback
