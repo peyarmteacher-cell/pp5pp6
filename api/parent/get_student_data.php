@@ -67,7 +67,7 @@ try {
         $grade_sql .= " AND g.academic_year = ?";
         $grade_params[] = $academic_year;
     }
-    if ($semester) {
+    if ($semester && $semester !== 'annual') {
         $grade_sql .= " AND g.semester = ?";
         $grade_params[] = $semester;
     }

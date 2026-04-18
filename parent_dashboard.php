@@ -84,6 +84,7 @@ $school_name = $_SESSION['school_name'];
                  <select id="filter_semester" onchange="loadData()" class="w-full bg-slate-50 border-none rounded-xl text-sm font-bold text-slate-700 focus:ring-0">
                      <option value="1">ภาคเรียนที่ 1</option>
                      <option value="2">ภาคเรียนที่ 2</option>
+                     <option value="annual">รวมทั้งปีการศึกษา</option>
                  </select>
              </div>
         </div>
@@ -117,11 +118,17 @@ $school_name = $_SESSION['school_name'];
             </section>
 
             <section class="space-y-3">
-                <div class="flex items-center mx-2 gap-2">
-                    <i data-lucide="award" class="w-4 h-4 text-amber-500"></i>
-                    <h2 class="font-bold text-slate-800">ผลการเรียนประจำภาคเรียน</h2>
+                <div class="flex items-center justify-between mx-2">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="award" class="w-4 h-4 text-amber-500"></i>
+                        <h2 class="font-bold text-slate-800">ผลการเรียนประจำภาคเรียน</h2>
+                    </div>
+                    <div class="flex gap-4 text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">
+                        <span class="w-16 text-center">คะแนนรวม</span>
+                        <span class="w-12 text-center">เกรด</span>
+                    </div>
                 </div>
-                <div id="grades_list" class="space-y-3">
+                <div id="grades_list" class="space-y-2">
                      <div class="animate-pulse flex flex-col gap-3">
                          <div class="h-16 bg-white rounded-2xl shadow-sm"></div>
                          <div class="h-16 bg-white rounded-2xl shadow-sm"></div>
@@ -287,23 +294,29 @@ $school_name = $_SESSION['school_name'];
                     list.innerHTML = '<div class="bg-white p-8 text-center text-slate-400 rounded-2xl italic shadow-sm">ไม่มีข้อมูลในเทอมนี้</div>';
                     document.getElementById('header_avg_gpa').innerText = '-';
                 } else {
-                    const avg = data.grades.reduce((acc, curr) => acc + (parseFloat(curr.grade) || 0), 0) / data.grades.length;
-                    document.getElementById('header_avg_gpa').innerText = avg.toFixed(2);
+                    // Filter numeric grades for GPA calc
+                    const validGrades = data.grades.filter(g => !isNaN(parseFloat(g.grade)));
+                    const avg = validGrades.length > 0 
+                        ? validGrades.reduce((acc, curr) => acc + parseFloat(curr.grade), 0) / validGrades.length 
+                        : 0;
+                    
+                    document.getElementById('header_avg_gpa').innerText = avg > 0 ? avg.toFixed(2) : '-';
                     
                     list.innerHTML = data.grades.map(g => `
-                        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 bg-slate-50 flex items-center justify-center rounded-xl font-extrabold text-blue-400/50 text-[10px] border border-slate-100">
+                        <div class="bg-white p-3 pr-4 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-3">
+                            <div class="flex-1 flex items-center gap-3 overflow-hidden">
+                                <div class="w-8 h-8 shrink-0 bg-slate-50 flex items-center justify-center rounded-lg font-black text-blue-500 text-[9px] border border-slate-100 shadow-inner">
                                     ${g.subject_code}
                                 </div>
-                                <div>
-                                    <h4 class="text-sm font-bold text-slate-700 leading-tight">${g.subject_name}</h4>
-                                    <p class="text-[10px] text-slate-400 font-bold">คะแนนรวม: ${g.score_total || '0'}</p>
+                                <div class="truncate">
+                                    <h4 class="text-xs font-bold text-slate-700 truncate leading-tight">${g.subject_name}</h4>
                                 </div>
                             </div>
-                            <div class="text-right">
-                                <div class="text-xl font-black text-blue-600">${g.grade || '-'}</div>
-                                <p class="text-[9px] text-slate-400 uppercase font-bold tracking-tighter">Grade</p>
+                            <div class="w-16 text-center">
+                                <span class="bg-slate-50 px-2 py-1 rounded-lg text-xs font-black text-slate-600 border border-slate-100">${g.score_total || '0'}</span>
+                            </div>
+                            <div class="w-12 text-center">
+                                <div class="text-base font-black text-blue-600 leading-none">${g.grade || '-'}</div>
                             </div>
                         </div>
                     `).join('');
