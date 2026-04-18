@@ -152,11 +152,24 @@
                         </div>
                         <p class="text-[10px] text-slate-500 italic">ใช้สำหรับการส่งข้อความแจ้งเตือนอัตโนมัติเมื่อมีการเช็คชื่อ</p>
                     </div>
-                    <div class="flex items-center gap-2 pb-2">
-                        <a href="https://t.me/BotFather" target="_blank" class="text-xs text-blue-600 font-bold hover:underline flex items-center gap-1">
-                            <i data-lucide="external-link" class="w-3 h-3"></i>
-                            วิธีสร้าง Bot และขอ Token
-                        </a>
+                    <div class="flex flex-col gap-2 pb-2">
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="setupWebhook()" class="px-4 py-2 bg-green-50 text-green-600 rounded-xl font-bold hover:bg-green-100 transition-all cursor-pointer text-xs flex items-center gap-2">
+                                <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                                เชื่อมต่อ Bot (Sync)
+                            </button>
+                            <a href="https://t.me/BotFather" target="_blank" class="text-xs text-blue-600 font-bold hover:underline flex items-center gap-1">
+                                <i data-lucide="external-link" class="w-3 h-3"></i>
+                                สร้าง Bot
+                            </a>
+                        </div>
+                        <div id="bot_status_area" class="hidden">
+                             <p class="text-[10px] text-green-600 font-bold flex items-center gap-1">
+                                <i data-lucide="check-circle" class="w-3 h-3"></i>
+                                บอทพร้อมใช้งานแล้ว
+                             </p>
+                             <a id="bot_link" href="#" target="_blank" class="text-[10px] text-blue-500 underline font-medium">Link สำหรับผู้ปกครอง</a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -243,6 +256,39 @@
 </div>
 
 <script>
+    async function setupWebhook() {
+        if (!document.getElementById('setting_telegram_bot_token').value) {
+            alert('กรุณาใส่ Bot Token และกดบันทึกก่อนทำการเชื่อมต่อ');
+            return;
+        }
+
+        const btn = event.currentTarget;
+        const original = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> กำลังเชื่อมต่อ...';
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+
+        try {
+            const res = await fetch('api/admin/setup_telegram_webhook.php');
+            const result = await res.json();
+            if (result.success) {
+                alert(result.message);
+                // Try to extract bot username from description or just show status
+                const botArea = document.getElementById('bot_status_area');
+                if (botArea) botArea.classList.remove('hidden');
+            } else {
+                alert(result.error);
+            }
+        } catch (e) {
+            console.error('Webhook setup error:', e);
+            alert('เกิดข้อผิดพลาดในการเชื่อมต่อ Webhook');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = original;
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+    }
+
     async function loadSchoolSettings() {
         console.log('Loading school settings...');
         try {
