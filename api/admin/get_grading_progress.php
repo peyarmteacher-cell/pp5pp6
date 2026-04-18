@@ -39,8 +39,7 @@ try {
                 (SELECT COUNT(*) FROM learning_units lu WHERE lu.subject_id = ta.subject_id AND lu.classroom_id = ta.classroom_id AND lu.academic_year = ta.academic_year AND lu.semester = ta.semester) as total_units,
                 (SELECT COUNT(DISTINCT us.learning_unit_id) FROM unit_scores us JOIN learning_units lu ON us.learning_unit_id = lu.id WHERE lu.subject_id = ta.subject_id AND lu.classroom_id = ta.classroom_id AND lu.academic_year = ta.academic_year AND lu.semester = ta.semester) as completed_units,
                 
-                /* Midterm/Final Progress (Check if any scores were entered per student) */
-                (SELECT COUNT(*) FROM grades g WHERE g.subject_id = ta.subject_id AND g.classroom_id = ta.classroom_id AND g.academic_year = ta.academic_year AND g.semester = ta.semester AND g.score_midterm > 0) as midterm_count,
+                /* Final Progress (Check if any scores were entered per student) */
                 (SELECT COUNT(*) FROM grades g WHERE g.subject_id = ta.subject_id AND g.classroom_id = ta.classroom_id AND g.academic_year = ta.academic_year AND g.semester = ta.semester AND g.score_final > 0) as final_count,
                 
                 /* Characteristics & Analytical Progress */

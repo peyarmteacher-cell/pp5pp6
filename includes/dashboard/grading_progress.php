@@ -39,7 +39,7 @@
         <div class="flex overflow-x-auto gap-2 mb-6 border-b border-slate-100 pb-1 custom-scrollbar">
             <button onclick="switchProgressTab('academics')" id="tab-academics" class="progress-tab active flex items-center gap-2 px-6 py-3 rounded-t-2xl font-bold text-sm transition-all border-b-2 border-transparent hover:bg-slate-50">
                 <i data-lucide="book-open" class="w-4 h-4"></i>
-                หน่วยการเรียนรู้และผลสอบ
+                หน่วยการเรียนรู้และผลสอบปลายภาค
             </button>
             <button onclick="switchProgressTab('evaluations')" id="tab-evaluations" class="progress-tab flex items-center gap-2 px-6 py-3 rounded-t-2xl font-bold text-sm transition-all border-b-2 border-transparent hover:bg-slate-50">
                 <i data-lucide="award" class="w-4 h-4"></i>
@@ -151,7 +151,7 @@
         empty.classList.add('hidden');
 
         // Update dynamic header title
-        if (currentProgressTab === 'academics') header.innerText = 'หน่วยการเรียนรู้ / กลางภาค / ปลายภาค';
+        if (currentProgressTab === 'academics') header.innerText = 'หน่วยการเรียนรู้ / ผลสอบปลายภาค';
         else if (currentProgressTab === 'evaluations') header.innerText = 'สมรรถนะ / กิจกรรมพัฒนาผู้เรียน';
         else header.innerText = 'คุณลักษณะพึงประสงค์ / อ่าน คิดวิเคราะห์';
 
@@ -161,7 +161,6 @@
             const completedUnits = parseInt(item.completed_units) || 0;
             
             const unitsP = totalUnits > 0 ? (completedUnits / totalUnits) : 0;
-            const midtermP = studentCount > 0 ? (parseInt(item.midterm_count) / studentCount) : 0;
             const finalP = studentCount > 0 ? (parseInt(item.final_count) / studentCount) : 0;
             const charP = studentCount > 0 ? (parseInt(item.characteristics_count) / studentCount) : 0;
             const analyticalP = studentCount > 0 ? (parseInt(item.analytical_count) / studentCount) : 0;
@@ -172,11 +171,10 @@
             let overallP = 0;
 
             if (currentProgressTab === 'academics') {
-                overallP = ((unitsP + midtermP + finalP) / 3) * 100;
+                overallP = ((unitsP + finalP) / 2) * 100;
                 tabContent = `
                     <div class="grid grid-cols-1 gap-3">
                         ${renderMiniBar('หน่วยการเรียน', unitsP, `${completedUnits}/${totalUnits} หน่วย`)}
-                        ${renderMiniBar('สอบกลางภาค', midtermP, `${item.midterm_count}/${studentCount} คน`)}
                         ${renderMiniBar('สอบปลายภาค', finalP, `${item.final_count}/${studentCount} คน`)}
                     </div>
                 `;
