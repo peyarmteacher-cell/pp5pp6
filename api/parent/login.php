@@ -30,7 +30,7 @@ try {
         // บันทึก Session สำหรับผู้ปกครอง
         $_SESSION['parent_logged_in'] = true;
         $_SESSION['student_id'] = $student['id'];
-        $_SESSION['student_name'] = $student['name'];
+        $_SESSION['student_name'] = trim($student['name'] . ' ' . ($student['last_name'] ?? ''));
         $_SESSION['student_code'] = $student['student_code'];
         $_SESSION['school_id'] = $student['school_id'];
         $_SESSION['school_name'] = $student['school_name'];

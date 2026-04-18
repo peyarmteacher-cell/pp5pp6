@@ -119,7 +119,7 @@ $school_name = $_SESSION['school_name'];
             <section class="space-y-3">
                 <div class="flex items-center mx-2 gap-2">
                     <i data-lucide="award" class="w-4 h-4 text-amber-500"></i>
-                    <h2 class="font-bold text-slate-800">ผลการเรียนประจำเทอม</h2>
+                    <h2 class="font-bold text-slate-800">ผลการเรียนประจำภาคเรียน</h2>
                 </div>
                 <div id="grades_list" class="space-y-3">
                      <div class="animate-pulse flex flex-col gap-3">
@@ -253,7 +253,8 @@ $school_name = $_SESSION['school_name'];
 
                 // Update Profile Header
                 const student = data.student;
-                document.getElementById('header_student_name').innerText = student.name;
+                const full_name = student.name + (student.last_name ? ' ' + student.last_name : '');
+                document.getElementById('header_student_name').innerText = full_name;
                 document.getElementById('header_student_level').innerText = 'ชั้น: ' + (student.level || '-');
                 
                 // Gender Icon
@@ -281,12 +282,31 @@ $school_name = $_SESSION['school_name'];
                 document.getElementById('att_leave').innerText = parseInt(counts.leave) + parseInt(counts.sick);
 
                 // Calc average GPA
-                if (data.grades.length > 0) {
-                    const avg = data.grades.reduce((acc, curr) => acc + parseFloat(curr.grade_point), 0) / data.grades.length;
-                    const gpaText = avg.toFixed(2);
-                    document.getElementById('header_avg_gpa').innerText = gpaText;
-                } else {
+                const list = document.getElementById('grades_list');
+                if (data.grades.length === 0) {
+                    list.innerHTML = '<div class="bg-white p-8 text-center text-slate-400 rounded-2xl italic shadow-sm">ไม่มีข้อมูลในเทอมนี้</div>';
                     document.getElementById('header_avg_gpa').innerText = '-';
+                } else {
+                    const avg = data.grades.reduce((acc, curr) => acc + parseFloat(curr.grade_point), 0) / data.grades.length;
+                    document.getElementById('header_avg_gpa').innerText = avg.toFixed(2);
+                    
+                    list.innerHTML = data.grades.map(g => `
+                        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-slate-50 flex items-center justify-center rounded-xl font-extrabold text-blue-400/50 text-[10px] border border-slate-100">
+                                    ${g.subject_code}
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-bold text-slate-700 leading-tight">${g.subject_name}</h4>
+                                    <p class="text-[10px] text-slate-400 uppercase font-black">เกรดเฉลี่ยรายวิชา</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-xl font-black text-blue-600">${g.grade_point}</div>
+                                <p class="text-[9px] text-slate-400 uppercase font-bold tracking-tighter">Grade</p>
+                            </div>
+                        </div>
+                    `).join('');
                 }
 
                 // Feedback
@@ -402,7 +422,7 @@ $school_name = $_SESSION['school_name'];
 
         function logout() {
             if (confirm('คุณต้องการออกจากระบบใช่หรือไม่?')) {
-                window.location.href = 'logout.php';
+                window.location.href = 'parent_logout.php';
             }
         }
 
