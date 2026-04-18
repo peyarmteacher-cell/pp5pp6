@@ -254,7 +254,19 @@ $school_name = $_SESSION['school_name'];
 
             try {
                 const res = await fetch(url);
-                const data = await res.json();
+                const text = await res.text();
+                let data;
+                
+                try {
+                    data = JSON.parse(text);
+                } catch (e) {
+                    console.error('Non-JSON Response:', text);
+                    return alert('ไม่สามารถโหลดข้อมูลได้: รูปแบบข้อมูลไม่ถูกต้อง');
+                }
+                
+                if (!res.ok) {
+                    return alert('ไม่สามารถโหลดข้อมูลได้: ' + (data.error || 'Server Error (' + res.status + ')'));
+                }
                 
                 if (data.error) {
                     console.error('API Error:', data.error);
@@ -280,8 +292,20 @@ $school_name = $_SESSION['school_name'];
                 
                 // Filters
                 if (isFirstLoad) {
-                    yearSelect.innerHTML = data.filters.available_years.map(y => `<option value="${y}" ${y === data.filters.current_year ? 'selected' : ''}>ปีการศึกษา ${y}</option>`).join('');
-                    semesterSelect.value = data.filters.current_semester;
+                    if (data.filters && data.filters.available_years) {
+                        const years = [...data.filters.available_years];
+                        const currentY = data.filters.current_year ? data.filters.current_year.toString() : '';
+                        
+                        // If current year is not in the list of years with grades, add it as a default option
+                        if (currentY && !years.includes(currentY)) {
+                            years.unshift(currentY);
+                        }
+                        
+                        yearSelect.innerHTML = years.map(y => `<option value="${y}" ${y == currentY ? 'selected' : ''}>ปีการศึกษา ${y}</option>`).join('');
+                    }
+                    if (data.filters.current_semester) {
+                        semesterSelect.value = data.filters.current_semester;
+                    }
                     isFirstLoad = false;
                 }
 
