@@ -46,6 +46,19 @@ $school_name = $_SESSION['school_name'];
                 <i data-lucide="log-out" class="w-5 h-5 text-blue-100"></i>
             </button>
         </div>
+
+        <!-- Prominent GPA Card -->
+        <div class="mt-8 flex justify-center">
+            <div class="bg-white/10 backdrop-blur-xl border border-white/30 rounded-[35px] p-6 w-full max-w-[200px] text-center shadow-2xl relative overflow-hidden group">
+                <div class="absolute -right-4 -top-4 w-16 h-16 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-all duration-700"></div>
+                <p class="text-[10px] text-blue-100 font-black uppercase tracking-[0.2em] mb-1 opacity-80">GPA เทอมนี้</p>
+                <div id="header_avg_gpa" class="text-4xl font-black text-white drop-shadow-lg tracking-tighter">-</div>
+                <div class="mt-2 inline-flex items-center gap-1 bg-white/20 px-3 py-1 rounded-full border border-white/20">
+                    <i data-lucide="star" class="w-2.5 h-2.5 text-amber-300 fill-amber-300"></i>
+                    <span class="text-[9px] font-bold text-white">ผลการเรียนดีเยี่ยม</span>
+                </div>
+            </div>
+        </div>
         
         <!-- Tab Navigation -->
         <div class="flex items-center mt-8 bg-black/10 rounded-2xl p-1 backdrop-blur-md">
@@ -271,28 +284,13 @@ $school_name = $_SESSION['school_name'];
                 document.getElementById('att_absent').innerText = counts.absent;
                 document.getElementById('att_leave').innerText = parseInt(counts.leave) + parseInt(counts.sick);
 
-                // Grades
-                const list = document.getElementById('grades_list');
-                if (data.grades.length === 0) {
-                    list.innerHTML = '<div class="bg-white p-8 text-center text-slate-400 rounded-2xl italic shadow-sm">ไม่มีข้อมูลในเทอมนี้</div>';
+                // Calc average GPA
+                if (data.grades.length > 0) {
+                    const avg = data.grades.reduce((acc, curr) => acc + parseFloat(curr.grade_point), 0) / data.grades.length;
+                    const gpaText = avg.toFixed(2);
+                    document.getElementById('header_avg_gpa').innerText = gpaText;
                 } else {
-                    list.innerHTML = data.grades.map(g => `
-                        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 bg-slate-50 flex items-center justify-center rounded-xl font-extrabold text-blue-400/50 text-[10px] border border-slate-100">
-                                    ${g.subject_code}
-                                </div>
-                                <div>
-                                    <h4 class="text-sm font-bold text-slate-700 leading-tight">${g.subject_name}</h4>
-                                    <p class="text-[10px] text-slate-400 uppercase font-black">เกรดเฉลี่ยรายวิชา</p>
-                                </div>
-                            </div>
-                            <div class="text-right">
-                                <div class="text-xl font-black text-blue-600">${g.grade_point}</div>
-                                <p class="text-[9px] text-slate-400 uppercase font-bold tracking-tighter">Grade</p>
-                            </div>
-                        </div>
-                    `).join('');
+                    document.getElementById('header_avg_gpa').innerText = '-';
                 }
 
                 // Feedback
