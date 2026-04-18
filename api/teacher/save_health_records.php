@@ -90,6 +90,10 @@ try {
             $recorded_date,
             $teacher_id
         ]);
+
+        // Update main students table with the latest record
+        $stmt_upd = $pdo->prepare("UPDATE students SET weight = ?, height = ? WHERE id = ?");
+        $stmt_upd->execute([$weight, $height, $r['student_id']]);
     }
 
     $pdo->commit();

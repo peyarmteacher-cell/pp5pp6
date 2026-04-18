@@ -390,16 +390,28 @@ $school_name = $_SESSION['school_name'];
                     });
                 }
 
-                // Health
+                // Health - Dynamic lookup for latest non-zero record
                 healthHistory = data.health_history || [];
+                let latestWeight = parseFloat(student.weight) || 0;
+                let latestHeight = parseFloat(student.height) || 0;
+
                 if (healthHistory.length > 0) {
-                    const latest = healthHistory[healthHistory.length - 1];
-                    document.getElementById('health_weight').innerText = latest.weight || '-';
-                    document.getElementById('health_height').innerText = latest.height || '-';
-                } else {
-                    document.getElementById('health_weight').innerText = '-';
-                    document.getElementById('health_height').innerText = '-';
+                    // Try to find the latest record that actually has data
+                    // iterate backwards
+                    for (let i = healthHistory.length - 1; i >= 0; i--) {
+                        const rec = healthHistory[i];
+                        const w = parseFloat(rec.weight);
+                        const h = parseFloat(rec.height);
+                        
+                        if (w > 0 && latestWeight === 0) latestWeight = w;
+                        if (h > 0 && latestHeight === 0) latestHeight = h;
+                        
+                        if (latestWeight > 0 && latestHeight > 0) break;
+                    }
                 }
+                
+                document.getElementById('health_weight').innerText = latestWeight > 0 ? latestWeight : '-';
+                document.getElementById('health_height').innerText = latestHeight > 0 ? latestHeight : '-';
 
                 if (typeof lucide !== 'undefined') lucide.createIcons();
 
