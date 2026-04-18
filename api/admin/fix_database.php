@@ -855,6 +855,20 @@ try {
 
     $results[] = "ปรับปรุงระบบแจ้งเตือน Telegram สำเร็จ";
 
+    // ตารางความคิดเห็นผู้ปกครอง (สำหรับ ปพ.6)
+    $pdo->exec("CREATE TABLE IF NOT EXISTS parent_feedback (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        student_id INT,
+        academic_year VARCHAR(4),
+        semester INT,
+        feedback_text TEXT,
+        tags VARCHAR(255),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    $results[] = "ตรวจสอบตาราง parent_feedback สำเร็จ";
+
     echo json_encode([
         'status' => 'success',
         'message' => 'ตรวจสอบและปรับปรุงฐานข้อมูลเรียบร้อยแล้ว',
