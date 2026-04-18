@@ -28,7 +28,14 @@ try {
                            WHERE school_id = ? 
                            AND (TRIM(academic_year) = ? OR (academic_year IS NULL AND ? = (SELECT year FROM academic_years WHERE school_id = ? AND is_current = 1 LIMIT 1)))
                            AND (status = 'studying' OR status IS NULL OR status = '') 
-                           GROUP BY level ORDER BY level");
+                           GROUP BY level 
+                           ORDER BY 
+                             CASE 
+                               WHEN level LIKE 'อ%' THEN 1 
+                               WHEN level LIKE 'ป%' THEN 2 
+                               WHEN level LIKE 'ม%' THEN 3 
+                               ELSE 4 
+                             END, level");
     $stmt->execute([$school_id, $current_year, $current_year, $school_id]);
     $students_by_level = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -41,7 +48,14 @@ try {
                                FROM students 
                                WHERE school_id = ? 
                                AND (status = 'studying' OR status IS NULL OR status = '') 
-                               GROUP BY level ORDER BY level");
+                               GROUP BY level 
+                               ORDER BY 
+                                 CASE 
+                                   WHEN level LIKE 'อ%' THEN 1 
+                                   WHEN level LIKE 'ป%' THEN 2 
+                                   WHEN level LIKE 'ม%' THEN 3 
+                                   ELSE 4 
+                                 END, level");
         $stmt->execute([$school_id]);
         $students_by_level = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
