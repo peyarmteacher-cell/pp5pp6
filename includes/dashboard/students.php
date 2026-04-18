@@ -277,6 +277,10 @@
                         <label class="block text-xs font-medium text-slate-500 mb-1">ความเกี่ยวข้อง</label>
                         <input type="text" id="edit_std_parent_relationship" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
                     </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1">Telegram Chat ID (ผู้ปกครอง)</label>
+                        <input type="text" id="edit_std_parent_telegram_id" placeholder="สำหรับแจ้งเตือนการเข้าเรียน" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+                    </div>
                 </div>
             </div>
 
@@ -720,6 +724,7 @@
         document.getElementById('edit_std_parent_last_name').value = s.parent_last_name || '';
         document.getElementById('edit_std_parent_occupation').value = s.parent_occupation || '';
         document.getElementById('edit_std_parent_relationship').value = s.parent_relationship || '';
+        document.getElementById('edit_std_parent_telegram_id').value = s.parent_telegram_id || '';
         
         openModal('editStudentModal');
     }
@@ -799,7 +804,8 @@
                         parent_name: document.getElementById('edit_std_parent_name').value,
                         parent_last_name: document.getElementById('edit_std_parent_last_name').value,
                         parent_occupation: document.getElementById('edit_std_parent_occupation').value,
-                        parent_relationship: document.getElementById('edit_std_parent_relationship').value
+                        parent_relationship: document.getElementById('edit_std_parent_relationship').value,
+                        parent_telegram_id: document.getElementById('edit_std_parent_telegram_id').value
                     })
                 });
                 const result = await res.json();

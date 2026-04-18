@@ -840,6 +840,21 @@ try {
         $results[] = "อัปเดตชื่อแอปเป็น 'ระบบบริหารงานวิชาการ' สำเร็จ";
     }
 
+    // 20. เพิ่มคอลัมน์สำหรับการแจ้งเตือน Telegram
+    $stmt = $pdo->query("SHOW COLUMNS FROM schools LIKE 'telegram_bot_token'");
+    if (!$stmt->fetch()) {
+        $pdo->exec("ALTER TABLE schools ADD COLUMN telegram_bot_token VARCHAR(255) AFTER logo_url");
+        $results[] = "เพิ่มคอลัมน์ telegram_bot_token ในตาราง schools สำเร็จ";
+    }
+
+    $stmt = $pdo->query("SHOW COLUMNS FROM students LIKE 'parent_telegram_id'");
+    if (!$stmt->fetch()) {
+        $pdo->exec("ALTER TABLE students ADD COLUMN parent_telegram_id VARCHAR(100) AFTER generation");
+        $results[] = "เพิ่มคอลัมน์ parent_telegram_id ในตาราง students สำเร็จ";
+    }
+
+    $results[] = "ปรับปรุงระบบแจ้งเตือน Telegram สำเร็จ";
+
     echo json_encode([
         'status' => 'success',
         'message' => 'ตรวจสอบและปรับปรุงฐานข้อมูลเรียบร้อยแล้ว',

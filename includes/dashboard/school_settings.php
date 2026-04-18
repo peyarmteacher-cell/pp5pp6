@@ -134,6 +134,33 @@
                 </div>
             </div>
 
+            <div class="space-y-4 pt-6 border-t border-slate-100">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="p-2 bg-blue-50 text-blue-600 rounded-lg">
+                        <i data-lucide="send"></i>
+                    </div>
+                    <h4 class="font-bold text-slate-800">ตั้งค่าการแจ้งเตือน Telegram (สำหรับผู้ปกครอง)</h4>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
+                    <div class="space-y-2">
+                        <label class="text-sm font-semibold text-slate-700">Telegram Bot Token</label>
+                        <div class="relative">
+                            <input type="password" id="setting_telegram_bot_token" placeholder="ใส่ Bot Token จาก BotFather" class="w-full pl-4 pr-10 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none">
+                            <button type="button" onclick="togglePassword('setting_telegram_bot_token')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                                <i data-lucide="eye" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                        <p class="text-[10px] text-slate-500 italic">ใช้สำหรับการส่งข้อความแจ้งเตือนอัตโนมัติเมื่อมีการเช็คชื่อ</p>
+                    </div>
+                    <div class="flex items-center gap-2 pb-2">
+                        <a href="https://t.me/BotFather" target="_blank" class="text-xs text-blue-600 font-bold hover:underline flex items-center gap-1">
+                            <i data-lucide="external-link" class="w-3 h-3"></i>
+                            วิธีสร้าง Bot และขอ Token
+                        </a>
+                    </div>
+                </div>
+            </div>
+
             <div class="pt-4 border-t border-slate-100 flex justify-end">
                 <button type="submit" class="bg-blue-600 text-white px-8 py-2.5 rounded-xl font-bold hover:bg-blue-700 shadow-lg shadow-blue-600/20 transition-all cursor-pointer">
                     บันทึกการตั้งค่า
@@ -231,6 +258,7 @@
                 document.getElementById('setting_director_name').value = data.school.director_name || '';
                 document.getElementById('setting_academic_head_name').value = data.school.academic_head_name || '';
                 document.getElementById('setting_academic_head_position').value = data.school.academic_head_position || 'หัวหน้างานวิชาการ';
+                document.getElementById('setting_telegram_bot_token').value = data.school.telegram_bot_token || '';
                 
                 if (data.school.logo_url) {
                     const img = document.getElementById('logo_preview');
@@ -405,6 +433,24 @@
         }
     }
 
+    function togglePassword(id) {
+        const input = document.getElementById(id);
+        const icon = input.nextElementSibling.querySelector('i');
+        if (input.type === 'password') {
+            input.type = 'text';
+            if (typeof lucide !== 'undefined') {
+                input.nextElementSibling.innerHTML = '<i data-lucide="eye-off" class="w-4 h-4"></i>';
+                lucide.createIcons();
+            }
+        } else {
+            input.type = 'password';
+            if (typeof lucide !== 'undefined') {
+                input.nextElementSibling.innerHTML = '<i data-lucide="eye" class="w-4 h-4"></i>';
+                lucide.createIcons();
+            }
+        }
+    }
+
     async function handleLogoUpload(input) {
         if (!input.files || !input.files[0]) return;
         
@@ -497,7 +543,8 @@
                     garuda_url: document.getElementById('setting_garuda_url').value,
                     director_name: document.getElementById('setting_director_name').value,
                     academic_head_name: document.getElementById('setting_academic_head_name').value,
-                    academic_head_position: document.getElementById('setting_academic_head_position').value
+                    academic_head_position: document.getElementById('setting_academic_head_position').value,
+                    telegram_bot_token: document.getElementById('setting_telegram_bot_token').value
                 })
             });
             const result = await res.json();

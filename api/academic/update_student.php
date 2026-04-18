@@ -49,6 +49,7 @@ $mother_name = $data['mother_name'] ?? '';
 $mother_last_name = $data['mother_last_name'] ?? '';
 $mother_occupation = $data['mother_occupation'] ?? '';
 $disadvantage = $data['disadvantage'] ?? '';
+$parent_telegram_id = $data['parent_telegram_id'] ?? '';
 
 if (empty($id) || empty($name) || empty($level)) {
     echo json_encode(['error' => 'กรุณากรอกข้อมูลให้ครบถ้วน']);
@@ -77,7 +78,7 @@ try {
         parent_name = ?, parent_last_name = ?, parent_occupation = ?, parent_relationship = ?,
         father_name = ?, father_last_name = ?, father_occupation = ?,
         mother_name = ?, mother_last_name = ?, mother_occupation = ?,
-        disadvantage = ?
+        disadvantage = ?, parent_telegram_id = ?
         WHERE id = ? AND school_id = ?';
     
     $params = [
@@ -87,7 +88,7 @@ try {
         $parent_name, $parent_last_name, $parent_occupation, $parent_relationship,
         $father_name, $father_last_name, $father_occupation,
         $mother_name, $mother_last_name, $mother_occupation,
-        $disadvantage, $id, $school_id
+        $disadvantage, $parent_telegram_id, $id, $school_id
     ];
 
     $stmt = $pdo->prepare($sql);

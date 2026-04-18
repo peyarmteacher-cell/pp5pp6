@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once '../config.php';
+require_once '../utils/telegram_notify.php';
 
 header('Content-Type: application/json');
 
@@ -58,6 +59,62 @@ try {
     }
 
     $pdo->commit();
+
+    // --- TELEGRAM NOTIFICATION SECTION ---
+    try {
+        // 1. Get School Bot Token
+        $school_id = $_SESSION['school_id'];
+        $stmt_school = $pdo->prepare("SELECT telegram_bot_token, name as school_name FROM schools WHERE id = ?");
+        $stmt_school->execute([$school_id]);
+        $school_info = $stmt_school->fetch(PDO::FETCH_ASSOC);
+        $bot_token = $school_info['telegram_bot_token'] ?? null;
+
+        if ($bot_token) {
+            // 2. Get Teacher Name
+            $stmt_teacher = $pdo->prepare("SELECT name, prefix FROM users WHERE id = ?");
+            $stmt_teacher->execute([$teacher_id]);
+            $teacher_info = $stmt_teacher->fetch(PDO::FETCH_ASSOC);
+            $teacher_full_name = ($teacher_info['prefix'] ?? '') . $teacher_info['name'];
+
+            // 3. Process each record for notification
+            foreach ($records as $r) {
+                // Fetch student info
+                $stmt_std = $pdo->prepare("SELECT name, last_name, prefix, parent_telegram_id FROM students WHERE id = ?");
+                $stmt_std->execute([$r['student_id']]);
+                $std = $stmt_std->fetch(PDO::FETCH_ASSOC);
+
+                if ($std && !empty($std['parent_telegram_id'])) {
+                    $student_name = ($std['prefix'] ?? '') . $std['name'] . ' ' . ($std['last_name'] ?? '');
+                    
+                    // Fetch Subject Name
+                    $subject_name = "เช็คชื่อรายวัน/คาบเรียน";
+                    if (strpos($r['subject_id'], 'LD:') === 0) {
+                        $subject_name = str_replace('LD:', '', $r['subject_id']);
+                    } else if (!empty($r['subject_id'])) {
+                        $stmt_sub = $pdo->prepare("SELECT subject_name FROM subjects WHERE id = ?");
+                        $stmt_sub->execute([$r['subject_id']]);
+                        $sub = $stmt_sub->fetch(PDO::FETCH_ASSOC);
+                        if ($sub) $subject_name = $sub['subject_name'];
+                    }
+
+                    $message = createAttendanceMessage(
+                        $student_name, 
+                        $r['status'], 
+                        $subject_name, 
+                        $teacher_full_name, 
+                        $check_date
+                    );
+
+                    sendTelegramNotification($bot_token, $std['parent_telegram_id'], $message);
+                }
+            }
+        }
+    } catch (Exception $e) {
+        // Notification failure shouldn't crash the main response
+        // error_log("Telegram Notification Error: " . $e->getMessage());
+    }
+    // --- END TELEGRAM NOTIFICATION SECTION ---
+
     echo json_encode(['message' => 'บันทึกการมาเรียนเรียบร้อยแล้ว']);
 } catch (PDOException $e) {
     if ($pdo->inTransaction()) $pdo->rollBack();
