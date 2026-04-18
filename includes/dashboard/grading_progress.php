@@ -98,28 +98,53 @@
             }
 
             tbody.innerHTML = data.map(item => {
-                const total = parseInt(item.total_units) || 0;
-                const completed = parseInt(item.completed_units) || 0;
-                const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+                const totalUnits = parseInt(item.total_units) || 0;
+                const completedUnits = parseInt(item.completed_units) || 0;
+                const studentCount = parseInt(item.student_count) || 0;
+                
+                const unitsPercent = totalUnits > 0 ? (completedUnits / totalUnits) : 0;
+                const midtermPercent = studentCount > 0 ? (parseInt(item.midterm_count) / studentCount) : 0;
+                const finalPercent = studentCount > 0 ? (parseInt(item.final_count) / studentCount) : 0;
+                const charPercent = studentCount > 0 ? (parseInt(item.characteristics_count) / studentCount) : 0;
+                const analyticalPercent = studentCount > 0 ? (parseInt(item.analytical_count) / studentCount) : 0;
+                const competencyPercent = studentCount > 0 ? (parseInt(item.competency_count) / studentCount) : 0;
+                const learnerDevPercent = studentCount > 0 ? (parseInt(item.learner_dev_count) / studentCount) : 0;
+
+                // Overall progress calculation (weighted or average)
+                // Let's use simple average of relevant tasks
+                let tasks = [
+                    { name: 'หน่วยการเรียนรู้', percent: unitsPercent },
+                    { name: 'สอบกลางภาค', percent: midtermPercent },
+                    { name: 'สอบปลายภาค', percent: finalPercent },
+                    { name: 'คุณลักษณะฯ', percent: charPercent },
+                    { name: 'อ่าน/วิเคราะห์', percent: analyticalPercent },
+                    { name: 'สมรรถนะ', percent: competencyPercent },
+                    { name: 'พัฒนาผู้เรียน', percent: learnerDevPercent }
+                ];
+
+                const totalProgress = (tasks.reduce((sum, t) => sum + t.percent, 0) / tasks.length) * 100;
+                const percent = Math.round(totalProgress);
                 
                 // Color logic based on percentage
                 let barColor = 'bg-blue-500';
                 let textColor = 'text-blue-600';
-                let bgColor = 'bg-blue-50';
                 
                 if (percent >= 100) {
                     barColor = 'bg-emerald-500';
                     textColor = 'text-emerald-600';
-                    bgColor = 'bg-emerald-50';
                 } else if (percent > 0 && percent < 50) {
                     barColor = 'bg-amber-500';
                     textColor = 'text-amber-600';
-                    bgColor = 'bg-amber-50';
                 } else if (percent === 0) {
                     barColor = 'bg-slate-300';
                     textColor = 'text-slate-400';
-                    bgColor = 'bg-slate-50';
                 }
+
+                const getStatusIcon = (p) => {
+                    if (p >= 1) return '<i data-lucide="check-circle-2" class="w-3 h-3 text-emerald-500"></i>';
+                    if (p > 0) return '<i data-lucide="clock" class="w-3 h-3 text-amber-500"></i>';
+                    return '<i data-lucide="circle" class="w-3 h-3 text-slate-300"></i>';
+                };
 
                 return `
                     <tr class="hover:bg-slate-50 transition-colors group">
@@ -135,7 +160,7 @@
                         </td>
                         <td class="px-6 py-5">
                             <div class="flex items-center gap-3">
-                                <div class="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-bold border border-slate-200">
+                                <div class="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-bold border border-slate-200 shadow-sm">
                                     ${item.teacher_name ? item.teacher_name.charAt(0) : '?'}
                                 </div>
                                 <div>
@@ -145,15 +170,48 @@
                             </div>
                         </td>
                         <td class="px-6 py-5">
-                            <div class="space-y-2">
+                            <div class="space-y-3">
                                 <div class="flex justify-between items-end">
-                                    <span class="text-[10px] font-black tracking-widest ${textColor} uppercase">${completed} / ${total} หน่วยการเรียนรู้</span>
+                                    <div class="flex flex-wrap gap-x-3 gap-y-1">
+                                        <div class="flex items-center gap-1 text-[9px] font-bold text-slate-500">
+                                            ${getStatusIcon(unitsPercent)} หน่วยการเรียน
+                                        </div>
+                                        <div class="flex items-center gap-1 text-[9px] font-bold text-slate-500">
+                                            ${getStatusIcon(midtermPercent)} กลางภาค
+                                        </div>
+                                        <div class="flex items-center gap-1 text-[9px] font-bold text-slate-500">
+                                            ${getStatusIcon(finalPercent)} ปลายภาค
+                                        </div>
+                                        <div class="flex items-center gap-1 text-[9px] font-bold text-slate-500">
+                                            ${getStatusIcon(charPercent)} คุณลักษณะ
+                                        </div>
+                                        <div class="flex items-center gap-1 text-[9px] font-bold text-slate-500">
+                                            ${getStatusIcon(analyticalPercent)} อ่าน/คิด
+                                        </div>
+                                    </div>
                                     <span class="text-sm font-black ${textColor}">${percent}%</span>
                                 </div>
-                                <div class="h-3 w-full bg-slate-100 rounded-full overflow-hidden border border-slate-200/50 p-[2px]">
-                                    <div class="${barColor} h-full rounded-full shadow-lg transition-all duration-1000 ease-out" 
+                                <div class="h-4 w-full bg-slate-100 rounded-full overflow-hidden border border-slate-200/50 p-[3px] shadow-inner">
+                                    <div class="${barColor} h-full rounded-full shadow-lg transition-all duration-1000 ease-out relative" 
                                          style="width: 0%" 
-                                         data-percent="${percent}%"></div>
+                                         data-percent="${percent}%">
+                                         <div class="absolute inset-x-0 inset-y-0 bg-white/20 animate-pulse rounded-full"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex gap-4 pt-1">
+                                    <div class="flex items-center gap-1.5">
+                                        <div class="p-1 rounded bg-slate-50 border border-slate-100">
+                                            <i data-lucide="shield-check" class="w-3 h-3 ${competencyPercent >= 1 ? 'text-emerald-500' : 'text-slate-300'}"></i>
+                                        </div>
+                                        <span class="text-[9px] font-bold text-slate-400">สมรรถนะ: ${Math.round(competencyPercent*100)}%</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5">
+                                        <div class="p-1 rounded bg-slate-50 border border-slate-100">
+                                            <i data-lucide="heart" class="w-3 h-3 ${learnerDevPercent >= 1 ? 'text-rose-500' : 'text-slate-300'}"></i>
+                                        </div>
+                                        <span class="text-[9px] font-bold text-slate-400">พัฒนาผู้เรียน: ${Math.round(learnerDevPercent*100)}%</span>
+                                    </div>
                                 </div>
                             </div>
                         </td>
