@@ -392,12 +392,124 @@ try {
 
         <!-- Sections -->
         <div id="overview" class="section space-y-6">
+            <!-- Stats Cards -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                    <p class="text-sm text-slate-500 mb-1">ยินดีต้อนรับ</p>
-                    <h3 class="text-xl font-bold text-slate-800"><?= $username ?></h3>
-                    <p class="text-xs text-slate-400 mt-2">คุณกำลังใช้งานในสิทธิ์: <span class="text-blue-600 font-semibold"><?= $role ?></span></p>
+                <!-- Welcome Card -->
+                <div class="bg-gradient-to-br from-indigo-600 to-blue-500 p-6 rounded-3xl shadow-lg shadow-blue-200 text-white flex flex-col justify-between">
+                    <div>
+                        <p class="text-blue-100 text-sm font-medium">ยินดีต้อนรับกลับมา,</p>
+                        <h3 class="text-2xl font-black mt-1"><?= $username ?></h3>
+                        <p class="text-blue-100/80 text-xs mt-1 uppercase tracking-widest font-bold"><?= $role ?></p>
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-white/10 flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="calendar" class="w-4 h-4 text-blue-200"></i>
+                            <span class="text-xs font-bold" id="ov_current_year">ปีการศึกษา -</span>
+                        </div>
+                        <i data-lucide="sparkles" class="w-6 h-6 text-white/20"></i>
+                    </div>
                 </div>
+
+                <!-- Total Students Card -->
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex items-center gap-6 group hover:border-blue-300 transition-all">
+                    <div class="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
+                        <i data-lucide="users" class="w-8 h-8"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-bold text-slate-500 uppercase tracking-wider">นักเรียนทั้งหมด</p>
+                        <div class="flex items-baseline gap-2">
+                            <h4 class="text-3xl font-black text-slate-800" id="ov_student_count">0</h4>
+                            <span class="text-xs font-bold text-slate-400">คน</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Total Teachers Card -->
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex items-center gap-6 group hover:border-indigo-300 transition-all">
+                    <div class="w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform">
+                        <i data-lucide="briefcase" class="w-8 h-8"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-bold text-slate-500 uppercase tracking-wider">บุคลากรครู</p>
+                        <div class="flex items-baseline gap-2">
+                            <h4 class="text-3xl font-black text-slate-800" id="ov_teacher_count">0</h4>
+                            <span class="text-xs font-bold text-slate-400">คน</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
+                    <div class="flex items-center justify-between mb-8">
+                        <div>
+                            <h3 class="text-xl font-black text-slate-800">เปรียบเทียบผลทดสอบระดับชาติ</h3>
+                            <p class="text-sm text-slate-500 font-medium">คะแนนเฉลี่ย RT, NT และ O-NET แต่ละปีการศึกษา</p>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="flex items-center gap-1.5">
+                                <div class="w-3 h-3 rounded-full bg-blue-500"></div>
+                                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">RT</span>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
+                                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">NT</span>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <div class="w-3 h-3 rounded-full bg-amber-500"></div>
+                                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">O-NET</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="national_test_chart" class="w-full h-[300px] relative">
+                        <!-- Chart rendered by D3 -->
+                        <div id="chart_empty_state" class="hidden absolute inset-0 flex flex-col items-center justify-center text-slate-300">
+                            <i data-lucide="bar-chart-3" class="w-12 h-12 mb-2"></i>
+                            <p class="text-sm font-bold">ยังไม่มีข้อมูลการสอบ</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Management for Academic Staff -->
+                <?php if ($role === 'admin' || (isset($_SESSION['is_academic']) && $_SESSION['is_academic'])): ?>
+                <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
+                    <div class="flex items-center gap-4 mb-8">
+                        <div class="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-600">
+                            <i data-lucide="database-backup" class="w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-slate-800">บันทึกผลการสอบระดับชาติ</h3>
+                            <p class="text-sm text-slate-500">จัดการคะแนนเฉลี่ยโรงเรียนเพื่อแสดงแนวโน้ม</p>
+                        </div>
+                    </div>
+                    
+                    <form id="nationalTestForm" class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">ปีการศึกษา</label>
+                                <input type="text" id="nt_year" placeholder="เช่น 2566" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-bold text-slate-700">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">ประเภทการสอบ</label>
+                                <select id="nt_type" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-bold text-slate-700">
+                                    <option value="rt">RT (ป.1)</option>
+                                    <option value="nt">NT (ป.3)</option>
+                                    <option value="onet">O-NET (ป.6/ม.3)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">คะแนนเฉลี่ยของโรงเรียน</label>
+                            <input type="number" id="nt_score" step="0.01" min="0" max="100" placeholder="0.00" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-bold text-slate-700">
+                        </div>
+                        <button type="submit" class="w-full bg-slate-800 text-white py-4 rounded-2xl font-bold hover:bg-black transition-all shadow-lg shadow-slate-200 flex items-center justify-center gap-2 mt-4">
+                            <i data-lucide="save" class="w-5 h-5"></i>
+                            บันทึกข้อมูลคะแนน
+                        </button>
+                    </form>
+                </div>
+                <?php endif; ?>
             </div>
         </div>
 
@@ -1035,11 +1147,163 @@ try {
             };
         }
         
+        // Data for National Test Chart
+        async function loadOverviewData() {
+            try {
+                const res = await fetch('api/admin/get_overview_data.php');
+                const data = await res.json();
+                
+                if (data.error) throw new Error(data.error);
+
+                // Update Stats
+                document.getElementById('ov_student_count').innerText = data.stats.student_count.toLocaleString();
+                document.getElementById('ov_teacher_count').innerText = data.stats.teacher_count.toLocaleString();
+                document.getElementById('ov_current_year').innerText = `ปีการศึกษา ${data.stats.academic_year}`;
+                
+                // Render Chart
+                renderNationalTestChart(data.chart_data);
+
+            } catch (e) {
+                console.error('Error loading overview data:', e);
+            }
+        }
+
+        function renderNationalTestChart(data) {
+            const container = d3.select("#national_test_chart");
+            container.selectAll("*").remove();
+            
+            const emptyState = document.getElementById('chart_empty_state');
+            if (!data || data.length === 0) {
+                emptyState.classList.remove('hidden');
+                return;
+            }
+            emptyState.classList.add('hidden');
+
+            const margin = {top: 20, right: 30, bottom: 40, left: 40};
+            const width = container.node().getBoundingClientRect().width - margin.left - margin.right;
+            const height = 300 - margin.top - margin.bottom;
+
+            const svg = container.append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+                .append("g")
+                .attr("transform", `translate(${margin.left},${margin.top})`);
+
+            const x0 = d3.scaleBand()
+                .rangeRound([0, width])
+                .paddingInner(0.2)
+                .domain(data.map(d => d.year));
+
+            const x1 = d3.scaleBand()
+                .padding(0.05)
+                .domain(['RT', 'NT', 'ONET'])
+                .rangeRound([0, x0.bandwidth()]);
+
+            const y = d3.scaleLinear()
+                .rangeRound([height, 0])
+                .domain([0, 100]);
+
+            const color = d3.scaleOrdinal()
+                .domain(['RT', 'NT', 'ONET'])
+                .range(["#3b82f6", "#10b981", "#f59e0b"]);
+
+            // Axes
+            svg.append("g")
+                .attr("transform", `translate(0,${height})`)
+                .call(d3.axisBottom(x0))
+                .selectAll("text")
+                .style("font-family", "Inter")
+                .style("font-weight", "600")
+                .attr("dy", "1.5em");
+
+            svg.append("g")
+                .attr("class", "y-axis")
+                .call(d3.axisLeft(y).ticks(5).tickSize(-width))
+                .call(g => g.select(".domain").remove())
+                .call(g => g.selectAll(".tick line").attr("stroke", "#f1f5f9"))
+                .selectAll("text")
+                .style("font-family", "Inter")
+                .attr("dx", "-0.5em");
+
+            // Bars
+            const yearGroup = svg.selectAll(".year-group")
+                .data(data)
+                .enter().append("g")
+                .attr("class", "year-group")
+                .attr("transform", d => `translate(${x0(d.year)},0)`);
+
+            yearGroup.selectAll("rect")
+                .data(d => ['RT', 'NT', 'ONET'].map(key => ({key, value: d[key] || 0})))
+                .enter().append("rect")
+                .attr("x", d => x1(d.key))
+                .attr("y", height)
+                .attr("width", x1.bandwidth())
+                .attr("height", 0)
+                .attr("fill", d => color(d.key))
+                .attr("rx", 4)
+                .transition()
+                .duration(1000)
+                .attr("y", d => y(d.value))
+                .attr("height", d => height - y(d.value));
+
+            // Tooltips or Value Labels
+            yearGroup.selectAll(".bar-label")
+                .data(d => ['RT', 'NT', 'ONET'].map(key => ({key, value: d[key] || 0})))
+                .enter().append("text")
+                .attr("x", d => x1(d.key) + x1.bandwidth()/2)
+                .attr("y", d => y(d.value) - 5)
+                .attr("text-anchor", "middle")
+                .style("font-size", "9px")
+                .style("font-weight", "800")
+                .style("fill", "#64748b")
+                .text(d => d.value > 0 ? d.value : '');
+        }
+
+        // Handle National Test Form
+        const nationalTestForm = document.getElementById('nationalTestForm');
+        if (nationalTestForm) {
+            nationalTestForm.onsubmit = async (e) => {
+                e.preventDefault();
+                const btn = e.target.querySelector('button');
+                const originalText = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> กำลังบันทึก...';
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+
+                try {
+                    const res = await fetch('api/admin/save_national_test.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            academic_year: document.getElementById('nt_year').value,
+                            test_type: document.getElementById('nt_type').value,
+                            score_avg: document.getElementById('nt_score').value
+                        })
+                    });
+                    const result = await res.json();
+                    if (result.success) {
+                        alert(result.message);
+                        loadOverviewData();
+                        nationalTestForm.reset();
+                    } else {
+                        alert(result.error);
+                    }
+                } catch (err) {
+                    alert('เกิดข้อผิดพลาด: ' + err.message);
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
+                }
+            };
+        }
+
         // Show default section
         <?php if ($role === 'teacher' && !$_SESSION['is_academic']): ?>
             showSection('record-grades');
         <?php else: ?>
             showSection('overview');
+            loadOverviewData();
         <?php endif; ?>
 
         // Initialize Lucide Icons

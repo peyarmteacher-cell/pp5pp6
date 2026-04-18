@@ -802,6 +802,21 @@ try {
         setting_value TEXT,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+    // 18. เพิ่มตารางสำหรับบันทึกคะแนนสอบระดับชาติ (RT, NT, O-NET)
+    $pdo->exec("CREATE TABLE IF NOT EXISTS national_test_results (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        school_id INT NOT NULL,
+        academic_year VARCHAR(4) NOT NULL,
+        test_type ENUM('rt', 'nt', 'onet') NOT NULL,
+        score_avg FLOAT DEFAULT 0,
+        score_max FLOAT DEFAULT 100,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (school_id) REFERENCES schools(id) ON DELETE CASCADE,
+        UNIQUE KEY unique_test (school_id, academic_year, test_type)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    $results[] = "สร้างตาราง national_test_results สำหรับบันทึกคะแนน RT, NT, O-NET สำเร็จ";
     
     // ตั้งค่าชื่อแอปเริ่มต้น
     $stmt = $pdo->prepare("SELECT setting_value FROM app_settings WHERE setting_key = 'app_name'");
