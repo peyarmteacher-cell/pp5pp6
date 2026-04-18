@@ -287,7 +287,7 @@ $school_name = $_SESSION['school_name'];
                     list.innerHTML = '<div class="bg-white p-8 text-center text-slate-400 rounded-2xl italic shadow-sm">ไม่มีข้อมูลในเทอมนี้</div>';
                     document.getElementById('header_avg_gpa').innerText = '-';
                 } else {
-                    const avg = data.grades.reduce((acc, curr) => acc + parseFloat(curr.grade_point), 0) / data.grades.length;
+                    const avg = data.grades.reduce((acc, curr) => acc + (parseFloat(curr.grade) || 0), 0) / data.grades.length;
                     document.getElementById('header_avg_gpa').innerText = avg.toFixed(2);
                     
                     list.innerHTML = data.grades.map(g => `
@@ -298,11 +298,11 @@ $school_name = $_SESSION['school_name'];
                                 </div>
                                 <div>
                                     <h4 class="text-sm font-bold text-slate-700 leading-tight">${g.subject_name}</h4>
-                                    <p class="text-[10px] text-slate-400 uppercase font-black">เกรดเฉลี่ยรายวิชา</p>
+                                    <p class="text-[10px] text-slate-400 font-bold">คะแนนรวม: ${g.score_total || '0'}</p>
                                 </div>
                             </div>
                             <div class="text-right">
-                                <div class="text-xl font-black text-blue-600">${g.grade_point}</div>
+                                <div class="text-xl font-black text-blue-600">${g.grade || '-'}</div>
                                 <p class="text-[9px] text-slate-400 uppercase font-bold tracking-tighter">Grade</p>
                             </div>
                         </div>

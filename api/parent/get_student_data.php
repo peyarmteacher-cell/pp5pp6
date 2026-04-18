@@ -59,7 +59,8 @@ try {
     $grade_sql = "SELECT g.*, sub.name as subject_name, sub.code as subject_code 
                   FROM grades g 
                   JOIN subjects sub ON g.subject_id = sub.id 
-                  WHERE g.student_id = ?";
+                  WHERE g.student_id = ? 
+                  AND (g.score_total > 0 OR (g.grade IS NOT NULL AND g.grade != ''))";
     $grade_params = [$student_id];
     
     if ($academic_year) {
@@ -71,7 +72,7 @@ try {
         $grade_params[] = $semester;
     }
     
-    $grade_sql .= " ORDER BY sub.code ASC";
+    $grade_sql .= " GROUP BY g.subject_id ORDER BY sub.code ASC";
     $stmt = $pdo->prepare($grade_sql);
     $stmt->execute($grade_params);
     $grades = $stmt->fetchAll();
