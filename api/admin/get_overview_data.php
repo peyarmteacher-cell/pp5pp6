@@ -35,7 +35,7 @@ try {
         $year = $row['academic_year'];
         $type = strtoupper($row['test_type']);
         if (!isset($chart_data[$year])) {
-            $chart_data[$year] = ['year' => $year, 'RT' => 0, 'NT' => 0, 'ONET' => 0];
+            $chart_data[$year] = ['year' => $year, 'RT' => 0, 'NT' => 0, 'ONET_P6' => 0, 'ONET_M3' => 0];
         }
         $chart_data[$year][$type] = (float)$row['score_avg'];
     }

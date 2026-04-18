@@ -808,7 +808,7 @@ try {
         id INT AUTO_INCREMENT PRIMARY KEY,
         school_id INT NOT NULL,
         academic_year VARCHAR(4) NOT NULL,
-        test_type ENUM('rt', 'nt', 'onet') NOT NULL,
+        test_type ENUM('rt', 'nt', 'onet_p6', 'onet_m3') NOT NULL,
         score_avg FLOAT DEFAULT 0,
         score_max FLOAT DEFAULT 100,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

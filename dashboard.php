@@ -450,15 +450,19 @@ try {
                         <div class="flex items-center gap-4">
                             <div class="flex items-center gap-1.5">
                                 <div class="w-3 h-3 rounded-full bg-blue-500"></div>
-                                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">RT</span>
+                                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">RT (ป.1)</span>
                             </div>
                             <div class="flex items-center gap-1.5">
                                 <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
-                                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">NT</span>
+                                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">NT (ป.3)</span>
                             </div>
                             <div class="flex items-center gap-1.5">
                                 <div class="w-3 h-3 rounded-full bg-amber-500"></div>
-                                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">O-NET</span>
+                                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">O-NET (ป.6)</span>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <div class="w-3 h-3 rounded-full bg-rose-500"></div>
+                                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">O-NET (ม.3)</span>
                             </div>
                         </div>
                     </div>
@@ -495,7 +499,8 @@ try {
                                 <select id="nt_type" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-bold text-slate-700">
                                     <option value="rt">RT (ป.1)</option>
                                     <option value="nt">NT (ป.3)</option>
-                                    <option value="onet">O-NET (ป.6/ม.3)</option>
+                                    <option value="onet_p6">O-NET (ป.6)</option>
+                                    <option value="onet_m3">O-NET (ม.3)</option>
                                 </select>
                             </div>
                         </div>
@@ -1196,7 +1201,7 @@ try {
 
             const x1 = d3.scaleBand()
                 .padding(0.05)
-                .domain(['RT', 'NT', 'ONET'])
+                .domain(['RT', 'NT', 'ONET_P6', 'ONET_M3'])
                 .rangeRound([0, x0.bandwidth()]);
 
             const y = d3.scaleLinear()
@@ -1204,8 +1209,8 @@ try {
                 .domain([0, 100]);
 
             const color = d3.scaleOrdinal()
-                .domain(['RT', 'NT', 'ONET'])
-                .range(["#3b82f6", "#10b981", "#f59e0b"]);
+                .domain(['RT', 'NT', 'ONET_P6', 'ONET_M3'])
+                .range(["#3b82f6", "#10b981", "#f59e0b", "#f43f5e"]);
 
             // Axes
             svg.append("g")
@@ -1233,7 +1238,7 @@ try {
                 .attr("transform", d => `translate(${x0(d.year)},0)`);
 
             yearGroup.selectAll("rect")
-                .data(d => ['RT', 'NT', 'ONET'].map(key => ({key, value: d[key] || 0})))
+                .data(d => ['RT', 'NT', 'ONET_P6', 'ONET_M3'].map(key => ({key, value: d[key] || 0})))
                 .enter().append("rect")
                 .attr("x", d => x1(d.key))
                 .attr("y", height)
@@ -1248,7 +1253,7 @@ try {
 
             // Tooltips or Value Labels
             yearGroup.selectAll(".bar-label")
-                .data(d => ['RT', 'NT', 'ONET'].map(key => ({key, value: d[key] || 0})))
+                .data(d => ['RT', 'NT', 'ONET_P6', 'ONET_M3'].map(key => ({key, value: d[key] || 0})))
                 .enter().append("text")
                 .attr("x", d => x1(d.key) + x1.bandwidth()/2)
                 .attr("y", d => y(d.value) - 5)
