@@ -28,7 +28,7 @@ try {
                 sub.name AS subject_name,
                 sub.code AS subject_code,
                 sub.level AS subject_level,
-                c.room_name,
+                c.room,
                 u.name AS teacher_name,
                 u.last_name AS teacher_last_name,
                 (SELECT COUNT(*) 
@@ -57,7 +57,7 @@ try {
         $params[] = $level;
     }
     
-    $sql .= " ORDER BY sub.level ASC, c.room_name ASC, sub.name ASC";
+    $sql .= " ORDER BY sub.level ASC, c.room ASC, sub.name ASC";
     
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);

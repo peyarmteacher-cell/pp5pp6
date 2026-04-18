@@ -129,7 +129,7 @@
                                 <span class="text-sm font-bold text-slate-800 line-clamp-1">${item.subject_name}</span>
                                 <div class="flex items-center gap-1.5 mt-1.5">
                                     <span class="px-2 py-0.5 bg-slate-100 text-slate-600 rounded-md text-[10px] font-bold border border-slate-200">${item.subject_level}</span>
-                                    ${item.room_name ? `<span class="px-2 py-0.5 bg-white text-indigo-500 rounded-md text-[10px] font-black border border-indigo-100 shadow-sm">/ ${item.room_name}</span>` : ''}
+                                    ${item.room ? `<span class="px-2 py-0.5 bg-white text-indigo-500 rounded-md text-[10px] font-black border border-indigo-100 shadow-sm">/ ${item.room}</span>` : ''}
                                 </div>
                             </div>
                         </td>
