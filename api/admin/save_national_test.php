@@ -10,7 +10,7 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && (!isset($_
 $school_id = $_SESSION['school_id'];
 $data = json_decode(file_get_contents('php://input'), true);
 
-if (!$data || !isset($data['academic_year']) || !isset($data['test_type']) || !isset($data['score_avg'])) {
+if (!$data || !isset($data['academic_year']) || !isset($data['test_type'])) {
     die(json_encode(['error' => 'Invalid data provided']));
 }
 
