@@ -17,8 +17,8 @@ $student_id = $_SESSION['student_id'];
 $school_id = $_SESSION['school_id'];
 
 // รับพารามิเตอร์ตัวกรอง
-$academic_year = $_GET['academic_year'] ?? null;
-$semester = $_GET['semester'] ?? null;
+$academic_year = !empty($_GET['academic_year']) ? $_GET['academic_year'] : null;
+$semester = !empty($_GET['semester']) ? $_GET['semester'] : null;
 
 try {
     // 0. Fetch Available Academic Years
@@ -57,42 +57,60 @@ try {
     $attendance = $stmt->fetchAll();
 
     // 3. Grades
+    // Fallback if no academic year/semester found in grades yet
+    if (!$academic_year && $student && isset($student['academic_year'])) {
+        $academic_year = $student['academic_year'];
+    }
+    if (!$semester && $academic_year) {
+        $semester = '1'; // Default to term 1 if unknown
+    }
+
+    // Use a subquery to get the latest grade ID for each subject to avoid duplicates and ONLY_FULL_GROUP_BY issues
+    $sub_where = "student_id = ?";
+    $sub_params = [$student_id];
+    if ($academic_year) {
+        $sub_where .= " AND academic_year = ?";
+        $sub_params[] = $academic_year;
+    }
+    if ($semester && $semester !== 'annual') {
+        $sub_where .= " AND semester = ?";
+        $sub_params[] = $semester;
+    }
+
     $grade_sql = "SELECT g.*, sub.name as subject_name, sub.code as subject_code 
                   FROM grades g 
                   JOIN subjects sub ON g.subject_id = sub.id 
-                  WHERE g.student_id = ?";
-    $grade_params = [$student_id];
+                  WHERE g.id IN (
+                      SELECT MAX(id) FROM grades WHERE $sub_where GROUP BY subject_id
+                  )
+                  ORDER BY sub.code ASC";
     
-    // If we have no year yet, let's try to see if student has a year assigned
-    if (!$academic_year && isset($student['academic_year'])) {
-        $academic_year = $student['academic_year'];
-    }
-    
-    if ($academic_year) {
-        $grade_sql .= " AND g.academic_year = ?";
-        $grade_params[] = $academic_year;
-    }
-    if ($semester && $semester !== 'annual') {
-        $grade_sql .= " AND g.semester = ?";
-        $grade_params[] = $semester;
-    }
-    
-    $grade_sql .= " GROUP BY g.subject_id ORDER BY sub.code ASC";
     $stmt = $pdo->prepare($grade_sql);
-    $stmt->execute($grade_params);
+    $stmt->execute($sub_params);
     $grades = $stmt->fetchAll();
 
     // 4. Latest Behavior
-    $stmt = $pdo->prepare("SELECT * FROM evaluation_scores 
-                           WHERE student_id = ? AND category = 'characteristics' 
-                           AND academic_year = ? AND semester = ? LIMIT 1");
-    $stmt->execute([$student_id, $academic_year, $semester]);
+    $bh_sql = "SELECT * FROM evaluation_scores WHERE student_id = ? AND category = 'characteristics' AND academic_year = ?";
+    $bh_params = [$student_id, $academic_year];
+    if ($semester && $semester !== 'annual') {
+        $bh_sql .= " AND semester = ?";
+        $bh_params[] = $semester;
+    }
+    $bh_sql .= " ORDER BY semester DESC LIMIT 1";
+    $stmt = $pdo->prepare($bh_sql);
+    $stmt->execute($bh_params);
     $behavior = $stmt->fetch();
 
     // 5. Parent Feedback
-    $stmt = $pdo->prepare("SELECT * FROM parent_feedback 
-                           WHERE student_id = ? AND academic_year = ? AND semester = ? LIMIT 1");
-    $stmt->execute([$student_id, $academic_year, $semester]);
+    $fb_sql = "SELECT * FROM parent_feedback WHERE student_id = ? AND academic_year = ?";
+    $fb_params = [$student_id, $academic_year];
+    if ($semester && $semester !== 'annual') {
+        $fb_sql .= " AND semester = ?";
+        $fb_params[] = $semester;
+    }
+    $fb_sql .= " ORDER BY semester DESC LIMIT 1";
+    $stmt = $pdo->prepare($fb_sql);
+    $stmt->execute($fb_params);
     $parent_feedback = $stmt->fetch();
 
     echo json_encode([
