@@ -1,0 +1,21 @@
+{
+  "name": "ระบบติดตามนักเรียนสำหรับผู้ปกครอง",
+  "short_name": "ติดตามลูกหลาน",
+  "description": "ดูผลการเรียน การเข้าเรียน และพฤติกรรมนักเรียน",
+  "start_url": "/parent_login.php",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "icons": [
+    {
+      "src": "https://picsum.photos/seed/school/192/192",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://picsum.photos/seed/school/512/512",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

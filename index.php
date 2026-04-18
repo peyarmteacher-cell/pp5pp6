@@ -33,7 +33,13 @@
                     <input type="password" id="login_password" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all" placeholder="กรอกรหัสผ่าน">
                 </div>
                 <div id="loginError" class="text-red-500 text-sm hidden"></div>
-                <button type="submit" id="loginBtn" class="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold transition-all">เข้าสู่ระบบ</button>
+                <button type="submit" id="loginBtn" class="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold transition-all shadow-lg shadow-blue-900/40">เข้าสู่ระบบ</button>
+                <div class="pt-2">
+                    <a href="parent_login.php" class="w-full flex items-center justify-center gap-2 py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold transition-all border border-slate-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        ผู้ปกครองนักเรียน (ดูข้อมูล)
+                    </a>
+                </div>
                 <div class="text-center pt-4">
                     <button type="button" onclick="toggleForm('check_school')" class="text-blue-600 font-medium hover:underline">สมัครขอใช้งานระบบ</button>
                 </div>
