@@ -24,7 +24,7 @@ $school_name = $_SESSION['school_name'];
         .pull-to-refresh { transition: transform 0.2s ease-out; }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen pb-24">
+<body class="bg-slate-50 min-h-screen">
 
     <!-- Header -->
     <header id="app_header" class="bg-blue-600 text-white rounded-b-[40px] p-6 pt-10 shadow-lg shadow-blue-500/20 sticky top-0 z-40">
@@ -182,17 +182,28 @@ $school_name = $_SESSION['school_name'];
             <section class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 space-y-6">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-2">
-                         <i data-lucide="activity" class="w-5 h-5 text-rose-500"></i>
-                         <h2 class="font-bold text-slate-800">กราฟแสดงการเจริญเติบโต</h2>
+                         <i data-lucide="trending-up" class="w-5 h-5 text-blue-500"></i>
+                         <h2 class="font-bold text-slate-800">พัฒนาการด้านส่วนสูง (ซม.)</h2>
                     </div>
-                    <p class="text-[10px] text-slate-400 uppercase font-black">ตลอดปีการศึกษา</p>
                 </div>
-                
-                <div id="growth_chart" class="w-full h-48 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-300 relative">
-                     <!-- Chart will be rendered here -->
-                     <p class="text-xs italic">กำลังประมวลผลกราฟ...</p>
+                <div id="height_chart" class="w-full h-48 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-300 relative transition-all overflow-hidden">
+                     <p class="text-xs italic">กำลังประมวลผลข้อมูลส่วนสูง...</p>
                 </div>
+            </section>
 
+            <section class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 space-y-6">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                         <i data-lucide="activity" class="w-5 h-5 text-rose-500"></i>
+                         <h2 class="font-bold text-slate-800">พัฒนาการด้านน้ำหนัก (กก.)</h2>
+                    </div>
+                </div>
+                <div id="weight_chart" class="w-full h-48 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-300 relative transition-all overflow-hidden">
+                     <p class="text-xs italic">กำลังประมวลผลข้อมูลน้ำหนัก...</p>
+                </div>
+            </section>
+
+            <section class="bg-white p-5 rounded-3xl shadow-sm border border-slate-100">
                 <div class="grid grid-cols-2 gap-4">
                     <div class="p-4 bg-rose-50 rounded-2xl border border-rose-100 text-center">
                         <p class="text-[10px] text-rose-400 font-bold uppercase mb-1">น้ำหนักล่าสุด</p>
@@ -208,27 +219,12 @@ $school_name = $_SESSION['school_name'];
 
     </main>
 
-    <!-- Navigation Bar -->
-    <nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-sm bg-slate-900/90 backdrop-blur-xl rounded-full p-2 flex items-center justify-between shadow-2xl z-50 border border-white/10">
-        <button class="nav-btn active w-14 h-14 flex items-center justify-center rounded-full bg-blue-600 text-white transition-all">
-            <i data-lucide="home" class="w-6 h-6"></i>
-        </button>
-        <button onclick="alert('ฟีเจอร์นี้กำลังพัฒนา: ตารางเรียน')" class="nav-btn w-14 h-14 flex items-center justify-center rounded-full text-slate-400 hover:bg-white/10 transition-all">
-            <i data-lucide="clock" class="w-6 h-6"></i>
-        </button>
-        <button onclick="alert('ฟีเจอร์นี้กำลังพัฒนา: ประกาศข่าว')" class="nav-btn w-14 h-14 flex items-center justify-center rounded-full text-slate-400 hover:bg-white/10 transition-all">
-            <i data-lucide="bell" class="w-6 h-6"></i>
-        </button>
-        <button onclick="alert('ฟีเจอร์นี้กำลังพัฒนา: แชทกับครู')" class="nav-btn w-14 h-14 flex items-center justify-center rounded-full text-slate-400 hover:bg-white/10 transition-all">
-            <i data-lucide="message-square" class="w-6 h-6"></i>
-        </button>
-    </nav>
-
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script>
         lucide.createIcons();
 
         let isFirstLoad = true;
+        let healthHistory = [];
 
         function switchTab(tabId) {
             document.querySelectorAll('.section-tab').forEach(t => t.classList.remove('active'));
@@ -238,8 +234,8 @@ $school_name = $_SESSION['school_name'];
             event.currentTarget.classList.add('active');
             
             if (tabId === 'health') {
-                // Render chart when tab is visible
-                setTimeout(renderGrowthChart, 100);
+                // Render charts when tab is visible
+                setTimeout(renderHealthCharts, 100);
             }
         }
 
@@ -395,8 +391,15 @@ $school_name = $_SESSION['school_name'];
                 }
 
                 // Health
-                document.getElementById('health_weight').innerText = student.weight || '-';
-                document.getElementById('health_height').innerText = student.height || '-';
+                healthHistory = data.health_history || [];
+                if (healthHistory.length > 0) {
+                    const latest = healthHistory[healthHistory.length - 1];
+                    document.getElementById('health_weight').innerText = latest.weight || '-';
+                    document.getElementById('health_height').innerText = latest.height || '-';
+                } else {
+                    document.getElementById('health_weight').innerText = '-';
+                    document.getElementById('health_height').innerText = '-';
+                }
 
                 if (typeof lucide !== 'undefined') lucide.createIcons();
 
@@ -405,56 +408,122 @@ $school_name = $_SESSION['school_name'];
             }
         }
 
-        function renderGrowthChart() {
-            const container = document.getElementById('growth_chart');
+        function renderHealthCharts() {
+            if (!healthHistory || healthHistory.length <= 1) {
+                const msg = '<div class="text-center p-4"><p class="text-xs italic text-slate-400">ยังไม่มีพัฒนาการด้านการเจริญเติบโต</p><p class="text-[10px] text-slate-300 mt-1">(ต้องการข้อมูลอย่างน้อย 2 ครั้งเพื่อแสดงกราฟ)</p></div>';
+                document.getElementById('height_chart').innerHTML = msg;
+                document.getElementById('weight_chart').innerHTML = msg;
+                return;
+            }
+
+            // Height Chart
+            renderSingleChart('height_chart', healthHistory, 'height', '#3b82f6');
+            // Weight Chart
+            renderSingleChart('weight_chart', healthHistory, 'weight', '#f43f5e');
+        }
+
+        function renderSingleChart(containerId, data, key, color) {
+            const container = document.getElementById(containerId);
             container.innerHTML = '';
             
-            const margin = {top: 20, right: 30, bottom: 30, left: 40},
+            const margin = {top: 20, right: 30, bottom: 35, left: 40},
                   width = container.clientWidth - margin.left - margin.right,
                   height = container.clientHeight - margin.top - margin.bottom;
 
-            const svg = d3.select("#growth_chart")
+            const svg = d3.select("#" + containerId)
                 .append("svg")
                 .attr("width", width + margin.left + margin.right)
                 .attr("height", height + margin.top + margin.bottom)
                 .append("g")
                 .attr("transform", `translate(${margin.left},${margin.top})`);
 
-            // Mock Data for growth over 1 year (Monthly)
-            const data = [
-                {month: 1, height: 120}, {month: 2, height: 121}, {month: 3, height: 121.5},
-                {month: 4, height: 122}, {month: 5, height: 123}, {month: 6, height: 123.5},
-                {month: 7, height: 124}, {month: 8, height: 124.2}, {month: 9, height: 125},
-                {month: 10, height: 125.8}, {month: 11, height: 126}, {month: 12, height: 127}
-            ];
+            // Order data by time if not already
+            const chartData = data.map((d, i) => ({
+                index: i,
+                value: parseFloat(d[key]),
+                label: d.record_number ? "ครั้งที่ " + d.record_number : "ครั้งที่ " + (i+1)
+            })).filter(d => !isNaN(d.value));
 
-            const x = d3.scaleLinear().domain([1, 12]).range([0, width]);
-            const y = d3.scaleLinear().domain([115, 135]).range([height, 0]);
+            const x = d3.scaleLinear()
+                .domain([0, chartData.length - 1])
+                .range([0, width]);
 
-            svg.append("g").attr("transform", `translate(0,${height})`).call(d3.axisBottom(x).ticks(6).tickFormat(d => 'ด.' + d));
-            svg.append("g").call(d3.axisLeft(y).ticks(5));
+            const minVal = d3.min(chartData, d => d.value);
+            const maxVal = d3.max(chartData, d => d.value);
+            const padding = (maxVal - minVal) * 0.2 || 5;
 
+            const y = d3.scaleLinear()
+                .domain([minVal - padding, maxVal + padding])
+                .range([height, 0]);
+
+            // Axes
+            svg.append("g")
+                .attr("transform", `translate(0,${height})`)
+                .attr("class", "text-[8px] text-slate-300")
+                .call(d3.axisBottom(x).ticks(Math.min(chartData.length, 5)).tickFormat(i => chartData[i] ? chartData[i].label : ''))
+                .select(".domain").attr("stroke", "#e2e8f0");
+
+            svg.append("g")
+                .attr("class", "text-[8px] text-slate-300")
+                .call(d3.axisLeft(y).ticks(5))
+                .select(".domain").attr("stroke", "#e2e8f0");
+
+            // Line
             const line = d3.line()
-                .x(d => x(d.month))
-                .y(d => y(d.height))
+                .x(d => x(d.index))
+                .y(d => y(d.value))
                 .curve(d3.curveMonotoneX);
 
+            // Gradient Area
+            const area = d3.area()
+                .x(d => x(d.index))
+                .y1(d => y(d.value))
+                .y0(height)
+                .curve(d3.curveMonotoneX);
+
+            const gradientId = "gradient-" + containerId;
+            const defs = svg.append("defs");
+            const gradient = defs.append("linearGradient")
+                .attr("id", gradientId)
+                .attr("x1", "0%").attr("y1", "0%")
+                .attr("x2", "0%").attr("y2", "100%");
+            gradient.append("stop").attr("offset", "0%").attr("stop-color", color).attr("stop-opacity", 0.2);
+            gradient.append("stop").attr("offset", "100%").attr("stop-color", color).attr("stop-opacity", 0);
+
             svg.append("path")
-                .datum(data)
+                .datum(chartData)
+                .attr("fill", "url(#" + gradientId + ")")
+                .attr("d", area);
+
+            svg.append("path")
+                .datum(chartData)
                 .attr("fill", "none")
-                .attr("stroke", "#f43f5e")
-                .attr("stroke-width", 3)
+                .attr("stroke", color)
+                .attr("stroke-width", 2.5)
+                .attr("stroke-linecap", "round")
                 .attr("d", line);
 
+            // Dots
             svg.selectAll("dot")
-                .data(data)
+                .data(chartData)
                 .enter().append("circle")
-                .attr("cx", d => x(d.month))
-                .attr("cy", d => y(d.height))
-                .attr("r", 4)
+                .attr("cx", d => x(d.index))
+                .attr("cy", d => y(d.value))
+                .attr("r", 3.5)
                 .attr("fill", "white")
-                .attr("stroke", "#f43f5e")
+                .attr("stroke", color)
                 .attr("stroke-width", 2);
+
+            // Labels on dots
+            svg.selectAll("text.label")
+                .data(chartData)
+                .enter().append("text")
+                .attr("x", d => x(d.index))
+                .attr("y", d => y(d.value) - 10)
+                .attr("text-anchor", "middle")
+                .attr("class", "text-[9px] font-bold")
+                .attr("fill", color)
+                .text(d => d.value);
         }
 
         async function saveFeedback() {

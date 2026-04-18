@@ -122,6 +122,14 @@ try {
         $stmt->execute($fb_params);
         $parent_feedback = $stmt->fetch();
     }
+    
+    // 6. Student Health History
+    $stmt = $pdo->prepare("SELECT weight, height, academic_year, semester, record_number, created_at 
+                           FROM student_health_records 
+                           WHERE student_id = ? 
+                           ORDER BY academic_year ASC, semester ASC, record_number ASC");
+    $stmt->execute([$student_id]);
+    $health_history = $stmt->fetchAll();
 
     echo json_encode([
         'student' => $student,
@@ -129,6 +137,7 @@ try {
         'grades' => $grades,
         'behavior' => $behavior,
         'parent_feedback' => $parent_feedback,
+        'health_history' => $health_history,
         'filters' => [
             'available_years' => $available_years,
             'current_year' => $academic_year,
