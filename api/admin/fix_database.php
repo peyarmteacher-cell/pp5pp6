@@ -863,11 +863,27 @@ try {
         semester INT,
         feedback_text TEXT,
         tags VARCHAR(255),
+        responsibility_comment TEXT,
+        spare_time_comment TEXT,
+        relationship_comment TEXT,
+        personality_comment TEXT,
+        health_comment TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-    $results[] = "ตรวจสอบตาราง parent_feedback สำเร็จ";
+
+    // ตรวจสอบคอลัมน์ใหม่ใน parent_feedback
+    $stmt = $pdo->query("SHOW COLUMNS FROM parent_feedback LIKE 'responsibility_comment'");
+    if (!$stmt->fetch()) {
+        $pdo->exec("ALTER TABLE parent_feedback 
+            ADD COLUMN responsibility_comment TEXT,
+            ADD COLUMN spare_time_comment TEXT,
+            ADD COLUMN relationship_comment TEXT,
+            ADD COLUMN personality_comment TEXT,
+            ADD COLUMN health_comment TEXT");
+        $results[] = "เพิ่มคอลัมน์ความคิดเห็น 5 ด้านใน parent_feedback สำเร็จ";
+    }
 
     echo json_encode([
         'status' => 'success',

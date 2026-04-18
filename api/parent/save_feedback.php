@@ -17,8 +17,13 @@ $data = json_decode(file_get_contents('php://input'), true);
 $student_id = $_SESSION['student_id'];
 $academic_year = $data['academic_year'] ?? '';
 $semester = $data['semester'] ?? '';
-$feedback_text = $data['feedback_text'] ?? '';
-$tags = $data['tags'] ?? ''; // ลิสต์ข้อความสั้นๆ เช่น "ช่วยเหลือดี, อ่านหนังสือมากขึ้น"
+
+// 5 ด้านใหม่
+$responsibility = $data['responsibility'] ?? '';
+$spare_time = $data['spare_time'] ?? '';
+$relationship = $data['relationship'] ?? '';
+$personality = $data['personality'] ?? '';
+$health_comment = $data['health_comment'] ?? '';
 
 if (empty($academic_year) || empty($semester)) {
     echo json_encode(['success' => false, 'message' => 'ข้อมูลปีการศึกษาไม่ถูกต้อง']);
@@ -33,12 +38,20 @@ try {
 
     if ($existing) {
         // อัปเดต
-        $stmt = $pdo->prepare("UPDATE parent_feedback SET feedback_text = ?, tags = ? WHERE id = ?");
-        $stmt->execute([$feedback_text, $tags, $existing['id']]);
+        $stmt = $pdo->prepare("UPDATE parent_feedback SET 
+            responsibility_comment = ?, 
+            spare_time_comment = ?, 
+            relationship_comment = ?, 
+            personality_comment = ?, 
+            health_comment = ? 
+            WHERE id = ?");
+        $stmt->execute([$responsibility, $spare_time, $relationship, $personality, $health_comment, $existing['id']]);
     } else {
         // เพิ่มใหม่
-        $stmt = $pdo->prepare("INSERT INTO parent_feedback (student_id, academic_year, semester, feedback_text, tags) VALUES (?, ?, ?, ?, ?)");
-        $stmt->execute([$student_id, $academic_year, $semester, $feedback_text, $tags]);
+        $stmt = $pdo->prepare("INSERT INTO parent_feedback 
+            (student_id, academic_year, semester, responsibility_comment, spare_time_comment, relationship_comment, personality_comment, health_comment) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$student_id, $academic_year, $semester, $responsibility, $spare_time, $relationship, $personality, $health_comment]);
     }
 
     echo json_encode(['success' => true, 'message' => 'บันทึกความคิดเห็นเรียบร้อยแล้ว']);
