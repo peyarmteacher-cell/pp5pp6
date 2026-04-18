@@ -14,7 +14,7 @@
     </div>
     <div class="doc-title" style="margin-top: 10px;">หนังสือรับรองการมีตัวตนของนักเรียน</div>
     
-    <div style="text-align: center; margin-top: 25px; margin-bottom: 30px;">
+    <div style="text-align: right; margin-top: 25px; margin-bottom: 30px; padding-right: 20px;">
         <span class="nowrap">วันที่</span> <span class="line-stretch" style="min-width: 60px;"></span> 
         <span class="nowrap">เดือน</span> <span class="line-stretch" style="min-width: 150px;"></span> 
         <span class="nowrap">ปี</span> <span class="line-stretch" style="min-width: 80px;"></span>
