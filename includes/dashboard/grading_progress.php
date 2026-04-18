@@ -35,6 +35,33 @@
             </div>
         </div>
 
+        <!-- Progress Tabs -->
+        <div class="flex overflow-x-auto gap-2 mb-6 border-b border-slate-100 pb-1 custom-scrollbar">
+            <button onclick="switchProgressTab('academics')" id="tab-academics" class="progress-tab active flex items-center gap-2 px-6 py-3 rounded-t-2xl font-bold text-sm transition-all border-b-2 border-transparent hover:bg-slate-50">
+                <i data-lucide="book-open" class="w-4 h-4"></i>
+                หน่วยการเรียนรู้และผลสอบ
+            </button>
+            <button onclick="switchProgressTab('evaluations')" id="tab-evaluations" class="progress-tab flex items-center gap-2 px-6 py-3 rounded-t-2xl font-bold text-sm transition-all border-b-2 border-transparent hover:bg-slate-50">
+                <i data-lucide="award" class="w-4 h-4"></i>
+                กิจกรรมพัฒนาผู้เรียนและสมรรถนะ
+            </button>
+            <button onclick="switchProgressTab('characteristics')" id="tab-characteristics" class="progress-tab flex items-center gap-2 px-6 py-3 rounded-t-2xl font-bold text-sm transition-all border-b-2 border-transparent hover:bg-slate-50">
+                <i data-lucide="user-check" class="w-4 h-4"></i>
+                คุณลักษณะและอ่านคิดวิเคราะห์
+            </button>
+        </div>
+
+        <style>
+            .progress-tab.active {
+                color: #2563eb;
+                background: white;
+                border-bottom-color: #2563eb;
+            }
+            .progress-tab:not(.active) {
+                color: #64748b;
+            }
+        </style>
+
         <div class="relative overflow-hidden group">
             <div id="progress_loading_state" class="hidden absolute inset-0 bg-white/60 backdrop-blur-[1px] z-10 flex items-center justify-center rounded-2xl">
                 <div class="flex flex-col items-center gap-4">
@@ -44,12 +71,12 @@
             </div>
 
             <div class="overflow-x-auto rounded-2xl border border-slate-100">
-                <table class="w-full text-left border-collapse">
+                <table class="w-full text-left border-collapse min-w-[800px]">
                     <thead>
                         <tr class="bg-slate-50/50">
-                            <th class="px-6 py-5 text-xs font-black text-slate-500 uppercase tracking-widest border-b border-slate-100">รายวิชา / ห้องเรียน</th>
-                            <th class="px-6 py-5 text-xs font-black text-slate-500 uppercase tracking-widest border-b border-slate-100">ครูผู้สอน</th>
-                            <th class="px-6 py-5 text-xs font-black text-slate-500 uppercase tracking-widest border-b border-slate-100 w-1/3">ความคืบหน้าการบันทึกคะแนน</th>
+                            <th class="px-6 py-5 text-xs font-black text-slate-500 uppercase tracking-widest border-b border-slate-100">รายวิชา / ครูผู้สอน</th>
+                            <th id="progress_header_dynamic" class="px-6 py-5 text-xs font-black text-slate-500 uppercase tracking-widest border-b border-slate-100">รายละเอียดความคืบหน้า</th>
+                            <th class="px-6 py-5 text-xs font-black text-slate-500 uppercase tracking-widest border-b border-slate-100 w-48 text-right">ภาพรวม</th>
                         </tr>
                     </thead>
                     <tbody id="gradingProgressTableBody" class="divide-y divide-slate-50">
@@ -70,6 +97,16 @@
 </div>
 
 <script>
+    let currentProgressTab = 'academics';
+    let progressDataCache = [];
+
+    function switchProgressTab(tab) {
+        currentProgressTab = tab;
+        document.querySelectorAll('.progress-tab').forEach(t => t.classList.remove('active'));
+        document.getElementById(`tab-${tab}`).classList.add('active');
+        renderGradingProgress();
+    }
+
     async function initGradingProgress() {
         console.log('Initializing Grading Progress Monitoring...');
         await loadGradingProgress();
@@ -78,7 +115,6 @@
     async function loadGradingProgress() {
         const loading = document.getElementById('progress_loading_state');
         const empty = document.getElementById('progress_empty_state');
-        const tbody = document.getElementById('gradingProgressTableBody');
         const level = document.getElementById('progress_level_filter').value;
         
         if (loading) loading.classList.remove('hidden');
@@ -87,146 +123,11 @@
         try {
             const url = `api/admin/get_grading_progress.php?academic_year=${currentAcademicYear}&semester=${currentSemester}&level=${encodeURIComponent(level)}`;
             const res = await fetch(url);
-            const data = await res.json();
+            progressDataCache = await res.json();
             
-            if (data.error) throw new Error(data.error);
+            if (progressDataCache.error) throw new Error(progressDataCache.error);
             
-            if (!data || data.length === 0) {
-                tbody.innerHTML = '';
-                if (empty) empty.classList.remove('hidden');
-                return;
-            }
-
-            tbody.innerHTML = data.map(item => {
-                const totalUnits = parseInt(item.total_units) || 0;
-                const completedUnits = parseInt(item.completed_units) || 0;
-                const studentCount = parseInt(item.student_count) || 0;
-                
-                const unitsPercent = totalUnits > 0 ? (completedUnits / totalUnits) : 0;
-                const midtermPercent = studentCount > 0 ? (parseInt(item.midterm_count) / studentCount) : 0;
-                const finalPercent = studentCount > 0 ? (parseInt(item.final_count) / studentCount) : 0;
-                const charPercent = studentCount > 0 ? (parseInt(item.characteristics_count) / studentCount) : 0;
-                const analyticalPercent = studentCount > 0 ? (parseInt(item.analytical_count) / studentCount) : 0;
-                const competencyPercent = studentCount > 0 ? (parseInt(item.competency_count) / studentCount) : 0;
-                const learnerDevPercent = studentCount > 0 ? (parseInt(item.learner_dev_count) / studentCount) : 0;
-
-                // Overall progress calculation (weighted or average)
-                // Let's use simple average of relevant tasks
-                let tasks = [
-                    { name: 'หน่วยการเรียนรู้', percent: unitsPercent },
-                    { name: 'สอบกลางภาค', percent: midtermPercent },
-                    { name: 'สอบปลายภาค', percent: finalPercent },
-                    { name: 'คุณลักษณะฯ', percent: charPercent },
-                    { name: 'อ่าน/วิเคราะห์', percent: analyticalPercent },
-                    { name: 'สมรรถนะ', percent: competencyPercent },
-                    { name: 'พัฒนาผู้เรียน', percent: learnerDevPercent }
-                ];
-
-                const totalProgress = (tasks.reduce((sum, t) => sum + t.percent, 0) / tasks.length) * 100;
-                const percent = Math.round(totalProgress);
-                
-                // Color logic based on percentage
-                let barColor = 'bg-blue-500';
-                let textColor = 'text-blue-600';
-                
-                if (percent >= 100) {
-                    barColor = 'bg-emerald-500';
-                    textColor = 'text-emerald-600';
-                } else if (percent > 0 && percent < 50) {
-                    barColor = 'bg-amber-500';
-                    textColor = 'text-amber-600';
-                } else if (percent === 0) {
-                    barColor = 'bg-slate-300';
-                    textColor = 'text-slate-400';
-                }
-
-                const getStatusIcon = (p) => {
-                    if (p >= 1) return '<i data-lucide="check-circle-2" class="w-3 h-3 text-emerald-500"></i>';
-                    if (p > 0) return '<i data-lucide="clock" class="w-3 h-3 text-amber-500"></i>';
-                    return '<i data-lucide="circle" class="w-3 h-3 text-slate-300"></i>';
-                };
-
-                return `
-                    <tr class="hover:bg-slate-50 transition-colors group">
-                        <td class="px-6 py-5">
-                            <div class="flex flex-col">
-                                <span class="text-[10px] font-bold text-blue-500 uppercase tracking-wider mb-1">${item.subject_code}</span>
-                                <span class="text-sm font-bold text-slate-800 line-clamp-1">${item.subject_name}</span>
-                                <div class="flex items-center gap-1.5 mt-1.5">
-                                    <span class="px-2 py-0.5 bg-slate-100 text-slate-600 rounded-md text-[10px] font-bold border border-slate-200">${item.subject_level}</span>
-                                    ${item.room ? `<span class="px-2 py-0.5 bg-white text-indigo-500 rounded-md text-[10px] font-black border border-indigo-100 shadow-sm">/ ${item.room}</span>` : ''}
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-5">
-                            <div class="flex items-center gap-3">
-                                <div class="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-bold border border-slate-200 shadow-sm">
-                                    ${item.teacher_name ? item.teacher_name.charAt(0) : '?'}
-                                </div>
-                                <div>
-                                    <p class="text-sm font-bold text-slate-700">${item.teacher_name} ${item.teacher_last_name || ''}</p>
-                                    <p class="text-[10px] text-slate-400 font-medium">ครูผู้รับผิดชอบ</p>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-5">
-                            <div class="space-y-3">
-                                <div class="flex justify-between items-end">
-                                    <div class="flex flex-wrap gap-x-3 gap-y-1">
-                                        <div class="flex items-center gap-1 text-[9px] font-bold text-slate-500">
-                                            ${getStatusIcon(unitsPercent)} หน่วยการเรียน
-                                        </div>
-                                        <div class="flex items-center gap-1 text-[9px] font-bold text-slate-500">
-                                            ${getStatusIcon(midtermPercent)} กลางภาค
-                                        </div>
-                                        <div class="flex items-center gap-1 text-[9px] font-bold text-slate-500">
-                                            ${getStatusIcon(finalPercent)} ปลายภาค
-                                        </div>
-                                        <div class="flex items-center gap-1 text-[9px] font-bold text-slate-500">
-                                            ${getStatusIcon(charPercent)} คุณลักษณะ
-                                        </div>
-                                        <div class="flex items-center gap-1 text-[9px] font-bold text-slate-500">
-                                            ${getStatusIcon(analyticalPercent)} อ่าน/คิด
-                                        </div>
-                                    </div>
-                                    <span class="text-sm font-black ${textColor}">${percent}%</span>
-                                </div>
-                                <div class="h-4 w-full bg-slate-100 rounded-full overflow-hidden border border-slate-200/50 p-[3px] shadow-inner">
-                                    <div class="${barColor} h-full rounded-full shadow-lg transition-all duration-1000 ease-out relative" 
-                                         style="width: 0%" 
-                                         data-percent="${percent}%">
-                                         <div class="absolute inset-x-0 inset-y-0 bg-white/20 animate-pulse rounded-full"></div>
-                                    </div>
-                                </div>
-                                
-                                <div class="flex gap-4 pt-1">
-                                    <div class="flex items-center gap-1.5">
-                                        <div class="p-1 rounded bg-slate-50 border border-slate-100">
-                                            <i data-lucide="shield-check" class="w-3 h-3 ${competencyPercent >= 1 ? 'text-emerald-500' : 'text-slate-300'}"></i>
-                                        </div>
-                                        <span class="text-[9px] font-bold text-slate-400">สมรรถนะ: ${Math.round(competencyPercent*100)}%</span>
-                                    </div>
-                                    <div class="flex items-center gap-1.5">
-                                        <div class="p-1 rounded bg-slate-50 border border-slate-100">
-                                            <i data-lucide="heart" class="w-3 h-3 ${learnerDevPercent >= 1 ? 'text-rose-500' : 'text-slate-300'}"></i>
-                                        </div>
-                                        <span class="text-[9px] font-bold text-slate-400">พัฒนาผู้เรียน: ${Math.round(learnerDevPercent*100)}%</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
-
-            // Trigger animations
-            setTimeout(() => {
-                document.querySelectorAll('#gradingProgressTableBody [data-percent]').forEach(el => {
-                    el.style.width = el.getAttribute('data-percent');
-                });
-            }, 100);
-
-            if (typeof lucide !== 'undefined') lucide.createIcons();
+            renderGradingProgress();
             
         } catch (e) {
             console.error('Error loading grading progress:', e);
@@ -234,5 +135,149 @@
         } finally {
             if (loading) loading.classList.add('hidden');
         }
+    }
+
+    function renderGradingProgress() {
+        const tbody = document.getElementById('gradingProgressTableBody');
+        const empty = document.getElementById('progress_empty_state');
+        const header = document.getElementById('progress_header_dynamic');
+
+        if (!progressDataCache || progressDataCache.length === 0) {
+            tbody.innerHTML = '';
+            empty.classList.remove('hidden');
+            return;
+        }
+
+        empty.classList.add('hidden');
+
+        // Update dynamic header title
+        if (currentProgressTab === 'academics') header.innerText = 'หน่วยการเรียนรู้ / กลางภาค / ปลายภาค';
+        else if (currentProgressTab === 'evaluations') header.innerText = 'สมรรถนะ / กิจกรรมพัฒนาผู้เรียน';
+        else header.innerText = 'คุณลักษณะพึงประสงค์ / อ่าน คิดวิเคราะห์';
+
+        tbody.innerHTML = progressDataCache.map(item => {
+            const studentCount = parseInt(item.student_count) || 0;
+            const totalUnits = parseInt(item.total_units) || 0;
+            const completedUnits = parseInt(item.completed_units) || 0;
+            
+            const unitsP = totalUnits > 0 ? (completedUnits / totalUnits) : 0;
+            const midtermP = studentCount > 0 ? (parseInt(item.midterm_count) / studentCount) : 0;
+            const finalP = studentCount > 0 ? (parseInt(item.final_count) / studentCount) : 0;
+            const charP = studentCount > 0 ? (parseInt(item.characteristics_count) / studentCount) : 0;
+            const analyticalP = studentCount > 0 ? (parseInt(item.analytical_count) / studentCount) : 0;
+            const competencyP = studentCount > 0 ? (parseInt(item.competency_count) / studentCount) : 0;
+            const learnerDevP = studentCount > 0 ? (parseInt(item.learner_dev_count) / studentCount) : 0;
+
+            let tabContent = '';
+            let overallP = 0;
+
+            if (currentProgressTab === 'academics') {
+                overallP = ((unitsP + midtermP + finalP) / 3) * 100;
+                tabContent = `
+                    <div class="grid grid-cols-1 gap-3">
+                        ${renderMiniBar('หน่วยการเรียน', unitsP, `${completedUnits}/${totalUnits} หน่วย`)}
+                        ${renderMiniBar('สอบกลางภาค', midtermP, `${item.midterm_count}/${studentCount} คน`)}
+                        ${renderMiniBar('สอบปลายภาค', finalP, `${item.final_count}/${studentCount} คน`)}
+                    </div>
+                `;
+            } else if (currentProgressTab === 'evaluations') {
+                overallP = ((competencyP + learnerDevP) / 2) * 100;
+                tabContent = `
+                    <div class="grid grid-cols-1 gap-3">
+                        ${renderMiniBar('ประเมินสมรรถนะ', competencyP, `${item.competency_count}/${studentCount} คน`)}
+                        ${renderMiniBar('กิจกรรมพัฒนาผู้เรียน', learnerDevP, `${item.learner_dev_count}/${studentCount} คน`)}
+                    </div>
+                `;
+            } else {
+                overallP = ((charP + analyticalP) / 2) * 100;
+                tabContent = `
+                    <div class="grid grid-cols-1 gap-3">
+                        ${renderMiniBar('คุณลักษณะพึงประสงค์', charP, `${item.characteristics_count}/${studentCount} คน`)}
+                        ${renderMiniBar('ประเมินการอ่าน คิดวิเคราะห์', analyticalP, `${item.analytical_count}/${studentCount} คน`)}
+                    </div>
+                `;
+            }
+
+            const percent = Math.round(overallP);
+            let barColor = 'bg-blue-500';
+            let textColor = 'text-blue-600';
+            if (percent >= 100) { barColor = 'bg-emerald-500'; textColor = 'text-emerald-600'; }
+            else if (percent > 0 && percent < 50) { barColor = 'bg-amber-500'; textColor = 'text-amber-600'; }
+            else if (percent === 0) { barColor = 'bg-slate-300'; textColor = 'text-slate-400'; }
+
+            return `
+                <tr class="hover:bg-slate-50 transition-all group">
+                    <td class="px-6 py-6 w-72">
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 rounded-2xl bg-slate-100 flex-shrink-0 flex items-center justify-center font-black text-slate-400 border border-slate-200">
+                                ${item.teacher_name ? item.teacher_name.charAt(0) : '?'}
+                            </div>
+                            <div class="overflow-hidden">
+                                <span class="text-[10px] font-bold text-blue-500 uppercase tracking-widest block mb-1">${item.subject_code}</span>
+                                <h4 class="text-sm font-bold text-slate-800 truncate mb-1">${item.subject_name}</h4>
+                                <p class="text-xs text-slate-500 font-medium truncate">${item.teacher_name} ${item.teacher_last_name || ''}</p>
+                                <div class="flex gap-1.5 mt-2">
+                                    <span class="px-2 py-0.5 bg-slate-50 border border-slate-200 rounded text-[9px] font-bold text-slate-500">${item.subject_level}</span>
+                                    ${item.room ? `<span class="px-2 py-0.5 bg-blue-50 border border-blue-100 rounded text-[9px] font-black text-blue-600">/ ${item.room}</span>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-6">
+                        ${tabContent}
+                    </td>
+                    <td class="px-6 py-6 text-right">
+                        <div class="inline-flex flex-col items-end gap-2">
+                            <span class="text-2xl font-black ${textColor} tracking-tight">${percent}%</span>
+                            <div class="w-32 h-2.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200/50 p-[2px] shadow-inner">
+                                <div class="${barColor} h-full rounded-full transition-all duration-1000 ease-out relative" 
+                                     style="width: 0%" 
+                                     data-percent="${percent}%">
+                                </div>
+                            </div>
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">สถานะปัจจุบัน</span>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+
+        function renderMiniBar(label, ratio, detail) {
+            const p = Math.round(ratio * 100);
+            let color = 'bg-blue-400';
+            if (p >= 100) color = 'bg-emerald-400';
+            else if (p > 0 && p < 100) color = 'bg-amber-400';
+            else color = 'bg-slate-200';
+
+            return `
+                <div class="flex items-center gap-4">
+                    <div class="w-32 flex-shrink-0">
+                        <p class="text-[11px] font-bold text-slate-600 line-clamp-1">${label}</p>
+                    </div>
+                    <div class="flex-1 max-w-[200px]">
+                        <div class="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                            <div class="${color} h-full rounded-full transition-all duration-1000" style="width: ${p}%"></div>
+                        </div>
+                    </div>
+                    <div class="w-20 text-right">
+                        <span class="text-[10px] font-black text-slate-400 tracking-tighter">${detail}</span>
+                    </div>
+                    <div class="w-8 flex justify-end">
+                        ${p >= 100 ? '<i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-emerald-500"></i>' : 
+                          p > 0 ? '<i data-lucide="clock" class="w-3.5 h-3.5 text-amber-500 animate-pulse"></i>' : 
+                          '<i data-lucide="circle" class="w-3.5 h-3.5 text-slate-200"></i>'}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Trigger animations
+        setTimeout(() => {
+            document.querySelectorAll('#gradingProgressTableBody [data-percent]').forEach(el => {
+                el.style.width = el.getAttribute('data-percent');
+            });
+        }, 100);
+
+        if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 </script>
