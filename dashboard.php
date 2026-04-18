@@ -422,7 +422,7 @@ try {
                             <span class="text-xs font-bold text-slate-400">คน</span>
                         </div>
                         <!-- Student breakdown -->
-                        <div id="ov_student_breakdown" class="flex flex-wrap gap-x-2 mt-2">
+                        <div id="ov_student_breakdown" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 mt-4">
                             <!-- Levels will be injected here -->
                         </div>
                     </div>
@@ -479,44 +479,121 @@ try {
                     </div>
                 </div>
 
-                <!-- Quick Management for Academic Staff -->
+                <!-- Quick Management for Academic Staff: Individual Cards for RT, NT, O-NET -->
                 <?php if ($role === 'admin' || (isset($_SESSION['is_academic']) && $_SESSION['is_academic'])): ?>
-                <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
-                    <div class="flex items-center gap-4 mb-8">
-                        <div class="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-600">
-                            <i data-lucide="database-backup" class="w-6 h-6"></i>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- RT Card -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex flex-col h-full">
+                        <div class="flex items-center gap-4 mb-6">
+                            <div class="w-10 h-10 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center">
+                                <i data-lucide="book-open" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-slate-800">RT (ป.1)</h3>
+                                <p class="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Reading Test</p>
+                            </div>
                         </div>
-                        <div>
-                            <h3 class="text-xl font-bold text-slate-800">บันทึกผลการสอบระดับชาติ</h3>
-                            <p class="text-sm text-slate-500">จัดการคะแนนเฉลี่ยโรงเรียนเพื่อแสดงแนวโน้ม</p>
-                        </div>
+                        <form onsubmit="saveNationalTestDetail(event, 'rt')" class="space-y-4 flex-grow">
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">ปีการศึกษา</label>
+                                <input type="text" name="year" placeholder="2566" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-bold text-slate-700 text-sm">
+                            </div>
+                            <div class="grid grid-cols-1 gap-3 pt-2">
+                                <div class="space-y-1">
+                                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">การอ่านออกเสียง</label>
+                                    <input type="number" step="0.01" name="subject_เสียง" placeholder="คะแนนเฉลี่ย" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-bold text-slate-700 text-sm">
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">การอ่านรู้เรื่อง</label>
+                                    <input type="number" step="0.01" name="subject_รู้เรื่อง" placeholder="คะแนนเฉลี่ย" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-bold text-slate-700 text-sm">
+                                </div>
+                            </div>
+                            <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition-all flex items-center justify-center gap-2 mt-4 text-sm">
+                                <i data-lucide="save" class="w-4 h-4"></i> บันทึก RT
+                            </button>
+                        </form>
                     </div>
-                    
-                    <form id="nationalTestForm" class="space-y-4">
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="space-y-1">
-                                <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">ปีการศึกษา</label>
-                                <input type="text" id="nt_year" placeholder="เช่น 2566" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-bold text-slate-700">
+
+                    <!-- NT Card -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex flex-col h-full">
+                        <div class="flex items-center gap-4 mb-6">
+                            <div class="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center">
+                                <i data-lucide="microscope" class="w-5 h-5"></i>
                             </div>
-                            <div class="space-y-1">
-                                <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">ประเภทการสอบ</label>
-                                <select id="nt_type" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-bold text-slate-700">
-                                    <option value="rt">RT (ป.1)</option>
-                                    <option value="nt">NT (ป.3)</option>
-                                    <option value="onet_p6">O-NET (ป.6)</option>
-                                    <option value="onet_m3">O-NET (ม.3)</option>
-                                </select>
+                            <div>
+                                <h3 class="font-bold text-slate-800">NT (ป.3)</h3>
+                                <p class="text-[10px] text-slate-500 uppercase font-bold tracking-wider">National Test</p>
                             </div>
                         </div>
-                        <div class="space-y-1">
-                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">คะแนนเฉลี่ยของโรงเรียน</label>
-                            <input type="number" id="nt_score" step="0.01" min="0" max="100" placeholder="0.00" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-bold text-slate-700">
+                        <form onsubmit="saveNationalTestDetail(event, 'nt')" class="space-y-4 flex-grow">
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">ปีการศึกษา</label>
+                                <input type="text" name="year" placeholder="2566" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all font-bold text-slate-700 text-sm">
+                            </div>
+                            <div class="grid grid-cols-1 gap-3 pt-2">
+                                <div class="space-y-1">
+                                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">ด้านภาษาไทย</label>
+                                    <input type="number" step="0.01" name="subject_ภาษาไทย" placeholder="คะแนนเฉลี่ย" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all font-bold text-slate-700 text-sm">
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">ด้านคณิตศาสตร์</label>
+                                    <input type="number" step="0.01" name="subject_คณิตศาสตร์" placeholder="คะแนนเฉลี่ย" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all font-bold text-slate-700 text-sm">
+                                </div>
+                            </div>
+                            <button type="submit" class="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold hover:bg-emerald-700 transition-all flex items-center justify-center gap-2 mt-4 text-sm">
+                                <i data-lucide="save" class="w-4 h-4"></i> บันทึก NT
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- O-NET Card -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex flex-col h-full" id="card_onet">
+                        <div class="flex items-center gap-4 mb-6">
+                            <div class="w-10 h-10 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center">
+                                <i data-lucide="graduation-cap" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-slate-800">O-NET</h3>
+                                <p class="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Ordinary National Educational Test</p>
+                            </div>
                         </div>
-                        <button type="submit" class="w-full bg-slate-800 text-white py-4 rounded-2xl font-bold hover:bg-black transition-all shadow-lg shadow-slate-200 flex items-center justify-center gap-2 mt-4">
-                            <i data-lucide="save" class="w-5 h-5"></i>
-                            บันทึกข้อมูลคะแนน
-                        </button>
-                    </form>
+                        <form onsubmit="saveNationalTestDetail(event, 'onet')" class="space-y-4 flex-grow">
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="space-y-1">
+                                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">ปีการศึกษา</label>
+                                    <input type="text" name="year" placeholder="2566" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-amber-500/10 outline-none transition-all font-bold text-slate-700 text-sm">
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">ระดับชั้น</label>
+                                    <select name="onet_level" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-amber-500/10 outline-none transition-all font-bold text-slate-700 text-sm cursor-pointer">
+                                        <option value="onet_p6">ป.6</option>
+                                        <option value="onet_m3" id="opt_m3">ม.3</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3 pt-2">
+                                <div class="space-y-1">
+                                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">ภาษาไทย</label>
+                                    <input type="number" step="0.01" name="subject_ภาษาไทย" placeholder="เฉลี่ย" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-amber-500/10 outline-none transition-all font-bold text-slate-700 text-sm">
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">คณิตศาสตร์</label>
+                                    <input type="number" step="0.01" name="subject_คณิตศาสตร์" placeholder="เฉลี่ย" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-amber-500/10 outline-none transition-all font-bold text-slate-700 text-sm">
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">วิทยาศาสตร์</label>
+                                    <input type="number" step="0.01" name="subject_วิทยาศาสตร์" placeholder="เฉลี่ย" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-amber-500/10 outline-none transition-all font-bold text-slate-700 text-sm">
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">ภาษาอังกฤษ</label>
+                                    <input type="number" step="0.01" name="subject_ภาษาอังกฤษ" placeholder="เฉลี่ย" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-amber-500/10 outline-none transition-all font-bold text-slate-700 text-sm">
+                                </div>
+                            </div>
+                            <button type="submit" class="w-full bg-amber-600 text-white py-3 rounded-xl font-bold hover:bg-amber-700 transition-all flex items-center justify-center gap-2 mt-4 text-sm">
+                                <i data-lucide="save" class="w-4 h-4"></i> บันทึก O-NET
+                            </button>
+                        </form>
+                    </div>
                 </div>
                 <?php endif; ?>
             </div>
@@ -1175,21 +1252,22 @@ try {
                 // Student Breakdown
                 const breakdown = document.getElementById('ov_student_breakdown');
                 breakdown.innerHTML = data.stats.students_by_level.map(l => `
-                    <span class="text-[9px] font-bold px-1.5 py-0.5 bg-slate-50 border border-slate-100 rounded text-slate-400">
-                        ${l.level}: <span class="text-blue-600">${l.count}</span>
-                    </span>
+                    <div class="flex flex-col bg-slate-50 border border-slate-100 p-2 rounded-xl">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">${l.level}</span>
+                        <span class="text-sm font-black text-blue-600">${l.count} <span class="text-[9px] text-slate-400 font-bold">คน</span></span>
+                    </div>
                 `).join('');
                 
                 // Hide M3 O-NET if no high school
                 const legendM3 = document.getElementById('legend_onet_m3');
-                const optionM3 = document.querySelector('#nt_type option[value="onet_m3"]');
+                const optM3 = document.getElementById('opt_m3');
                 
                 if (!hasHighSchoolGlobal) {
                     if (legendM3) legendM3.classList.add('hidden');
-                    if (optionM3) optionM3.classList.add('hidden');
+                    if (optM3) optM3.classList.add('hidden');
                 } else {
                     if (legendM3) legendM3.classList.remove('hidden');
-                    if (optionM3) optionM3.classList.remove('hidden');
+                    if (optM3) optM3.classList.remove('hidden');
                 }
 
                 // Render Chart
@@ -1294,43 +1372,53 @@ try {
                 .text(d => d.value > 0 ? d.value : '');
         }
 
-        // Handle National Test Form
-        const nationalTestForm = document.getElementById('nationalTestForm');
-        if (nationalTestForm) {
-            nationalTestForm.onsubmit = async (e) => {
-                e.preventDefault();
-                const btn = e.target.querySelector('button');
-                const originalText = btn.innerHTML;
-                btn.disabled = true;
-                btn.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> กำลังบันทึก...';
-                if (typeof lucide !== 'undefined') lucide.createIcons();
+        // Handle National Test Detailed Form
+        async function saveNationalTestDetail(e, type) {
+            e.preventDefault();
+            const form = e.target;
+            const btn = form.querySelector('button');
+            const originalText = btn.innerHTML;
+            
+            const formData = new FormData(form);
+            const academic_year = formData.get('year');
+            const test_type = type === 'onet' ? formData.get('onet_level') : type;
+            
+            const subjects = [];
+            form.querySelectorAll('input[name^="subject_"]').forEach(input => {
+                subjects.push({
+                    name: input.getAttribute('name').replace('subject_', ''),
+                    score: input.value
+                });
+            });
 
-                try {
-                    const res = await fetch('api/admin/save_national_test.php', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            academic_year: document.getElementById('nt_year').value,
-                            test_type: document.getElementById('nt_type').value,
-                            score_avg: document.getElementById('nt_score').value
-                        })
-                    });
-                    const result = await res.json();
-                    if (result.success) {
-                        alert(result.message);
-                        loadOverviewData();
-                        nationalTestForm.reset();
-                    } else {
-                        alert(result.error);
-                    }
-                } catch (err) {
-                    alert('เกิดข้อผิดพลาด: ' + err.message);
-                } finally {
-                    btn.disabled = false;
-                    btn.innerHTML = originalText;
-                    if (typeof lucide !== 'undefined') lucide.createIcons();
+            btn.disabled = true;
+            btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> บันทึก...';
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+
+            try {
+                const res = await fetch('api/admin/save_national_test.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        academic_year,
+                        test_type,
+                        subjects
+                    })
+                });
+                const result = await res.json();
+                if (result.success) {
+                    alert(result.message);
+                    loadOverviewData();
+                } else {
+                    alert(result.error);
                 }
-            };
+            } catch (err) {
+                alert('เกิดข้อผิดพลาด: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            }
         }
 
         // Show default section

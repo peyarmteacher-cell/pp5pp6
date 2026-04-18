@@ -13,37 +13,16 @@ $school_id = $_SESSION['school_id'] ?? null;
 $academic_year_query = $pdo->prepare("SELECT year FROM academic_years WHERE school_id = ? AND is_current = 1 LIMIT 1");
 $academic_year_query->execute([$school_id]);
 $current_year_row = $academic_year_query->fetch();
-$current_year = $current_year_row ? $current_year_row['year'] : null;
 
-// Fallback search: if no current year or no students in current year, find the latest year in students table
-if (!$current_year) {
-    $fallback_query = $pdo->prepare("SELECT MAX(academic_year) as latest_year FROM students WHERE school_id = ?");
-    $fallback_query->execute([$school_id]);
-    $fallback_year = $fallback_query->fetch();
-    $current_year = $fallback_year['latest_year'] ?: (date('Y') + 543);
-}
+// User requested to use exactly the year defined by Admin in Academic Year settings
+$current_year = $current_year_row ? $current_year_row['year'] : (date('Y') + 543);
 
 try {
     // 1. Student counts by level and total
-    // Try current year first
+    // Strictly follow current_year
     $stmt = $pdo->prepare("SELECT level, COUNT(*) as count FROM students WHERE school_id = ? AND academic_year = ? AND (status = 'studying' OR status IS NULL) GROUP BY level ORDER BY level");
     $stmt->execute([$school_id, $current_year]);
     $students_by_level = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    // If still 0, try without academic_year filter as a last resort to see if any students exist
-    if (empty($students_by_level)) {
-        $stmt = $pdo->prepare("SELECT level, COUNT(*) as count FROM students WHERE school_id = ? AND (status = 'studying' OR status IS NULL) GROUP BY level ORDER BY level");
-        $stmt->execute([$school_id]);
-        $students_by_level = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        
-        // If we found students, find out what year they belong to for the stats
-        if (!empty($students_by_level)) {
-             $year_stmt = $pdo->prepare("SELECT academic_year FROM students WHERE school_id = ? AND academic_year IS NOT NULL ORDER BY academic_year DESC LIMIT 1");
-             $year_stmt->execute([$school_id]);
-             $year_row = $year_stmt->fetch();
-             if ($year_row) $current_year = $year_row['academic_year'];
-        }
-    }
 
     $total_students = 0;
     $has_high_school = false; // Check if school has M.1-M.3

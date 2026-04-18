@@ -16,16 +16,46 @@ if (!$data || !isset($data['academic_year']) || !isset($data['test_type']) || !i
 
 $academic_year = $data['academic_year'];
 $test_type = strtolower($data['test_type']);
-$score_avg = (float)$data['score_avg'];
 $score_max = (float)($data['score_max'] ?? 100);
+$subjects = $data['subjects'] ?? [];
 
 try {
+    $pdo->beginTransaction();
+
+    // Calculate average if subjects are provided
+    $score_avg = (float)($data['score_avg'] ?? 0);
+    if (!empty($subjects)) {
+        $total = 0;
+        foreach ($subjects as $s) {
+            $total += (float)$s['score'];
+        }
+        $score_avg = $total / count($subjects);
+    }
+
     $stmt = $pdo->prepare("INSERT INTO national_test_results (school_id, academic_year, test_type, score_avg, score_max) 
                           VALUES (?, ?, ?, ?, ?) 
                           ON DUPLICATE KEY UPDATE score_avg = VALUES(score_avg), score_max = VALUES(score_max)");
     $stmt->execute([$school_id, $academic_year, $test_type, $score_avg, $score_max]);
     
+    // Get the result ID
+    $stmt = $pdo->prepare("SELECT id FROM national_test_results WHERE school_id = ? AND academic_year = ? AND test_type = ?");
+    $stmt->execute([$school_id, $academic_year, $test_type]);
+    $result_id = $stmt->fetchColumn();
+
+    // Save individual subjects
+    if (!empty($subjects)) {
+        // Clear existing scores for this result
+        $pdo->prepare("DELETE FROM national_test_scores WHERE result_id = ?")->execute([$result_id]);
+        
+        $stmt_score = $pdo->prepare("INSERT INTO national_test_scores (result_id, subject_name, score) VALUES (?, ?, ?)");
+        foreach ($subjects as $s) {
+            $stmt_score->execute([$result_id, $s['name'], (float)$s['score']]);
+        }
+    }
+
+    $pdo->commit();
     echo json_encode(['success' => true, 'message' => 'บันทึกข้อมูลคะแนนสำเร็จ']);
 } catch (Exception $e) {
+    $pdo->rollBack();
     echo json_encode(['error' => $e->getMessage()]);
 }

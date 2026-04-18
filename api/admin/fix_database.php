@@ -816,7 +816,17 @@ try {
         FOREIGN KEY (school_id) REFERENCES schools(id) ON DELETE CASCADE,
         UNIQUE KEY unique_test (school_id, academic_year, test_type)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-    $results[] = "สร้างตาราง national_test_results สำหรับบันทึกคะแนน RT, NT, O-NET สำเร็จ";
+
+    // 19. เพิ่มตารางสำหรับบันทึกคะแนนย่อยของแต่ละวิชา/ส่วน
+    $pdo->exec("CREATE TABLE IF NOT EXISTS national_test_scores (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        result_id INT NOT NULL,
+        subject_name VARCHAR(100) NOT NULL,
+        score FLOAT DEFAULT 0,
+        FOREIGN KEY (result_id) REFERENCES national_test_results(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    
+    $results[] = "สร้างตารางสำหรับการบันทึกคะแนนสอบระดับชาติยิบย่อยสำเร็จ";
     
     // ตั้งค่าชื่อแอปเริ่มต้น
     $stmt = $pdo->prepare("SELECT setting_value FROM app_settings WHERE setting_key = 'app_name'");
