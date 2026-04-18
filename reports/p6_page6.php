@@ -54,11 +54,22 @@
         <h3 class="text-center font-bold mb-4" style="font-size: 18px; margin-top: 45px;">ความคิดเห็นและข้อเสนอแนะของผู้ปกครอง</h3>
         
         <table class="p6-table mb-4">
-            <?php foreach ($categories as $cat): ?>
+            <?php 
+            $parent_map = [
+                'ด้านหน้าที่รับผิดชอบ ความเอาใจใส่การเรียน' => $parent_feedback['responsibility_comment'] ?? '',
+                'ด้านการใช้เวลาว่าง' => $parent_feedback['spare_time_comment'] ?? '',
+                'ด้านความสัมพันธ์กับ บุคคลรอบข้าง' => $parent_feedback['relationship_comment'] ?? '',
+                'ด้านอุปนิสัย บุคลิกภาพ' => $parent_feedback['personality_comment'] ?? '',
+                'ด้านสุขภาพ' => $parent_feedback['health_comment'] ?? ''
+            ];
+
+            foreach ($categories as $cat): 
+                $p_text = $parent_map[$cat] ?? '';
+            ?>
             <tr style="height: 65px;">
                 <td class="font-bold" style="width: 25%; padding: 5px 10px; text-align: center; line-height: 1.3;"><?= $cat ?></td>
                 <td class="text-left" style="padding: 10px 15px; vertical-align: top;">
-                    &nbsp;
+                    <?= nl2br(htmlspecialchars($p_text)) ?>
                 </td>
             </tr>
             <?php endforeach; ?>

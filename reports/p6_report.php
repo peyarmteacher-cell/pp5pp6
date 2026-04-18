@@ -292,6 +292,11 @@ foreach ($students_to_print as $student):
     ]);
     $behavior_comments = $stmt_behavior->fetchAll();
 
+    // ดึงความคิดเห็นผู้ปกครอง (parent_feedback)
+    $stmt_parent = $pdo->prepare('SELECT * FROM parent_feedback WHERE student_id = ? AND academic_year = ? AND semester = ?');
+    $stmt_parent->execute([$student['id'], $year, $target_sem]);
+    $parent_feedback = $stmt_parent->fetch();
+
     // ดึงหน้าต่างๆ มาแสดงตามลำดับใหม่
     include 'p6_page2.php'; // หน้าปก (หน้าที่ 1)
     include 'p6_page3.php'; // หน้าคู่มือ (หน้าที่ 2)
