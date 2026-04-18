@@ -397,8 +397,8 @@ try {
 
         <!-- Sections -->
         <div id="overview" class="section space-y-6">
-            <!-- Stats Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Stats Cards (First Row) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Welcome Card -->
                 <div class="bg-gradient-to-br from-indigo-600 to-blue-500 p-6 rounded-3xl shadow-lg shadow-blue-200 text-white flex flex-col justify-between">
                     <div>
@@ -412,24 +412,6 @@ try {
                             <span class="text-xs font-bold" id="ov_current_year">ปีการศึกษา -</span>
                         </div>
                         <i data-lucide="sparkles" class="w-6 h-6 text-white/20"></i>
-                    </div>
-                </div>
-
-                <!-- Total Students Card -->
-                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex items-center gap-6 group hover:border-blue-300 transition-all">
-                    <div class="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
-                        <i data-lucide="users" class="w-8 h-8"></i>
-                    </div>
-                    <div>
-                        <p class="text-sm font-bold text-slate-500 uppercase tracking-wider">นักเรียนทั้งหมด</p>
-                        <div class="flex items-baseline gap-2">
-                            <h4 class="text-3xl font-black text-slate-800" id="ov_student_count">0</h4>
-                            <span class="text-xs font-bold text-slate-400">คน</span>
-                        </div>
-                        <!-- Student breakdown -->
-                        <div id="ov_student_breakdown" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 mt-4">
-                            <!-- Levels will be injected here -->
-                        </div>
                     </div>
                 </div>
 
@@ -448,41 +430,80 @@ try {
                 </div>
             </div>
 
-            <!-- Chart Section -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
-                    <div class="flex items-center justify-between mb-8">
+            <!-- Second Row: Chart & Student Breakdown Table -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- National Test Chart (Col Span 2) -->
+                <div class="lg:col-span-2 bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
                         <div>
                             <h3 class="text-xl font-black text-slate-800">เปรียบเทียบผลทดสอบระดับชาติ</h3>
                             <p class="text-sm text-slate-500 font-medium">คะแนนเฉลี่ย RT, NT และ O-NET แต่ละปีการศึกษา</p>
                         </div>
-                        <div class="flex items-center gap-4" id="chart_legend">
+                        <div class="flex flex-wrap items-center gap-3" id="chart_legend">
                             <div class="flex items-center gap-1.5">
-                                <div class="w-3 h-3 rounded-full bg-blue-500"></div>
-                                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">RT (ป.1)</span>
+                                <div class="w-2.5 h-2.5 rounded-full bg-blue-500"></div>
+                                <span class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">RT</span>
                             </div>
                             <div class="flex items-center gap-1.5">
-                                <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
-                                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">NT (ป.3)</span>
+                                <div class="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
+                                <span class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">NT</span>
                             </div>
                             <div class="flex items-center gap-1.5">
-                                <div class="w-3 h-3 rounded-full bg-amber-500"></div>
-                                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">O-NET (ป.6)</span>
+                                <div class="w-2.5 h-2.5 rounded-full bg-amber-500"></div>
+                                <span class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">O-NET (ป.6)</span>
                             </div>
                             <div class="flex items-center gap-1.5" id="legend_onet_m3">
-                                <div class="w-3 h-3 rounded-full bg-rose-500"></div>
-                                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">O-NET (ม.3)</span>
+                                <div class="w-2.5 h-2.5 rounded-full bg-rose-500"></div>
+                                <span class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">O-NET (ม.3)</span>
                             </div>
                         </div>
                     </div>
                     <div id="national_test_chart" class="w-full h-[300px] relative">
-                        <!-- Chart rendered by D3 -->
                         <div id="chart_empty_state" class="hidden absolute inset-0 flex flex-col items-center justify-center text-slate-300">
                             <i data-lucide="bar-chart-3" class="w-12 h-12 mb-2"></i>
                             <p class="text-sm font-bold">ยังไม่มีข้อมูลการสอบ</p>
                         </div>
                     </div>
                 </div>
+
+                <!-- Student Counts Table (Col Span 1) -->
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+                    <div class="p-6 border-b border-slate-100 bg-slate-50/50">
+                        <div class="flex items-center justify-between mb-2">
+                             <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">นักเรียนทั้งหมด</p>
+                             <div class="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-[10px] font-black uppercase tracking-wider">Current Year</div>
+                        </div>
+                        <div class="flex items-baseline gap-2">
+                             <h4 class="text-4xl font-black text-slate-800" id="ov_student_count">0</h4>
+                             <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">คน</span>
+                        </div>
+                        <div class="flex gap-4 mt-3">
+                            <div class="flex items-center gap-1.5">
+                                <div class="w-2 h-2 rounded-full bg-blue-400"></div>
+                                <span class="text-[10px] font-bold text-slate-500">ชาย: <span id="ov_male_total" class="text-slate-800">0</span></span>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <div class="w-2 h-2 rounded-full bg-pink-400"></div>
+                                <span class="text-[10px] font-bold text-slate-500">หญิง: <span id="ov_female_total" class="text-slate-800">0</span></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex-1 overflow-y-auto">
+                        <table class="w-full text-left">
+                            <thead class="sticky top-0 bg-white border-b border-slate-100">
+                                <tr class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                    <th class="px-6 py-3">ระดับชั้น</th>
+                                    <th class="px-4 py-3 text-center">ชาย/หญิง</th>
+                                    <th class="px-6 py-3 text-right">รวม</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ov_student_table_body" class="divide-y divide-slate-50">
+                                <!-- Data rows injected here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
 
                     </div>
                 </div>
@@ -1256,18 +1277,28 @@ try {
 
                 // Update Stats
                 document.getElementById('ov_student_count').innerText = data.stats.student_count.toLocaleString();
+                document.getElementById('ov_male_total').innerText = data.stats.total_male.toLocaleString();
+                document.getElementById('ov_female_total').innerText = data.stats.total_female.toLocaleString();
                 document.getElementById('ov_teacher_count').innerText = data.stats.teacher_count.toLocaleString();
                 document.getElementById('ov_current_year').innerText = `ปีการศึกษา ${data.stats.academic_year}`;
                 hasHighSchoolGlobal = data.stats.has_high_school;
 
-                // Student Breakdown
-                const breakdown = document.getElementById('ov_student_breakdown');
-                breakdown.innerHTML = data.stats.students_by_level.map(l => `
-                    <div class="flex flex-col bg-slate-50 border border-slate-100 p-2 rounded-xl">
-                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">${l.level}</span>
-                        <span class="text-sm font-black text-blue-600">${l.count} <span class="text-[9px] text-slate-400 font-bold">คน</span></span>
-                    </div>
-                `).join('');
+                // Student Breakdown Table
+                const tableBody = document.getElementById('ov_student_table_body');
+                if (tableBody) {
+                    tableBody.innerHTML = data.stats.students_by_level.map(l => `
+                        <tr class="hover:bg-slate-50/50 transition-colors">
+                            <td class="px-6 py-3 font-bold text-slate-700 text-sm">${l.level}</td>
+                            <td class="px-4 py-3 text-center">
+                                <div class="flex items-center justify-center gap-2">
+                                    <span class="text-[10px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100">${l.male} ช.</span>
+                                    <span class="text-[10px] font-bold text-pink-600 bg-pink-50 px-1.5 py-0.5 rounded border border-pink-100">${l.female} ญ.</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-3 text-right font-black text-slate-800">${l.total}</td>
+                        </tr>
+                    `).join('');
+                }
                 
                 // Hide M3 O-NET if no high school
                 const legendM3 = document.getElementById('legend_onet_m3');
