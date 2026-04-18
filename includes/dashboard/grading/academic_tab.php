@@ -341,12 +341,15 @@
             }).join('') : '';
 
             const scoreFinal = parseFloat(s.score_final) || 0;
-            const totalScore = currentTotal + scoreFinal;
-            const totalMaxWithFinal = totalMax + finalMaxScore;
+            const totalScore = parseFloat(currentTotal + scoreFinal) || 0;
+            const totalMaxWithFinal = parseFloat(totalMax + finalMaxScore) || 0;
             const percent = totalMaxWithFinal > 0 ? Math.min((totalScore / totalMaxWithFinal) * 100, 100) : 0;
             
-            // ตรวจสอบว่ามีการป้อนคะแนนหรือยัง (ถ้ายังไม่มีเลยให้แสดง -)
-            const hasScores = (s.unit_scores && s.unit_scores.length > 0) || scoreFinal > 0;
+            // ตรวจสอบว่ามีการป้อนคะแนนหรือยัง (ถ้ามีคะแนนหน่วย หรือคะแนนปลายภาคไม่เป็นค่าว่าง)
+            const hasUnitScores = s.unit_scores && s.unit_scores.length > 0;
+            const hasFinalScore = s.score_final !== null && s.score_final !== undefined && s.score_final !== '';
+            const hasScores = hasUnitScores || hasFinalScore;
+            
             const calculatedGrade = hasScores ? calculateGradeFromPercent(percent) : '-';
             
             // ใช้เกรดที่บันทึกไว้ในฐานข้อมูลถ้ามี (เพื่อรองรับ ร, มส, มผ) หรือใช้ค่าที่คำนวณได้
@@ -464,8 +467,8 @@
         }, 0) : 0;
         
         const scoreFinal = parseFloat(student.score_final) || 0;
-        const totalScore = currentTotal + scoreFinal;
-        const totalMaxWithFinal = totalMax + finalMaxScore;
+        const totalScore = parseFloat(currentTotal + scoreFinal);
+        const totalMaxWithFinal = parseFloat(totalMax + finalMaxScore);
         const percent = totalMaxWithFinal > 0 ? Math.min((totalScore / totalMaxWithFinal) * 100, 100) : 0;
         
         const unitsTotalEl = document.getElementById(`units-total-${studentId}`);
@@ -478,7 +481,10 @@
         if (percentEl) percentEl.innerText = percent.toFixed(1) + '%';
         
         // คำนวณเกรดเบื้องต้น
-        const hasScores = (student.unit_scores && student.unit_scores.length > 0) || scoreFinal > 0;
+        const hasUnitScores = student.unit_scores && student.unit_scores.length > 0;
+        const hasFinalScore = student.score_final !== null && student.score_final !== undefined && student.score_final !== '';
+        const hasScores = hasUnitScores || hasFinalScore;
+        
         const calculatedGrade = hasScores ? calculateGradeFromPercent(percent) : '-';
         
         if (gradeEl) {

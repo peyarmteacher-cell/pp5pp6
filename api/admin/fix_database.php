@@ -387,6 +387,28 @@ try {
     if (!$stmt->fetch()) {
         $pdo->exec("ALTER TABLE grades ADD COLUMN grade VARCHAR(5) AFTER score_percent");
     }
+
+    // เพิ่ม Unique Key ให้กับตาราง grades หากยังไม่มี เพื่อให้ ON DUPLICATE KEY UPDATE ทำงานถูกต้อง
+    $stmt = $pdo->query("SHOW INDEX FROM grades WHERE Key_name = 'unique_grade'");
+    if (!$stmt->fetch()) {
+        try {
+            // ลบข้อมูลซ้ำออกก่อน โดยเก็บใบที่มี ID สูงสุดไว้
+            $pdo->exec("DELETE g1 FROM grades g1
+                       INNER JOIN grades g2 
+                       WHERE g1.id < g2.id 
+                       AND g1.student_id = g2.student_id 
+                       AND g1.subject_id = g2.subject_id 
+                       AND g1.classroom_id = g2.classroom_id 
+                       AND g1.academic_year = g2.academic_year 
+                       AND g1.semester = g2.semester");
+            
+            $pdo->exec("ALTER TABLE grades ADD UNIQUE KEY unique_grade (student_id, subject_id, classroom_id, academic_year, semester)");
+            $results[] = "เพิ่ม Unique Key ให้กับตาราง grades สำเร็จ (และลบข้อมูลซ้ำ)";
+        } catch (Exception $e) {
+            $results[] = "ไม่สามารถเพิ่ม Unique Key ให้กับตาราง grades: " . $e->getMessage();
+        }
+    }
+
     $results[] = "ตรวจสอบ/ปรับปรุงตาราง grades สำเร็จ";
 
     $pdo->exec("CREATE TABLE IF NOT EXISTS unit_scores (

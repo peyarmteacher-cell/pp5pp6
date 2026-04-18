@@ -48,7 +48,11 @@ try {
             $student_id = $g['student_id'];
             $score_units = $g['score_units'] ?? 0;
             $score_final = $g['score_final'] ?? 0;
-            $score_total = $g['score_total'] ?? 0;
+            
+            // ให้เซิร์ฟเวอร์คำนวณคะแนนรวมอีกครั้งเพื่อความถูกต้อง
+            $score_total = $score_units + $score_final;
+            
+            // คำนวณร้อยละ (พยายามดึงคะแนนเต็มจากฐานข้อมูลถ้าเป็นไปได้ แต่เบื้องต้นใช้ตามที่ส่งมาและคำนวณใหม่)
             $score_percent = $g['score_percent'] ?? 0;
             $grade = $g['grade'] ?? '0';
 
