@@ -1,7 +1,14 @@
 <div class="space-y-6">
     <div class="flex justify-between items-center">
         <h3 class="text-lg font-bold text-slate-800">บันทึกคะแนนรายวิชา</h3>
-        <button onclick="saveUnitScores()" class="bg-blue-600 text-white px-8 py-2 rounded-xl font-semibold hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20 cursor-pointer">บันทึกคะแนนหน่วยการเรียนรู้</button>
+        <div class="flex gap-2">
+            <button onclick="saveUnitScores('final')" class="bg-amber-500 text-white px-4 py-2 rounded-xl font-semibold hover:bg-amber-600 transition-all shadow-lg shadow-amber-500/20 cursor-pointer">
+                บันทึกคะแนนสอบปลายภาค
+            </button>
+            <button onclick="saveUnitScores('all')" class="bg-blue-600 text-white px-8 py-2 rounded-xl font-semibold hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20 cursor-pointer">
+                บันทึกคะแนนหน่วยและปลายภาค
+            </button>
+        </div>
     </div>
 
     <!-- Grading Table -->
@@ -349,6 +356,7 @@
             // Store calculated values in student object for summary
             s.score_total = totalScore;
             s.score_percent = percent;
+            s.score_units = currentTotal;
             if (!s.grade) s.grade = calculatedGrade;
 
             return `
@@ -546,8 +554,11 @@
         recalculateRow(studentId);
     }
 
-    async function saveUnitScores() {
+    async function saveUnitScores(type = 'all') {
         if (!currentAssignment) return;
+        
+        // Ensure all data is recalculated before save
+        currentStudents.forEach(s => recalculateRow(s.id));
         
         const scores = [];
         const grades = [];
