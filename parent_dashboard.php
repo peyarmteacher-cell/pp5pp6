@@ -325,29 +325,37 @@ $school_name = $_SESSION['school_name'];
                     document.getElementById('header_avg_gpa').innerText = '-';
                 } else {
                     // Filter numeric grades for GPA calc
+                    let totalWeightedGrade = 0;
+                    let totalCredits = 0;
+
                     const processedGrades = data.grades.map(g => {
                         // Priority: grade string > grade_point
                         let displayGrade = '-';
                         let numericGrade = null;
+                        const credits = parseFloat(g.credits) || 0;
                         
                         if (g.grade !== null && g.grade !== undefined && g.grade !== '') {
                             displayGrade = g.grade;
                             const parsed = parseFloat(g.grade);
-                            if (!isNaN(parsed)) numericGrade = parsed;
+                            if (!isNaN(parsed)) {
+                                numericGrade = parsed;
+                                totalWeightedGrade += (numericGrade * credits);
+                                totalCredits += credits;
+                            }
                         } else if (g.grade_point !== undefined && g.grade_point !== null) {
                             displayGrade = g.grade_point;
                             numericGrade = parseFloat(g.grade_point);
+                            if (!isNaN(numericGrade)) {
+                                totalWeightedGrade += (numericGrade * credits);
+                                totalCredits += credits;
+                            }
                         }
                         
                         return { ...g, displayGrade, numericGrade };
                     });
 
-                    const validGrades = processedGrades.filter(g => g.numericGrade !== null);
-                    const avg = validGrades.length > 0 
-                        ? validGrades.reduce((acc, curr) => acc + curr.numericGrade, 0) / validGrades.length 
-                        : 0;
-                    
-                    document.getElementById('header_avg_gpa').innerText = validGrades.length > 0 ? avg.toFixed(2) : '-';
+                    const avg = totalCredits > 0 ? totalWeightedGrade / totalCredits : 0;
+                    document.getElementById('header_avg_gpa').innerText = totalCredits > 0 ? avg.toFixed(2) : '-';
                     
                     list.innerHTML = processedGrades.map(g => {
                         const score = g.score_total !== undefined && g.score_total !== null ? g.score_total : '0';

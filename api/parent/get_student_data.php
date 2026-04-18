@@ -81,7 +81,7 @@ try {
         $sub_params[] = $semester;
     }
 
-    $grade_sql = "SELECT g.*, sub.name as subject_name, sub.code as subject_code 
+    $grade_sql = "SELECT g.*, sub.name as subject_name, sub.code as subject_code, sub.credits 
                   FROM grades g 
                   JOIN subjects sub ON g.subject_id = sub.id 
                   WHERE g.id IN (
