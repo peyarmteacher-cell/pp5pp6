@@ -262,15 +262,18 @@ $school_name = $_SESSION['school_name'];
                 const student = data.student;
                 const full_name = student.name + (student.last_name ? ' ' + student.last_name : '');
                 document.getElementById('header_student_name').innerText = full_name;
-                document.getElementById('header_student_level').innerText = 'ชั้น: ' + (student.level || '-');
+                const level_info = 'ชั้น: ' + (student.level || '-') + (student.classroom_name ? ' ห้อง: ' + student.classroom_name : '');
+                document.getElementById('header_student_level').innerText = level_info;
                 
                 // Gender Icon
                 const avatarIcon = document.getElementById('avatar_icon');
-                if (student.name.includes('เด็กชาย') || student.name.includes('นาย') || student.name.includes('ด.ช.')) {
+                const nameStr = student.name || '';
+                if (nameStr.includes('เด็กชาย') || nameStr.includes('นาย') || nameStr.includes('ด.ช.')) {
                     avatarIcon.setAttribute('data-lucide', 'user');
                 } else {
                     avatarIcon.setAttribute('data-lucide', 'user-round-plus');
                 }
+                lucide.createIcons();
                 
                 // Filters
                 if (isFirstLoad) {
@@ -295,19 +298,31 @@ $school_name = $_SESSION['school_name'];
                     document.getElementById('header_avg_gpa').innerText = '-';
                 } else {
                     // Filter numeric grades for GPA calc
-                    const validGrades = data.grades.filter(g => {
-                        const val = g.grade_point !== undefined ? g.grade_point : g.grade;
-                        return !isNaN(parseFloat(val)) && val !== null && val !== '';
+                    const processedGrades = data.grades.map(g => {
+                        // Priority: grade string > grade_point
+                        let displayGrade = '-';
+                        let numericGrade = null;
+                        
+                        if (g.grade !== null && g.grade !== undefined && g.grade !== '') {
+                            displayGrade = g.grade;
+                            const parsed = parseFloat(g.grade);
+                            if (!isNaN(parsed)) numericGrade = parsed;
+                        } else if (g.grade_point !== undefined && g.grade_point !== null) {
+                            displayGrade = g.grade_point;
+                            numericGrade = parseFloat(g.grade_point);
+                        }
+                        
+                        return { ...g, displayGrade, numericGrade };
                     });
-                    
+
+                    const validGrades = processedGrades.filter(g => g.numericGrade !== null);
                     const avg = validGrades.length > 0 
-                        ? validGrades.reduce((acc, curr) => acc + parseFloat(curr.grade_point !== undefined ? curr.grade_point : curr.grade), 0) / validGrades.length 
+                        ? validGrades.reduce((acc, curr) => acc + curr.numericGrade, 0) / validGrades.length 
                         : 0;
                     
                     document.getElementById('header_avg_gpa').innerText = validGrades.length > 0 ? avg.toFixed(2) : '-';
                     
-                    list.innerHTML = data.grades.map(g => {
-                        const displayGrade = g.grade !== null && g.grade !== undefined && g.grade !== '' ? g.grade : (g.grade_point !== undefined ? g.grade_point : '-');
+                    list.innerHTML = processedGrades.map(g => {
                         const score = g.score_total !== undefined && g.score_total !== null ? g.score_total : '0';
                         
                         return `
@@ -324,7 +339,7 @@ $school_name = $_SESSION['school_name'];
                                     <span class="bg-slate-50 px-2 py-1 rounded-lg text-xs font-black text-slate-600 border border-slate-100">${score}</span>
                                 </div>
                                 <div class="w-12 text-center">
-                                    <div class="text-base font-black text-blue-600 leading-none">${displayGrade}</div>
+                                    <div class="text-base font-black text-blue-600 leading-none">${g.displayGrade}</div>
                                 </div>
                             </div>
                         `;

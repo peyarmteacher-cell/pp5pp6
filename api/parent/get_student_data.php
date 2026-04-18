@@ -36,9 +36,10 @@ try {
     }
 
     // 1. Student Info
-    $stmt = $pdo->prepare("SELECT s.*, sch.name as school_name 
+    $stmt = $pdo->prepare("SELECT s.*, sch.name as school_name, cl.name as classroom_name 
                            FROM students s 
                            JOIN schools sch ON s.school_id = sch.id 
+                           LEFT JOIN classrooms cl ON s.classroom_id = cl.id
                            WHERE s.id = ?");
     $stmt->execute([$student_id]);
     $student = $stmt->fetch();
@@ -76,7 +77,7 @@ try {
         $grade_params[] = $semester;
     }
     
-    $grade_sql .= " ORDER BY sub.code ASC";
+    $grade_sql .= " GROUP BY g.subject_id ORDER BY sub.code ASC";
     $stmt = $pdo->prepare($grade_sql);
     $stmt->execute($grade_params);
     $grades = $stmt->fetchAll();
