@@ -81,6 +81,32 @@ $school_name = $_SESSION['school_name'];
 
         <!-- TAB 1: ผลการเรียน -->
         <div id="tab_academic" class="section-tab active space-y-6">
+            <!-- Attendance Section (Restored) -->
+            <section class="space-y-3">
+                <div class="flex items-center gap-2 mx-2">
+                    <i data-lucide="calendar-check" class="w-4 h-4 text-blue-600"></i>
+                    <h2 class="font-bold text-slate-800">สถิติการเข้าเรียน</h2>
+                </div>
+                <div class="bg-white p-5 rounded-3xl shadow-sm border border-slate-100 grid grid-cols-4 gap-4 text-center">
+                    <div>
+                        <div class="text-xl font-bold text-green-600" id="att_present">0</div>
+                        <p class="text-[10px] text-slate-400 font-bold">มาเรียน</p>
+                    </div>
+                    <div>
+                        <div class="text-xl font-bold text-amber-500" id="att_late">0</div>
+                        <p class="text-[10px] text-slate-400 font-bold">มาสาย</p>
+                    </div>
+                    <div>
+                        <div class="text-xl font-bold text-red-500" id="att_absent">0</div>
+                        <p class="text-[10px] text-slate-400 font-bold">ขาดเรียน</p>
+                    </div>
+                    <div>
+                        <div class="text-xl font-bold text-blue-500" id="att_leave">0</div>
+                        <p class="text-[10px] text-slate-400 font-bold">ลา/ป่วย</p>
+                    </div>
+                </div>
+            </section>
+
             <section class="space-y-3">
                 <div class="flex items-center mx-2 gap-2">
                     <i data-lucide="award" class="w-4 h-4 text-amber-500"></i>
@@ -235,6 +261,15 @@ $school_name = $_SESSION['school_name'];
                     semesterSelect.value = data.filters.current_semester;
                     isFirstLoad = false;
                 }
+
+                // Update Attendance (Restored)
+                let counts = { present: 0, late: 0, absent: 0, leave: 0, sick: 0 };
+                data.attendance.forEach(a => { counts[a.status] = a.count; });
+                
+                document.getElementById('att_present').innerText = counts.present;
+                document.getElementById('att_late').innerText = counts.late;
+                document.getElementById('att_absent').innerText = counts.absent;
+                document.getElementById('att_leave').innerText = parseInt(counts.leave) + parseInt(counts.sick);
 
                 // Grades
                 const list = document.getElementById('grades_list');
