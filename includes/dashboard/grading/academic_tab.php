@@ -2,11 +2,11 @@
     <div class="flex justify-between items-center">
         <h3 class="text-lg font-bold text-slate-800">บันทึกคะแนนรายวิชา</h3>
         <div class="flex gap-2">
-            <button onclick="saveUnitScores('final')" class="bg-amber-500 text-white px-4 py-2 rounded-xl font-semibold hover:bg-amber-600 transition-all shadow-lg shadow-amber-500/20 cursor-pointer">
-                บันทึกคะแนนสอบปลายภาค
+            <button onclick="saveUnitScores('units')" class="bg-blue-600 text-white px-6 py-2 rounded-xl font-semibold hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20 cursor-pointer">
+                บันทึกคะแนนหน่วยการเรียนรู้
             </button>
-            <button onclick="saveUnitScores('all')" class="bg-blue-600 text-white px-8 py-2 rounded-xl font-semibold hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20 cursor-pointer">
-                บันทึกคะแนนหน่วยและปลายภาค
+            <button onclick="saveUnitScores('final')" class="bg-amber-500 text-white px-6 py-2 rounded-xl font-semibold hover:bg-amber-600 transition-all shadow-lg shadow-amber-500/20 cursor-pointer">
+                บันทึกคะแนนสอบปลายภาค
             </button>
         </div>
     </div>
@@ -554,7 +554,7 @@
         recalculateRow(studentId);
     }
 
-    async function saveUnitScores(type = 'all') {
+    async function saveUnitScores(mode = 'units') {
         if (!currentAssignment) return;
         
         // Ensure all data is recalculated before save
@@ -564,18 +564,20 @@
         const grades = [];
 
         currentStudents.forEach(s => {
-            if (s.unit_scores) {
-                s.unit_scores.forEach(us => {
-                    // ตรวจสอบว่าหน่วยการเรียนรู้นี้ยังคงมีอยู่ในรายการปัจจุบันหรือไม่
-                    if (currentUnits.find(u => u.id == us.learning_unit_id)) {
-                        scores.push({
-                            student_id: s.id,
-                            unit_id: us.learning_unit_id,
-                            score: us.score
-                        });
-                    }
-                });
+            if (mode === 'units') {
+                if (s.unit_scores) {
+                    s.unit_scores.forEach(us => {
+                        if (currentUnits.find(u => u.id == us.learning_unit_id)) {
+                            scores.push({
+                                student_id: s.id,
+                                unit_id: us.learning_unit_id,
+                                score: us.score
+                            });
+                        }
+                    });
+                }
             }
+            // Always send grades to update the summary table (score_units or score_final)
             grades.push({
                 student_id: s.id,
                 score_units: s.score_units || 0,
@@ -591,7 +593,7 @@
             classroom_id: currentAssignment.classroom_id,
             academic_year: document.getElementById('grade_academic_year').value,
             semester: document.getElementById('grade_semester').value,
-            scores: scores,
+            scores: mode === 'units' ? scores : [], // Only send unit scores in 'units' mode
             grades: grades
         };
 
@@ -603,13 +605,14 @@
             });
             const result = await res.json();
             if (result.message) {
-                alert(result.message);
+                const successMsg = mode === 'units' ? 'บันทึกคะแนนหน่วยการเรียนรู้สำเร็จ' : 'บันทึกคะแนนสอบปลายภาคสำเร็จ';
+                alert(successMsg);
                 loadStudentsByAssignment();
             } else {
                 alert(result.error);
             }
         } catch (e) {
-            console.error('Error saving unit scores:', e);
+            console.error('Error saving scores:', e);
         }
     }
 </script>
