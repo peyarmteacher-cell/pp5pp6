@@ -57,6 +57,19 @@
                 </div>
             </div>
 
+            <div class="pt-6 border-t border-slate-100">
+                <div class="flex items-center gap-3 p-4 bg-amber-50 rounded-2xl border border-amber-100">
+                    <div class="flex-1">
+                        <h4 class="text-sm font-bold text-amber-800">การแสดงผลการเรียน (GPA/เกรดรายวิชา)</h4>
+                        <p class="text-[11px] text-amber-700">เปิดหรือปิดการแสดงผลการเรียนให้นักเรียนและผู้ปกครองเห็นในระบบ</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="setting_show_grades" value="" class="sr-only peer">
+                        <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                    </label>
+                </div>
+            </div>
+
             <div class="space-y-4">
                 <label class="text-sm font-semibold text-slate-700">โลโก้โรงเรียน / โลโก้ สพฐ.</label>
                 <div class="flex flex-col md:flex-row items-start gap-6">
@@ -305,6 +318,7 @@
                 document.getElementById('setting_academic_head_name').value = data.school.academic_head_name || '';
                 document.getElementById('setting_academic_head_position').value = data.school.academic_head_position || 'หัวหน้างานวิชาการ';
                 document.getElementById('setting_telegram_bot_token').value = data.school.telegram_bot_token || '';
+                document.getElementById('setting_show_grades').checked = (data.school.show_grades == 1);
                 
                 if (data.school.logo_url) {
                     const img = document.getElementById('logo_preview');
@@ -590,7 +604,8 @@
                     director_name: document.getElementById('setting_director_name').value,
                     academic_head_name: document.getElementById('setting_academic_head_name').value,
                     academic_head_position: document.getElementById('setting_academic_head_position').value,
-                    telegram_bot_token: document.getElementById('setting_telegram_bot_token').value
+                    telegram_bot_token: document.getElementById('setting_telegram_bot_token').value,
+                    show_grades: document.getElementById('setting_show_grades').checked ? 1 : 0
                 })
             });
             const result = await res.json();

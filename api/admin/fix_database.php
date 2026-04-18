@@ -92,6 +92,12 @@ try {
         $results[] = "เพิ่มคอลัมน์ district ในตาราง schools สำเร็จ";
     }
 
+    $stmt = $pdo->query("SHOW COLUMNS FROM schools LIKE 'show_grades'");
+    if (!$stmt->fetch()) {
+        $pdo->exec("ALTER TABLE schools ADD COLUMN show_grades TINYINT(1) DEFAULT 1 AFTER telegram_bot_token");
+        $results[] = "เพิ่มคอลัมน์ show_grades ในตาราง schools สำเร็จ";
+    }
+
     // 5. เพิ่มตาราง classrooms
     $pdo->exec("CREATE TABLE IF NOT EXISTS classrooms (
         id INT AUTO_INCREMENT PRIMARY KEY,

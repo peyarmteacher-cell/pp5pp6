@@ -316,7 +316,23 @@ $school_name = $_SESSION['school_name'];
 
                 // Calc average GPA
                 const list = document.getElementById('grades_list');
-                if (!data.grades || data.grades.length === 0) {
+                const showGrades = student.school_show_grades == 1;
+
+                if (!showGrades) {
+                    list.innerHTML = `
+                        <div class="bg-amber-50 p-8 rounded-3xl border border-amber-100 text-center space-y-3">
+                            <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto shadow-sm">
+                                <i data-lucide="lock" class="w-6 h-6"></i>
+                            </div>
+                            <div class="space-y-1">
+                                <h3 class="font-bold text-amber-900 text-sm">ยังไม่เปิดให้ดูผลการเรียน</h3>
+                                <p class="text-xs text-amber-700 leading-relaxed px-4">เจ้าหน้าที่วิชาการกำลังอยู่ระหว่างการประมวลผลข้อมูล<br>กรุณาตรวจสอบอีกครั้งภายหลังครับ</p>
+                            </div>
+                        </div>
+                    `;
+                    document.getElementById('header_avg_gpa').innerText = '-';
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
+                } else if (!data.grades || data.grades.length === 0) {
                     list.innerHTML = '<div class="bg-white p-8 text-center text-slate-400 rounded-2xl italic shadow-sm">ไม่มีข้อมูลในเทอมนี้</div>';
                     document.getElementById('header_avg_gpa').innerText = '-';
                 } else {
