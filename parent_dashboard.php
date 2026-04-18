@@ -390,28 +390,29 @@ $school_name = $_SESSION['school_name'];
                     });
                 }
 
-                // Health - Dynamic lookup for latest non-zero record
+                // Health - Robust lookup for latest non-zero measurements
                 healthHistory = data.health_history || [];
-                let latestWeight = parseFloat(student.weight) || 0;
-                let latestHeight = parseFloat(student.height) || 0;
+                let displayWeight = 0;
+                let displayHeight = 0;
 
+                // 1. Check history first (it contains the most detailed records)
                 if (healthHistory.length > 0) {
-                    // Try to find the latest record that actually has data
-                    // iterate backwards
                     for (let i = healthHistory.length - 1; i >= 0; i--) {
-                        const rec = healthHistory[i];
-                        const w = parseFloat(rec.weight);
-                        const h = parseFloat(rec.height);
-                        
-                        if (w > 0 && latestWeight === 0) latestWeight = w;
-                        if (h > 0 && latestHeight === 0) latestHeight = h;
-                        
-                        if (latestWeight > 0 && latestHeight > 0) break;
+                        const w = parseFloat(healthHistory[i].weight) || 0;
+                        const h = parseFloat(healthHistory[i].height) || 0;
+                        if (w > 0 && displayWeight === 0) displayWeight = w;
+                        if (h > 0 && displayHeight === 0) displayHeight = h;
+                        if (displayWeight > 0 && displayHeight > 0) break;
                     }
                 }
+
+                // 2. Fallback to student profile only if history didn't provide a value
+                if (displayWeight === 0) displayWeight = parseFloat(student.weight) || 0;
+                if (displayHeight === 0) displayHeight = parseFloat(student.height) || 0;
                 
-                document.getElementById('health_weight').innerText = latestWeight > 0 ? latestWeight : '-';
-                document.getElementById('health_height').innerText = latestHeight > 0 ? latestHeight : '-';
+                // 3. Update UI - ensure we don't show literal "0" if we can show "-"
+                document.getElementById('health_weight').textContent = displayWeight > 0 ? displayWeight : '-';
+                document.getElementById('health_height').textContent = displayHeight > 0 ? displayHeight : '-';
 
                 if (typeof lucide !== 'undefined') lucide.createIcons();
 
