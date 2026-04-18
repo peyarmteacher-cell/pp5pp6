@@ -61,8 +61,12 @@ try {
     if (!$academic_year && $student && isset($student['academic_year'])) {
         $academic_year = $student['academic_year'];
     }
-    if (!$semester && $academic_year) {
-        $semester = '1'; // Default to term 1 if unknown
+    // Fallback if still no year (completely new student)
+    if (!$academic_year) {
+        $academic_year = '2568'; 
+    }
+    if (!$semester) {
+        $semester = '1';
     }
 
     // Use a subquery to get the latest grade ID for each subject to avoid duplicates and ONLY_FULL_GROUP_BY issues
@@ -90,28 +94,34 @@ try {
     $grades = $stmt->fetchAll();
 
     // 4. Latest Behavior
-    $bh_sql = "SELECT * FROM evaluation_scores WHERE student_id = ? AND category = 'characteristics' AND academic_year = ?";
-    $bh_params = [$student_id, $academic_year];
-    if ($semester && $semester !== 'annual') {
-        $bh_sql .= " AND semester = ?";
-        $bh_params[] = $semester;
+    $behavior = null;
+    if ($academic_year) {
+        $bh_sql = "SELECT * FROM evaluation_scores WHERE student_id = ? AND category = 'characteristics' AND academic_year = ?";
+        $bh_params = [$student_id, $academic_year];
+        if ($semester && $semester !== 'annual') {
+            $bh_sql .= " AND semester = ?";
+            $bh_params[] = $semester;
+        }
+        $bh_sql .= " ORDER BY semester DESC LIMIT 1";
+        $stmt = $pdo->prepare($bh_sql);
+        $stmt->execute($bh_params);
+        $behavior = $stmt->fetch();
     }
-    $bh_sql .= " ORDER BY semester DESC LIMIT 1";
-    $stmt = $pdo->prepare($bh_sql);
-    $stmt->execute($bh_params);
-    $behavior = $stmt->fetch();
 
     // 5. Parent Feedback
-    $fb_sql = "SELECT * FROM parent_feedback WHERE student_id = ? AND academic_year = ?";
-    $fb_params = [$student_id, $academic_year];
-    if ($semester && $semester !== 'annual') {
-        $fb_sql .= " AND semester = ?";
-        $fb_params[] = $semester;
+    $parent_feedback = null;
+    if ($academic_year) {
+        $fb_sql = "SELECT * FROM parent_feedback WHERE student_id = ? AND academic_year = ?";
+        $fb_params = [$student_id, $academic_year];
+        if ($semester && $semester !== 'annual') {
+            $fb_sql .= " AND semester = ?";
+            $fb_params[] = $semester;
+        }
+        $fb_sql .= " ORDER BY semester DESC LIMIT 1";
+        $stmt = $pdo->prepare($fb_sql);
+        $stmt->execute($fb_params);
+        $parent_feedback = $stmt->fetch();
     }
-    $fb_sql .= " ORDER BY semester DESC LIMIT 1";
-    $stmt = $pdo->prepare($fb_sql);
-    $stmt->execute($fb_params);
-    $parent_feedback = $stmt->fetch();
 
     echo json_encode([
         'student' => $student,
@@ -127,5 +137,6 @@ try {
     ]);
 
 } catch (PDOException $e) {
-    echo json_encode(['error' => $e->getMessage()]);
+    http_response_code(500);
+    echo json_encode(['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
 }

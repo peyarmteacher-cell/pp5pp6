@@ -256,7 +256,10 @@ $school_name = $_SESSION['school_name'];
                 const res = await fetch(url);
                 const data = await res.json();
                 
-                if (data.error) return alert('ไม่สามารถโหลดข้อมูลได้');
+                if (data.error) {
+                    console.error('API Error:', data.error);
+                    return alert('ไม่สามารถโหลดข้อมูลได้: ' + data.error);
+                }
 
                 // Update Profile Header
                 const student = data.student;
