@@ -34,6 +34,7 @@ $school_name = $_SESSION['school_name'];
                     <i id="avatar_icon" data-lucide="user" class="w-8 h-8"></i>
                 </div>
                 <div class="space-y-0.5 min-w-0">
+                    <p id="header_school_name" class="text-[10px] text-blue-100 font-bold opacity-80 uppercase tracking-widest leading-none mb-1"></p>
                     <h1 id="header_student_name" class="text-base font-bold leading-tight truncate"><?= $student_name ?></h1>
                     <div class="flex items-center gap-2">
                         <span id="header_student_level" class="bg-white/20 px-2 py-0.5 rounded-lg text-[9px] font-bold backdrop-blur-sm">ชั้น: -</span>
@@ -250,19 +251,25 @@ $school_name = $_SESSION['school_name'];
                     return alert('ไม่สามารถโหลดข้อมูลได้: ' + (data.error || 'Server Error'));
                 }
 
-                // Profile Header
+                // Profile Header & School Logo Visibility
                 const student = data.student;
                 const full_name = student.name + (student.last_name ? ' ' + student.last_name : '');
                 document.getElementById('header_student_name').innerText = full_name;
+                document.getElementById('header_school_name').innerText = student.school_name || '';
                 document.getElementById('header_student_level').innerText = 'ชั้น: ' + (student.level || '-') + (student.classroom_name ? ' ห้อง: ' + student.classroom_name : '');
                 
-                const avatarIcon = document.getElementById('avatar_icon');
-                if (student.name.includes('เด็กชาย') || student.name.includes('นาย') || student.name.includes('ด.ช.')) {
-                    avatarIcon.setAttribute('data-lucide', 'user');
+                const avatarContainer = document.getElementById('student_avatar');
+                if (student.school_logo_url) {
+                    avatarContainer.innerHTML = `<img src="${student.school_logo_url}" alt="School Logo" class="w-full h-full object-contain p-1 rounded-2xl" referrerPolicy="no-referrer">`;
                 } else {
-                    avatarIcon.setAttribute('data-lucide', 'user-round-plus');
+                    const avatarIcon = document.getElementById('avatar_icon');
+                    if (student.name.includes('เด็กชาย') || student.name.includes('นาย') || student.name.includes('ด.ช.')) {
+                        avatarContainer.innerHTML = `<i data-lucide="user" class="w-8 h-8"></i>`;
+                    } else {
+                        avatarContainer.innerHTML = `<i data-lucide="user-round" class="w-8 h-8"></i>`; // Fixed icon name
+                    }
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
                 }
-                lucide.createIcons();
                 
                 // Filters
                 if (isFirstLoad) {
