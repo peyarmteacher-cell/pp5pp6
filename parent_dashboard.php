@@ -6,12 +6,25 @@ if (!isset($_SESSION['parent_logged_in'])) {
 }
 require_once 'api/config.php';
 $student_name = $_SESSION['student_name'];
+$school_id = $_SESSION['school_id'];
+$school_name = $_SESSION['school_name'] ?? 'ระบบติดตามนักเรียน';
 
 $app_logo = 'https://picsum.photos/seed/school/192/192';
+
 try {
-    $stmt_app = $pdo->query("SELECT setting_value FROM app_settings WHERE setting_key = 'app_logo'");
-    $logo_val = $stmt_app->fetchColumn();
-    if ($logo_val) $app_logo = $logo_val;
+    // 1. ลองดึงโลโก้จากโรงเรียนก่อน
+    $stmt_school = $pdo->prepare("SELECT logo_url FROM schools WHERE id = ?");
+    $stmt_school->execute([$school_id]);
+    $school_logo = $stmt_school->fetchColumn();
+    
+    if (!empty($school_logo)) {
+        $app_logo = $school_logo;
+    } else {
+        // 2. ถ้าไม่มีโลโก้โรงเรียน ให้ใช้โลโก้ส่วนกลาง
+        $stmt_app = $pdo->query("SELECT setting_value FROM app_settings WHERE setting_key = 'app_logo'");
+        $logo_val = $stmt_app->fetchColumn();
+        if ($logo_val) $app_logo = $logo_val;
+    }
 } catch (Exception $e) {}
 ?>
 <!DOCTYPE html>
@@ -19,7 +32,7 @@ try {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no text-size-adjust=none">
-    <title>ข้อมูลนักเรียน: <?= $student_name ?></title>
+    <title><?= $school_name ?> - ข้อมูลนักเรียน: <?= $student_name ?></title>
     <link rel="manifest" href="manifest.php">
     <meta name="theme-color" content="#2563eb">
     <link rel="apple-touch-icon" href="<?= $app_logo ?>">
