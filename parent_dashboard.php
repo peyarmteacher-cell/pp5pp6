@@ -286,12 +286,8 @@ $school_name = $_SESSION['school_name'];
 
                 // Grades & Visibility
                 const list = document.getElementById('grades_list');
-                const showGrades = student.school_show_grades == 1;
+                const isHidden = data.is_grades_hidden;
                 const systemYear = data.filters.system_current_year ? data.filters.system_current_year.toString() : '';
-                const selectedYear = (yearSelect ? yearSelect.value : '').toString();
-                
-                // Restriction: Only hide if SELECTED year matches SYSTEM current year AND setting is OFF
-                const isHidden = !showGrades && (selectedYear === systemYear || !selectedYear);
 
                 if (isHidden) {
                     list.innerHTML = `

@@ -135,19 +135,49 @@ try {
     $stmt = $pdo->prepare("SELECT year FROM academic_years WHERE school_id = ? AND is_current = 1 LIMIT 1");
     $stmt->execute([$school_id]);
     $sys_year = $stmt->fetchColumn();
+    
+    // Fallback logic if no current year is set
+    if (!$sys_year) {
+        $stmt = $pdo->prepare("SELECT MAX(year) FROM academic_years WHERE school_id = ?");
+        $stmt->execute([$school_id]);
+        $sys_year = $stmt->fetchColumn();
+        
+        if (!$sys_year) {
+            $sys_year = '2568'; // Global fallback
+        }
+    }
+
+    // Calculate if grades should be hidden based on admin setting
+    // Hidden if: school.show_grades is 0 AND (requested year is the system current year OR no year requested)
+    $show_grades_setting = (isset($student['school_show_grades']) && $student['school_show_grades'] == 1);
+    $is_grades_hidden = false;
+    
+    if (!$show_grades_setting) {
+        // We only hide if it's the current year. 
+        // Use trim to ensure comparison doesn't fail due to whitespace in DB
+        $trimmed_academic_year = $academic_year ? trim($academic_year) : null;
+        $trimmed_sys_year = $sys_year ? trim($sys_year) : null;
+        
+        // If no year requested, we assume current year (and hide)
+        // If year is requested, we hide only if it matches sys_year
+        if (!$trimmed_academic_year || $trimmed_academic_year == $trimmed_sys_year) {
+            $is_grades_hidden = true;
+        }
+    }
 
     echo json_encode([
         'student' => $student,
         'attendance' => $attendance,
-        'grades' => $grades,
+        'grades' => $is_grades_hidden ? [] : $grades, // SECURITY: Don't even send grades if hidden
         'behavior' => $behavior,
         'parent_feedback' => $parent_feedback,
         'health_history' => $health_history,
+        'is_grades_hidden' => $is_grades_hidden, // Explicit flag
         'filters' => [
             'available_years' => $available_years,
             'current_year' => $academic_year,
             'current_semester' => $semester,
-            'system_current_year' => $sys_year // Added this
+            'system_current_year' => $sys_year
         ]
     ]);
 
