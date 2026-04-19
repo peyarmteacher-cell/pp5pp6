@@ -3,23 +3,42 @@
     <!-- Academic Year Management -->
     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
         <div class="flex justify-between items-center mb-6">
-            <h3 class="text-lg font-bold text-slate-800">จัดการปีการศึกษา</h3>
-            <button onclick="openModal('addYearModal')" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-blue-700 transition-all cursor-pointer">เพิ่มปีการศึกษา</button>
+            <div>
+                <h3 class="text-lg font-bold text-slate-800">จัดการปีการศึกษา</h3>
+                <p class="text-sm text-slate-500">กำหนดปีการศึกษาเริ่มต้นสำหรับระบบ</p>
+            </div>
+            <button onclick="openModal('addYearModal')" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-blue-700 transition-all cursor-pointer shadow-lg shadow-blue-500/20">เพิ่มปีการศึกษา</button>
         </div>
         
-        <div class="overflow-x-auto">
-            <table class="w-full text-left">
-                <thead>
-                    <tr class="text-slate-500 border-b border-slate-100">
-                        <th class="pb-3 font-medium">ปีการศึกษา</th>
-                        <th class="pb-3 font-medium">สถานะ</th>
-                        <th class="pb-3 font-medium text-right">การจัดการ</th>
-                    </tr>
-                </thead>
-                <tbody id="academicYearsTableBody">
-                    <!-- จะถูกเติมด้วย JavaScript -->
-                </tbody>
-            </table>
+        <!-- Current Year Card -->
+        <div id="currentYearDisplay" class="mb-8 p-4 bg-blue-50 border border-blue-100 rounded-2xl flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-blue-600 text-white rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
+                    <i data-lucide="calendar" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h4 class="text-xs font-bold text-blue-600 uppercase tracking-wider">ปีการศึกษาปัจจุบัน</h4>
+                    <p id="currentYearValue" class="text-xl font-black text-slate-800">-</p>
+                </div>
+            </div>
+            <div class="px-3 py-1 bg-green-500 text-white text-[10px] font-black rounded-full uppercase">Active</div>
+        </div>
+
+        <div class="space-y-3">
+            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider px-1">ปีการศึกษาอื่น ๆ</h4>
+            <div class="overflow-hidden border border-slate-100 rounded-2xl">
+                <table class="w-full text-left">
+                    <thead class="bg-slate-50">
+                        <tr class="text-slate-500">
+                            <th class="px-6 py-3 text-[11px] font-bold uppercase tracking-wider">ปีการศึกษา</th>
+                            <th class="px-6 py-3 text-[11px] font-bold uppercase tracking-wider text-right">การจัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="academicYearsTableBody" class="bg-white">
+                        <!-- จะถูกเติมด้วย JavaScript -->
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
@@ -124,31 +143,72 @@
             const res = await fetch('api/academic/get_academic_years.php');
             const years = await res.json();
             const tbody = document.getElementById('academicYearsTableBody');
+            const currentYearValue = document.getElementById('currentYearValue');
             if (!tbody) return;
             
-            tbody.innerHTML = years.map(y => `
-                <tr class="border-b border-slate-50 hover:bg-slate-50/50">
-                    <td class="py-4 font-medium text-slate-800">ปีการศึกษา ${y.year}</td>
-                    <td class="py-4">
-                        ${y.is_current ? 
-                            '<span class="px-2 py-1 bg-green-100 text-green-600 text-xs font-bold rounded-full">ปัจจุบัน</span>' : 
-                            '<span class="px-2 py-1 bg-slate-100 text-slate-400 text-xs font-bold rounded-full">ทั่วไป</span>'}
-                    </td>
-                    <td class="py-4 text-right">
-                        ${!y.is_current ? 
-                            `<button onclick="setCurrentYear(${y.id})" class="text-blue-600 hover:text-blue-800 text-xs font-bold cursor-pointer">ตั้งเป็นปีปัจจุบัน</button>` : 
-                            '<span class="text-slate-300 text-xs font-bold">กำลังใช้งาน</span>'}
-                    </td>
-                </tr>
-            `).join('');
+            const currentYearObj = years.find(y => y.is_current == 1);
+            if (currentYearObj) {
+                currentYearValue.innerText = `ปีการศึกษา ${currentYearObj.year}`;
+                if (typeof currentAcademicYear !== 'undefined') currentAcademicYear = currentYearObj.year;
+            } else {
+                currentYearValue.innerText = 'ยังไม่ได้กำหนด';
+            }
+
+            const otherYears = years.filter(y => y.is_current != 1);
+            
+            if (otherYears.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="2" class="px-6 py-8 text-center text-slate-400 italic text-xs">ไม่มีปีการศึกษาพิ่มเติม</td>
+                    </tr>
+                `;
+            } else {
+                tbody.innerHTML = otherYears.map(y => `
+                    <tr class="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
+                        <td class="px-6 py-4 font-bold text-slate-700 text-sm">ปีการศึกษา ${y.year}</td>
+                        <td class="px-6 py-4 text-right">
+                            <div class="flex items-center justify-end gap-3">
+                                <button onclick="setCurrentYear(${y.id})" class="text-blue-600 hover:text-blue-800 text-xs font-bold flex items-center gap-1 cursor-pointer bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100 transition-all">
+                                    <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i>
+                                    ตั้งเป็นปีปัจจุบัน
+                                </button>
+                                <button onclick="deleteAcademicYear(${y.id})" class="text-red-500 hover:text-red-700 text-sm p-1.5 hover:bg-red-50 rounded-lg transition-all cursor-pointer" title="ลบ">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+            }
 
             // Update dropdowns in other sections if they exist
             updateAcademicYearDropdowns(years);
+            
+            if (typeof lucide !== 'undefined') lucide.createIcons();
             
             // Load classrooms as well
             loadClassroomTeachers();
         } catch (e) {
             console.error('Error loading academic years:', e);
+        }
+    }
+
+    async function deleteAcademicYear(id) {
+        if (!confirm('ยืนยันการลบปีการศึกษานี้?\n* ข้อมูลคะแนนและนักเรียนที่ผูกกับปีการศึกษานี้จะไม่ถูกลบออกจากฐานข้อมูลหลักแต่จะไม่แสดงในตัวเลือก')) return;
+        try {
+            const res = await fetch('api/academic/delete_academic_year.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id })
+            });
+            const result = await res.json();
+            if (result.status === 'success') {
+                loadAcademicYears();
+            } else {
+                alert(result.error || 'เกิดข้อผิดพลาด');
+            }
+        } catch (e) {
+            console.error('Error deleting year:', e);
         }
     }
 
