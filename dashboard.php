@@ -81,6 +81,14 @@ try {
         .nav-item.active i {
             color: #3b82f6;
         }
+
+        /* Collapsible Sidebar Styles */
+        aside {
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .sidebar-item-container {
+            width: 256px; /* 16rem = w-64 */
+        }
     </style>
 </head>
 <body class="bg-slate-50 min-h-screen flex">
@@ -214,11 +222,33 @@ try {
                 console.error('Error in showSection:', e);
             }
         }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const isCollapsed = sidebar.classList.toggle('w-0');
+            sidebar.classList.toggle('w-64');
+            
+            // Save state to localStorage
+            localStorage.setItem('sidebarCollapsed', isCollapsed);
+        }
+
+        // Apply saved state on load
+        window.addEventListener('DOMContentLoaded', () => {
+            const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+            if (isCollapsed) {
+                const sidebar = document.getElementById('sidebar');
+                if (sidebar) {
+                    sidebar.classList.remove('w-64');
+                    sidebar.classList.add('w-0');
+                }
+            }
+        });
     </script>
 
     <!-- Sidebar -->
-    <aside class="w-64 bg-slate-900 text-white flex flex-col h-screen sticky top-0">
-        <div class="p-6 border-b border-slate-800">
+    <aside id="sidebar" class="w-64 bg-slate-900 text-white flex flex-col h-screen sticky top-0 transition-all duration-300 overflow-x-hidden z-50">
+        <div class="sidebar-item-container flex flex-col h-full min-w-[256px]">
+            <div class="p-6 border-b border-slate-800">
             <div class="flex items-center gap-3">
                 <div class="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center font-bold overflow-hidden shadow-lg shadow-blue-900/20">
                     <?php if ($app_logo): ?>
@@ -374,6 +404,7 @@ try {
                 </div>
             </div>
         </div>
+        </div>
     </aside>
 
     <!-- Main Content -->
@@ -388,7 +419,12 @@ try {
             </div>
 
             <header class="flex justify-between items-center mb-8">
-                <h2 id="section-title" class="text-2xl font-bold text-slate-800">ภาพรวมระบบ</h2>
+                <div class="flex items-center gap-4">
+                    <button onclick="toggleSidebar()" class="p-2 hover:bg-slate-200 rounded-xl text-slate-600 transition-all bg-white border border-slate-200 shadow-sm group" title="เปิด/ปิด เมนูข้าง">
+                        <i data-lucide="menu" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
+                    </button>
+                    <h2 id="section-title" class="text-2xl font-bold text-slate-800 transition-all">ภาพรวมระบบ</h2>
+                </div>
                 <div class="text-sm text-slate-500 flex items-center gap-2">
                     <i data-lucide="school" class="w-4 h-4 text-blue-500"></i>
                     โรงเรียน: <span class="font-semibold text-slate-700"><?= $school_name ?></span>
