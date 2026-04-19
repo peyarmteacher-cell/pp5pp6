@@ -1,9 +1,20 @@
+<?php
+require_once 'api/config.php';
+$app_name = 'ระบบบริหารงานวิชาการ';
+$app_logo = '';
+try {
+    $stmt_app = $pdo->query("SELECT setting_key, setting_value FROM app_settings");
+    $settings = $stmt_app->fetchAll(PDO::FETCH_KEY_PAIR);
+    if (isset($settings['app_name'])) $app_name = $settings['app_name'];
+    if (isset($settings['app_logo'])) $app_logo = $settings['app_logo'];
+} catch (Exception $e) {}
+?>
 <!DOCTYPE html>
 <html lang="th">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบบริหารงานวิชาการ - Login / Register</title>
+    <title><?= $app_name ?> - Login / Register</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>body { font-family: 'Sarabun', sans-serif; }</style>
@@ -13,10 +24,14 @@
     <div id="app" class="w-full max-w-md">
         <!-- ส่วนหัว -->
         <div class="text-center mb-8">
-            <div class="w-20 h-20 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl shadow-blue-900/40">
-                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+            <div class="w-20 h-20 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl shadow-blue-900/40 overflow-hidden">
+                <?php if ($app_logo): ?>
+                    <img src="<?= $app_logo ?>" class="w-full h-full object-cover">
+                <?php else: ?>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+                <?php endif; ?>
             </div>
-            <h2 class="text-3xl font-bold text-white mb-1">ระบบบริหารงานวิชาการ</h2>
+            <h2 class="text-3xl font-bold text-white mb-1"><?= $app_name ?></h2>
             <p class="text-blue-400 font-medium tracking-widest text-xs uppercase mb-2">Academic Management</p>
             <p class="text-slate-400" id="formTitle">เข้าสู่ระบบเพื่อจัดการข้อมูลการเรียน</p>
         </div>

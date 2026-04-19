@@ -4,16 +4,27 @@ if (isset($_SESSION['parent_logged_in'])) {
     header('Location: parent_dashboard.php');
     exit;
 }
+require_once 'api/config.php';
+
+$app_name = 'ระบบติดตามนักเรียนสำหรับผู้ปกครอง';
+$app_logo = 'https://picsum.photos/seed/school/192/192';
+
+try {
+    $stmt_app = $pdo->query("SELECT setting_key, setting_value FROM app_settings");
+    $settings = $stmt_app->fetchAll(PDO::FETCH_KEY_PAIR);
+    if (isset($settings['app_name'])) $app_name = $settings['app_name'];
+    if (isset($settings['app_logo'])) $app_logo = $settings['app_logo'];
+} catch (Exception $e) {}
 ?>
 <!DOCTYPE html>
 <html lang="th">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>เข้าสู่ระบบสำหรับผู้ปกครอง</title>
-    <link rel="manifest" href="manifest.json">
+    <title>เข้าสู่ระบบ - <?= $app_name ?></title>
+    <link rel="manifest" href="manifest.php">
     <meta name="theme-color" content="#2563eb">
-    <link rel="apple-touch-icon" href="https://picsum.photos/seed/school/192/192">
+    <link rel="apple-touch-icon" href="<?= $app_logo ?>">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>

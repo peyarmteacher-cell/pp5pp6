@@ -4,8 +4,15 @@ if (!isset($_SESSION['parent_logged_in'])) {
     header('Location: parent_login.php');
     exit;
 }
+require_once 'api/config.php';
 $student_name = $_SESSION['student_name'];
-$school_name = $_SESSION['school_name'];
+
+$app_logo = 'https://picsum.photos/seed/school/192/192';
+try {
+    $stmt_app = $pdo->query("SELECT setting_value FROM app_settings WHERE setting_key = 'app_logo'");
+    $logo_val = $stmt_app->fetchColumn();
+    if ($logo_val) $app_logo = $logo_val;
+} catch (Exception $e) {}
 ?>
 <!DOCTYPE html>
 <html lang="th">
@@ -13,7 +20,9 @@ $school_name = $_SESSION['school_name'];
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no text-size-adjust=none">
     <title>ข้อมูลนักเรียน: <?= $student_name ?></title>
+    <link rel="manifest" href="manifest.php">
     <meta name="theme-color" content="#2563eb">
+    <link rel="apple-touch-icon" href="<?= $app_logo ?>">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
