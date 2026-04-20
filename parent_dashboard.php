@@ -60,7 +60,8 @@ try {
                     <h1 id="header_student_name" class="text-base font-bold leading-tight truncate"><?= $student_name ?></h1>
                     <div class="flex items-center gap-2">
                         <span id="header_student_level" class="bg-white/20 px-2 py-0.5 rounded-lg text-[9px] font-bold backdrop-blur-sm">ชั้น: -</span>
-                        <span id="header_student_id" class="text-[9px] text-blue-100/70">รหัส: <?= $_SESSION['student_code'] ?></span>
+                        <span id="header_student_age" class="text-[9px] text-blue-100 border-l border-white/20 pl-2">อายุ: -</span>
+                        <span id="header_student_id" class="text-[9px] text-blue-100/70 ml-1">รหัส: <?= $_SESSION['student_code'] ?></span>
                     </div>
                 </div>
             </div>
@@ -280,6 +281,23 @@ try {
                 document.getElementById('header_school_name').innerText = student.school_name || '';
                 document.getElementById('header_student_level').innerText = 'ชั้น: ' + (student.level || '-') + (student.classroom_name ? ' ห้อง: ' + student.classroom_name : '');
                 
+                // Age Calculation
+                const age = calculateDetailedAge(student.birthday);
+                if (age) {
+                    document.getElementById('header_student_age').innerText = `อายุ: ${age.years} ปี ${age.months} เดือน ${age.days} วัน`;
+                    
+                    // Birthday Check
+                    if (isBirthday(student.birthday)) {
+                        const modal = document.getElementById('birthday_modal');
+                        const ageText = document.getElementById('celebration_age');
+                        ageText.innerText = `ครบรอบอายุ ${age.years} ปี`;
+                        modal.classList.remove('hidden');
+                        setTimeout(playBirthdayMusic, 500);
+                    }
+                } else {
+                    document.getElementById('header_student_age').classList.add('hidden');
+                }
+
                 const avatarContainer = document.getElementById('student_avatar');
                 if (student.school_logo_url) {
                     avatarContainer.innerHTML = `<img src="${student.school_logo_url}" alt="School Logo" class="w-full h-full object-contain p-1 rounded-2xl" referrerPolicy="no-referrer">`;
@@ -472,6 +490,87 @@ try {
         function logout() { if (confirm('คุณต้องการออกจากระบบใช่หรือไม่?')) window.location.href = 'parent_logout.php'; }
 
         loadData();
+
+        function calculateDetailedAge(birthDateString) {
+            if (!birthDateString || birthDateString === '0000-00-00') return null;
+            const birthDate = new Date(birthDateString);
+            const today = new Date();
+
+            let years = today.getFullYear() - birthDate.getFullYear();
+            let months = today.getMonth() - birthDate.getMonth();
+            let days = today.getDate() - birthDate.getDate();
+
+            if (days < 0) {
+                months--;
+                const lastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+                days += lastMonth.getDate();
+            }
+            if (months < 0) {
+                years--;
+                months += 12;
+            }
+
+            return { years, months, days };
+        }
+
+        function isBirthday(birthDateString) {
+            if (!birthDateString || birthDateString === '0000-00-00') return false;
+            const birthDate = new Date(birthDateString);
+            const today = new Date();
+            return birthDate.getDate() === today.getDate() && birthDate.getMonth() === today.getMonth();
+        }
+
+        function closeBirthday() {
+            const modal = document.getElementById('birthday_modal');
+            const music = document.getElementById('birthday_music');
+            modal.classList.add('hidden');
+            if (music) music.pause();
+        }
+
+        function playBirthdayMusic() {
+            const music = document.getElementById('birthday_music');
+            if (music) {
+                music.play().catch(e => console.log('Autoplay blocked, waiting for interaction'));
+            }
+        }
     </script>
+    
+    <!-- Birthday Modal -->
+    <div id="birthday_modal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md hidden" onclick="playBirthdayMusic()">
+        <div class="bg-white rounded-[2rem] w-full max-w-sm overflow-hidden shadow-2xl relative animate-[scaleIn_0.3s_ease-out]">
+            <!-- Confetti Decors -->
+            <div class="absolute inset-0 pointer-events-none overflow-hidden opacity-20">
+                <div class="absolute top-4 left-10 w-2 h-2 bg-blue-400 rotate-45 animate-ping"></div>
+                <div class="absolute top-10 right-10 w-2 h-2 bg-pink-400 rounded-full animate-bounce"></div>
+                <div class="absolute bottom-20 left-1/4 w-3 h-3 bg-yellow-400 rotate-12 animate-pulse"></div>
+            </div>
+            
+            <div class="p-8 text-center space-y-6 relative">
+                <div class="w-24 h-24 bg-pink-50 rounded-full flex items-center justify-center mx-auto shadow-inner border-4 border-white overflow-hidden">
+                    <img src="https://picsum.photos/seed/birthday/200/200" class="w-full h-full object-cover">
+                </div>
+                <div class="space-y-2">
+                    <h2 class="text-3xl font-black text-slate-800 tracking-tight">สุขสันต์วันเกิด! 🎂</h2>
+                    <p class="text-slate-500 font-medium leading-relaxed">ขอให้น้องมีความสุข สุขภาพแข็งแรง<br>และเป็นที่รักของทุกคนนะครับ</p>
+                </div>
+                <div class="bg-blue-50 py-4 rounded-3xl border border-blue-100">
+                    <p id="celebration_age" class="text-blue-600 font-black text-2xl tracking-tighter"></p>
+                </div>
+                <button onclick="closeBirthday()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black shadow-lg shadow-blue-200 active:scale-95 transition-all text-lg">
+                    รับคำอวยพร 🎉
+                </button>
+            </div>
+        </div>
+        <audio id="birthday_music" loop>
+            <source src="https://cdn.pixabay.com/audio/2022/03/10/audio_5b3eb5264b.mp3" type="audio/mpeg">
+        </audio>
+    </div>
+
+    <style>
+        @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.8) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+    </style>
 </body>
 </html>
