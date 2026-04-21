@@ -218,10 +218,16 @@
             const assignments = await assignRes.json();
             
             if (Array.isArray(assignments)) {
-                if (assignments.length === 0) {
+                // Filter out special learner development activities (LD: prefix)
+                const filteredAssignments = assignments.filter(a => {
+                    const sid = String(a.subject_id || '');
+                    return !sid.startsWith('LD:');
+                });
+
+                if (filteredAssignments.length === 0) {
                     assignP5.innerHTML = '<option value="">ไม่มีข้อมูลวิชาที่สอนในภาคเรียนนี้</option>';
                 } else {
-                    assignP5.innerHTML = assignments.map(a => `
+                    assignP5.innerHTML = filteredAssignments.map(a => `
                         <option value="${a.assignment_id || a.subject_id}" data-subject="${a.subject_id}" data-classroom="${a.classroom_id}">
                             ${a.subject_code} ${a.subject_name} (${a.level}/${a.room})
                         </option>
