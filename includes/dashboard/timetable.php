@@ -117,6 +117,12 @@
         }
     }
 
+    function printTeacherTimetable() {
+        const year = document.getElementById('time_academic_year').value;
+        const semester = document.getElementById('time_semester').value;
+        window.open(`api/teacher/print_timetable.php?academic_year=${year}&semester=${semester}`, '_blank');
+    }
+
     function renderTimetable() {
         const tbody = document.getElementById('timetable-body');
         if (!tbody) return;
