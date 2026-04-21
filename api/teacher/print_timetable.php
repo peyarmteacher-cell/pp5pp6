@@ -122,21 +122,25 @@ $days = [
     </div>
 
     <div class="a4-landscape shadow-xl">
-        <div class="flex items-center justify-between mb-8 pb-4 border-b-2 border-slate-100">
-            <?php if ($school['logo_url']): ?>
-                <img src="<?= $school['logo_url'] ?>" class="w-24 h-24 object-contain" referrerPolicy="no-referrer">
+        <div class="flex items-center gap-6 mb-8 pb-6 border-b-2 border-slate-100">
+            <?php if (!empty($school['logo_url'])): ?>
+                <img src="<?= $school['logo_url'] ?>" class="w-28 h-28 object-contain" referrerPolicy="no-referrer">
             <?php else: ?>
-                <div class="w-24 h-24"></div>
+                <div class="w-28 h-28 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 flex items-center justify-center text-slate-300 text-[10px] text-center p-2">ไม่ได้ตั้งค่า<br>โลโก้</div>
             <?php endif; ?>
             
-            <div class="text-center flex-1">
-                <h1 class="text-2xl font-bold text-slate-800 uppercase tracking-tight">ตารางสอนรายบุคคล</h1>
-                <p class="text-lg font-medium text-slate-600 mt-1">ปีการศึกษา <?= $academic_year ?> ภาคเรียนที่ <?= $semester ?></p>
-                <h2 class="text-xl font-bold text-blue-700 mt-2"><?= $teacher_full_name ?></h2>
-                <p class="text-sm font-bold text-slate-500"><?= $school['name'] ?></p>
+            <div class="flex-1">
+                <h1 class="text-3xl font-black text-slate-800 tracking-tight">ตารางสอนโรงเรียน<?= $school['name'] ?></h1>
+                <div class="flex items-center gap-4 mt-2">
+                    <p class="text-xl font-bold text-blue-700">คุณครู<?= $teacher_full_name ?></p>
+                    <div class="h-4 w-[2px] bg-slate-300"></div>
+                    <p class="text-lg font-medium text-slate-600">ตำแหน่ง: <?= $teacher['position'] ?: 'ครู' ?></p>
+                </div>
+                <div class="flex items-center gap-3 mt-2 text-sm font-bold text-slate-500 uppercase tracking-widest">
+                    <span class="bg-slate-100 px-3 py-1 rounded-full">ปีการศึกษา <?= $academic_year ?></span>
+                    <span class="bg-indigo-50 text-indigo-600 px-3 py-1 rounded-full border border-indigo-100">ภาคเรียนที่ <?= $semester ?></span>
+                </div>
             </div>
-
-            <div class="w-24 h-24"></div> <!-- Spacer to center the content -->
         </div>
 
         <div class="flex-1 overflow-hidden">
