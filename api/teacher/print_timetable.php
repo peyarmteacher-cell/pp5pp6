@@ -122,10 +122,21 @@ $days = [
     </div>
 
     <div class="a4-landscape shadow-xl">
-        <div class="text-center mb-6">
-            <h1 class="text-2xl font-bold text-slate-800">ตารางสอนรายบุคคล ปีการศึกษา <?= $academic_year ?> ภาคเรียนที่ <?= $semester ?></h1>
-            <h2 class="text-xl font-bold text-blue-700 mt-1"><?= $teacher_full_name ?> (ตำแหน่ง <?= $teacher['position'] ?: 'คุณครู' ?>)</h2>
-            <p class="text-sm text-slate-500 mt-1"><?= $school['name'] ?></p>
+        <div class="flex items-center justify-between mb-8 pb-4 border-b-2 border-slate-100">
+            <?php if ($school['logo_url']): ?>
+                <img src="<?= $school['logo_url'] ?>" class="w-24 h-24 object-contain" referrerPolicy="no-referrer">
+            <?php else: ?>
+                <div class="w-24 h-24"></div>
+            <?php endif; ?>
+            
+            <div class="text-center flex-1">
+                <h1 class="text-2xl font-bold text-slate-800 uppercase tracking-tight">ตารางสอนรายบุคคล</h1>
+                <p class="text-lg font-medium text-slate-600 mt-1">ปีการศึกษา <?= $academic_year ?> ภาคเรียนที่ <?= $semester ?></p>
+                <h2 class="text-xl font-bold text-blue-700 mt-2"><?= $teacher_full_name ?></h2>
+                <p class="text-sm font-bold text-slate-500"><?= $school['name'] ?></p>
+            </div>
+
+            <div class="w-24 h-24"></div> <!-- Spacer to center the content -->
         </div>
 
         <div class="flex-1 overflow-hidden">
@@ -166,14 +177,14 @@ $days = [
 
         <div class="mt-12 grid grid-cols-2 gap-20">
             <div class="text-center">
-                <p class="mb-12">ลงชื่อ..........................................................</p>
+                <p class="mb-8">ลงชื่อ..........................................................</p>
                 <p class="font-bold">( <?= $teacher_full_name ?> )</p>
                 <p class="text-sm">ครูผู้สอน</p>
             </div>
             <div class="text-center">
-                <p class="mb-12">ลงชื่อ..........................................................</p>
+                <p class="mb-8">ลงชื่อ..........................................................</p>
                 <p class="font-bold">( <?= $school['director_name'] ?: '..........................................................' ?> )</p>
-                <p class="text-sm">ผู้อำนวยการ<?= $school['name'] ?></p>
+                <p class="text-sm">ผู้อำนวยการโรงเรียน<?= $school['name'] ?></p>
             </div>
         </div>
 
