@@ -178,23 +178,6 @@
 
             const currentYear = years.find(y => y.is_current)?.year || '2567';
 
-            // Load Assignments (for P5 Subject)
-            const assignRes = await fetch(`api/teacher/get_my_assignments.php?academic_year=${currentYear}&semester=1`);
-            const assignments = await assignRes.json();
-            
-            if (Array.isArray(assignments)) {
-                const assignP5 = document.getElementById('report_p5_assignment');
-                if (assignP5) {
-                    assignP5.innerHTML = assignments.map(a => `
-                        <option value="${a.assignment_id || a.subject_id}" data-subject="${a.subject_id}" data-classroom="${a.classroom_id}">
-                            ${a.subject_code} ${a.subject_name} (${a.level}/${a.room})
-                        </option>
-                    `).join('');
-                }
-            } else {
-                console.error('Assignments is not an array:', assignments);
-            }
-
             // Load Classrooms (for P5 Class and P6)
             const classRes = await fetch('api/academic/get_classrooms.php');
             const classrooms = await classRes.json();
@@ -211,8 +194,46 @@
             }
 
             loadP6Students();
+
+            // Initial load for P5 assignments
+            loadP5Assignments();
         } catch (e) {
             console.error('Error loading report options:', e);
+        }
+    }
+
+    async function loadP5Assignments() {
+        const year = document.getElementById('report_p5_year').value;
+        const semester = document.getElementById('report_p5_semester').value;
+        
+        if (!year || !semester) return;
+
+        const assignP5 = document.getElementById('report_p5_assignment');
+        if (assignP5) {
+            assignP5.innerHTML = '<option value="">กำลังโหลดวิชาที่สอน...</option>';
+        }
+
+        try {
+            const assignRes = await fetch(`api/teacher/get_my_assignments.php?academic_year=${year}&semester=${semester}`);
+            const assignments = await assignRes.json();
+            
+            if (Array.isArray(assignments)) {
+                if (assignments.length === 0) {
+                    assignP5.innerHTML = '<option value="">ไม่มีข้อมูลวิชาที่สอนในภาคเรียนนี้</option>';
+                } else {
+                    assignP5.innerHTML = assignments.map(a => `
+                        <option value="${a.assignment_id || a.subject_id}" data-subject="${a.subject_id}" data-classroom="${a.classroom_id}">
+                            ${a.subject_code} ${a.subject_name} (${a.level}/${a.room})
+                        </option>
+                    `).join('');
+                }
+            } else {
+                console.error('Assignments is not an array:', assignments);
+                assignP5.innerHTML = '<option value="">เกิดข้อผิดพลาดในการโหลดข้อมูล</option>';
+            }
+        } catch (e) {
+            console.error('Error loading P5 assignments:', e);
+            if (assignP5) assignP5.innerHTML = '<option value="">เกิดข้อผิดพลาดในการโหลดข้อมูล</option>';
         }
     }
 
@@ -286,4 +307,18 @@
         let url = `reports/p6_report.php?year=${year}&semester=${semester}&classroom_id=${classroomId}&student_id=${studentId}`;
         window.open(url, '_blank');
     }
+
+    // Initialize P5 listeners once
+    (function initP5Listeners() {
+        const p5Year = document.getElementById('report_p5_year');
+        const p5Sem = document.getElementById('report_p5_semester');
+        if (p5Year && !p5Year.dataset.listenerAdded) {
+            p5Year.addEventListener('change', loadP5Assignments);
+            p5Year.dataset.listenerAdded = 'true';
+        }
+        if (p5Sem && !p5Sem.dataset.listenerAdded) {
+            p5Sem.addEventListener('change', loadP5Assignments);
+            p5Sem.dataset.listenerAdded = 'true';
+        }
+    })();
 </script>
