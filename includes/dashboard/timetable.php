@@ -14,6 +14,10 @@
                     <option value="1">ภาคเรียนที่ 1</option>
                     <option value="2">ภาคเรียนที่ 2</option>
                 </select>
+                <button onclick="printTeacherTimetable()" class="px-4 py-2 bg-green-600 text-white rounded-xl text-sm font-bold hover:bg-green-700 transition-all flex items-center gap-2 cursor-pointer shadow-sm">
+                    <i data-lucide="printer" class="w-4 h-4"></i>
+                    พิมพ์ตารางสอน
+                </button>
             </div>
         </div>
 
@@ -34,14 +38,9 @@
                 <thead>
                     <tr class="bg-slate-50">
                         <th class="p-3 border border-slate-200 text-slate-500 font-bold text-xs w-24">วัน / คาบ</th>
-                        <th class="p-3 border border-slate-200 text-slate-500 font-bold text-xs">คาบที่ 1</th>
-                        <th class="p-3 border border-slate-200 text-slate-500 font-bold text-xs">คาบที่ 2</th>
-                        <th class="p-3 border border-slate-200 text-slate-500 font-bold text-xs">คาบที่ 3</th>
-                        <th class="p-3 border border-slate-200 text-slate-500 font-bold text-xs">คาบที่ 4</th>
-                        <th class="p-3 border border-slate-200 text-slate-500 font-bold text-xs">คาบที่ 5</th>
-                        <th class="p-3 border border-slate-200 text-slate-500 font-bold text-xs">คาบที่ 6</th>
-                        <th class="p-3 border border-slate-200 text-slate-500 font-bold text-xs">คาบที่ 7</th>
-                        <th class="p-3 border border-slate-200 text-slate-500 font-bold text-xs">คาบที่ 8</th>
+                        <?php for($i=1; $i<=10; $i++): ?>
+                            <th class="p-3 border border-slate-200 text-slate-500 font-bold text-xs">คาบที่ <?= $i ?></th>
+                        <?php endfor; ?>
                     </tr>
                 </thead>
                 <tbody id="timetable-body">
@@ -69,6 +68,7 @@
                 <label class="block text-sm font-medium text-slate-700 mb-1">เลือกวิชาและห้องเรียน</label>
                 <select id="assign_subject_classroom" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer">
                     <option value="">-- ว่าง / ลบข้อมูล --</option>
+                    <option value="LD:lunch" class="font-bold text-orange-600">🍴 พักกลางวัน</option>
                     <!-- Assignments will be loaded here -->
                 </select>
             </div>
@@ -124,15 +124,16 @@
         tbody.innerHTML = days.map(day => `
             <tr>
                 <td class="p-3 border border-slate-200 font-bold text-xs text-center ${day.class}">${day.name}</td>
-                ${[1, 2, 3, 4, 5, 6, 7, 8].map(period => {
+                ${[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(period => {
                     const slot = currentTimetable.find(t => t.day_of_week == day.id && t.period_number == period);
+                    const isLunch = slot && slot.activity_type === 'lunch';
                     return `
                         <td onclick="openAssignModal(${day.id}, ${period}, '${day.name}')" 
-                            class="p-2 border border-slate-200 text-center cursor-pointer hover:bg-slate-50 transition-all min-h-[60px]">
+                            class="p-2 border border-slate-200 text-center cursor-pointer hover:bg-slate-50 transition-all min-h-[60px] ${isLunch ? 'bg-orange-50' : ''}">
                             ${slot ? `
-                                <div class="text-[10px] font-bold text-blue-700">${slot.subject_code}</div>
+                                <div class="text-[10px] font-bold ${isLunch ? 'text-orange-700' : 'text-blue-700'}">${slot.subject_code}</div>
                                 <div class="text-[9px] text-slate-500 truncate">${slot.subject_name}</div>
-                                <div class="text-[9px] font-bold text-slate-400">ห้อง ${slot.level}/${slot.room}</div>
+                                ${!isLunch ? `<div class="text-[9px] font-bold text-slate-400">ห้อง ${slot.level}/${slot.room}</div>` : ''}
                             ` : '<span class="text-[10px] text-slate-300 italic">ว่าง</span>'}
                         </td>
                     `;
@@ -147,12 +148,17 @@
         
         const select = document.getElementById('assign_subject_classroom');
         select.innerHTML = '<option value="">-- ว่าง / ลบข้อมูล --</option>' + 
+            '<option value="LD:lunch" class="font-bold text-orange-600">🍴 พักกลางวัน</option>' +
             myAssignments.map(a => `<option value="${a.subject_id}|${a.classroom_id}">${a.subject_code} - ${a.subject_name} (${a.level}/${a.room})</option>`).join('');
         
         // Find current value if exists
         const current = currentTimetable.find(t => t.day_of_week == dayId && t.period_number == period);
         if (current) {
-            select.value = `${current.subject_id}|${current.classroom_id}`;
+            if (current.activity_type) {
+                select.value = 'LD:' + current.activity_type;
+            } else {
+                select.value = `${current.subject_id}|${current.classroom_id}`;
+            }
         } else {
             select.value = "";
         }
@@ -168,9 +174,20 @@
         let classroom_id = null;
         
         if (val) {
-            const parts = val.split('|');
-            subject_id = parts[0];
-            classroom_id = parts[1];
+            if (val.startsWith('LD:')) {
+                subject_id = val;
+                // สำหรับกิจกรรมพิเศษ ลองหาห้องเรียนที่คุณครูสอนอยู่สักห้อง
+                if (myAssignments.length > 0) {
+                    classroom_id = myAssignments[0].classroom_id;
+                } else {
+                    alert('กรุณาติดต่อเจ้าหน้าที่วิชาการเพื่อกำหนดห้องเรียนให้คุณครูอย่างน้อย 1 ห้องก่อนครับ');
+                    return;
+                }
+            } else {
+                const parts = val.split('|');
+                subject_id = parts[0];
+                classroom_id = parts[1];
+            }
         }
 
         const payload = {
