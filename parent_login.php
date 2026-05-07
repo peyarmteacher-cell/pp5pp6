@@ -31,79 +31,71 @@ try {
     <style>
         body { 
             font-family: 'Sarabun', sans-serif;
-            background-color: #0c0a09;
-            background-image: 
-                radial-gradient(circle at 0% 0%, rgba(245, 158, 11, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 100% 100%, rgba(249, 115, 22, 0.1) 0%, transparent 50%);
+            background-color: #fffbeb;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cg fill='%23f59e0b' fill-opacity='0.1'%3E%3Cpath d='M0 0h40v40H0V0zm40 40h40v40H40V40zm0-40h40v40H40V0zM0 40h40v40H0V40z'/%3E%3C/g%3E%3C/svg%3E");
         }
-        .glass-card {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        .login-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 20px 50px rgba(245, 158, 11, 0.15);
+            border: 1px solid #fef3c7;
         }
-        .glow-border:focus-within {
-            border-color: rgba(245, 158, 11, 0.5);
-            box-shadow: 0 0 15px rgba(245, 158, 11, 0.2);
-        }
-        .animate-subtle-glow {
-            animation: subtle-glow 3s ease-in-out infinite alternate;
-        }
-        @keyframes subtle-glow {
-            from { filter: drop-shadow(0 0 5px rgba(245, 158, 11, 0.2)); }
-            to { filter: drop-shadow(0 0 15px rgba(245, 158, 11, 0.5)); }
+        .input-focus:focus-within {
+            border-color: #f59e0b;
+            box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.1);
         }
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-x-hidden">
-    <!-- Decorative Blurs -->
-    <div class="absolute top-1/4 -left-32 w-96 h-96 bg-orange-600/10 rounded-full blur-[128px]"></div>
-    <div class="absolute bottom-1/4 -right-32 w-96 h-96 bg-amber-500/10 rounded-full blur-[128px]"></div>
+    <!-- Decorative Accents -->
+    <div class="absolute -top-24 -left-24 w-80 h-80 bg-orange-400/20 rounded-full blur-3xl animate-pulse"></div>
+    <div class="absolute -bottom-24 -right-24 w-80 h-80 bg-amber-300/20 rounded-full blur-3xl animate-pulse"></div>
     
-    <div class="w-full max-w-sm space-y-10 relative z-10">
+    <div class="w-full max-w-sm space-y-8 relative z-10">
         <div class="text-center space-y-3">
-            <div class="w-24 h-24 bg-gradient-to-br from-orange-400 to-amber-600 rounded-[2.5rem] mx-auto flex items-center justify-center shadow-2xl shadow-orange-500/40 mb-6 group transition-all hover:scale-105 hover:rotate-3 animate-subtle-glow">
+            <div class="w-24 h-24 bg-gradient-to-br from-orange-400 to-amber-500 rounded-[2rem] mx-auto flex items-center justify-center shadow-xl shadow-orange-500/30 mb-6 transform transition-transform hover:scale-110">
                 <i data-lucide="user" class="w-12 h-12 text-white"></i>
             </div>
-            <h1 class="text-3xl font-black text-white tracking-tight">ระบบติดตามนักเรียน</h1>
-            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20">
-                <span class="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></span>
-                <p class="text-orange-400 font-bold text-xs">สำหรับผู้ปกครองและนักเรียน</p>
-            </div>
+            <h1 class="text-3xl font-black text-slate-800 tracking-tight">ระบบติดตามนักเรียน</h1>
+            <p class="text-amber-700 font-bold bg-amber-100/80 inline-block px-4 py-1 rounded-full text-xs">สำหรับผู้ปกครองและนักเรียนเข้าดูข้อมูล</p>
         </div>
 
-        <div class="glass-card p-8 rounded-[2.5rem] space-y-8">
+        <div class="login-card p-10 rounded-[2.5rem] space-y-8">
             <form id="loginForm" class="space-y-6">
                 <div class="space-y-2.5">
-                    <label class="block text-xs font-black text-orange-500/80 uppercase tracking-widest ml-1">เลขบัตรประชาชนนักเรียน</label>
-                    <div class="relative group glow-border border border-white/10 rounded-2xl transition-all">
-                        <i data-lucide="credit-card" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30 group-focus-within:text-orange-400 transition-colors"></i>
+                    <label class="block text-sm font-black text-slate-700 ml-1">เลขบัตรประชาชนนักเรียน</label>
+                    <div class="relative group input-focus border border-slate-200 rounded-2xl bg-slate-50 transition-all overflow-hidden">
+                        <div class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-orange-500 transition-colors">
+                            <i data-lucide="credit-card" class="w-5 h-5"></i>
+                        </div>
                         <input type="text" id="national_id" inputmode="numeric" placeholder="ตัวเลข 13 หลัก" required 
-                            class="w-full pl-12 pr-4 py-4 bg-transparent outline-none text-white font-bold tracking-widest text-lg placeholder:text-white/10">
+                            class="w-full pl-12 pr-4 py-4 bg-transparent outline-none text-slate-700 font-bold tracking-widest text-lg placeholder:text-slate-300 placeholder:font-normal">
                     </div>
                 </div>
 
                 <div class="space-y-2.5">
-                    <label class="block text-xs font-black text-orange-500/80 uppercase tracking-widest ml-1">รหัสนักเรียน</label>
-                    <div class="relative group glow-border border border-white/10 rounded-2xl transition-all">
-                        <i data-lucide="key-round" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30 group-focus-within:text-orange-400 transition-colors"></i>
+                    <label class="block text-sm font-black text-slate-700 ml-1">รหัสนักเรียน</label>
+                    <div class="relative group input-focus border border-slate-200 rounded-2xl bg-slate-50 transition-all overflow-hidden">
+                        <div class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-orange-500 transition-colors">
+                            <i data-lucide="key-round" class="w-5 h-5"></i>
+                        </div>
                         <input type="text" id="student_code" inputmode="numeric" placeholder="รหัสประจำตัวนักเรียน" required
-                            class="w-full pl-12 pr-4 py-4 bg-transparent outline-none text-white font-bold tracking-widest text-lg placeholder:text-white/10">
+                            class="w-full pl-12 pr-4 py-4 bg-transparent outline-none text-slate-700 font-bold tracking-widest text-lg placeholder:text-slate-300 placeholder:font-normal">
                     </div>
                 </div>
 
-                <button type="submit" id="loginBtn" class="w-full bg-gradient-to-r from-orange-500 via-amber-500 to-orange-400 text-black py-4 rounded-2xl font-black text-lg hover:brightness-110 shadow-2xl shadow-orange-500/25 transition-all active:scale-[0.98] flex items-center justify-center gap-3">
+                <button type="submit" id="loginBtn" class="w-full bg-gradient-to-r from-orange-500 to-amber-500 text-white py-4 rounded-2xl font-black text-xl hover:from-orange-600 hover:to-amber-600 shadow-xl shadow-orange-500/30 transition-all active:scale-95 flex items-center justify-center gap-3">
                     เข้าสู่ระบบ
                     <i data-lucide="arrow-right" class="w-6 h-6"></i>
                 </button>
             </form>
             
-            <div id="errorMsg" class="hidden p-4 bg-red-500/10 text-red-400 rounded-2xl text-center text-sm font-bold border border-red-500/20"></div>
+            <div id="errorMsg" class="hidden p-4 bg-red-50 text-red-600 rounded-2xl text-center text-sm font-bold border border-red-100"></div>
         </div>
 
         <div class="text-center">
-            <p class="text-xs text-white/20 font-bold mb-8">โดย ครูสยาม เชียงเครือ</p>
-            <button id="installBtn" class="hidden mx-auto flex items-center gap-3 px-8 py-3 bg-white/5 border border-white/10 rounded-full text-orange-400 font-black text-xs shadow-sm hover:bg-white/10 transition-all cursor-pointer">
+            <p class="text-xs text-amber-800 font-bold opacity-40 mb-8 tracking-widest">โดย ครูสยาม เชียงเครือ</p>
+            <button id="installBtn" class="hidden mx-auto flex items-center gap-2 px-8 py-3 bg-white border border-amber-200 rounded-full text-orange-600 font-black text-xs shadow-sm hover:bg-orange-50 transition-all cursor-pointer">
                 <i data-lucide="download" class="w-4 h-4"></i>
                 ติดตั้งแอปไว้บนมือถือ
             </button>
