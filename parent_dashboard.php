@@ -34,7 +34,7 @@ try {
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no text-size-adjust=none">
     <title><?= $school_name ?> - ข้อมูลนักเรียน: <?= $student_name ?></title>
     <link rel="manifest" href="manifest.php">
-    <meta name="theme-color" content="#f59e0b">
+    <meta name="theme-color" content="#f43f5e">
     <link rel="apple-touch-icon" href="<?= $app_logo ?>">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -43,30 +43,30 @@ try {
         body { 
             font-family: 'Sarabun', sans-serif; 
             -webkit-tap-highlight-color: transparent;
-            background-color: #fffbeb;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cg fill='%23f59e0b' fill-opacity='0.05'%3E%3Cpath d='M0 0h40v40H0V0zm40 40h40v40H40V40zm0-40h40v40H40V0zM0 40h40v40H0V40z'/%3E%3C/g%3E%3C/svg%3E");
+            background-color: #fff1f2;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cg fill='%23f43f5e' fill-opacity='0.05'%3E%3Cpath d='M0 0h40v40H0V0zm40 40h40v40H40V40zm0-40h40v40H40V0zM0 40h40v40H0V40z'/%3E%3C/g%3E%3C/svg%3E");
         }
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #fde68a; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #fecdd3; border-radius: 10px; }
         .pull-to-refresh { transition: transform 0.2s ease-out; }
     </style>
 </head>
 <body class="min-h-screen">
 
     <!-- Header -->
-    <header id="app_header" class="bg-gradient-to-br from-orange-500 to-amber-500 text-white rounded-b-[40px] p-6 pt-10 shadow-xl shadow-orange-500/20 sticky top-0 z-40">
+    <header id="app_header" class="bg-gradient-to-br from-rose-500 via-pink-500 to-pink-600 text-white rounded-b-[40px] p-6 pt-10 shadow-xl shadow-rose-500/20 sticky top-0 z-40">
         <div class="flex justify-between items-center gap-4">
             <div class="flex items-center gap-4 min-w-0">
                 <div id="student_avatar" class="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/30 shadow-inner shrink-0 leading-none">
                     <i id="avatar_icon" data-lucide="user" class="w-8 h-8"></i>
                 </div>
                 <div class="space-y-0.5 min-w-0">
-                    <p id="header_school_name" class="text-[10px] text-orange-50 font-bold opacity-80 uppercase tracking-widest leading-none mb-1"></p>
+                    <p id="header_school_name" class="text-[10px] text-rose-50 font-bold opacity-80 uppercase tracking-widest leading-none mb-1"></p>
                     <h1 id="header_student_name" class="text-base font-bold leading-tight truncate"><?= $student_name ?></h1>
                     <div class="flex items-center gap-2">
                         <span id="header_student_level" class="bg-white/20 px-2 py-0.5 rounded-lg text-[9px] font-bold backdrop-blur-sm">ชั้น: -</span>
-                        <span id="header_student_age" class="text-[9px] text-orange-50 border-l border-white/20 pl-2">อายุ: -</span>
-                        <span id="header_student_id" class="text-[9px] text-orange-50/70 ml-1">รหัส: <?= $_SESSION['student_code'] ?></span>
+                        <span id="header_student_age" class="text-[9px] text-rose-50 border-l border-white/20 pl-2">อายุ: -</span>
+                        <span id="header_student_id" class="text-[9px] text-rose-50/70 ml-1">รหัส: <?= $_SESSION['student_code'] ?></span>
                     </div>
                 </div>
             </div>
@@ -74,13 +74,13 @@ try {
             <div class="flex items-center gap-3 shrink-0">
                 <!-- Compact GPA Pill -->
                 <div class="bg-white/10 backdrop-blur-xl border border-white/30 px-4 py-2 rounded-2xl text-center shadow-lg relative overflow-hidden">
-                    <p class="text-[8px] text-orange-50 font-black uppercase tracking-widest mb-1 opacity-80 leading-none">GPA เทอมนี้</p>
+                    <p class="text-[8px] text-rose-50 font-black uppercase tracking-widest mb-1 opacity-80 leading-none">GPA เทอมนี้</p>
                     <div id="header_avg_gpa" class="text-xl font-black text-white leading-none tracking-tighter">-</div>
                     <div class="absolute -right-2 -top-2 w-6 h-6 bg-white/10 rounded-full blur-md"></div>
                 </div>
                 
                 <button onclick="logout()" class="p-2.5 bg-white/10 rounded-2xl hover:bg-white/20 transition-all cursor-pointer">
-                    <i data-lucide="log-out" class="w-4 h-4 text-orange-50"></i>
+                    <i data-lucide="log-out" class="w-4 h-4 text-rose-50"></i>
                 </button>
             </div>
         </div>
@@ -95,7 +95,7 @@ try {
 
     <style>
         .tab-btn { color: rgba(255,255,255,0.6); }
-        .tab-btn.active { background: white; color: #f59e0b; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .tab-btn.active { background: white; color: #f43f5e; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
         .section-tab { display: none; }
         .section-tab.active { display: block; }
     </style>
@@ -123,24 +123,24 @@ try {
             <!-- Attendance Section -->
             <section class="space-y-3">
                 <div class="flex items-center gap-2 mx-2">
-                    <i data-lucide="calendar-check" class="w-4 h-4 text-orange-500"></i>
+                    <i data-lucide="calendar-check" class="w-4 h-4 text-rose-500"></i>
                     <h2 class="font-bold text-slate-800">สถิติการเข้าเรียน</h2>
                 </div>
-                <div class="bg-white p-5 rounded-3xl shadow-sm border border-amber-100 grid grid-cols-4 gap-4 text-center">
+                <div class="bg-white p-5 rounded-3xl shadow-sm border border-rose-100 grid grid-cols-4 gap-4 text-center">
                     <div>
-                        <div class="text-xl font-bold text-green-600" id="att_present">0</div>
+                        <div class="text-xl font-bold text-emerald-600" id="att_present">0</div>
                         <p class="text-[10px] text-slate-400 font-bold">มาเรียน</p>
                     </div>
                     <div>
-                        <div class="text-xl font-bold text-amber-500" id="att_late">0</div>
+                        <div class="text-xl font-bold text-pink-500" id="att_late">0</div>
                         <p class="text-[10px] text-slate-400 font-bold">มาสาย</p>
                     </div>
                     <div>
-                        <div class="text-xl font-bold text-red-500" id="att_absent">0</div>
+                        <div class="text-xl font-bold text-rose-500" id="att_absent">0</div>
                         <p class="text-[10px] text-slate-400 font-bold">ขาดเรียน</p>
                     </div>
                     <div>
-                        <div class="text-xl font-bold text-blue-500" id="att_leave">0</div>
+                        <div class="text-xl font-bold text-violet-500" id="att_leave">0</div>
                         <p class="text-[10px] text-slate-400 font-bold">ลา/ป่วย</p>
                     </div>
                 </div>
@@ -149,7 +149,7 @@ try {
             <section class="space-y-3">
                 <div class="flex items-center justify-between mx-2">
                     <div class="flex items-center gap-2">
-                        <i data-lucide="award" class="w-4 h-4 text-orange-500"></i>
+                        <i data-lucide="award" class="w-4 h-4 text-rose-500"></i>
                         <h2 class="font-bold text-slate-800">ผลการเรียนประจำภาคเรียน</h2>
                     </div>
                     <div class="flex gap-4 text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">
@@ -165,9 +165,9 @@ try {
         <!-- TAB 2: บันทึกพฤติกรรม -->
         <div id="tab_behavior" class="section-tab space-y-6">
             <section class="space-y-4">
-                <div class="bg-white p-6 rounded-3xl shadow-sm border border-amber-100 space-y-6">
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-rose-100 space-y-6">
                     <div class="flex items-center gap-2 mb-2">
-                        <i data-lucide="user-check" class="w-5 h-5 text-orange-500"></i>
+                        <i data-lucide="user-check" class="w-5 h-5 text-rose-500"></i>
                         <h2 class="font-bold text-slate-800">บันทึกพฤติกรรมโดยผู้ปกครอง</h2>
                     </div>
                     <p class="text-xs text-slate-500 italic">กรุณาระบุความคิดเห็นของท่านในแต่ละด้าน เพื่อใช้ประกอบในเล่ม ปพ.6 ครับ</p>
@@ -175,27 +175,27 @@ try {
                     <div class="space-y-4">
                         <div class="space-y-2">
                             <label class="text-sm font-bold text-slate-700">1. ด้านหน้าที่รับผิดชอบ ความเอาใจใส่การเรียน</label>
-                            <textarea id="fb_responsibility" rows="2" placeholder="เช่น ตั้งใจทำการบ้านด้วยตนเอง..." class="w-full p-4 bg-slate-50 border-none rounded-2xl text-sm outline-none focus:ring-4 focus:ring-orange-500/10 transition-all resize-none"></textarea>
+                            <textarea id="fb_responsibility" rows="2" placeholder="เช่น ตั้งใจทำการบ้านด้วยตนเอง..." class="w-full p-4 bg-slate-50 border-none rounded-2xl text-sm outline-none focus:ring-4 focus:ring-rose-500/10 transition-all resize-none"></textarea>
                         </div>
                         <div class="space-y-2">
                             <label class="text-sm font-bold text-slate-700">2. ด้านการใช้เวลาว่าง</label>
-                            <textarea id="fb_spare_time" rows="2" placeholder="เช่น ชอบอ่านหนังสือนิทาน วาดรูป..." class="w-full p-4 bg-slate-50 border-none rounded-2xl text-sm outline-none focus:ring-4 focus:ring-orange-500/10 transition-all resize-none"></textarea>
+                            <textarea id="fb_spare_time" rows="2" placeholder="เช่น ชอบอ่านหนังสือนิทาน วาดรูป..." class="w-full p-4 bg-slate-50 border-none rounded-2xl text-sm outline-none focus:ring-4 focus:ring-rose-500/10 transition-all resize-none"></textarea>
                         </div>
                         <div class="space-y-2">
                             <label class="text-sm font-bold text-slate-700">3. ด้านความสัมพันธ์กับบุคคลรอบข้าง</label>
-                            <textarea id="fb_relationship" rows="2" placeholder="เช่น เข้ากับเพื่อนบ้านและพี่น้องได้ดี..." class="w-full p-4 bg-slate-50 border-none rounded-2xl text-sm outline-none focus:ring-4 focus:ring-orange-500/10 transition-all resize-none"></textarea>
+                            <textarea id="fb_relationship" rows="2" placeholder="เช่น เข้ากับเพื่อนบ้านและพี่น้องได้ดี..." class="w-full p-4 bg-slate-50 border-none rounded-2xl text-sm outline-none focus:ring-4 focus:ring-rose-500/10 transition-all resize-none"></textarea>
                         </div>
                         <div class="space-y-2">
                             <label class="text-sm font-bold text-slate-700">4. ด้านอุปนิสัย บุคลิกภาพ</label>
-                            <textarea id="fb_personality" rows="2" placeholder="เช่น ร่าเริง แจ่มใส มีระเบียบวินัย..." class="w-full p-4 bg-slate-50 border-none rounded-2xl text-sm outline-none focus:ring-4 focus:ring-orange-500/10 transition-all resize-none"></textarea>
+                            <textarea id="fb_personality" rows="2" placeholder="เช่น ร่าเริง แจ่มใส มีระเบียบวินัย..." class="w-full p-4 bg-slate-50 border-none rounded-2xl text-sm outline-none focus:ring-4 focus:ring-rose-500/10 transition-all resize-none"></textarea>
                         </div>
                         <div class="space-y-2">
                             <label class="text-sm font-bold text-slate-700">5. ด้านสุขภาพ</label>
-                            <textarea id="fb_health" rows="2" placeholder="เช่น ร่างกายแข็งแรง นอนหลับพักผ่อนเพียงพอ..." class="w-full p-4 bg-slate-50 border-none rounded-2xl text-sm outline-none focus:ring-4 focus:ring-orange-500/10 transition-all resize-none"></textarea>
+                            <textarea id="fb_health" rows="2" placeholder="เช่น ร่างกายแข็งแรง นอนหลับพักผ่อนเพียงพอ..." class="w-full p-4 bg-slate-50 border-none rounded-2xl text-sm outline-none focus:ring-4 focus:ring-rose-500/10 transition-all resize-none"></textarea>
                         </div>
                     </div>
 
-                    <button onclick="saveFeedback()" id="saveFeedbackBtn" class="w-full bg-gradient-to-r from-orange-500 to-amber-500 text-white py-4 rounded-2xl font-bold hover:from-orange-600 hover:to-amber-600 shadow-lg shadow-orange-500/20 active:scale-95 transition-all">
+                    <button onclick="saveFeedback()" id="saveFeedbackBtn" class="w-full bg-gradient-to-r from-rose-500 to-pink-500 text-white py-4 rounded-2xl font-bold hover:from-rose-600 hover:to-pink-600 shadow-lg shadow-rose-500/20 active:scale-95 transition-all">
                         บันทึกข้อมูล ปพ.6
                     </button>
                 </div>
@@ -204,10 +204,10 @@ try {
 
         <!-- TAB 3: สุขภาพ -->
         <div id="tab_health" class="section-tab space-y-6">
-            <section class="bg-white p-6 rounded-3xl shadow-sm border border-amber-100 space-y-6">
+            <section class="bg-white p-6 rounded-3xl shadow-sm border border-rose-100 space-y-6">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-2">
-                         <i data-lucide="trending-up" class="w-5 h-5 text-orange-500"></i>
+                         <i data-lucide="trending-up" class="w-5 h-5 text-rose-500"></i>
                          <h2 class="font-bold text-slate-800">พัฒนาการด้านส่วนสูง (ซม.)</h2>
                     </div>
                 </div>
@@ -216,10 +216,10 @@ try {
                 </div>
             </section>
 
-            <section class="bg-white p-6 rounded-3xl shadow-sm border border-amber-100 space-y-6">
+            <section class="bg-white p-6 rounded-3xl shadow-sm border border-rose-100 space-y-6">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-2">
-                         <i data-lucide="activity" class="w-5 h-5 text-orange-500"></i>
+                         <i data-lucide="activity" class="w-5 h-5 text-pink-500"></i>
                          <h2 class="font-bold text-slate-800">พัฒนาการด้านน้ำหนัก (กก.)</h2>
                     </div>
                 </div>
@@ -228,15 +228,15 @@ try {
                 </div>
             </section>
 
-            <section class="bg-white p-5 rounded-3xl shadow-sm border border-amber-100">
+            <section class="bg-white p-5 rounded-3xl shadow-sm border border-rose-100">
                 <div class="grid grid-cols-2 gap-4">
-                    <div class="p-4 bg-orange-50 rounded-2xl border border-orange-100 text-center">
-                        <p class="text-[10px] text-orange-400 font-bold uppercase mb-1">น้ำหนักล่าสุด</p>
-                        <p class="text-xl font-black text-orange-600"><span id="health_weight">-</span> กก.</p>
+                    <div class="p-4 bg-rose-50 rounded-2xl border border-rose-100 text-center">
+                        <p class="text-[10px] text-rose-400 font-bold uppercase mb-1">น้ำหนักล่าสุด</p>
+                        <p class="text-xl font-black text-rose-600"><span id="health_weight">-</span> กก.</p>
                     </div>
-                    <div class="p-4 bg-amber-50 rounded-2xl border border-amber-100 text-center">
-                        <p class="text-[10px] text-amber-400 font-bold uppercase mb-1">ส่วนสูงล่าสุด</p>
-                        <p class="text-xl font-black text-amber-600"><span id="health_height">-</span> ซม.</p>
+                    <div class="p-4 bg-violet-50 rounded-2xl border border-violet-100 text-center">
+                        <p class="text-[10px] text-violet-400 font-bold uppercase mb-1">ส่วนสูงล่าสุด</p>
+                        <p class="text-xl font-black text-violet-600"><span id="health_height">-</span> ซม.</p>
                     </div>
                 </div>
             </section>
@@ -343,13 +343,13 @@ try {
 
                 if (isHidden) {
                     list.innerHTML = `
-                        <div class="bg-amber-50 p-8 rounded-3xl border border-amber-100 text-center space-y-3">
-                            <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto shadow-sm">
+                        <div class="bg-rose-50 p-8 rounded-3xl border border-rose-100 text-center space-y-3">
+                            <div class="w-12 h-12 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto shadow-sm">
                                 <i data-lucide="lock" class="w-6 h-6"></i>
                             </div>
                             <div class="space-y-1">
-                                <h3 class="font-bold text-amber-900 text-sm">ยังไม่เปิดให้ดูผลการเรียนในปีการศึกษา ${systemYear}</h3>
-                                <p class="text-xs text-amber-700 leading-relaxed px-4">เจ้าหน้าที่วิชาการกำลังอยู่ระหว่างการประมวลผลข้อมูลปีล่าสุดครับ<br>ท่านยังสามารถเลือกดูผลการเรียน "ปีการศึกษาก่อนหน้า" ได้ตามปกติครับ</p>
+                                <h3 class="font-bold text-rose-900 text-sm">ยังไม่เปิดให้ดูผลการเรียนในปีการศึกษา ${systemYear}</h3>
+                                <p class="text-xs text-rose-700 leading-relaxed px-4">เจ้าหน้าที่วิชาการกำลังอยู่ระหว่างการประมวลผลข้อมูลปีล่าสุดครับ<br>ท่านยังสามารถเลือกดูผลการเรียน "ปีการศึกษาก่อนหน้า" ได้ตามปกติครับ</p>
                             </div>
                         </div>
                     `;
@@ -379,13 +379,13 @@ try {
 
                     document.getElementById('header_avg_gpa').innerText = totalCredits > 0 ? (totalWeightedGrade / totalCredits).toFixed(2) : '-';
                     list.innerHTML = processedGrades.map(g => `
-                        <div class="bg-white p-3 pr-4 rounded-2xl shadow-sm border border-amber-50 flex items-center gap-3">
+                        <div class="bg-white p-3 pr-4 rounded-2xl shadow-sm border border-rose-50 flex items-center gap-3">
                             <div class="flex-1 flex items-center gap-3 overflow-hidden">
-                                <div class="w-8 h-8 shrink-0 bg-orange-50 flex items-center justify-center rounded-lg font-black text-orange-500 text-[9px] border border-orange-100 shadow-inner">${g.subject_code}</div>
+                                <div class="w-8 h-8 shrink-0 bg-rose-50 flex items-center justify-center rounded-lg font-black text-rose-500 text-[9px] border border-rose-100 shadow-inner">${g.subject_code}</div>
                                 <div class="truncate"><h4 class="text-xs font-bold text-slate-700 truncate leading-tight">${g.subject_name}</h4></div>
                             </div>
-                            <div class="w-16 text-center"><span class="bg-slate-50 px-2 py-1 rounded-lg text-xs font-black text-slate-600 border border-slate-100">${g.score_total || '0'}</span></div>
-                            <div class="w-12 text-center"><div class="text-base font-black text-orange-600 leading-none">${g.displayGrade}</div></div>
+                            <div class="w-16 text-center"><span class="bg-rose-50 px-2 py-1 rounded-lg text-xs font-black text-rose-600 border border-rose-100">${g.score_total || '0'}</span></div>
+                            <div class="w-12 text-center"><div class="text-base font-black text-rose-600 leading-none">${g.displayGrade}</div></div>
                         </div>
                     `).join('');
                 }
@@ -431,8 +431,8 @@ try {
                 document.getElementById('weight_chart').innerHTML = msg;
                 return;
             }
-            renderSingleChart('height_chart', healthHistory, 'height', '#f59e0b');
-            renderSingleChart('weight_chart', healthHistory, 'weight', '#fb923c');
+            renderSingleChart('height_chart', healthHistory, 'height', '#f43f5e');
+            renderSingleChart('weight_chart', healthHistory, 'weight', '#8b5cf6');
         }
 
         function renderSingleChart(containerId, data, key, color) {
@@ -545,23 +545,23 @@ try {
         <div class="bg-white rounded-[2rem] w-full max-w-sm overflow-hidden shadow-2xl relative animate-[scaleIn_0.3s_ease-out]">
             <!-- Confetti Decors -->
             <div class="absolute inset-0 pointer-events-none overflow-hidden opacity-20">
-                <div class="absolute top-4 left-10 w-2 h-2 bg-orange-400 rotate-45 animate-ping"></div>
-                <div class="absolute top-10 right-10 w-2 h-2 bg-amber-400 rounded-full animate-bounce"></div>
-                <div class="absolute bottom-20 left-1/4 w-3 h-3 bg-yellow-400 rotate-12 animate-pulse"></div>
+                <div class="absolute top-4 left-10 w-2 h-2 bg-rose-400 rotate-45 animate-ping"></div>
+                <div class="absolute top-10 right-10 w-2 h-2 bg-violet-400 rounded-full animate-bounce"></div>
+                <div class="absolute bottom-20 left-1/4 w-3 h-3 bg-pink-400 rotate-12 animate-pulse"></div>
             </div>
             
             <div class="p-8 text-center space-y-6 relative">
-                <div class="w-24 h-24 bg-orange-50 rounded-full flex items-center justify-center mx-auto shadow-inner border-4 border-white overflow-hidden">
+                <div class="w-24 h-24 bg-rose-50 rounded-full flex items-center justify-center mx-auto shadow-inner border-4 border-white overflow-hidden">
                     <img src="https://picsum.photos/seed/birthday/200/200" class="w-full h-full object-cover">
                 </div>
                 <div class="space-y-2">
                     <h2 class="text-3xl font-black text-slate-800 tracking-tight">สุขสันต์วันเกิด! 🎂</h2>
                     <p class="text-slate-500 font-medium leading-relaxed">ขอให้น้องมีความสุข สุขภาพแข็งแรง<br>และเป็นที่รักของทุกคนนะครับ</p>
                 </div>
-                <div class="bg-orange-50 py-4 rounded-3xl border border-orange-100">
-                    <p id="celebration_age" class="text-orange-600 font-black text-2xl tracking-tighter"></p>
+                <div class="bg-rose-50 py-4 rounded-3xl border border-rose-100">
+                    <p id="celebration_age" class="text-rose-600 font-black text-2xl tracking-tighter"></p>
                 </div>
-                <button onclick="closeBirthday()" class="w-full bg-gradient-to-r from-orange-500 to-amber-500 text-white py-4 rounded-2xl font-black shadow-lg shadow-orange-200 active:scale-95 transition-all text-lg">
+                <button onclick="closeBirthday()" class="w-full bg-gradient-to-r from-rose-500 to-pink-500 text-white py-4 rounded-2xl font-black shadow-lg shadow-rose-200 active:scale-95 transition-all text-lg">
                     รับคำอวยพร 🎉
                 </button>
             </div>
