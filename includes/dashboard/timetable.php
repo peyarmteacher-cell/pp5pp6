@@ -149,8 +149,8 @@
                     // Fallback mapping if API provides empty strings
                     if (isActivity && (!displayCode || !displayName)) {
                         const actMap = {
-                            'scouts': { code: 'ลูกเสือ-เนตรนารี', name: 'กิจกรรมลูกเสือ-เนตรนารี' },
-                            'scout': { code: 'ลูกเสือ-เนตรนารี', name: 'กิจกรรมลูกเสือ-เนตรนารี' },
+                            'scouts': { code: 'ลูกเสือเนตรนารี', name: 'กิจกรรมลูกเสือเนตรนารี' },
+                            'scout': { code: 'ลูกเสือเนตรนารี', name: 'กิจกรรมลูกเสือเนตรนารี' },
                             'club': { code: 'ชุมนุม', name: 'กิจกรรมชุมนุม' },
                             'homeroom': { code: 'โฮมรูม', name: 'Home Room' },
                             'lunch': { code: 'พักกลางวัน', name: 'พักรับประทานอาหาร' },
@@ -196,7 +196,7 @@
         const select = document.getElementById('assign_subject_classroom');
         select.innerHTML = '<option value="">-- ว่าง / ลบข้อมูล --</option>' + 
             '<option value="LD:lunch" class="font-bold text-orange-600">🍴 พักรับประทานอาหาร</option>' +
-            '<option value="LD:scouts" class="font-bold text-green-600">⚜️ กิจกรรมลูกเสือ-เนตรนารี</option>' +
+            '<option value="LD:scouts" class="font-bold text-green-600">⚜️ กิจกรรมลูกเสือเนตรนารี</option>' +
             '<option value="LD:club" class="font-bold text-purple-600">🤝 กิจกรรมชุมนุม</option>' +
             '<option value="LD:guidance" class="font-bold text-blue-600">🧭 กิจกรรมแนะแนว</option>' +
             '<option value="LD:homeroom" class="font-bold text-blue-600">🏠 โฮมรูม (Home Room)</option>' +
@@ -319,7 +319,9 @@
             const years = await res.json();
             const el = document.getElementById('time_academic_year');
             if (el) {
-                el.innerHTML = years.map(y => `<option value="${y.year}" ${y.is_current ? 'selected' : ''}>ปีการศึกษา ${y.year}</option>`).join('');
+                el.innerHTML = years.map(y => `<option value="${y.year}" ${Number(y.is_current) === 1 ? 'selected' : ''}>ปีการศึกษา ${y.year}</option>`).join('');
+                const current = years.find(y => Number(y.is_current) === 1);
+                if (current) el.value = current.year;
             }
             // Trigger load timetable after setting the default academic year
             await loadTimetable();

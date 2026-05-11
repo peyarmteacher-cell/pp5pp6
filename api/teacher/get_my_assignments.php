@@ -38,7 +38,7 @@ try {
     foreach ($ld_assignments as $ld) {
         $activities = [
             ['type' => 'guidance', 'name' => 'กิจกรรมแนะแนว', 'code' => 'แนะแนว'],
-            ['type' => 'scouts', 'name' => 'กิจกรรมลูกเสือ/เนตรนารี', 'code' => 'ลูกเสือ'],
+            ['type' => 'scouts', 'name' => 'กิจกรรมลูกเสือเนตรนารี', 'code' => 'ลูกเสือเนตรนารี'],
             ['type' => 'club', 'name' => 'กิจกรรมชุมนุม', 'code' => 'ชุมนุม'],
             ['type' => 'social', 'name' => 'กิจกรรมเพื่อสังคมฯ', 'code' => 'สังคมฯ']
         ];

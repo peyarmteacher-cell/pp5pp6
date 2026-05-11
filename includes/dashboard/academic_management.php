@@ -327,7 +327,7 @@
         const dropdowns = ['std_academic_year', 'edit_std_academic_year', 'filter_academic_year', 'grade_academic_year', 'char_academic_year', 'anal_academic_year', 'ld_academic_year', 'behavior-year', 'att_academic_year'];
         years.sort((a, b) => b.year - a.year);
         
-        const currentYearObj = years.find(y => y.is_current);
+        const currentYearObj = years.find(y => Number(y.is_current) === 1);
         if (currentYearObj) {
             // Update global variables if they exist
             if (typeof currentAcademicYear !== 'undefined') currentAcademicYear = currentYearObj.year;
@@ -337,8 +337,12 @@
             const el = document.getElementById(id);
             if (el) {
                 const currentValue = el.value;
-                el.innerHTML = years.map(y => `<option value="${y.year}" ${y.is_current ? 'selected' : ''}>ปีการศึกษา ${y.year}</option>`).join('');
-                if (currentValue && years.some(y => y.year === currentValue)) {
+                el.innerHTML = years.map(y => `<option value="${y.year}" ${Number(y.is_current) === 1 ? 'selected' : ''}>ปีการศึกษา ${y.year}</option>`).join('');
+                
+                // Prioritize setting to the current academic year if found
+                if (currentYearObj) {
+                    el.value = currentYearObj.year;
+                } else if (currentValue && years.some(y => y.year === currentValue)) {
                     el.value = currentValue;
                 }
                 

@@ -361,7 +361,9 @@
             const years = await res.json();
             const el = document.getElementById('att_academic_year');
             if (el) {
-                el.innerHTML = years.map(y => `<option value="${y.year}" ${y.is_current ? 'selected' : ''}>ปีการศึกษา ${y.year}</option>`).join('');
+                el.innerHTML = years.map(y => `<option value="${y.year}" ${Number(y.is_current) === 1 ? 'selected' : ''}>ปีการศึกษา ${y.year}</option>`).join('');
+                const current = years.find(y => Number(y.is_current) === 1);
+                if (current) el.value = current.year;
             }
         } catch (e) {
             console.error('Error initializing attendance section:', e);

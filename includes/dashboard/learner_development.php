@@ -54,7 +54,7 @@
                                 <button onclick="batchLDPass('guidance_result')" class="block mx-auto mt-1 text-[10px] text-blue-600 hover:text-blue-800 font-bold cursor-pointer">ผ่านทุกคน</button>
                             </th>
                             <th class="px-4 py-4 font-bold border-b border-slate-200 text-center" style="min-width: 120px;">
-                                ลูกเสือ เนตรนารี
+                                ลูกเสือเนตรนารี
                                 <button onclick="batchLDPass('scout_result')" class="block mx-auto mt-1 text-[10px] text-blue-600 hover:text-blue-800 font-bold cursor-pointer">ผ่านทุกคน</button>
                             </th>
                             <th class="px-4 py-4 font-bold border-b border-slate-200 text-center" style="min-width: 250px;">ชุมนุม (ชื่อชุมนุม)</th>
