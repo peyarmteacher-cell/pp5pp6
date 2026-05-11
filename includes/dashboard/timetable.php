@@ -75,6 +75,7 @@
                     <option value="LD:lunch" class="font-bold text-orange-600">🍴 พักรับประทานอาหาร</option>
                     <option value="LD:scouts" class="font-bold text-green-600">⚜️ กิจกรรมลูกเสือ-เนตรนารี</option>
                     <option value="LD:club" class="font-bold text-purple-600">🤝 กิจกรรมชุมนุม</option>
+                    <option value="LD:guidance" class="font-bold text-blue-600">🧭 กิจกรรมแนะแนว</option>
                     <option value="LD:homeroom" class="font-bold text-blue-600">🏠 โฮมรูม (Home Room)</option>
                     <!-- Assignments will be loaded here -->
                 </select>
@@ -152,7 +153,8 @@
                             'scout': { code: 'ลูกเสือ', name: 'กิจกรรมลูกเสือ-เนตรนารี' },
                             'club': { code: 'ชุมนุม', name: 'กิจกรรมชุมนุม' },
                             'homeroom': { code: 'โฮมรูม', name: 'Home Room' },
-                            'lunch': { code: 'พักกลางวัน', name: 'พักรับประทานอาหาร' }
+                            'lunch': { code: 'พักกลางวัน', name: 'พักรับประทานอาหาร' },
+                            'guidance': { code: 'แนะแนว', name: 'กิจกรรมแนะแนว' }
                         };
                         const actKey = slot.activity_type.toLowerCase();
                         if (actMap[actKey]) {
@@ -160,15 +162,20 @@
                             displayName = displayName || actMap[actKey].name;
                         }
                     }
+
+                    const singleLineActs = ['scouts', 'scout', 'club', 'guidance'];
+                    const isSingleLine = isActivity && singleLineActs.includes(slot.activity_type.toLowerCase());
                     
                     return `
                         <td class="p-2 border border-slate-200 text-center relative group min-h-[85px] ${isLunch ? 'bg-orange-50' : ''}">
                             <div onclick="openAssignModal(${day.id}, ${period}, '${day.name}')" class="cursor-pointer hover:bg-slate-50 transition-all h-full w-full min-h-[65px] flex flex-col justify-center gap-0.5">
-                                ${slot ? `
+                                ${slot ? (isSingleLine ? `
+                                    <div class="text-[11px] font-bold text-blue-700 leading-none">${displayCode}</div>
+                                ` : `
                                     <div class="text-[10px] font-bold ${isLunch ? 'text-orange-700' : 'text-blue-700'} leading-none">${displayCode || 'กิจกรรม'}</div>
                                     <div class="text-[9px] text-slate-600 truncate leading-none min-h-[12px]">${displayName || ''}</div>
                                     <div class="text-[9px] font-bold text-slate-400 leading-none min-h-[12px]">${(!isActivity && slot.level) ? `${slot.level}/${slot.room}` : '&nbsp;'}</div>
-                                ` : '<span class="text-[10px] text-slate-300 italic">ว่าง</span>'}
+                                `) : '<span class="text-[10px] text-slate-300 italic">ว่าง</span>'}
                             </div>
                             ${slot ? `
                                 <button onclick="event.stopPropagation(); deleteTimetableSlot(${slot.id})" class="absolute -top-1 -right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-all hover:bg-red-600 shadow-md cursor-pointer z-50 scale-75">
@@ -191,6 +198,7 @@
             '<option value="LD:lunch" class="font-bold text-orange-600">🍴 พักรับประทานอาหาร</option>' +
             '<option value="LD:scouts" class="font-bold text-green-600">⚜️ กิจกรรมลูกเสือ-เนตรนารี</option>' +
             '<option value="LD:club" class="font-bold text-purple-600">🤝 กิจกรรมชุมนุม</option>' +
+            '<option value="LD:guidance" class="font-bold text-blue-600">🧭 กิจกรรมแนะแนว</option>' +
             '<option value="LD:homeroom" class="font-bold text-blue-600">🏠 โฮมรูม (Home Room)</option>' +
             myAssignments.map(a => `<option value="${a.subject_id}|${a.classroom_id}">${a.subject_code} - ${a.subject_name} (${a.level}/${a.room})</option>`).join('');
         

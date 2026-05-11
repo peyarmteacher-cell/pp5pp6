@@ -176,11 +176,19 @@ $days = [
                                 $isLunch = ($slot && isset($slot['activity_type']) && $slot['activity_type'] === 'lunch');
                         ?>
                             <td class="<?= $isLunch ? 'bg-orange-50' : '' ?>">
-                                <?php if($slot): ?>
-                                    <div class="text-[12px] font-bold text-blue-700 leading-tight"><?= $slot['subject_code'] ?></div>
-                                    <div class="text-[10px] text-slate-800 my-0.5"><?= $slot['subject_name'] ?></div>
-                                    <?php if(!$slot['activity_type'] && $slot['level']): ?>
-                                        <div class="text-[10px] font-bold text-slate-500 italic"><?= $slot['level'] ?>/<?= $slot['room'] ?></div>
+                                <?php if($slot): 
+                                    $isActivity = !empty($slot['activity_type']);
+                                    $singleLineActs = ['scouts', 'scout', 'club', 'guidance'];
+                                    $isSingleLine = $isActivity && in_array(strtolower($slot['activity_type']), $singleLineActs);
+                                ?>
+                                    <?php if($isSingleLine): ?>
+                                        <div class="text-[12px] font-bold text-blue-700 leading-tight"><?= $slot['subject_code'] ?></div>
+                                    <?php else: ?>
+                                        <div class="text-[12px] font-bold <?= $isLunch ? 'text-orange-700' : 'text-blue-700' ?> leading-tight"><?= $slot['subject_code'] ?></div>
+                                        <div class="text-[10px] text-slate-800 my-0.5"><?= $slot['subject_name'] ?></div>
+                                        <?php if(!$isActivity && $slot['level']): ?>
+                                            <div class="text-[10px] font-bold text-slate-500 italic"><?= $slot['level'] ?>/<?= $slot['room'] ?></div>
+                                        <?php endif; ?>
                                     <?php endif; ?>
                                 <?php endif; ?>
                             </td>
