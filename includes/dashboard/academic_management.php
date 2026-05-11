@@ -341,6 +341,11 @@
                 if (currentValue && years.some(y => y.year === currentValue)) {
                     el.value = currentValue;
                 }
+                
+                // Trigger reload for relevant sections when years are populated/updated
+                if (id === 'filter_academic_year' && typeof loadStudents === 'function') loadStudents();
+                if (id === 'grade_academic_year' && typeof loadMyAssignments === 'function') loadMyAssignments();
+                if (id === 'ld_academic_year' && typeof loadLearnerDevClassrooms === 'function') loadLearnerDevClassrooms();
                 if (id === 'behavior-year' && typeof loadBehaviorClassrooms === 'function') loadBehaviorClassrooms();
                 if (id === 'att_academic_year' && typeof loadAttendanceClassrooms === 'function') loadAttendanceClassrooms();
             }

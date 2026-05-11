@@ -149,8 +149,8 @@
                     // Fallback mapping if API provides empty strings
                     if (isActivity && (!displayCode || !displayName)) {
                         const actMap = {
-                            'scouts': { code: 'ลูกเสือ', name: 'กิจกรรมลูกเสือ-เนตรนารี' },
-                            'scout': { code: 'ลูกเสือ', name: 'กิจกรรมลูกเสือ-เนตรนารี' },
+                            'scouts': { code: 'ลูกเสือ-เนตรนารี', name: 'กิจกรรมลูกเสือ-เนตรนารี' },
+                            'scout': { code: 'ลูกเสือ-เนตรนารี', name: 'กิจกรรมลูกเสือ-เนตรนารี' },
                             'club': { code: 'ชุมนุม', name: 'กิจกรรมชุมนุม' },
                             'homeroom': { code: 'โฮมรูม', name: 'Home Room' },
                             'lunch': { code: 'พักกลางวัน', name: 'พักรับประทานอาหาร' },
@@ -313,15 +313,6 @@
         }
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
-        const yearEl = document.getElementById('time_academic_year');
-        if (yearEl) yearEl.addEventListener('change', loadTimetable);
-        const semEl = document.getElementById('time_semester');
-        if (semEl) semEl.addEventListener('change', loadTimetable);
-        
-        initTimetableSection();
-    });
-
     async function initTimetableSection() {
         try {
             const res = await fetch('api/academic/get_academic_years.php');
@@ -330,10 +321,20 @@
             if (el) {
                 el.innerHTML = years.map(y => `<option value="${y.year}" ${y.is_current ? 'selected' : ''}>ปีการศึกษา ${y.year}</option>`).join('');
             }
+            // Trigger load timetable after setting the default academic year
+            await loadTimetable();
         } catch (e) {
             console.error('Error initializing timetable section:', e);
         }
     }
 
-    document.addEventListener('DOMContentLoaded', initTimetableSection);
+    document.addEventListener('DOMContentLoaded', () => {
+        const yearEl = document.getElementById('time_academic_year');
+        if (yearEl) yearEl.addEventListener('change', loadTimetable);
+        const semEl = document.getElementById('time_semester');
+        if (semEl) semEl.addEventListener('change', loadTimetable);
+        
+        // Initializing timetable section which will call loadTimetable
+        initTimetableSection();
+    });
 </script>
