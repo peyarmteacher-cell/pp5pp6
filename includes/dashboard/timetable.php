@@ -147,7 +147,7 @@
                                 ` : '<span class="text-[10px] text-slate-300 italic">ว่าง</span>'}
                             </div>
                             ${slot ? `
-                                <button onclick="deleteTimetableSlot(${slot.id})" class="absolute top-1 right-1 p-1 bg-red-100 text-red-600 rounded-md opacity-0 group-hover:opacity-100 transition-all hover:bg-red-200 shadow-sm">
+                                <button onclick="event.stopPropagation(); deleteTimetableSlot(${slot.id})" class="absolute top-1 right-1 p-1 bg-red-100 text-red-600 rounded-md opacity-0 group-hover:opacity-100 transition-all hover:bg-red-200 shadow-sm cursor-pointer z-10">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
                                 </button>
                             ` : ''}
