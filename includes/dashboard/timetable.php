@@ -73,6 +73,9 @@
                 <select id="assign_subject_classroom" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer">
                     <option value="">-- ว่าง / ลบข้อมูล --</option>
                     <option value="LD:lunch" class="font-bold text-orange-600">🍴 พักกลางวัน</option>
+                    <option value="LD:scouts" class="font-bold text-green-600">⚜️ กิจกรรมลูกเสือ-เนตรนารี</option>
+                    <option value="LD:club" class="font-bold text-purple-600">🤝 กิจกรรมชุมนุม</option>
+                    <option value="LD:homeroom" class="font-bold text-blue-600">🏠 โฮมรูม (Home Room)</option>
                     <!-- Assignments will be loaded here -->
                 </select>
             </div>
@@ -141,29 +144,17 @@
                     let displayCode = slot ? (slot.subject_code || '') : '';
                     let displayName = slot ? (slot.subject_name || '') : '';
                     
-                    if (slot && slot.activity_type) {
-                        if (slot.activity_type === 'lunch') {
-                            displayCode = 'พักกลางวัน';
-                        } else if (slot.activity_type === 'scout') {
-                            displayCode = 'ลูกเสือ';
-                        } else if (slot.activity_type === 'club') {
-                            displayCode = 'ชุมนุม';
-                        } else if (slot.activity_type === 'homeroom') {
-                            displayCode = 'โฮมรูม';
-                        }
-                    }
-
                     return `
-                        <td class="p-2 border border-slate-200 text-center relative group min-h-[70px] ${isLunch ? 'bg-orange-50' : ''}">
-                            <div onclick="openAssignModal(${day.id}, ${period}, '${day.name}')" class="cursor-pointer hover:bg-slate-50 transition-all h-full w-full min-h-[50px] flex flex-col justify-center">
+                        <td class="p-2 border border-slate-200 text-center relative group min-h-[85px] ${isLunch ? 'bg-orange-50' : ''}">
+                            <div onclick="openAssignModal(${day.id}, ${period}, '${day.name}')" class="cursor-pointer hover:bg-slate-50 transition-all h-full w-full min-h-[65px] flex flex-col justify-center gap-0.5">
                                 ${slot ? `
-                                    <div class="text-[10px] font-bold ${isLunch ? 'text-orange-700' : 'text-blue-700'} leading-tight">${displayCode}</div>
-                                    <div class="text-[9px] text-slate-500 truncate leading-tight">${displayName}</div>
-                                    ${slot.level ? `<div class="text-[9px] font-bold text-slate-400 mt-0.5">${slot.level}/${slot.room}</div>` : ''}
+                                    <div class="text-[10px] font-bold ${isLunch ? 'text-orange-700' : 'text-blue-700'} leading-none">${displayCode}</div>
+                                    <div class="text-[9px] text-slate-500 truncate leading-none min-h-[12px]">${displayName}</div>
+                                    <div class="text-[9px] font-bold text-slate-400 leading-none min-h-[12px]">${slot.level ? `${slot.level}/${slot.room}` : '&nbsp;'}</div>
                                 ` : '<span class="text-[10px] text-slate-300 italic">ว่าง</span>'}
                             </div>
                             ${slot ? `
-                                <button onclick="event.stopPropagation(); deleteTimetableSlot(${slot.id})" class="absolute -top-1 -right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-all hover:bg-red-600 shadow-md cursor-pointer z-20 scale-75">
+                                <button onclick="event.stopPropagation(); deleteTimetableSlot(${slot.id})" class="absolute -top-1 -right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-all hover:bg-red-600 shadow-md cursor-pointer z-50 scale-75">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"></path></svg>
                                 </button>
                             ` : ''}
@@ -181,6 +172,9 @@
         const select = document.getElementById('assign_subject_classroom');
         select.innerHTML = '<option value="">-- ว่าง / ลบข้อมูล --</option>' + 
             '<option value="LD:lunch" class="font-bold text-orange-600">🍴 พักกลางวัน</option>' +
+            '<option value="LD:scouts" class="font-bold text-green-600">⚜️ กิจกรรมลูกเสือ-เนตรนารี</option>' +
+            '<option value="LD:club" class="font-bold text-purple-600">🤝 กิจกรรมชุมนุม</option>' +
+            '<option value="LD:homeroom" class="font-bold text-blue-600">🏠 โฮมรูม (Home Room)</option>' +
             myAssignments.map(a => `<option value="${a.subject_id}|${a.classroom_id}">${a.subject_code} - ${a.subject_name} (${a.level}/${a.room})</option>`).join('');
         
         // Find current value if exists

@@ -34,7 +34,8 @@ try {
                 'scouts' => ['name' => 'กิจกรรมลูกเสือ/เนตรนารี', 'code' => 'ลูกเสือ'],
                 'club' => ['name' => 'กิจกรรมชุมนุม', 'code' => 'ชุมนุม'],
                 'social' => ['name' => 'กิจกรรมเพื่อสังคมฯ', 'code' => 'สังคมฯ'],
-                'lunch' => ['name' => 'พักกลางวัน', 'code' => 'พักกลางวัน']
+                'lunch' => ['name' => 'พักกลางวัน', 'code' => 'พักกลางวัน'],
+                'homeroom' => ['name' => 'Home Room', 'code' => 'โฮมรูม']
             ];
             $act = $activities[$t['activity_type']] ?? null;
             if ($act) {
