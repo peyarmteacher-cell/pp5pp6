@@ -11,7 +11,7 @@
         </div>
         
         <!-- Current Year Card -->
-        <div id="currentYearDisplay" class="mb-8 p-4 bg-blue-50 border border-blue-100 rounded-2xl flex items-center justify-between">
+        <div id="currentYearDisplay" class="mb-6 p-4 bg-blue-50 border border-blue-100 rounded-2xl flex items-center justify-between">
             <div class="flex items-center gap-4">
                 <div class="w-12 h-12 bg-blue-600 text-white rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
                     <i data-lucide="calendar" class="w-6 h-6"></i>
@@ -22,6 +22,27 @@
                 </div>
             </div>
             <div class="px-3 py-1 bg-green-500 text-white text-[10px] font-black rounded-full uppercase">Active</div>
+        </div>
+
+        <!-- Promotion Banner -->
+        <div id="promotionBanner" class="hidden mb-8 p-6 bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-100 rounded-3xl space-y-4">
+             <div class="flex items-start gap-4">
+                <div class="w-10 h-10 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center shrink-0">
+                    <i data-lucide="arrow-up-right" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h4 class="font-bold text-slate-800 text-sm">เลื่อนชั้นนักเรียนจากปีการศึกษาที่แล้ว</h4>
+                    <p class="text-xs text-slate-500 mt-0.5">พบว่าปีการศึกษาปัจจุบันยังไม่มีข้อมูลนักเรียน ท่านสามารถดึงข้อมูลนักเรียนและเลื่อนชั้นอัตโนมัติจากปีการศึกษาก่อนหน้าได้ครับ</p>
+                </div>
+             </div>
+             <div class="flex items-center gap-3">
+                 <select id="promote_from_year" class="px-4 py-2 bg-white border border-amber-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-amber-500/20 cursor-pointer">
+                     <!-- Populated by JS -->
+                 </select>
+                 <button onclick="promoteStudents()" class="flex-1 bg-amber-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-amber-700 transition-all cursor-pointer shadow-lg shadow-amber-600/20">
+                    ดำเนินการเลื่อนชั้นนักเรียน
+                 </button>
+             </div>
         </div>
 
         <div class="space-y-3">
@@ -155,6 +176,21 @@
             }
 
             const otherYears = years.filter(y => y.is_current != 1);
+            
+            // Check if current year has students to determine if we should show promotion banner
+            const currentYear = years.find(y => y.is_current == 1);
+            if (currentYear) {
+                const sRes = await fetch(`api/academic/get_students.php?academic_year=${currentYear.year}&status=studying`);
+                const students = await sRes.json();
+                const banner = document.getElementById('promotionBanner');
+                if (students.length === 0 && otherYears.length > 0) {
+                    banner.classList.remove('hidden');
+                    const promoteFrom = document.getElementById('promote_from_year');
+                    promoteFrom.innerHTML = otherYears.map(y => `<option value="${y.year}">จากปีการศึกษา ${y.year}</option>`).join('');
+                } else {
+                    banner.classList.add('hidden');
+                }
+            }
             
             if (otherYears.length === 0) {
                 tbody.innerHTML = `
@@ -329,6 +365,34 @@
             }
         } catch (e) {
             console.error('Error setting current year:', e);
+        }
+    }
+
+    async function promoteStudents() {
+        const fromYearSelect = document.getElementById('promote_from_year');
+        const fromYear = fromYearSelect.value;
+        const toYearDisplay = document.getElementById('currentYearValue').innerText.replace('ปีการศึกษา ', '');
+        
+        if (!fromYear) return;
+        
+        if (!confirm(`ยืนยันการดึงข้อมูลนักเรียนจากปี ${fromYear} มายังปี ${toYearDisplay}?\nนักเรียนจะถูกเลื่อนชั้นขึ้น 1 ระดับโดยอัตโนมัติ (เช่น ป.1 -> ป.2)\n* ยกเว้นชั้นสูงสุด ม.3 ต้องดำเนินการในเมนูจบการศึกษา`)) return;
+        
+        try {
+            const res = await fetch('api/academic/promote_students.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ from_year: fromYear, to_year: toYearDisplay })
+            });
+            const result = await res.json();
+            if (result.message) {
+                alert(result.message);
+                loadAcademicYears();
+                if (typeof loadStudents === 'function') loadStudents();
+            } else {
+                alert(result.error);
+            }
+        } catch (e) {
+            console.error('Error promoting students:', e);
         }
     }
 
