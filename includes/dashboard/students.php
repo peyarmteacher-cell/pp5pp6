@@ -38,6 +38,10 @@
                 <input type="file" id="importExcel" accept=".xlsx, .xls" class="hidden" onchange="handleExcelImport(event)">
                 <button onclick="document.getElementById('importExcel').click()" class="bg-green-600 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-green-700 cursor-pointer transition-all">นำเข้าจาก Excel</button>
                 <button onclick="promoteStudents()" class="bg-amber-600 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-amber-700 cursor-pointer transition-all">เลื่อนระดับชั้น</button>
+                <button onclick="clearAllStudents()" class="bg-red-50 text-red-600 border border-red-100 px-4 py-2 rounded-xl text-sm font-black hover:bg-red-100 cursor-pointer transition-all flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    ล้างข้อมูลนักเรียนทั้งหมด (เริ่มต้นใหม่)
+                </button>
             </div>
         </div>
         
@@ -657,6 +661,32 @@
         } finally {
             confirmBtn.disabled = false;
             confirmBtn.innerText = 'ยืนยันการนำเข้า';
+        }
+    }
+
+    async function clearAllStudents() {
+        if (!confirm('!!! คำเตือน: คุณกำลังจะลบข้อมูลนักเรียนทั้งหมดของทุกปีการศึกษา !!!\n\nการดำเนินการนี้จะ:\n1. ลบรายชื่อนักเรียนทั้งหมด\n2. ลบข้อมูลการเข้าเรียน, คะแนน, พฤติกรรม และสุขภาพทั้งหมด\n\n* ข้อมูลครูและรายวิชาจะยังคงอยู่\n\nคุณแน่ใจว่าต้องการล้างข้อมูลเพื่อเริ่มต้นใหม่ใช่หรือไม่?')) {
+            return;
+        }
+
+        const pass = prompt('กรุณาพิมพ์คำว่า "ยืนยันการลบ" เพื่อดำเนินการต่อ:');
+        if (pass !== 'ยืนยันการลบ') {
+            alert('คุณพิมพ์ข้อความไม่ถูกต้อง การลบถูกยกเลิก');
+            return;
+        }
+
+        try {
+            const res = await fetch('api/academic/clear_all_students.php', { method: 'POST' });
+            const result = await res.json();
+            if (result.message) {
+                alert(result.message);
+                loadStudents();
+            } else {
+                alert(result.error);
+            }
+        } catch (e) {
+            console.error('Error clearing students:', e);
+            alert('เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์');
         }
     }
 
