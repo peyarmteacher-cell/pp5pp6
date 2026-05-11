@@ -28,7 +28,34 @@ try {
         exit;
     }
 
-    $levels = ['ป.1', 'ป.2', 'ป.3', 'ป.4', 'ป.5', 'ป.6', 'ม.1', 'ม.2', 'ม.3'];
+    // กำหนดลำดับชั้นเรียน
+    $levels_chain = [
+        // ระดับอนุบาล
+        'อนุบาล 1' => 'อนุบาล 2',
+        'อนุบาล 2' => 'อนุบาล 3',
+        'อนุบาล 3' => 'ประถมศึกษาปีที่ 1',
+        'อ.1' => 'อ.2',
+        'อ.2' => 'อ.3',
+        'อ.3' => 'ป.1',
+        
+        // ระดับประถม
+        'ประถมศึกษาปีที่ 1' => 'ประถมศึกษาปีที่ 2',
+        'ประถมศึกษาปีที่ 2' => 'ประถมศึกษาปีที่ 3',
+        'ประถมศึกษาปีที่ 3' => 'ประถมศึกษาปีที่ 4',
+        'ประถมศึกษาปีที่ 4' => 'ประถมศึกษาปีที่ 5',
+        'ประถมศึกษาปีที่ 5' => 'ประถมศึกษาปีที่ 6',
+        'ป.1' => 'ป.2',
+        'ป.2' => 'ป.3',
+        'ป.3' => 'ป.4',
+        'ป.4' => 'ป.5',
+        'ป.5' => 'ป.6',
+
+        // ระดับมัธยม (ถ้ามี)
+        'มัธยมศึกษาปีที่ 1' => 'มัธยมศึกษาปีที่ 2',
+        'มัธยมศึกษาปีที่ 2' => 'มัธยมศึกษาปีที่ 3',
+        'ม.1' => 'ม.2',
+        'ม.2' => 'ม.3'
+    ];
     
     // 2. ดึงข้อมูลนักเรียนจากปีการศึกษาเดิมที่สถานะกำลังเรียนอยู่
     $stmt = $pdo->prepare("SELECT * FROM students WHERE school_id = ? AND academic_year = ? AND status = 'studying'");
@@ -36,23 +63,13 @@ try {
     $old_students = $stmt->fetchAll();
     
     $promoted_count = 0;
+    $graduated_count = 0;
     
     foreach ($old_students as $student) {
         $current_level = $student['level'];
-        $level_index = array_search($current_level, $levels);
         
-        if ($level_index !== false) {
-            // ข้ามนักเรียนชั้นสูงสุด (ม.3) เพราะต้องไปทำในเมนูจบการศึกษา
-            if ($current_level === 'ม.3') {
-                continue;
-            }
-            
-            // กรณี ป.6 ถ้าไม่มี ม.1 ให้ข้าม (ไปจบการศึกษา)
-            if ($current_level === 'ป.6' && !in_array('ม.1', $levels)) {
-                 continue;
-            }
-            
-            $next_level = $levels[$level_index + 1];
+        if (isset($levels_chain[$current_level])) {
+            $next_level = $levels_chain[$current_level];
             
             // คัดลอกนักเรียนไปปีการศึกษาใหม่พร้อมเลื่อนชั้น
             $ins = $pdo->prepare("INSERT INTO students (student_code, national_id, name, level, room, academic_year, school_id, status) VALUES (?, ?, ?, ?, ?, ?, ?, 'studying')");
@@ -61,15 +78,22 @@ try {
                 $student['national_id'],
                 $student['name'],
                 $next_level,
-                $student['room'],
+                $student['room'] ?? '1',
                 $to_year,
                 $school_id
             ]);
             $promoted_count++;
+        } else if (in_array($current_level, ['ป.6', 'ประถมศึกษาปีที่ 6', 'ม.3', 'มัธยมศึกษาปีที่ 3'])) {
+            // กรณีชั้นสูงสุด ให้เปลี่ยนสถานะเป็นจบการศึกษา
+            $upd = $pdo->prepare("UPDATE students SET status = 'graduated' WHERE id = ?");
+            $upd->execute([$student['id']]);
+            $graduated_count++;
         }
     }
     
-    echo json_encode(['message' => "ดึงข้อมูลและเลื่อนชั้นนักเรียนสำเร็จ จำนวน $promoted_count ราย"]);
+    echo json_encode([
+        'message' => "ดำเนินการเรียบร้อยแล้ว\n- เลื่อนชั้นนักเรียน: $promoted_count ราย\n- จบการศึกษา (ป.6): $graduated_count ราย"
+    ]);
 } catch (PDOException $e) {
     http_response_code(500);
     echo json_encode(['error' => 'เกิดข้อผิดพลาด: ' . $e->getMessage()]);

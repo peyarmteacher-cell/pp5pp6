@@ -1,22 +1,23 @@
 <?php
+error_reporting(0);
+ini_set('display_errors', 0);
 session_start();
 require_once '../config.php';
 
 header('Content-Type: application/json');
 
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
+if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && !($_SESSION['is_academic'] ?? false))) {
     http_response_code(403);
-    echo json_encode(['error' => 'Unauthorized']);
+    echo json_encode(['error' => 'คุณไม่มีสิทธิ์ดำเนินการนี้']);
     exit;
 }
 
 $school_id = $_SESSION['school_id'];
 
 try {
-    // ลบข้อมูลนักเรียนทั้งหมดของโรงเรียนนี้
-    // ตารางอื่นๆ เช่น attendance, grades, characteristics_scores, behavior_records ฯลฯ
-    // มีการตั้งค่า Foreign Key เป็น ON DELETE CASCADE ไว้แล้ว
-    // ดังนั้นการลบจากตาราง students จะลบข้อมูลที่เกี่ยวข้องโดยอัตโนมัติ
+    if (!$pdo) {
+        throw new Exception("ไม่สามารถเชื่อมต่อฐานข้อมูลได้");
+    }
 
     $pdo->beginTransaction();
 
@@ -27,8 +28,8 @@ try {
     $pdo->commit();
 
     echo json_encode(['message' => 'ล้างข้อมูลนักเรียนและข้อมูลการเรียนทั้งหมดเรียบร้อยแล้ว (ข้อมูลครูและรายวิชายังอยู่ครบถ้วน)']);
-} catch (PDOException $e) {
-    if ($pdo->inTransaction()) $pdo->rollBack();
+} catch (Exception $e) {
+    if (isset($pdo) && $pdo->inTransaction()) $pdo->rollBack();
     http_response_code(500);
     echo json_encode(['error' => 'เกิดข้อผิดพลาด: ' . $e->getMessage()]);
 }
