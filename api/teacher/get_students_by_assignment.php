@@ -119,7 +119,7 @@ try {
         ], $params));
     }
     
-    $students = $stmt->fetchAll();
+    $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
     // Fetch Unit Scores
     if ($semester !== 'annual') {
@@ -131,7 +131,7 @@ try {
                 WHERE us.student_id = ? AND lu.subject_id = ? AND lu.academic_year = ? AND lu.semester = ?
             ');
             $stmt->execute([$student['id'], $subject_id, $academic_year, (int)$semester]);
-            $student['unit_scores'] = $stmt->fetchAll();
+            $student['unit_scores'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
     } else {
         foreach ($students as &$student) {

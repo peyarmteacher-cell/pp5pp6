@@ -184,7 +184,7 @@
                 <td class="px-4 py-3 border-r border-slate-100 sticky left-0 bg-white group-hover:bg-slate-50 z-10">
                     <div class="flex flex-col">
                         <span class="text-xs font-bold text-slate-400">เลขที่ ${index + 1}</span>
-                        <span class="text-xs font-medium text-slate-800">${(s.name || '').trim()} ${(s.last_name || '').trim()}</span>
+                        <span class="text-xs font-medium text-slate-800">${s.prefix || ''}${s.name || ''} ${s.last_name || ''}</span>
                         <span class="text-[10px] text-slate-400 font-mono">${s.student_code}</span>
                     </div>
                 </td>
