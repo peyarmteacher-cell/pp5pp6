@@ -1,6 +1,8 @@
 <?php
-require_once '../../config/db.php';
 session_start();
+require_once '../config.php';
+
+header('Content-Type: application/json');
 
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     http_response_code(403);
@@ -12,21 +14,13 @@ $school_id = $_SESSION['school_id'];
 
 try {
     // ลบข้อมูลนักเรียนทั้งหมดของโรงเรียนนี้
-    // หมายเหตุ: ข้อมูลการเข้าเรียน (attendance), คะแนน (grades), พฤติกรรม (behavior) 
-    // มักจะผูกกับ student_id หรือ student_code/academic_year
-    // หากมี table อื่นที่เชื่อมโยงด้วย Foreign Key เราอาจต้องลบตามลำดับ
-    
+    // ตารางอื่นๆ เช่น attendance, grades, characteristics_scores, behavior_records ฯลฯ
+    // มีการตั้งค่า Foreign Key เป็น ON DELETE CASCADE ไว้แล้ว
+    // ดังนั้นการลบจากตาราง students จะลบข้อมูลที่เกี่ยวข้องโดยอัตโนมัติ
+
     $pdo->beginTransaction();
 
-    // ลบข้อมูลที่เกี่ยวข้องกับนักเรียนก่อน (ถ้ามี)
-    $pdo->prepare("DELETE FROM attendance WHERE school_id = ?")->execute([$school_id]);
-    $pdo->prepare("DELETE FROM grades WHERE school_id = ?")->execute([$school_id]);
-    $pdo->prepare("DELETE FROM student_behavior WHERE school_id = ?")->execute([$school_id]);
-    $pdo->prepare("DELETE FROM student_health WHERE school_id = ?")->execute([$school_id]);
-    $pdo->prepare("DELETE FROM learner_development WHERE school_id = ?")->execute([$school_id]);
-    $pdo->prepare("DELETE FROM competency_scores WHERE school_id = ?")->execute([$school_id]);
-    
-    // ลบตัวนักเรียน
+    // ลบตัวนักเรียน (ซึ่งจะ Cascade ไปยัง Attendance, Grades, Behavior, Health, ฯลฯ)
     $stmt = $pdo->prepare("DELETE FROM students WHERE school_id = ?");
     $stmt->execute([$school_id]);
     
