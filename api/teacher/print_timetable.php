@@ -46,17 +46,17 @@ try {
 
     $timetable = [];
     foreach ($items as $it) {
-        if ($it['activity_type']) {
+        if (!empty($it['activity_type'])) {
             $activities = [
                 'guidance' => ['name' => 'กิจกรรมแนะแนว', 'code' => 'แนะแนว'],
                 'scouts' => ['name' => 'กิจกรรมลูกเสือ-เนตรนารี', 'code' => 'ลูกเสือ'],
                 'scout' => ['name' => 'กิจกรรมลูกเสือ-เนตรนารี', 'code' => 'ลูกเสือ'],
                 'club' => ['name' => 'กิจกรรมชุมนุม', 'code' => 'ชุมนุม'],
                 'social' => ['name' => 'กิจกรรมเพื่อสังคมฯ', 'code' => 'สังคมฯ'],
-                'lunch' => ['name' => 'พักกลางวัน', 'code' => 'พักรับประทานอาหาร'],
+                'lunch' => ['name' => 'พักรับประทานอาหาร', 'code' => 'พักกลางวัน'],
                 'homeroom' => ['name' => 'Home Room', 'code' => 'โฮมรูม']
             ];
-            $act = $activities[$it['activity_type']] ?? null;
+            $act = $activities[strtolower($it['activity_type'])] ?? null;
             if ($act) {
                 $it['subject_name'] = $act['name'];
                 $it['subject_code'] = $act['code'];

@@ -144,13 +144,29 @@
                     let displayCode = slot ? (slot.subject_code || '') : '';
                     let displayName = slot ? (slot.subject_name || '') : '';
                     const isActivity = slot && !!slot.activity_type;
+
+                    // Fallback mapping if API provides empty strings
+                    if (isActivity && (!displayCode || !displayName)) {
+                        const actMap = {
+                            'scouts': { code: 'ลูกเสือ', name: 'กิจกรรมลูกเสือ-เนตรนารี' },
+                            'scout': { code: 'ลูกเสือ', name: 'กิจกรรมลูกเสือ-เนตรนารี' },
+                            'club': { code: 'ชุมนุม', name: 'กิจกรรมชุมนุม' },
+                            'homeroom': { code: 'โฮมรูม', name: 'Home Room' },
+                            'lunch': { code: 'พักกลางวัน', name: 'พักรับประทานอาหาร' }
+                        };
+                        const actKey = slot.activity_type.toLowerCase();
+                        if (actMap[actKey]) {
+                            displayCode = displayCode || actMap[actKey].code;
+                            displayName = displayName || actMap[actKey].name;
+                        }
+                    }
                     
                     return `
                         <td class="p-2 border border-slate-200 text-center relative group min-h-[85px] ${isLunch ? 'bg-orange-50' : ''}">
                             <div onclick="openAssignModal(${day.id}, ${period}, '${day.name}')" class="cursor-pointer hover:bg-slate-50 transition-all h-full w-full min-h-[65px] flex flex-col justify-center gap-0.5">
                                 ${slot ? `
-                                    <div class="text-[10px] font-bold ${isLunch ? 'text-orange-700' : 'text-blue-700'} leading-none">${displayCode}</div>
-                                    <div class="text-[9px] text-slate-500 truncate leading-none min-h-[12px]">${displayName}</div>
+                                    <div class="text-[10px] font-bold ${isLunch ? 'text-orange-700' : 'text-blue-700'} leading-none">${displayCode || 'กิจกรรม'}</div>
+                                    <div class="text-[9px] text-slate-600 truncate leading-none min-h-[12px]">${displayName || ''}</div>
                                     <div class="text-[9px] font-bold text-slate-400 leading-none min-h-[12px]">${(!isActivity && slot.level) ? `${slot.level}/${slot.room}` : '&nbsp;'}</div>
                                 ` : '<span class="text-[10px] text-slate-300 italic">ว่าง</span>'}
                             </div>

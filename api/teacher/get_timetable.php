@@ -28,21 +28,20 @@ try {
     $timetable = $stmt->fetchAll();
 
     foreach ($timetable as &$t) {
-        if ($t['activity_type']) {
+        if (!empty($t['activity_type'])) {
             $activities = [
                 'guidance' => ['name' => 'กิจกรรมแนะแนว', 'code' => 'แนะแนว'],
                 'scouts' => ['name' => 'กิจกรรมลูกเสือ-เนตรนารี', 'code' => 'ลูกเสือ'],
                 'scout' => ['name' => 'กิจกรรมลูกเสือ-เนตรนารี', 'code' => 'ลูกเสือ'],
                 'club' => ['name' => 'กิจกรรมชุมนุม', 'code' => 'ชุมนุม'],
                 'social' => ['name' => 'กิจกรรมเพื่อสังคมฯ', 'code' => 'สังคมฯ'],
-                'lunch' => ['name' => 'พักกลางวัน', 'code' => 'พักรับประทานอาหาร'],
+                'lunch' => ['name' => 'พักรับประทานอาหาร', 'code' => 'พักกลางวัน'],
                 'homeroom' => ['name' => 'Home Room', 'code' => 'โฮมรูม']
             ];
-            $act = $activities[$t['activity_type']] ?? null;
+            $act = $activities[strtolower($t['activity_type'])] ?? null;
             if ($act) {
                 $t['subject_name'] = $act['name'];
                 $t['subject_code'] = $act['code'];
-                $t['subject_id'] = 'LD:' . $t['activity_type'];
             }
         }
     }
