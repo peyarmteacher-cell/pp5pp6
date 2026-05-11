@@ -1507,6 +1507,11 @@ try {
             loadOverviewData();
         <?php endif; ?>
 
+        // Initialize specialized sections
+        if (typeof initHealthSection === 'function') initHealthSection();
+        if (typeof initCompetencySection === 'function') initCompetencySection();
+        if (typeof initLDSection === 'function') initLDSection();
+
         // Initialize Lucide Icons
         lucide.createIcons();
     </script>

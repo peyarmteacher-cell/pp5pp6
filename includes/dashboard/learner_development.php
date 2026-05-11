@@ -184,7 +184,7 @@
                 <td class="px-4 py-3 border-r border-slate-100 sticky left-0 bg-white group-hover:bg-slate-50 z-10">
                     <div class="flex flex-col">
                         <span class="text-xs font-bold text-slate-400">เลขที่ ${index + 1}</span>
-                        <span class="text-xs font-medium text-slate-800">${s.prefix || ''}${s.name} ${s.last_name || ''}</span>
+                        <span class="text-xs font-medium text-slate-800">${s.prefix || ''}${s.name || s.first_name || ''} ${s.last_name || ''}</span>
                         <span class="text-[10px] text-slate-400 font-mono">${s.student_code}</span>
                     </div>
                 </td>
@@ -354,8 +354,22 @@
     }
 
     // Initialize Year Dropdown
+    async function initLDSection() {
+        try {
+            const res = await fetch('api/academic/get_academic_years.php');
+            const years = await res.json();
+            const yearSelect = document.getElementById('ld_academic_year');
+            if (yearSelect) {
+                yearSelect.innerHTML = years.map(y => `<option value="${y.year}" ${y.is_current == 1 ? 'selected' : ''}>ปีการศึกษา ${y.year}</option>`).join('');
+                // Initial load
+                loadLearnerDevClassrooms();
+            }
+        } catch (e) {
+            console.error('Error initializing LD section:', e);
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
-        // This will be handled by updateAcademicYearDropdowns in academic_management.php
-        // But we need to add the ID to the list there
+        // ... (existing code if any)
     });
 </script>

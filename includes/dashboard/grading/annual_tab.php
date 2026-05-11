@@ -43,7 +43,7 @@ function renderAnnualTable() {
             <tr class="border-b border-slate-100 hover:bg-slate-50/50 transition-colors">
                 <td class="p-3 text-center text-sm text-slate-500 border-r border-slate-100">${index + 1}</td>
                 <td class="p-3 border-r border-slate-100">
-                    <div class="font-medium text-slate-800">${s.prefix || ''}${s.name} ${s.last_name || ''}</div>
+                    <div class="font-medium text-slate-800">${s.prefix || ''}${s.name || ''} ${s.last_name || ''}</div>
                     <div class="text-[10px] text-slate-400 font-mono">${s.student_code}</div>
                 </td>
                 <td class="p-3 text-center text-sm border-r border-slate-100 bg-blue-50/10">${s.sem1_units || 0}</td>

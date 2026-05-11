@@ -410,7 +410,11 @@
             const years = await res.json();
             const el = document.getElementById('health_academic_year');
             if (el) {
-                el.innerHTML = years.map(y => `<option value="${y.year}" ${y.is_current ? 'selected' : ''}>ปีการศึกษา ${y.year}</option>`).join('');
+                el.innerHTML = years.map(y => `<option value="${y.year}" ${y.is_current == 1 ? 'selected' : ''}>ปีการศึกษา ${y.year}</option>`).join('');
+                // If there's a current year, load classrooms for it
+                setTimeout(() => {
+                    loadHealthClassrooms();
+                }, 100);
             }
         } catch (e) {
             console.error('Error initializing health section:', e);

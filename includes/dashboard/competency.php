@@ -6,24 +6,40 @@
                 <p class="text-sm text-slate-500">สำหรับคุณครูประจำชั้นประเมินนักเรียนในความรับผิดชอบ</p>
             </div>
             <div class="flex flex-wrap gap-3">
-                <select id="competency_classroom" class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20">
+                <select id="competency_classroom" class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 transition-all font-bold text-slate-700 cursor-pointer">
                     <option value="">เลือกห้องเรียน</option>
                 </select>
-                <select id="competency_year" class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20">
-                    <?php
-                    $current_year = date('Y') + 543;
-                    for ($y = $current_year; $y >= $current_year - 5; $y--) {
-                        echo "<option value='$y'>ปีการศึกษา $y</option>";
-                    }
-                    ?>
+                <select id="competency_year" class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 transition-all font-bold text-slate-700 cursor-pointer">
+                    <!-- Loaded via JS -->
                 </select>
-                <select id="competency_semester" class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20">
+                <select id="competency_semester" class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 transition-all font-bold text-slate-700 cursor-pointer">
                     <option value="1">ภาคเรียนที่ 1</option>
                     <option value="2">ภาคเรียนที่ 2</option>
                 </select>
-                <button onclick="loadCompetencyData()" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold transition-all shadow-lg shadow-blue-900/20">
+                <button onclick="loadCompetencyData()" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-blue-900/20 cursor-pointer flex items-center gap-2">
+                    <i data-lucide="search" class="w-4 h-4"></i>
                     ดึงข้อมูล
                 </button>
+            </div>
+        </div>
+
+        <div id="competency-batch-fill" class="hidden mb-6 bg-blue-50 p-4 rounded-2xl border border-blue-100 flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-blue-600 p-2 rounded-lg text-white">
+                    <i data-lucide="check-square" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h4 class="font-bold text-blue-900 text-sm">บันทึกคะแนนรวดเร็ว (Batch Fill)</h4>
+                    <p class="text-[10px] text-blue-600">ใส่คะแนน 3 ให้ทุกคนในสมรรถนะที่เลือก</p>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="batchFillCompetency(1)" class="px-3 py-1.5 bg-white border border-blue-200 rounded-lg text-[10px] font-bold text-blue-700 hover:bg-blue-50 transition-all cursor-pointer">ด้าน 1</button>
+                <button onclick="batchFillCompetency(2)" class="px-3 py-1.5 bg-white border border-blue-200 rounded-lg text-[10px] font-bold text-blue-700 hover:bg-blue-50 transition-all cursor-pointer">ด้าน 2</button>
+                <button onclick="batchFillCompetency(3)" class="px-3 py-1.5 bg-white border border-blue-200 rounded-lg text-[10px] font-bold text-blue-700 hover:bg-blue-50 transition-all cursor-pointer">ด้าน 3</button>
+                <button onclick="batchFillCompetency(4)" class="px-3 py-1.5 bg-white border border-blue-200 rounded-lg text-[10px] font-bold text-blue-700 hover:bg-blue-50 transition-all cursor-pointer">ด้าน 4</button>
+                <button onclick="batchFillCompetency(5)" class="px-3 py-1.5 bg-white border border-blue-200 rounded-lg text-[10px] font-bold text-blue-700 hover:bg-blue-50 transition-all cursor-pointer">ด้าน 5</button>
+                <button onclick="batchFillCompetency('all')" class="px-4 py-1.5 bg-blue-600 text-white rounded-lg text-[10px] font-bold hover:bg-blue-700 transition-all cursor-pointer shadow-sm">ให้ 3 ทุกคน ทุกด้าน</button>
             </div>
         </div>
 
@@ -81,13 +97,44 @@
 
 <script>
 async function initCompetencySection() {
-    const res = await fetch('api/teacher/get_my_classrooms.php');
-    const classrooms = await res.json();
-    const select = document.getElementById('competency_classroom');
-    select.innerHTML = '<option value="">เลือกห้องเรียน</option>';
-    classrooms.forEach(c => {
-        select.innerHTML += `<option value="${c.id}">${c.level}/${c.room}</option>`;
-    });
+    try {
+        // Load academic years
+        const resYears = await fetch('api/academic/get_academic_years.php');
+        const years = await resYears.json();
+        const yearSelect = document.getElementById('competency_year');
+        if (yearSelect) {
+            yearSelect.innerHTML = years.map(y => `<option value="${y.year}" ${y.is_current == 1 ? 'selected' : ''}>ปีการศึกษา ${y.year}</option>`).join('');
+        }
+
+        // Load classrooms
+        const resCls = await fetch('api/teacher/get_my_classrooms.php');
+        const classrooms = await resCls.json();
+        const select = document.getElementById('competency_classroom');
+        select.innerHTML = '<option value="">เลือกห้องเรียน</option>';
+        classrooms.forEach(c => {
+            select.innerHTML += `<option value="${c.id}">${c.level}/${c.room}</option>`;
+        });
+    } catch (e) {
+        console.error('Error initializing competency section:', e);
+    }
+}
+
+function batchFillCompetency(itemNum) {
+    const rows = document.querySelectorAll('#competency_list tr[data-student-id]');
+    if (rows.length === 0) return;
+
+    if (confirm('คุณต้องการบันทึกคะแนน 3 ให้กับนักเรียนทุกคนใช่หรือไม่?')) {
+        rows.forEach(row => {
+            const studentId = row.getAttribute('data-student-id');
+            const selects = row.querySelectorAll('select');
+            if (itemNum === 'all') {
+                selects.forEach(sel => sel.value = '3');
+            } else {
+                selects[itemNum - 1].value = '3';
+            }
+            updateAvg(studentId);
+        });
+    }
 }
 
 async function loadCompetencyData() {
@@ -101,7 +148,9 @@ async function loadCompetencyData() {
     }
 
     const tbody = document.getElementById('competency_list');
+    const batchFill = document.getElementById('competency-batch-fill');
     tbody.innerHTML = '<tr><td colspan="8" class="px-4 py-8 text-center text-slate-400 italic">กำลังโหลดข้อมูล...</td></tr>';
+    if (batchFill) batchFill.classList.add('hidden');
 
     try {
         const res = await fetch(`api/teacher/get_competency_data.php?classroom_id=${classroomId}&academic_year=${year}&semester=${semester}`);
@@ -112,6 +161,8 @@ async function loadCompetencyData() {
             return;
         }
 
+        if (batchFill) batchFill.classList.remove('hidden');
+
         tbody.innerHTML = '';
         students.forEach((s, index) => {
             const avg = s.average_score ? parseFloat(s.average_score).toFixed(2) : '0.00';
@@ -119,7 +170,7 @@ async function loadCompetencyData() {
                 <tr class="hover:bg-slate-50/50 transition-colors" data-student-id="${s.id}">
                     <td class="px-4 py-4 text-center text-sm text-slate-500">${index + 1}</td>
                     <td class="px-4 py-4">
-                        <div class="text-sm font-bold text-slate-700">${s.prefix}${s.name} ${s.last_name}</div>
+                        <div class="text-sm font-bold text-slate-700">${s.prefix || ''}${s.name || ''} ${s.last_name || ''}</div>
                         <div class="text-[10px] text-slate-400">${s.student_code}</div>
                     </td>
                     <td class="px-4 py-4 text-center">${renderScoreSelect(s.id, 1, s.item1)}</td>
