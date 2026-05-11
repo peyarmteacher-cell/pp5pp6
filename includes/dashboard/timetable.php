@@ -137,18 +137,34 @@
                 ${[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(period => {
                     const slot = currentTimetable.find(t => t.day_of_week == day.id && t.period_number == period);
                     const isLunch = slot && slot.activity_type === 'lunch';
+                    
+                    let displayCode = slot ? (slot.subject_code || '') : '';
+                    let displayName = slot ? (slot.subject_name || '') : '';
+                    
+                    if (slot && slot.activity_type) {
+                        if (slot.activity_type === 'lunch') {
+                            displayCode = 'พักกลางวัน';
+                        } else if (slot.activity_type === 'scout') {
+                            displayCode = 'ลูกเสือ';
+                        } else if (slot.activity_type === 'club') {
+                            displayCode = 'ชุมนุม';
+                        } else if (slot.activity_type === 'homeroom') {
+                            displayCode = 'โฮมรูม';
+                        }
+                    }
+
                     return `
-                        <td class="p-2 border border-slate-200 text-center relative group min-h-[60px] ${isLunch ? 'bg-orange-50' : ''}">
-                            <div onclick="openAssignModal(${day.id}, ${period}, '${day.name}')" class="cursor-pointer hover:bg-slate-50 transition-all h-full w-full">
+                        <td class="p-2 border border-slate-200 text-center relative group min-h-[70px] ${isLunch ? 'bg-orange-50' : ''}">
+                            <div onclick="openAssignModal(${day.id}, ${period}, '${day.name}')" class="cursor-pointer hover:bg-slate-50 transition-all h-full w-full min-h-[50px] flex flex-col justify-center">
                                 ${slot ? `
-                                    <div class="text-[10px] font-bold ${isLunch ? 'text-orange-700' : 'text-blue-700'}">${slot.subject_code || (isLunch ? 'พักกลางวัน' : '')}</div>
-                                    <div class="text-[9px] text-slate-500 truncate">${slot.subject_name || ''}</div>
-                                    ${!isLunch && slot.level ? `<div class="text-[9px] font-bold text-slate-400">ห้อง ${slot.level}/${slot.room}</div>` : ''}
+                                    <div class="text-[10px] font-bold ${isLunch ? 'text-orange-700' : 'text-blue-700'} leading-tight">${displayCode}</div>
+                                    <div class="text-[9px] text-slate-500 truncate leading-tight">${displayName}</div>
+                                    ${slot.level ? `<div class="text-[9px] font-bold text-slate-400 mt-0.5">${slot.level}/${slot.room}</div>` : ''}
                                 ` : '<span class="text-[10px] text-slate-300 italic">ว่าง</span>'}
                             </div>
                             ${slot ? `
-                                <button onclick="event.stopPropagation(); deleteTimetableSlot(${slot.id})" class="absolute top-1 right-1 p-1 bg-red-100 text-red-600 rounded-md opacity-0 group-hover:opacity-100 transition-all hover:bg-red-200 shadow-sm cursor-pointer z-10">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
+                                <button onclick="event.stopPropagation(); deleteTimetableSlot(${slot.id})" class="absolute -top-1 -right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-all hover:bg-red-600 shadow-md cursor-pointer z-20 scale-75">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"></path></svg>
                                 </button>
                             ` : ''}
                         </td>
