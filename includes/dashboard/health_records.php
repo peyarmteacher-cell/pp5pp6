@@ -195,7 +195,7 @@
             return `
                 <tr class="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
                     <td class="py-3 text-slate-600 font-mono text-xs">${index + 1}</td>
-                    <td class="py-3 font-medium text-slate-800 text-sm">${s.prefix || ''}${s.name} ${s.last_name || ''}</td>
+                    <td class="py-3 font-medium text-slate-800 text-sm">${s.name || ''} ${s.last_name || ''}</td>
                     <td class="py-3 text-center">
                         <input type="number" step="0.1" value="${s.weight || ''}" 
                             onchange="updateHealthData(${s.id}, 'weight', this.value)"
@@ -214,7 +214,7 @@
                         </div>
                     </td>
                     <td class="py-3 text-center">
-                        <button onclick="viewGrowthChart(${s.id}, '${s.prefix || ''}${s.name} ${s.last_name || ''}')" 
+                        <button onclick="viewGrowthChart(${s.id}, '${s.name || ''} ${s.last_name || ''}')" 
                             class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all cursor-pointer">
                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
                         </button>
@@ -410,11 +410,17 @@
             const years = await res.json();
             const el = document.getElementById('health_academic_year');
             if (el) {
-                el.innerHTML = years.map(y => `<option value="${y.year}" ${y.is_current == 1 ? 'selected' : ''}>ปีการศึกษา ${y.year}</option>`).join('');
+                // Display current year at top or selected
+                const sortedYears = [...years].sort((a, b) => b.year - a.year);
+                el.innerHTML = sortedYears.map(y => `<option value="${y.year}" ${y.is_current == 1 ? 'selected' : ''}>ปีการศึกษา ${y.year}</option>`).join('');
+                
                 // If there's a current year, load classrooms for it
-                setTimeout(() => {
-                    loadHealthClassrooms();
-                }, 100);
+                const currentY = sortedYears.find(y => y.is_current == 1);
+                if (currentY) {
+                    setTimeout(() => {
+                        loadHealthClassrooms();
+                    }, 100);
+                }
             }
         } catch (e) {
             console.error('Error initializing health section:', e);

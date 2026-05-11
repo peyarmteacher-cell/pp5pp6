@@ -170,7 +170,7 @@ async function loadCompetencyData() {
                 <tr class="hover:bg-slate-50/50 transition-colors" data-student-id="${s.id}">
                     <td class="px-4 py-4 text-center text-sm text-slate-500">${index + 1}</td>
                     <td class="px-4 py-4">
-                        <div class="text-sm font-bold text-slate-700">${s.prefix || ''}${s.name || ''} ${s.last_name || ''}</div>
+                        <div class="text-sm font-bold text-slate-700">${s.name || ''} ${s.last_name || ''}</div>
                         <div class="text-[10px] text-slate-400">${s.student_code}</div>
                     </td>
                     <td class="px-4 py-4 text-center">${renderScoreSelect(s.id, 1, s.item1)}</td>

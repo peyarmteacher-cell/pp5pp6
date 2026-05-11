@@ -40,12 +40,12 @@ try {
             'social_result' => ''
         ];
         
-        // ลบ id ของผลลัพธ์ออกเพื่อไม่ให้ไปทับ id ของนักเรียน
-        if (isset($res['id'])) {
-            unset($res['id']);
-        }
+        // Remove ID from result to not overwrite student ID
+        if (isset($res['id'])) unset($res['id']);
         
-        $data[] = array_merge($s, $res);
+        // Explicitly keep student name/prefix/last_name
+        $merged = array_merge($res, $s);
+        $data[] = $merged;
     }
 
     echo json_encode($data);

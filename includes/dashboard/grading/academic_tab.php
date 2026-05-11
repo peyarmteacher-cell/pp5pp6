@@ -365,7 +365,7 @@
             return `
                 <tr class="border-b border-slate-50 hover:bg-slate-50/50">
                     <td class="py-3 text-slate-600 font-mono text-xs">${index + 1}</td>
-                    <td class="py-3 font-medium text-slate-800 text-xs">${s.prefix || ''}${s.name || ''} ${s.last_name || ''}</td>
+                    <td class="py-3 font-medium text-slate-800 text-xs">${s.name || ''} ${s.last_name || ''}</td>
                     ${unitInputs}
                     <td class="py-3 text-center font-bold text-slate-700 text-xs" id="units-total-${s.id}">${currentTotal.toFixed(1)}</td>
                     <td class="py-3 text-center">

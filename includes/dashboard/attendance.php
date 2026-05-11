@@ -228,7 +228,7 @@
             return `
                 <tr class="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
                     <td class="py-3 text-slate-600 font-mono text-xs">${index + 1}</td>
-                    <td class="py-3 font-medium text-slate-800 text-sm">${s.prefix || ''}${s.name} ${s.last_name || ''}</td>
+                    <td class="py-3 font-medium text-slate-800 text-sm">${s.name || ''} ${s.last_name || ''}</td>
                     <td class="py-3">
                         <div class="flex justify-center gap-2">
                             ${['present', 'absent', 'late', 'sick', 'leave'].map(st => {
@@ -361,8 +361,9 @@
             const years = await res.json();
             const el = document.getElementById('att_academic_year');
             if (el) {
-                el.innerHTML = years.map(y => `<option value="${y.year}" ${Number(y.is_current) === 1 ? 'selected' : ''}>ปีการศึกษา ${y.year}</option>`).join('');
-                const current = years.find(y => Number(y.is_current) === 1);
+                const sortedYears = [...years].sort((a, b) => b.year - a.year);
+                el.innerHTML = sortedYears.map(y => `<option value="${y.year}" ${Number(y.is_current) === 1 ? 'selected' : ''}>ปีการศึกษา ${y.year}</option>`).join('');
+                const current = sortedYears.find(y => Number(y.is_current) === 1);
                 if (current) el.value = current.year;
             }
         } catch (e) {
