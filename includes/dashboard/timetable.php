@@ -72,7 +72,7 @@
                 <label class="block text-sm font-medium text-slate-700 mb-1">เลือกวิชาและห้องเรียน</label>
                 <select id="assign_subject_classroom" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer">
                     <option value="">-- ว่าง / ลบข้อมูล --</option>
-                    <option value="LD:lunch" class="font-bold text-orange-600">🍴 พักกลางวัน</option>
+                    <option value="LD:lunch" class="font-bold text-orange-600">🍴 พักรับประทานอาหาร</option>
                     <option value="LD:scouts" class="font-bold text-green-600">⚜️ กิจกรรมลูกเสือ-เนตรนารี</option>
                     <option value="LD:club" class="font-bold text-purple-600">🤝 กิจกรรมชุมนุม</option>
                     <option value="LD:homeroom" class="font-bold text-blue-600">🏠 โฮมรูม (Home Room)</option>
@@ -143,6 +143,7 @@
                     
                     let displayCode = slot ? (slot.subject_code || '') : '';
                     let displayName = slot ? (slot.subject_name || '') : '';
+                    const isActivity = slot && !!slot.activity_type;
                     
                     return `
                         <td class="p-2 border border-slate-200 text-center relative group min-h-[85px] ${isLunch ? 'bg-orange-50' : ''}">
@@ -150,7 +151,7 @@
                                 ${slot ? `
                                     <div class="text-[10px] font-bold ${isLunch ? 'text-orange-700' : 'text-blue-700'} leading-none">${displayCode}</div>
                                     <div class="text-[9px] text-slate-500 truncate leading-none min-h-[12px]">${displayName}</div>
-                                    <div class="text-[9px] font-bold text-slate-400 leading-none min-h-[12px]">${slot.level ? `${slot.level}/${slot.room}` : '&nbsp;'}</div>
+                                    <div class="text-[9px] font-bold text-slate-400 leading-none min-h-[12px]">${(!isActivity && slot.level) ? `${slot.level}/${slot.room}` : '&nbsp;'}</div>
                                 ` : '<span class="text-[10px] text-slate-300 italic">ว่าง</span>'}
                             </div>
                             ${slot ? `
@@ -171,7 +172,7 @@
         
         const select = document.getElementById('assign_subject_classroom');
         select.innerHTML = '<option value="">-- ว่าง / ลบข้อมูล --</option>' + 
-            '<option value="LD:lunch" class="font-bold text-orange-600">🍴 พักกลางวัน</option>' +
+            '<option value="LD:lunch" class="font-bold text-orange-600">🍴 พักรับประทานอาหาร</option>' +
             '<option value="LD:scouts" class="font-bold text-green-600">⚜️ กิจกรรมลูกเสือ-เนตรนารี</option>' +
             '<option value="LD:club" class="font-bold text-purple-600">🤝 กิจกรรมชุมนุม</option>' +
             '<option value="LD:homeroom" class="font-bold text-blue-600">🏠 โฮมรูม (Home Room)</option>' +

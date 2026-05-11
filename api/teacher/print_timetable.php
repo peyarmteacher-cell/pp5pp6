@@ -37,7 +37,7 @@ try {
                c.level, c.room
         FROM timetables t
         LEFT JOIN subjects s ON t.subject_id = s.id
-        JOIN classrooms c ON t.classroom_id = c.id
+        LEFT JOIN classrooms c ON t.classroom_id = c.id
         WHERE t.teacher_id = ? AND t.academic_year = ? AND t.semester = ?
         ORDER BY t.day_of_week ASC, t.period_number ASC
     ');
@@ -49,10 +49,12 @@ try {
         if ($it['activity_type']) {
             $activities = [
                 'guidance' => ['name' => 'กิจกรรมแนะแนว', 'code' => 'แนะแนว'],
-                'scouts' => ['name' => 'กิจกรรมลูกเสือ/เนตรนารี', 'code' => 'ลูกเสือ'],
+                'scouts' => ['name' => 'กิจกรรมลูกเสือ-เนตรนารี', 'code' => 'ลูกเสือ'],
+                'scout' => ['name' => 'กิจกรรมลูกเสือ-เนตรนารี', 'code' => 'ลูกเสือ'],
                 'club' => ['name' => 'กิจกรรมชุมนุม', 'code' => 'ชุมนุม'],
                 'social' => ['name' => 'กิจกรรมเพื่อสังคมฯ', 'code' => 'สังคมฯ'],
-                'lunch' => ['name' => 'พักกลางวัน', 'code' => 'พักกลางวัน']
+                'lunch' => ['name' => 'พักกลางวัน', 'code' => 'พักรับประทานอาหาร'],
+                'homeroom' => ['name' => 'Home Room', 'code' => 'โฮมรูม']
             ];
             $act = $activities[$it['activity_type']] ?? null;
             if ($act) {
@@ -177,8 +179,8 @@ $days = [
                                 <?php if($slot): ?>
                                     <div class="text-[12px] font-bold text-blue-700 leading-tight"><?= $slot['subject_code'] ?></div>
                                     <div class="text-[10px] text-slate-800 my-0.5"><?= $slot['subject_name'] ?></div>
-                                    <?php if(!$isLunch): ?>
-                                        <div class="text-[10px] font-bold text-slate-500 italic">ป.<?= $slot['level'] ?>/<?= $slot['room'] ?></div>
+                                    <?php if(!$slot['activity_type'] && $slot['level']): ?>
+                                        <div class="text-[10px] font-bold text-slate-500 italic"><?= $slot['level'] ?>/<?= $slot['room'] ?></div>
                                     <?php endif; ?>
                                 <?php endif; ?>
                             </td>
