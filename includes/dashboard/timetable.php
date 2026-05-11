@@ -18,6 +18,10 @@
                     <i data-lucide="printer" class="w-4 h-4"></i>
                     พิมพ์ตารางสอน
                 </button>
+                <button onclick="clearMyTimetable()" class="px-4 py-2 bg-red-50 text-red-600 border border-red-200 rounded-xl text-sm font-bold hover:bg-red-100 transition-all flex items-center gap-2 cursor-pointer shadow-sm">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    ล้างตารางสอนทั้งหมด
+                </button>
             </div>
         </div>
 
@@ -134,13 +138,19 @@
                     const slot = currentTimetable.find(t => t.day_of_week == day.id && t.period_number == period);
                     const isLunch = slot && slot.activity_type === 'lunch';
                     return `
-                        <td onclick="openAssignModal(${day.id}, ${period}, '${day.name}')" 
-                            class="p-2 border border-slate-200 text-center cursor-pointer hover:bg-slate-50 transition-all min-h-[60px] ${isLunch ? 'bg-orange-50' : ''}">
+                        <td class="p-2 border border-slate-200 text-center relative group min-h-[60px] ${isLunch ? 'bg-orange-50' : ''}">
+                            <div onclick="openAssignModal(${day.id}, ${period}, '${day.name}')" class="cursor-pointer hover:bg-slate-50 transition-all h-full w-full">
+                                ${slot ? `
+                                    <div class="text-[10px] font-bold ${isLunch ? 'text-orange-700' : 'text-blue-700'}">${slot.subject_code || (isLunch ? 'พักกลางวัน' : '')}</div>
+                                    <div class="text-[9px] text-slate-500 truncate">${slot.subject_name || ''}</div>
+                                    ${!isLunch && slot.level ? `<div class="text-[9px] font-bold text-slate-400">ห้อง ${slot.level}/${slot.room}</div>` : ''}
+                                ` : '<span class="text-[10px] text-slate-300 italic">ว่าง</span>'}
+                            </div>
                             ${slot ? `
-                                <div class="text-[10px] font-bold ${isLunch ? 'text-orange-700' : 'text-blue-700'}">${slot.subject_code}</div>
-                                <div class="text-[9px] text-slate-500 truncate">${slot.subject_name}</div>
-                                ${!isLunch ? `<div class="text-[9px] font-bold text-slate-400">ห้อง ${slot.level}/${slot.room}</div>` : ''}
-                            ` : '<span class="text-[10px] text-slate-300 italic">ว่าง</span>'}
+                                <button onclick="deleteTimetableSlot(${slot.id})" class="absolute top-1 right-1 p-1 bg-red-100 text-red-600 rounded-md opacity-0 group-hover:opacity-100 transition-all hover:bg-red-200 shadow-sm">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
+                                </button>
+                            ` : ''}
                         </td>
                     `;
                 }).join('')}
@@ -196,13 +206,15 @@
             }
         }
 
+        const currentSlot = currentTimetable.find(t => t.day_of_week == activeSlot.dayId && t.period_number == activeSlot.period);
+
         const payload = {
             academic_year: document.getElementById('time_academic_year').value,
             semester: document.getElementById('time_semester').value,
             day_of_week: activeSlot.dayId,
             period_number: activeSlot.period,
             subject_id: subject_id,
-            classroom_id: classroom_id
+            classroom_id: classroom_id || (currentSlot ? currentSlot.classroom_id : null)
         };
 
         try {
@@ -220,6 +232,49 @@
             }
         } catch (e) {
             console.error('Error saving timetable slot:', e);
+        }
+    }
+
+    async function deleteTimetableSlot(id) {
+        if (!confirm('ยืนยันการลบคาบสอนนี้?')) return;
+        
+        try {
+            const res = await fetch(`api/teacher/delete_timetable.php?id=${id}`, { method: 'DELETE' });
+            const result = await res.json();
+            if (result.message) {
+                loadTimetable();
+            } else {
+                alert(result.error);
+            }
+        } catch (e) {
+            console.error('Error deleting timetable slot:', e);
+        }
+    }
+
+    async function clearMyTimetable() {
+        const year = document.getElementById('time_academic_year').value;
+        const semester = document.getElementById('time_semester').value;
+        
+        if (!confirm(`!!! คำเตือน !!!\nคุณต้องการลบข้อมูลตารางสอนทั้งหมดของภาคเรียนที่ ${semester} ปีการศึกษา ${year} ใช่หรือไม่?\nการดำเนินการนี้ไม่สามารถย้อนกลับได้`)) return;
+        
+        const pass = prompt('กรุณาพิมพ์คำว่า "CONFIRM" เพื่อยืนยัน:');
+        if (pass !== 'CONFIRM') return;
+
+        try {
+            const res = await fetch(`api/teacher/clear_timetable.php`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ academic_year: year, semester: semester })
+            });
+            const result = await res.json();
+            if (result.message) {
+                alert(result.message);
+                loadTimetable();
+            } else {
+                alert(result.error);
+            }
+        } catch (e) {
+            console.error('Error clearing timetable:', e);
         }
     }
 

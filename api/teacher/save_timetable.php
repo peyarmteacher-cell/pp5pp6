@@ -26,8 +26,8 @@ if (!$day_of_week || !$period_number || !$academic_year) {
 try {
     if ($subject_id === null) {
         // ลบข้อมูล
-        $stmt = $pdo->prepare('DELETE FROM timetables WHERE classroom_id = ? AND academic_year = ? AND semester = ? AND day_of_week = ? AND period_number = ?');
-        $stmt->execute([$classroom_id, $academic_year, $semester, $day_of_week, $period_number]);
+        $stmt = $pdo->prepare('DELETE FROM timetables WHERE teacher_id = ? AND academic_year = ? AND semester = ? AND day_of_week = ? AND period_number = ?');
+        $stmt->execute([$teacher_id, $academic_year, $semester, $day_of_week, $period_number]);
     } else {
         $activity_type = null;
         $real_subject_id = $subject_id;
