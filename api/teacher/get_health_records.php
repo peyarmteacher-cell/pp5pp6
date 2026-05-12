@@ -23,18 +23,22 @@ if (!$classroom_id) {
 try {
     // ดึงรายชื่อนักเรียนในห้อง
     $stmt = $pdo->prepare('
-        SELECT s.id, s.student_code, s.prefix, s.name, s.last_name,
+        SELECT s.id, s.student_code, 
+               IFNULL(sp.prefix, s.prefix) AS prefix, 
+               IFNULL(sp.name, s.name) AS name, 
+               IFNULL(sp.last_name, s.last_name) AS last_name,
                hr.weight, hr.height, hr.recorded_date,
                hr.weight_age_result, hr.height_age_result, hr.weight_height_result
         FROM students s
+        LEFT JOIN student_profiles sp ON s.student_profile_id = sp.id
         LEFT JOIN student_health_records hr ON s.id = hr.student_id 
              AND hr.academic_year = ? 
              AND hr.semester = ? 
              AND hr.record_number = ?
-        WHERE s.classroom_id = ? AND s.status = "studying"
+        WHERE s.classroom_id = ? AND s.academic_year = ? AND s.status = "studying"
         ORDER BY s.student_code ASC
     ');
-    $stmt->execute([$academic_year, $semester, $record_number, $classroom_id]);
+    $stmt->execute([$academic_year, $semester, $record_number, $classroom_id, $academic_year]);
     $students = $stmt->fetchAll();
 
     echo json_encode($students);

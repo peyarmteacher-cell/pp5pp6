@@ -10,6 +10,7 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $classroom_id = $_GET['classroom_id'] ?? '';
+$academic_year = $_GET['academic_year'] ?? '2567';
 $check_date = $_GET['check_date'] ?? date('Y-m-d');
 
 if (empty($classroom_id)) {
@@ -18,9 +19,18 @@ if (empty($classroom_id)) {
 }
 
 try {
-    // ดึงรายชื่อนักเรียนในห้อง
-    $stmt = $pdo->prepare("SELECT id, prefix, name, last_name FROM students WHERE classroom_id = ? ORDER BY id ASC");
-    $stmt->execute([$classroom_id]);
+    // ดึงรายชื่อนักเรียนในห้อง (ปีปัจจุบัน)
+    $stmt = $pdo->prepare("
+        SELECT s.id, 
+               IFNULL(sp.prefix, s.prefix) AS prefix, 
+               IFNULL(sp.name, s.name) AS name, 
+               IFNULL(sp.last_name, s.last_name) AS last_name 
+        FROM students s
+        LEFT JOIN student_profiles sp ON s.student_profile_id = sp.id
+        WHERE s.classroom_id = ? AND s.academic_year = ? AND s.status = 'studying'
+        ORDER BY s.student_code ASC
+    ");
+    $stmt->execute([$classroom_id, $academic_year]);
     $students = $stmt->fetchAll();
 
     // ดึงข้อมูลบันทึกพฤติกรรม

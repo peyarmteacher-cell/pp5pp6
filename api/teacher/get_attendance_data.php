@@ -54,8 +54,18 @@ try {
 
     // 2. ดึงรายชื่อนักเรียน
     // ปรับปรุง query ให้ยืดหยุ่นขึ้น เผื่อ status เป็นค่าว่างหรือ NULL
-    $stmt = $pdo->prepare('SELECT id, student_code, prefix, name, last_name FROM students WHERE classroom_id = ? AND (status = "studying" OR status IS NULL OR status = "") ORDER BY student_code ASC');
-    $stmt->execute([$classroom_id]);
+    $stmt = $pdo->prepare('
+        SELECT s.id, s.student_code, 
+               IFNULL(sp.prefix, s.prefix) AS prefix, 
+               IFNULL(sp.name, s.name) AS name, 
+               IFNULL(sp.last_name, s.last_name) AS last_name 
+        FROM students s
+        LEFT JOIN student_profiles sp ON s.student_profile_id = sp.id
+        WHERE s.classroom_id = ? AND s.academic_year = ?
+        AND (s.status = "studying" OR s.status IS NULL OR s.status = "") 
+        ORDER BY s.student_code ASC
+    ');
+    $stmt->execute([$classroom_id, $academic_year]);
     $students = $stmt->fetchAll();
 
     // 3. ดึงข้อมูลการมาเรียนที่บันทึกไว้แล้ว
