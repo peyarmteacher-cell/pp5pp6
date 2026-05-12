@@ -204,18 +204,52 @@ foreach ($students_to_print as $student):
     $teacher_pos = formatTeacherPosition($ct['t1_pos'] ?? '');
 
     // ดึงหัวหน้าวิชาการ หรือ รองผู้อำนวยการ ตามที่ผู้ใช้ต้องการ
-    // โดยใช้ตัวแปรที่ดึงมาจาก report_header.php (หรือตาราง school_officials / schools)
     $acad_name = !empty($deputy_director_name) ? $deputy_director_name : $academic_head_name;
     $acad_pos = !empty($deputy_director_name) ? $deputy_director_position : $academic_head_position;
     
-    // ถ้ายังไม่มีชื่อ ให้ลองดึงจากตาราง users (Fallback)
-    if (empty($acad_name)) {
-        $stmt_acad = $pdo->prepare('SELECT name, last_name, position FROM users WHERE role = "admin" OR is_academic = 1 LIMIT 1');
-        $stmt_acad->execute();
+    // ฟังก์ชันช่วยเปรียบเทียบชื่อเพื่อไม่ให้ซ้ำกับผู้อำนวยการ
+    $clean_director = str_replace(['นาย', 'นางสาว', 'นาง', 'เด็กชาย', 'เด็กหญิง', ' ', '.', '(' , ')'], '', $director_name);
+    
+    // ถ้ายังไม่มีชื่อ หรือชื่อดันไปซ้ำกับผู้อำนวยการ (กรณีดึงจากระบบแล้วตั้งค่าไว้คนเดียวกัน)
+    // ให้ลองดึงจากตาราง users (Fallback)
+    $clean_acad = str_replace(['นาย', 'นางสาว', 'นาง', 'เด็กชาย', 'เด็กหญิง', ' ', '.', '(' , ')'], '', $acad_name);
+    
+    if (empty($acad_name) || ($clean_director !== '' && $clean_director === $clean_acad)) {
+        // หาครูที่มีงานวิชาการก่อน (is_academic = 1) และต้องไม่ใช่คนเดียวกับผู้อำนวยการ
+        $sqlFallback = 'SELECT name, last_name, position FROM users 
+                        WHERE school_id = ? AND status = "active"';
+        
+        $paramsFallback = [$_SESSION['school_id']];
+        
+        // ถ้าเรารู้ชื่อผู้อำนวยการ พยายามเลี่ยง (ใช้ LIKE เพื่อความยืดหยุ่นกับคำนำหน้า)
+        if (!empty($director_name)) {
+            $core_name = str_replace(['นาย', 'นางสาว', 'นาง', ' '], '', $director_name);
+            $sqlFallback .= ' AND REPLACE(REPLACE(REPLACE(REPLACE(CONCAT(name, last_name), "นาย", ""), "นางสาว", ""), "นาง", ""), " ", "") NOT LIKE ?';
+            $paramsFallback[] = '%' . $core_name . '%';
+        }
+        
+        // เรียงลำดับเอาคนที่มีตำแหน่งวิชาการหรือเป็น admin ก่อน
+        $sqlFallback .= ' ORDER BY is_academic DESC, (role = "admin") DESC, id ASC LIMIT 1';
+        
+        $stmt_acad = $pdo->prepare($sqlFallback);
+        $stmt_acad->execute($paramsFallback);
         $acad = $stmt_acad->fetch();
+        
         if ($acad) {
             $acad_name = $acad['name'] . ' ' . $acad['last_name'];
-            $acad_pos = formatTeacherPosition($acad['position']) ?: 'หัวหน้างานวิชาการโรงเรียน';
+            $acad_pos = formatTeacherPosition($acad['position']);
+            
+            // ถ้าเป็นตำแหน่งผู้อำนวยการ (ที่ไม่ใช่รอง) ให้ใช้ตำแหน่งวิชาการแทนเพื่อให้เกียรติบทบาทในหน้านี้
+            if (strpos($acad_pos, 'ผู้อำนวยการ') !== false && strpos($acad_pos, 'รอง') === false) {
+                $acad_pos = 'หัวหน้างานวิชาการโรงเรียน';
+            }
+            if (empty($acad_pos)) {
+                $acad_pos = 'หัวหน้างานวิชาการโรงเรียน';
+            }
+        } else {
+            // กรณีหาใครไม่ได้จริงๆ ให้ใช้จุดไปก่อน
+            $acad_name = '..........................................................';
+            $acad_pos = 'รองผู้อำนวยการฝ่ายวิชาการ/หัวหน้างานวิชาการ';
         }
     }
 
