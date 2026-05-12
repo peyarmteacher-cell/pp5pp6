@@ -121,19 +121,16 @@
                 <p>ลงชื่อ..........................................................</p>
                 <p>( <?= $teacher_name ?> )</p>
                 <p>ครูประจำชั้น/ครูที่ปรึกษา</p>
-                <p><?= $approval_date['day'] ?> <?= $approval_date['month'] ?> <?= $approval_date['year'] ?></p>
             </div>
             <div class="sig-block">
                 <p>ลงชื่อ..........................................................</p>
                 <p>( <?= $acad_name ?> )</p>
                 <p><?= $acad_pos ?></p>
-                <p><?= $approval_date['day'] ?> <?= $approval_date['month'] ?> <?= $approval_date['year'] ?></p>
             </div>
             <div class="sig-block">
                 <p>ลงชื่อ..........................................................</p>
                 <p>( <?= $director_name ?> )</p>
                 <p>ผู้อำนวยการโรงเรียน</p>
-                <p><?= $approval_date['day'] ?> <?= $approval_date['month'] ?> <?= $approval_date['year'] ?></p>
             </div>
             <div class="sig-block" style="margin-top: 25px;">
                 <p>ลงชื่อ..........................................................</p>

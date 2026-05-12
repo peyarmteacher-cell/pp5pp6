@@ -208,23 +208,24 @@ foreach ($students_to_print as $student):
     $acad_pos = !empty($deputy_director_name) ? $deputy_director_position : $academic_head_position;
     
     // ฟังก์ชันช่วยเปรียบเทียบชื่อเพื่อไม่ให้ซ้ำกับผู้อำนวยการ
-    $clean_director = str_replace(['นาย', 'นางสาว', 'นาง', 'เด็กชาย', 'เด็กหญิง', ' ', '.', '(' , ')'], '', $director_name);
+    $clean_director = str_replace(['นาย', 'นางสาว', 'นาง', 'เด็กชาย', 'เด็กหญิง', ' ', '.', '(' , ')'], '', (string)$director_name);
     
     // ถ้ายังไม่มีชื่อ หรือชื่อดันไปซ้ำกับผู้อำนวยการ (กรณีดึงจากระบบแล้วตั้งค่าไว้คนเดียวกัน)
     // ให้ลองดึงจากตาราง users (Fallback)
-    $clean_acad = str_replace(['นาย', 'นางสาว', 'นาง', 'เด็กชาย', 'เด็กหญิง', ' ', '.', '(' , ')'], '', $acad_name);
+    $clean_acad = str_replace(['นาย', 'นางสาว', 'นาง', 'เด็กชาย', 'เด็กหญิง', ' ', '.', '(' , ')'], '', (string)$acad_name);
     
     if (empty($acad_name) || ($clean_director !== '' && $clean_director === $clean_acad)) {
         // หาครูที่มีงานวิชาการก่อน (is_academic = 1) และต้องไม่ใช่คนเดียวกับผู้อำนวยการ
         $sqlFallback = 'SELECT name, last_name, position FROM users 
                         WHERE school_id = ? AND status = "active"';
         
-        $paramsFallback = [$_SESSION['school_id']];
+        $paramsFallback = [$_SESSION['school_id'] ?? 0];
         
-        // ถ้าเรารู้ชื่อผู้อำนวยการ พยายามเลี่ยง (ใช้ LIKE เพื่อความยืดหยุ่นกับคำนำหน้า)
+        // ถ้าเรารู้ชื่อผู้อำนวยการ พยายามเลี่ยง
         if (!empty($director_name)) {
-            $core_name = str_replace(['นาย', 'นางสาว', 'นาง', ' '], '', $director_name);
-            $sqlFallback .= ' AND REPLACE(REPLACE(REPLACE(REPLACE(CONCAT(name, last_name), "นาย", ""), "นางสาว", ""), "นาง", ""), " ", "") NOT LIKE ?';
+            $core_name = str_replace(['นาย', 'นางสาว', 'นาง', ' '], '', (string)$director_name);
+            $sqlFallback .= ' AND (name NOT LIKE ? AND last_name NOT LIKE ?)';
+            $paramsFallback[] = '%' . $core_name . '%';
             $paramsFallback[] = '%' . $core_name . '%';
         }
         
@@ -240,7 +241,7 @@ foreach ($students_to_print as $student):
             $acad_pos = formatTeacherPosition($acad['position']);
             
             // ถ้าเป็นตำแหน่งผู้อำนวยการ (ที่ไม่ใช่รอง) ให้ใช้ตำแหน่งวิชาการแทนเพื่อให้เกียรติบทบาทในหน้านี้
-            if (strpos($acad_pos, 'ผู้อำนวยการ') !== false && strpos($acad_pos, 'รอง') === false) {
+            if ($acad_pos && strpos($acad_pos, 'ผู้อำนวยการ') !== false && strpos($acad_pos, 'รอง') === false) {
                 $acad_pos = 'หัวหน้างานวิชาการโรงเรียน';
             }
             if (empty($acad_pos)) {

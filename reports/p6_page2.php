@@ -59,8 +59,5 @@
             <p>( <?= $director_name ?> )</p>
             <p>ผู้อำนวยการโรงเรียน</p>
         </div>
-        <div style="margin-top: 20px;">
-            วันที่ <span class="dotted-line" style="min-width: 150px;"><?= $approval_date['day'] ?> <?= $approval_date['month'] ?> <?= $approval_date['year'] ?></span>
-        </div>
     </div>
 </div>
