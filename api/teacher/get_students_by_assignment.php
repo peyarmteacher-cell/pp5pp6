@@ -81,11 +81,15 @@ try {
 
     if ($semester === 'annual') {
         $sql = "
-            SELECT s.id, s.student_code, s.name, s.last_name, s.prefix,
+            SELECT s.id, s.student_code, 
+                   IFNULL(sp.name, s.name) AS name, 
+                   IFNULL(sp.last_name, s.last_name) AS last_name, 
+                   IFNULL(sp.prefix, s.prefix) AS prefix,
                    g1.score_units as sem1_units, g1.score_percent as sem1_percent, g1.grade as sem1_grade,
                    g2.score_units as sem2_units, g2.score_percent as sem2_percent, g2.grade as sem2_grade,
                    ((IFNULL(g1.score_percent, 0) + IFNULL(g2.score_percent, 0)) / 2) as annual_percent
             FROM students s
+            LEFT JOIN student_profiles sp ON s.student_profile_id = sp.id
             LEFT JOIN grades g1 ON s.id = g1.student_id AND g1.subject_id = ? AND g1.academic_year = ? AND g1.semester = 1 AND (g1.classroom_id = ? OR ? = '')
             LEFT JOIN grades g2 ON s.id = g2.student_id AND g2.subject_id = ? AND g2.academic_year = ? AND g2.semester = 2 AND (g2.classroom_id = ? OR ? = '')
             WHERE $query_where
@@ -99,11 +103,15 @@ try {
         ], $params));
     } else {
         $sql = "
-            SELECT s.id, s.student_code, s.name, s.last_name, s.prefix,
+            SELECT s.id, s.student_code, 
+                   IFNULL(sp.name, s.name) AS name, 
+                   IFNULL(sp.last_name, s.last_name) AS last_name, 
+                   IFNULL(sp.prefix, s.prefix) AS prefix,
                    g.score_units, g.score_midterm, g.score_final, g.score_total, g.score_percent, g.grade,
                    cs.item1, cs.item2, cs.item3, cs.item4, cs.item5, cs.item6, cs.item7, cs.item8, cs.average_score,
                    ascore.item1 as anal_item1, ascore.item2 as anal_item2, ascore.item3 as anal_item3, ascore.item4 as anal_item4, ascore.item5 as anal_item5, ascore.average_score as analytical_avg
             FROM students s
+            LEFT JOIN student_profiles sp ON s.student_profile_id = sp.id
             LEFT JOIN grades g ON s.id = g.student_id AND g.subject_id = ? AND g.academic_year = ? AND g.semester = ? AND (g.classroom_id = ? OR ? = '')
             LEFT JOIN characteristics_scores cs ON s.id = cs.student_id AND cs.subject_id = ? AND cs.academic_year = ? AND cs.semester = ? AND (cs.classroom_id = ? OR ? = '')
             LEFT JOIN analytical_scores ascore ON s.id = ascore.student_id AND ascore.subject_id = ? AND ascore.academic_year = ? AND ascore.semester = ? AND (ascore.classroom_id = ? OR ? = '')

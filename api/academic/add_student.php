@@ -27,6 +27,8 @@ if (empty($student_code) || empty($national_id) || empty($name) || empty($level)
 }
 
 try {
+    $pdo->beginTransaction();
+
     // 1. ตรวจสอบ/สร้างห้องเรียน
     $stmt = $pdo->prepare('SELECT id FROM classrooms WHERE school_id = ? AND level = ? AND room = ?');
     $stmt->execute([$school_id, $level, $room]);
@@ -41,10 +43,28 @@ try {
         $classroom_id = $classroom['id'];
     }
 
-    $stmt = $pdo->prepare('INSERT INTO students (student_code, prefix, national_id, name, last_name, level, room, classroom_id, academic_year, school_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
-    $stmt->execute([$student_code, $prefix, $national_id, $name, $last_name, $level, $room, $classroom_id, $academic_year, $school_id]);
+    // 2. ตรวจสอบ/สร้างโปรไฟล์นักเรียน
+    $profile_id = null;
+    $stmt_p = $pdo->prepare("SELECT id FROM student_profiles WHERE national_id = ? AND school_id = ?");
+    $stmt_p->execute([$national_id, $school_id]);
+    $profile = $stmt_p->fetch();
+
+    if ($profile) {
+        $profile_id = $profile['id'];
+    } else {
+        $stmt_p_new = $pdo->prepare("INSERT INTO student_profiles (school_id, student_code, national_id, prefix, name, last_name) VALUES (?, ?, ?, ?, ?, ?)");
+        $stmt_p_new->execute([$school_id, $student_code, $national_id, $prefix, $name, $last_name]);
+        $profile_id = $pdo->lastInsertId();
+    }
+
+    // 3. เพิ่มข้อมูลนักเรียน (การลงทะเบียนรายปี)
+    $stmt = $pdo->prepare('INSERT INTO students (student_profile_id, student_code, prefix, national_id, name, last_name, level, room, classroom_id, academic_year, school_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+    $stmt->execute([$profile_id, $student_code, $prefix, $national_id, $name, $last_name, $level, $room, $classroom_id, $academic_year, $school_id]);
+    
+    $pdo->commit();
     echo json_encode(['message' => 'เพิ่มข้อมูลนักเรียนสำเร็จแล้ว']);
 } catch (PDOException $e) {
+    if ($pdo->inTransaction()) $pdo->rollBack();
     http_response_code(500);
     echo json_encode(['error' => 'ไม่สามารถเพิ่มข้อมูลได้: ' . $e->getMessage()]);
 }

@@ -78,8 +78,17 @@ try {
 
             // 3. Process each record for notification
             foreach ($records as $r) {
-                // Fetch student info
-                $stmt_std = $pdo->prepare("SELECT name, last_name, prefix, parent_telegram_id FROM students WHERE id = ?");
+                // Fetch student info (Prefer profile data)
+                $stmt_std = $pdo->prepare("
+                    SELECT 
+                        IFNULL(sp.name, s.name) AS name, 
+                        IFNULL(sp.last_name, s.last_name) AS last_name, 
+                        IFNULL(sp.prefix, s.prefix) AS prefix, 
+                        IFNULL(sp.parent_telegram_id, s.parent_telegram_id) AS parent_telegram_id 
+                    FROM students s
+                    LEFT JOIN student_profiles sp ON s.student_profile_id = sp.id
+                    WHERE s.id = ?
+                ");
                 $stmt_std->execute([$r['student_id']]);
                 $std = $stmt_std->fetch(PDO::FETCH_ASSOC);
 

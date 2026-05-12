@@ -88,13 +88,65 @@ try {
             $classroom_id = $classroom['id'];
         }
 
-        // 2. ตรวจสอบนักเรียนเดิม (จากเลขประจำตัว หรือ เลขบัตรประชาชน)
-        $stmt = $pdo->prepare('SELECT id FROM students WHERE school_id = ? AND (student_code = ? OR national_id = ?)');
-        $stmt->execute([$school_id, $student_code, $national_id]);
+        // 2. ตรวจสอบ/สร้าง/อัปเดต โปรไฟล์นักเรียนหลัก
+        $profile_id = null;
+        if (!empty($national_id)) {
+            $stmt_p = $pdo->prepare("SELECT id FROM student_profiles WHERE national_id = ? AND school_id = ?");
+            $stmt_p->execute([$national_id, $school_id]);
+            $profile = $stmt_p->fetch();
+            
+            if ($profile) {
+                $profile_id = $profile['id'];
+                // อัปเดตข้อมูลโปรไฟล์หลักด้วยข้อมูลใหม่จาก Excel
+                $sql_upd_p = "UPDATE student_profiles SET 
+                    prefix = ?, name = ?, last_name = ?, student_code = ?,
+                    gender = ?, birthday = ?, blood_group = ?, religion = ?, 
+                    race = ?, nationality = ?, house_no = ?, moo = ?, 
+                    road_soi = ?, sub_district = ?, district = ?, province_name = ?,
+                    parent_name = ?, parent_last_name = ?, parent_occupation = ?, 
+                    parent_relationship = ?, father_name = ?, father_last_name = ?, 
+                    father_occupation = ?, mother_name = ?, mother_last_name = ?, 
+                    mother_occupation = ?, disadvantage = ?
+                    WHERE id = ?";
+                $pdo->prepare($sql_upd_p)->execute([
+                    $prefix, $name, $last_name, $student_code,
+                    $gender, $birthday, $blood_group, $religion,
+                    $race, $nationality, $house_no, $moo,
+                    $road_soi, $sub_district, $district, $province_name,
+                    $parent_name, $parent_last_name, $parent_occupation,
+                    $parent_relationship, $father_name, $father_last_name,
+                    $father_occupation, $mother_name, $mother_last_name,
+                    $mother_occupation, $disadvantage, $profile_id
+                ]);
+            } else {
+                // สร้างโปรไฟล์ใหม่
+                $sql_ins_p = "INSERT INTO student_profiles (
+                    school_id, student_code, national_id, prefix, name, last_name,
+                    gender, birthday, blood_group, religion, race, nationality,
+                    house_no, moo, road_soi, sub_district, district, province_name,
+                    parent_name, parent_last_name, parent_occupation, parent_relationship,
+                    father_name, father_last_name, father_occupation, 
+                    mother_name, mother_last_name, mother_occupation, disadvantage
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                $pdo->prepare($sql_ins_p)->execute([
+                    $school_id, $student_code, $national_id, $prefix, $name, $last_name,
+                    $gender, $birthday, $blood_group, $religion, $race, $nationality,
+                    $house_no, $moo, $road_soi, $sub_district, $district, $province_name,
+                    $parent_name, $parent_last_name, $parent_occupation, $parent_relationship,
+                    $father_name, $father_last_name, $father_occupation,
+                    $mother_name, $mother_last_name, $mother_occupation, $disadvantage
+                ]);
+                $profile_id = $pdo->lastInsertId();
+            }
+        }
+
+        // 3. ตรวจสอบนักเรียนเดิม (ในตารางลงทะเบียนรายปี)
+        $stmt = $pdo->prepare('SELECT id FROM students WHERE school_id = ? AND academic_year = ? AND (student_code = ? OR (national_id = ? AND national_id != ""))');
+        $stmt->execute([$school_id, $academic_year, $student_code, $national_id]);
         $existing = $stmt->fetch();
 
         $params = [
-            $prefix, $name, $last_name, $level, $room, $classroom_id, $national_id, $academic_year,
+            $profile_id, $prefix, $name, $last_name, $level, $room, $classroom_id, $national_id, $academic_year,
             $gender, $birthday, $age, $weight, $height, $blood_group, $religion, $race, $nationality,
             $house_no, $moo, $road_soi, $sub_district, $district, $province_name,
             $parent_name, $parent_last_name, $parent_occupation, $parent_relationship,
@@ -104,9 +156,9 @@ try {
         ];
 
         if ($existing) {
-            // อัปเดต
+            // อัปเดตข้อมูลลงทะเบียน
             $sql = 'UPDATE students SET 
-                prefix = ?, name = ?, last_name = ?, level = ?, room = ?, classroom_id = ?, national_id = ?, academic_year = ?,
+                student_profile_id = ?, prefix = ?, name = ?, last_name = ?, level = ?, room = ?, classroom_id = ?, national_id = ?, academic_year = ?,
                 gender = ?, birthday = ?, age = ?, weight = ?, height = ?, blood_group = ?, religion = ?, race = ?, nationality = ?,
                 house_no = ?, moo = ?, road_soi = ?, sub_district = ?, district = ?, province_name = ?,
                 parent_name = ?, parent_last_name = ?, parent_occupation = ?, parent_relationship = ?,
@@ -118,16 +170,16 @@ try {
             $stmt = $pdo->prepare($sql);
             $stmt->execute($params);
         } else {
-            // เพิ่มใหม่
+            // เพิ่มการลงทะเบียนใหม่
             $sql = 'INSERT INTO students (
-                prefix, name, last_name, level, room, classroom_id, national_id, academic_year,
+                student_profile_id, prefix, name, last_name, level, room, classroom_id, national_id, academic_year,
                 gender, birthday, age, weight, height, blood_group, religion, race, nationality,
                 house_no, moo, road_soi, sub_district, district, province_name,
                 parent_name, parent_last_name, parent_occupation, parent_relationship,
                 father_name, father_last_name, father_occupation,
                 mother_name, mother_last_name, mother_occupation,
                 disadvantage, school_id, student_code
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
             $params[] = $school_id;
             $params[] = $student_code;
             $stmt = $pdo->prepare($sql);

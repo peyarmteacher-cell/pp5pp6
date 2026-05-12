@@ -913,6 +913,102 @@ try {
         $results[] = "เพิ่มคอลัมน์ความคิดเห็น 5 ด้านใน parent_feedback สำเร็จ";
     }
 
+    // 21. ปรับโครงสร้าง Master-Detail (Normalization)
+    // 21.1 สร้างตาราง student_profiles
+    $pdo->exec("CREATE TABLE IF NOT EXISTS student_profiles (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        school_id INT NOT NULL,
+        student_code VARCHAR(50),
+        national_id VARCHAR(13) NOT NULL,
+        prefix VARCHAR(20),
+        name VARCHAR(255) NOT NULL,
+        last_name VARCHAR(255),
+        gender VARCHAR(10),
+        birthday DATE,
+        parent_telegram_id VARCHAR(100),
+        blood_group VARCHAR(5),
+        religion VARCHAR(50),
+        race VARCHAR(50),
+        nationality VARCHAR(50),
+        house_no VARCHAR(50),
+        moo VARCHAR(10),
+        road_soi VARCHAR(100),
+        sub_district VARCHAR(100),
+        district VARCHAR(100),
+        province_name VARCHAR(100),
+        parent_name VARCHAR(255),
+        parent_last_name VARCHAR(255),
+        parent_occupation VARCHAR(100),
+        parent_relationship VARCHAR(100),
+        father_name VARCHAR(255),
+        father_last_name VARCHAR(255),
+        father_occupation VARCHAR(100),
+        mother_name VARCHAR(255),
+        mother_last_name VARCHAR(255),
+        mother_occupation VARCHAR(100),
+        disadvantage VARCHAR(255),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        UNIQUE KEY unique_national_id (school_id, national_id),
+        FOREIGN KEY (school_id) REFERENCES schools(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    $results[] = "ตรวจสอบ/สร้างตาราง student_profiles สำเร็จ";
+
+    // 21.2 เพิ่มคอลัมน์ student_profile_id ในตาราง students
+    $stmt = $pdo->query("SHOW COLUMNS FROM students LIKE 'student_profile_id'");
+    if (!$stmt->fetch()) {
+        $pdo->exec("ALTER TABLE students ADD COLUMN student_profile_id INT AFTER id");
+        $pdo->exec("ALTER TABLE students ADD FOREIGN KEY (student_profile_id) REFERENCES student_profiles(id) ON DELETE SET NULL");
+        $results[] = "เพิ่มคอลัมน์ student_profile_id ในตาราง students สำเร็จ";
+    }
+
+    // 21.3 Migration: ย้ายข้อมูลจาก students ไปยัง student_profiles
+    $stmt = $pdo->query("SELECT * FROM students WHERE student_profile_id IS NULL AND national_id != ''");
+    $to_migrate = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $migrated_count = 0;
+    
+    if (count($to_migrate) > 0) {
+        $pdo->beginTransaction();
+        foreach ($to_migrate as $s) {
+            // เช็คว่ามีโปรไฟล์นี้อยู่แล้วหรือยัง (อิงจาก national_id และ school_id)
+            $check = $pdo->prepare("SELECT id FROM student_profiles WHERE national_id = ? AND school_id = ?");
+            $check->execute([$s['national_id'], $s['school_id']]);
+            $profile = $check->fetch();
+            
+            if (!$profile) {
+                // สร้างโปรไฟล์ใหม่
+                $ins = $pdo->prepare("INSERT INTO student_profiles (
+                    school_id, student_code, national_id, prefix, name, last_name, 
+                    gender, birthday, parent_telegram_id, blood_group, religion, 
+                    race, nationality, house_no, moo, road_soi, sub_district, 
+                    district, province_name, parent_name, parent_last_name, 
+                    parent_occupation, parent_relationship, father_name, father_last_name, 
+                    father_occupation, mother_name, mother_last_name, mother_occupation, disadvantage
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                
+                $ins->execute([
+                    $s['school_id'], $s['student_code'], $s['national_id'], $s['prefix'], $s['name'], $s['last_name'],
+                    $s['gender'] ?? null, $s['birthday'] ?? null, $s['parent_telegram_id'] ?? null, 
+                    $s['blood_group'] ?? null, $s['religion'] ?? null, $s['race'] ?? null, $s['nationality'] ?? null,
+                    $s['house_no'] ?? null, $s['moo'] ?? null, $s['road_soi'] ?? null, $s['sub_district'] ?? null,
+                    $s['district'] ?? null, $s['province_name'] ?? null, $s['parent_name'] ?? null, $s['parent_last_name'] ?? null,
+                    $s['parent_occupation'] ?? null, $s['parent_relationship'] ?? null, $s['father_name'] ?? null, $s['father_last_name'] ?? null,
+                    $s['father_occupation'] ?? null, $s['mother_name'] ?? null, $s['mother_last_name'] ?? null, $s['mother_occupation'] ?? null, $s['disadvantage'] ?? null
+                ]);
+                $profile_id = $pdo->lastInsertId();
+            } else {
+                $profile_id = $profile['id'];
+            }
+            
+            // อัปเดต student_profile_id กลับไปที่ตาราง students (enrollment)
+            $upd = $pdo->prepare("UPDATE students SET student_profile_id = ? WHERE id = ?");
+            $upd->execute([$profile_id, $s['id']]);
+            $migrated_count++;
+        }
+        $pdo->commit();
+        $results[] = "ทำ Migration ข้อมูลนักเรียนไปยังระบบโปรไฟล์หลักสำเร็จ ($migrated_count รายการ)";
+    }
+
     echo json_encode([
         'status' => 'success',
         'message' => 'ตรวจสอบและปรับปรุงฐานข้อมูลเรียบร้อยแล้ว',

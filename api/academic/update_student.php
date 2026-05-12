@@ -57,6 +57,8 @@ if (empty($id) || empty($name) || empty($level)) {
 }
 
 try {
+    $pdo->beginTransaction();
+
     // 1. ตรวจสอบ/สร้างห้องเรียน
     $stmt = $pdo->prepare('SELECT id FROM classrooms WHERE school_id = ? AND level = ? AND room = ?');
     $stmt->execute([$school_id, $level, $room]);
@@ -71,6 +73,37 @@ try {
         $classroom_id = $classroom['id'];
     }
 
+    // 2. ดึง/สร้าง/ซิงค์ student_profile_id
+    $stmt_p_check = $pdo->prepare("SELECT student_profile_id FROM students WHERE id = ?");
+    $stmt_p_check->execute([$id]);
+    $s_rec = $stmt_p_check->fetch();
+    $profile_id = $s_rec['student_profile_id'] ?? null;
+
+    if ($profile_id) {
+        // อัปเดตโปรไฟล์หลัก (ข้อมูล DMC และ Telegram)
+        $sql_profile = 'UPDATE student_profiles SET 
+            prefix = ?, name = ?, last_name = ?, student_code = ?, national_id = ?,
+            gender = ?, birthday = ?, parent_telegram_id = ?,
+            blood_group = ?, religion = ?, race = ?, nationality = ?,
+            house_no = ?, moo = ?, road_soi = ?, sub_district = ?, district = ?, province_name = ?,
+            parent_name = ?, parent_last_name = ?, parent_occupation = ?, parent_relationship = ?,
+            father_name = ?, father_last_name = ?, father_occupation = ?,
+            mother_name = ?, mother_last_name = ?, mother_occupation = ?, disadvantage = ?
+            WHERE id = ? AND school_id = ?';
+        
+        $pdo->prepare($sql_profile)->execute([
+            $prefix, $name, $last_name, $student_code, $national_id,
+            $gender, $birthday, $parent_telegram_id,
+            $blood_group, $religion, $race, $nationality,
+            $house_no, $moo, $road_soi, $sub_district, $district, $province_name,
+            $parent_name, $parent_last_name, $parent_occupation, $parent_relationship,
+            $father_name, $father_last_name, $father_occupation,
+            $mother_name, $mother_last_name, $mother_occupation, $disadvantage,
+            $profile_id, $school_id
+        ]);
+    }
+
+    // 3. อัปเดตตารางนักเรียน (ลงทะเบียนรายปี)
     $sql = 'UPDATE students SET 
         prefix = ?, name = ?, last_name = ?, student_code = ?, national_id = ?, level = ?, room = ?, classroom_id = ?, academic_year = ?,
         gender = ?, birthday = ?, age = ?, weight = ?, height = ?, blood_group = ?, religion = ?, race = ?, nationality = ?,
@@ -93,8 +126,11 @@ try {
 
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
+
+    $pdo->commit();
     echo json_encode(['message' => 'อัปเดตข้อมูลนักเรียนสำเร็จแล้ว']);
 } catch (PDOException $e) {
+    if ($pdo->inTransaction()) $pdo->rollBack();
     http_response_code(500);
     echo json_encode(['error' => 'ไม่สามารถอัปเดตข้อมูลได้: ' . $e->getMessage()]);
 }
