@@ -90,7 +90,19 @@ $days = [
                 size: A4 landscape;
                 margin: 0.5cm;
             }
-            body { -webkit-print-color-adjust: exact; padding: 0; }
+            body { 
+                -webkit-print-color-adjust: exact; 
+                padding: 0; 
+                background: white !important;
+            }
+            .a4-landscape {
+                width: 100%;
+                height: auto;
+                margin: 0;
+                padding: 0;
+                box-shadow: none !important;
+                border: none !important;
+            }
             .no-print { display: none; }
         }
         body {
@@ -99,39 +111,30 @@ $days = [
         }
         .a4-landscape {
             width: 297mm;
-            height: 210mm;
+            min-height: 210mm;
             margin: 0 auto;
             background: white;
             padding: 1cm;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
             position: relative;
             display: flex;
             flex-direction: column;
         }
-        @media print {
-            .a4-landscape {
-                width: 100%;
-                height: auto;
-                margin: 0;
-                padding: 0;
-                box-shadow: none;
-            }
-        }
         table { border-collapse: collapse; width: 100%; table-layout: fixed; }
-        th, td { border: 1.5px solid #64748b; padding: 6px; text-align: center; }
-        th { background: #f1f5f9; font-weight: 700; color: #1e293b; font-size: 14px; }
+        th, td { border: 1.5px solid #64748b; padding: 4px; text-align: center; height: 60px; overflow: hidden; }
+        th { background: #f1f5f9; font-weight: 700; color: #1e293b; font-size: 14px; height: 40px; }
         .period-header { font-size: 11px; color: #64748b; font-weight: normal; margin-top: 2px; }
     </style>
 </head>
-<body class="p-8">
-    <div class="no-print mb-8 text-center">
+<body class="p-4">
+    <div class="no-print mb-8 text-center text-slate-500">
+        <p class="mb-2 text-sm italic">แนะนำ: ตั้งค่า "Margins" เป็น "None" หรือ "Minimum" ในหน้าต่างจัดการงานพิมพ์ เพื่อผลลัพธ์ที่ดีที่สุด</p>
         <button onclick="window.print()" class="bg-blue-600 text-white px-8 py-3 rounded-2xl font-bold hover:bg-blue-700 shadow-lg shadow-blue-600/20 transition-all cursor-pointer inline-flex items-center gap-2">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"></path><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
-            สั่งพิมพ์หน้านี้ (A4 แนวนอน)
+            สั่งพิมพ์ตารางสอน
         </button>
     </div>
 
-    <div class="a4-landscape shadow-xl">
+    <div class="a4-landscape">
         <div class="relative mb-4 pb-4 border-b-2 border-slate-100 flex items-center min-h-[100px]">
             <!-- Logo positioned absolutely to keep text centered -->
             <div class="absolute left-0">
@@ -160,7 +163,7 @@ $days = [
                 <thead>
                     <tr>
                         <th style="width: 100px;">วัน / คาบ</th>
-                        <?php for($i=1; $i<=10; $i++): ?>
+                        <?php for($i=1; $i<=8; $i++): ?>
                             <th>
                                 <div>คาบที่ <?= $i ?></div>
                             </th>
@@ -171,7 +174,7 @@ $days = [
                     <?php foreach($days as $dayId => $day): ?>
                     <tr>
                         <td style="background: <?= $day['color'] ?>; font-weight: bold; border-left: 5px solid #94a3b8;"><?= $day['name'] ?></td>
-                        <?php for($p=1; $p<=10; $p++): 
+                        <?php for($p=1; $p<=8; $p++): 
                                 $slot = $timetable[$dayId][$p] ?? null;
                                 $isLunch = ($slot && isset($slot['activity_type']) && $slot['activity_type'] === 'lunch');
                         ?>
