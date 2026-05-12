@@ -15,14 +15,14 @@ $semester = $_GET['semester'] ?? 1;
 
 try {
     // Get students in classroom
-    $stmt = $pdo->prepare('SELECT id, prefix, name, last_name, student_code FROM students WHERE classroom_id = ? AND academic_year = ? ORDER BY student_code ASC');
+    $stmt = $pdo->prepare('SELECT id, prefix, name AS student_name, last_name AS student_last_name, student_code FROM students WHERE classroom_id = ? AND academic_year = ? ORDER BY student_code ASC');
     $stmt->execute([$classroom_id, $academic_year]);
-    $students = $stmt->fetchAll();
+    $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // Get results
     $stmt = $pdo->prepare('SELECT * FROM learner_development_results WHERE classroom_id = ? AND academic_year = ? AND semester = ?');
     $stmt->execute([$classroom_id, $academic_year, $semester]);
-    $results = $stmt->fetchAll();
+    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
     $results_map = [];
     foreach ($results as $r) {

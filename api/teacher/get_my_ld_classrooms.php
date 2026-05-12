@@ -22,7 +22,7 @@ try {
         ORDER BY c.level ASC, c.room ASC
     ');
     $stmt->execute([$teacher_id, $academic_year, $semester]);
-    $classrooms = $stmt->fetchAll();
+    $classrooms = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     echo json_encode($classrooms);
 } catch (PDOException $e) {
