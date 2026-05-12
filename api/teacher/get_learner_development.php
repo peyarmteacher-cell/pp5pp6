@@ -24,7 +24,7 @@ try {
         FROM students s
         LEFT JOIN student_profiles sp ON s.student_profile_id = sp.id
         WHERE s.classroom_id = ? AND s.academic_year = ? 
-        AND (s.status = 'studying' OR s.status IS NULL OR s.status = '')
+        AND (s.status = "studying" OR s.status IS NULL OR s.status = "" OR s.status = "active")
         ORDER BY s.student_code ASC
     ');
     $stmt->execute([$classroom_id, $academic_year]);
