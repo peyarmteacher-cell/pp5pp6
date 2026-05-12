@@ -88,7 +88,7 @@
             return `
                 <tr class="border-b border-slate-50 hover:bg-slate-50/50">
                     <td class="py-3 text-slate-600 font-mono text-xs">${index + 1}</td>
-                    <td class="py-3 font-medium text-slate-800 text-xs">${s.prefix || ''}${s.student_name || ''}&nbsp;${s.student_last_name || ''}</td>
+                    <td class="py-3 font-medium text-slate-800 text-xs">${s.prefix || ''}${s.name || ''}&nbsp;${s.last_name || ''}</td>
                     ${[1,2,3,4,5,6,7,8].map(i => `
                         <td class="py-3 text-center">
                             <select onchange="updateCharScore(${s.id}, ${i-1}, this.value)" 

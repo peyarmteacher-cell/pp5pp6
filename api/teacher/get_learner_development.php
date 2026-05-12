@@ -15,7 +15,7 @@ $semester = $_GET['semester'] ?? 1;
 
 try {
     // Get students in classroom
-    $stmt = $pdo->prepare('SELECT id, prefix, name AS student_name, last_name AS student_last_name, student_code FROM students WHERE classroom_id = ? AND academic_year = ? ORDER BY student_code ASC');
+    $stmt = $pdo->prepare('SELECT id, prefix, name, last_name, student_code FROM students WHERE classroom_id = ? AND academic_year = ? ORDER BY student_code ASC');
     $stmt->execute([$classroom_id, $academic_year]);
     $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -43,7 +43,7 @@ try {
         // Remove ID from result to not overwrite student ID
         if (isset($res['id'])) unset($res['id']);
         
-        // Merge student data with results (student data takes precedence for names)
+        // Merge results into student data (ensuring name/last_name from student table are preserved)
         $merged = array_merge($res, $s);
         $data[] = $merged;
     }
