@@ -57,26 +57,26 @@ if ($message) {
         sendMessage($chat_id, $msg);
     } 
     else if (preg_match('/^[0-9]{13}$/', $text)) {
-        // ค้นหานักเรียนในโรงเรียนนี้
-        $stmt = $pdo->prepare("SELECT id, name, last_name, prefix FROM students WHERE school_id = ? AND national_id = ? LIMIT 1");
+        // ค้นหานักเรียนในโรงเรียนนี้ (ค้นหาจากโปรไฟล์หลัก)
+        $stmt = $pdo->prepare("SELECT id, name, last_name, prefix FROM student_profiles WHERE school_id = ? AND national_id = ? LIMIT 1");
         $stmt->execute([$school_id, $text]);
-        $student = $stmt->fetch(PDO::FETCH_ASSOC);
+        $profile = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if ($student) {
-            $fullName = ($student['prefix'] ?? '') . $student['name'] . ' ' . ($student['last_name'] ?? '');
+        if ($profile) {
+            $fullName = ($profile['prefix'] ?? '') . $profile['name'] . ' ' . ($profile['last_name'] ?? '');
             $msg = "🔍 <b>พบข้อมูลนักเรียน</b>\n\n";
             $msg .= "ชื่อ-นามสกุล: <b>{$fullName}</b>\n";
             $msg .= "คุณคือผู้ปกครองของนักเรียนคนนี้ใช่หรือไม่?";
             
             $keyboard = [
                 'inline_keyboard' => [[
-                    ['text' => '✅ ใช่ ยืนยัน', 'callback_data' => "confirm_{$student['id']}"],
+                    ['text' => '✅ ใช่ ยืนยัน', 'callback_data' => "confirm_{$profile['id']}"],
                     ['text' => '❌ ไม่ใช่/ยกเลิก', 'callback_data' => "cancel"]
                 ]]
             ];
             sendMessage($chat_id, $msg, $keyboard);
         } else {
-            sendMessage($chat_id, "❌ <b>ไม่พบข้อมูล</b>\nไม่พบเลขบัตรประชาชนนี้ในฐานข้อมูลนักเรียนของโรงเรียนปีการศึกษาปัจจุบัน กรุณาตรวจสอบเลขและพิมพ์อีกครั้ง หรือติดต่อครูประจำชั้นครับ");
+            sendMessage($chat_id, "❌ <b>ไม่พบข้อมูล</b>\nไม่พบเลขบัตรประชาชนนี้ในฐานข้อมูลนักเรียนของโรงเรียน กรุณาตรวจสอบเลขและพิมพ์อีกครั้ง หรือติดต่อครูประจำชั้นครับ");
         }
     }
 }
@@ -88,11 +88,15 @@ if ($callback_query) {
     $message_id = $callback_query['message']['message_id'];
 
     if (strpos($data, 'confirm_') === 0) {
-        $student_id = str_replace('confirm_', '', $data);
+        $profile_id = str_replace('confirm_', '', $data);
         
-        // อัปเดตข้อมูลนักเรียน
-        $stmt = $pdo->prepare("UPDATE students SET parent_telegram_id = ? WHERE id = ? AND school_id = ?");
-        $success = $stmt->execute([$chat_id, $student_id, $school_id]);
+        // อัปเดตข้อมูลนักเรียนในโปรไฟล์หลัก (เพื่อให้ถาวรข้ามปี)
+        $stmt = $pdo->prepare("UPDATE student_profiles SET parent_telegram_id = ? WHERE id = ? AND school_id = ?");
+        $success = $stmt->execute([$chat_id, $profile_id, $school_id]);
+        
+        // อัปเดตในตาราง students (ปัจจุบัน) ด้วยเพื่อความรวดเร็วในการเข้าถึง (ถ้ามี)
+        $stmt_sync = $pdo->prepare("UPDATE students SET parent_telegram_id = ? WHERE student_profile_id = ? AND school_id = ?");
+        $stmt_sync->execute([$chat_id, $profile_id, $school_id]);
         
         if ($success) {
             $msg = "🎉 <b>ลงทะเบียนสำเร็จ!</b>\n\n";

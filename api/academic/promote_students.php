@@ -132,7 +132,6 @@ try {
         UPDATE students s 
         JOIN classrooms c ON s.level = c.level 
             AND s.room = c.room 
-            AND s.academic_year = c.academic_year 
             AND s.school_id = c.school_id
         SET s.classroom_id = c.id
         WHERE s.academic_year = ? AND s.school_id = ? AND s.classroom_id IS NULL
