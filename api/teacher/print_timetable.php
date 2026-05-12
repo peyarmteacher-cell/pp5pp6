@@ -120,9 +120,9 @@ $days = [
             flex-direction: column;
         }
         table { border-collapse: collapse; width: 100%; table-layout: fixed; }
-        th, td { border: 1.5px solid #64748b; padding: 4px; text-align: center; height: 60px; overflow: hidden; }
-        th { background: #f1f5f9; font-weight: 700; color: #1e293b; font-size: 14px; height: 40px; }
-        .period-header { font-size: 11px; color: #64748b; font-weight: normal; margin-top: 2px; }
+        th, td { border: 1.5px solid #64748b; padding: 2px; text-align: center; height: 50px; overflow: hidden; }
+        th { background: #f1f5f9; font-weight: 700; color: #1e293b; font-size: 13px; height: 35px; }
+        .period-header { font-size: 10px; color: #64748b; font-weight: normal; margin-top: 1px; }
     </style>
 </head>
 <body class="p-4">
@@ -135,7 +135,7 @@ $days = [
     </div>
 
     <div class="a4-landscape">
-        <div class="relative mb-4 pb-4 border-b-2 border-slate-100 flex items-center min-h-[100px]">
+        <div class="relative mb-2 pb-2 border-b-2 border-slate-100 flex items-center min-h-[80px]">
             <!-- Logo positioned absolutely to keep text centered -->
             <div class="absolute left-0">
                 <?php if (!empty($logo_url)): ?>
@@ -202,7 +202,7 @@ $days = [
             </table>
         </div>
 
-        <div class="mt-4 grid grid-cols-2 gap-10">
+        <div class="mt-2 grid grid-cols-2 gap-10">
             <div class="text-center">
                 <p class="mb-4">ลงชื่อ..........................................................</p>
                 <p class="font-bold text-sm">( <?= $teacher_full_name ?> )</p>

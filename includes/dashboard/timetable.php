@@ -42,7 +42,7 @@
                 <thead>
                     <tr class="bg-slate-50">
                         <th class="p-3 border border-slate-200 text-slate-500 font-bold text-xs w-24">วัน / คาบ</th>
-                        <?php for($i=1; $i<=10; $i++): ?>
+                        <?php for($i=1; $i<=8; $i++): ?>
                             <th class="p-3 border border-slate-200 text-slate-500 font-bold text-xs">คาบที่ <?= $i ?></th>
                         <?php endfor; ?>
                     </tr>
@@ -138,7 +138,7 @@
         tbody.innerHTML = days.map(day => `
             <tr>
                 <td class="p-3 border border-slate-200 font-bold text-xs text-center ${day.class}">${day.name}</td>
-                ${[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(period => {
+                ${[1, 2, 3, 4, 5, 6, 7, 8].map(period => {
                     const slot = currentTimetable.find(t => t.day_of_week == day.id && t.period_number == period);
                     const isLunch = slot && slot.activity_type === 'lunch';
                     
