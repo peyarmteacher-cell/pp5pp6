@@ -88,9 +88,9 @@ $days = [
         @media print {
             @page {
                 size: A4 landscape;
-                margin: 1cm;
+                margin: 0.5cm;
             }
-            body { -webkit-print-color-adjust: exact; }
+            body { -webkit-print-color-adjust: exact; padding: 0; }
             .no-print { display: none; }
         }
         body {
@@ -102,7 +102,7 @@ $days = [
             height: 210mm;
             margin: 0 auto;
             background: white;
-            padding: 1.5cm;
+            padding: 1cm;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
             position: relative;
             display: flex;
@@ -111,7 +111,7 @@ $days = [
         @media print {
             .a4-landscape {
                 width: 100%;
-                height: 100%;
+                height: auto;
                 margin: 0;
                 padding: 0;
                 box-shadow: none;
@@ -132,23 +132,23 @@ $days = [
     </div>
 
     <div class="a4-landscape shadow-xl">
-        <div class="relative mb-8 pb-6 border-b-2 border-slate-100 flex items-center min-h-[120px]">
+        <div class="relative mb-4 pb-4 border-b-2 border-slate-100 flex items-center min-h-[100px]">
             <!-- Logo positioned absolutely to keep text centered -->
             <div class="absolute left-0">
                 <?php if (!empty($logo_url)): ?>
-                    <img src="<?= $logo_url ?>" class="w-28 h-28 object-contain" referrerPolicy="no-referrer">
+                    <img src="<?= $logo_url ?>" class="w-24 h-24 object-contain" referrerPolicy="no-referrer">
                 <?php else: ?>
-                    <div class="w-28 h-28 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 flex items-center justify-center text-slate-300 text-[10px] text-center p-2 uppercase">Logo</div>
+                    <div class="w-24 h-24 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 flex items-center justify-center text-slate-300 text-[10px] text-center p-2 uppercase">Logo</div>
                 <?php endif; ?>
             </div>
             
             <!-- Centered Header Text -->
             <div class="w-full text-center px-32">
-                <h1 class="text-3xl font-black text-slate-800 tracking-tight">ตารางสอนโรงเรียน<?= $school['name'] ?></h1>
-                <div class="mt-2">
-                    <p class="text-xl font-bold text-blue-700">คุณครู<?= $teacher_full_name ?> ตำแหน่ง: <?= $teacher['position'] ?: 'ครู' ?></p>
+                <h1 class="text-2xl font-black text-slate-800 tracking-tight">ตารางสอนโรงเรียน<?= $school['name'] ?></h1>
+                <div class="mt-1">
+                    <p class="text-lg font-bold text-blue-700">คุณครู<?= $teacher_full_name ?> ตำแหน่ง: <?= $teacher['position'] ?: 'ครู' ?></p>
                 </div>
-                <div class="flex items-center justify-center gap-3 mt-2 text-sm font-bold text-slate-500 uppercase tracking-widest">
+                <div class="flex items-center justify-center gap-3 mt-1 text-xs font-bold text-slate-500 uppercase tracking-widest">
                     <span class="bg-slate-100 px-3 py-1 rounded-full border border-slate-200">ปีการศึกษา <?= $academic_year ?></span>
                     <span class="bg-indigo-50 text-indigo-600 px-3 py-1 rounded-full border border-indigo-100">ภาคเรียนที่ <?= $semester ?></span>
                 </div>
@@ -199,16 +199,16 @@ $days = [
             </table>
         </div>
 
-        <div class="mt-12 grid grid-cols-2 gap-20">
+        <div class="mt-4 grid grid-cols-2 gap-10">
             <div class="text-center">
-                <p class="mb-8">ลงชื่อ..........................................................</p>
-                <p class="font-bold">( <?= $teacher_full_name ?> )</p>
-                <p class="text-sm">ครูผู้สอน</p>
+                <p class="mb-4">ลงชื่อ..........................................................</p>
+                <p class="font-bold text-sm">( <?= $teacher_full_name ?> )</p>
+                <p class="text-xs">ครูผู้สอน</p>
             </div>
             <div class="text-center">
-                <p class="mb-8">ลงชื่อ..........................................................</p>
-                <p class="font-bold">( <?= $school['director_name'] ?: '..........................................................' ?> )</p>
-                <p class="text-sm">ผู้อำนวยการโรงเรียน<?= $school['name'] ?></p>
+                <p class="mb-4">ลงชื่อ..........................................................</p>
+                <p class="font-bold text-sm">( <?= $school['director_name'] ?: '..........................................................' ?> )</p>
+                <p class="text-xs">ผู้อำนวยการโรงเรียน<?= $school['name'] ?></p>
             </div>
         </div>
 
