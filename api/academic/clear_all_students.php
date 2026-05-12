@@ -48,6 +48,7 @@ try {
         'student_behavior_records',
         'student_health_records',
         'learner_development_records',
+        'learner_development_results',
         'competency_scores'
     ];
 
