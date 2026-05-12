@@ -134,7 +134,7 @@ try {
         } else if ($off['role_key'] === 'deputy_director' && empty($deputy_director_name)) {
             $deputy_director_name = $off['name'];
             $deputy_director_position = formatTeacherPosition($off['position']);
-        } else if (($off['role_key'] === 'academic_head' || $off['role_key'] === 'deputy_academic') && empty($academic_head_name)) {
+        } else if (($off['role_key'] === 'academic_head' || $off['role_key'] === 'deputy_academic' || $off['role_key'] === 'assistant_academic') && empty($academic_head_name)) {
             $academic_head_name = $off['name'];
             $academic_head_position = formatTeacherPosition($off['position']);
         } else if ($off['role_key'] === 'registrar' && empty($registrar_name)) {
