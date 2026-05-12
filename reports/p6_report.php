@@ -217,7 +217,7 @@ foreach ($students_to_print as $student):
     if (empty($acad_name) || ($clean_director !== '' && $clean_director === $clean_acad)) {
         // หาครูที่มีงานวิชาการก่อน (is_academic = 1) และต้องไม่ใช่คนเดียวกับผู้อำนวยการ
         $sqlFallback = 'SELECT name, last_name, position FROM users 
-                        WHERE school_id = ? AND status = "active"';
+                        WHERE school_id = ? AND is_approved = 1';
         
         $paramsFallback = [$_SESSION['school_id'] ?? 0];
         
