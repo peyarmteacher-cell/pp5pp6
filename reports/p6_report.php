@@ -203,12 +203,21 @@ foreach ($students_to_print as $student):
     $teacher_name = $ct['t1_name'] ? $ct['t1_name'] . ' ' . $ct['t1_last'] : '';
     $teacher_pos = formatTeacherPosition($ct['t1_pos'] ?? '');
 
-    // ดึงหัวหน้าวิชาการ
-    $stmt_acad = $pdo->prepare('SELECT name, last_name, position FROM users WHERE role = "admin" LIMIT 1');
-    $stmt_acad->execute();
-    $acad = $stmt_acad->fetch();
-    $acad_name = $acad ? $acad['name'] . ' ' . $acad['last_name'] : '';
-    $acad_pos = $acad ? formatTeacherPosition($acad['position']) : 'หัวหน้างานวิชาการโรงเรียน';
+    // ดึงหัวหน้าวิชาการ หรือ รองผู้อำนวยการ ตามที่ผู้ใช้ต้องการ
+    // โดยใช้ตัวแปรที่ดึงมาจาก report_header.php (หรือตาราง school_officials / schools)
+    $acad_name = !empty($deputy_director_name) ? $deputy_director_name : $academic_head_name;
+    $acad_pos = !empty($deputy_director_name) ? $deputy_director_position : $academic_head_position;
+    
+    // ถ้ายังไม่มีชื่อ ให้ลองดึงจากตาราง users (Fallback)
+    if (empty($acad_name)) {
+        $stmt_acad = $pdo->prepare('SELECT name, last_name, position FROM users WHERE role = "admin" OR is_academic = 1 LIMIT 1');
+        $stmt_acad->execute();
+        $acad = $stmt_acad->fetch();
+        if ($acad) {
+            $acad_name = $acad['name'] . ' ' . $acad['last_name'];
+            $acad_pos = formatTeacherPosition($acad['position']) ?: 'หัวหน้างานวิชาการโรงเรียน';
+        }
+    }
 
     // คำนวณข้อมูลเพิ่มเติมสำหรับหน้าปก
     $bday = formatThaiDate($student['birthday'] ?? '');
