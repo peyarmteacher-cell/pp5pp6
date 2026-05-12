@@ -119,7 +119,7 @@ $days = [
             flex-direction: column;
         }
         table { border-collapse: collapse; width: 100%; table-layout: fixed; }
-        th, td { border: 1.2px solid #64748b; padding: 2px; text-align: center; height: 55px; overflow: hidden; }
+        th, td { border: 1.2px solid #64748b; padding: 2px; text-align: center; height: 50px; overflow: hidden; }
         th { background: #f1f5f9; font-weight: 700; color: #1e293b; font-size: 13px; height: 35px; }
         .period-header { font-size: 10px; color: #64748b; font-weight: normal; margin-top: 1px; }
     </style>
@@ -201,7 +201,7 @@ $days = [
             </table>
         </div>
 
-        <div class="mt-2 grid grid-cols-2 gap-10">
+        <div class="mt-12 grid grid-cols-2 gap-10">
             <div class="text-center">
                 <p class="mb-4">ลงชื่อ..........................................................</p>
                 <p class="font-bold text-sm">( <?= $teacher_full_name ?> )</p>
