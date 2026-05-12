@@ -232,8 +232,9 @@
         const emptyState = document.getElementById('behavior-empty-state');
         if (!container || !emptyState) return;
         
+        const year = document.getElementById('behavior-year').value;
         try {
-            const res = await fetch(`api/teacher/get_behavior_data.php?classroom_id=${currentBehaviorClassroom.id}&check_date=${checkDate}`);
+            const res = await fetch(`api/teacher/get_behavior_data.php?classroom_id=${currentBehaviorClassroom.id}&check_date=${checkDate}&academic_year=${year}`);
             const result = await res.json();
             
             if (result.error) {

@@ -21,27 +21,28 @@ if (empty($classroom_id)) {
 try {
     // ดึงรายชื่อนักเรียนในห้อง (ปีปัจจุบัน)
     $stmt = $pdo->prepare("
-        SELECT s.id, 
+        SELECT s.id, s.student_code,
                IFNULL(sp.prefix, s.prefix) AS prefix, 
                IFNULL(sp.name, s.name) AS name, 
                IFNULL(sp.last_name, s.last_name) AS last_name 
         FROM students s
         LEFT JOIN student_profiles sp ON s.student_profile_id = sp.id
-        WHERE s.classroom_id = ? AND s.academic_year = ? AND s.status = 'studying'
+        WHERE s.classroom_id = ? AND s.academic_year = ? 
+        AND (s.status = 'studying' OR s.status IS NULL OR s.status = '')
         ORDER BY s.student_code ASC
     ");
     $stmt->execute([$classroom_id, $academic_year]);
-    $students = $stmt->fetchAll();
+    $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // ดึงข้อมูลบันทึกพฤติกรรม
+    // ดึงข้อมูลบันทึกพฤติกรรม (กรองตามปีการศึกษาด้วย)
     $stmt = $pdo->prepare("
         SELECT r.* 
         FROM student_behavior_records r
         JOIN students s ON r.student_id = s.id
-        WHERE s.classroom_id = ? AND r.check_date = ?
+        WHERE s.classroom_id = ? AND r.check_date = ? AND r.academic_year = ?
     ");
-    $stmt->execute([$classroom_id, $check_date]);
-    $records = $stmt->fetchAll();
+    $stmt->execute([$classroom_id, $check_date, $academic_year]);
+    $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     echo json_encode([
         'status' => 'success',

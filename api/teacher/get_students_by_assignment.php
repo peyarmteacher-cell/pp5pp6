@@ -63,7 +63,7 @@ try {
     }
 
     // We match by school_id, academic_year, level, room, and status
-    $query_where = "s.school_id = ? AND s.academic_year = ? AND s.status = 'studying'";
+    $query_where = "s.school_id = ? AND s.academic_year = ? AND (s.status = 'studying' OR s.status IS NULL OR s.status = '')";
     $params = [$school_id, $academic_year];
     
     if (!empty($target_room)) {
