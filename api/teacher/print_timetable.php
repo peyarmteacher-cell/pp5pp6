@@ -111,16 +111,15 @@ $days = [
         }
         .a4-landscape {
             width: 297mm;
-            min-height: 210mm;
             margin: 0 auto;
             background: white;
-            padding: 1cm;
+            padding: 0.8cm;
             position: relative;
             display: flex;
             flex-direction: column;
         }
         table { border-collapse: collapse; width: 100%; table-layout: fixed; }
-        th, td { border: 1.5px solid #64748b; padding: 2px; text-align: center; height: 50px; overflow: hidden; }
+        th, td { border: 1.2px solid #64748b; padding: 2px; text-align: center; height: 55px; overflow: hidden; }
         th { background: #f1f5f9; font-weight: 700; color: #1e293b; font-size: 13px; height: 35px; }
         .period-header { font-size: 10px; color: #64748b; font-weight: normal; margin-top: 1px; }
     </style>
@@ -135,30 +134,30 @@ $days = [
     </div>
 
     <div class="a4-landscape">
-        <div class="relative mb-2 pb-2 border-b-2 border-slate-100 flex items-center min-h-[80px]">
+        <div class="relative mb-2 pb-2 border-b-2 border-slate-100 flex items-center min-h-[70px]">
             <!-- Logo positioned absolutely to keep text centered -->
             <div class="absolute left-0">
                 <?php if (!empty($logo_url)): ?>
-                    <img src="<?= $logo_url ?>" class="w-24 h-24 object-contain" referrerPolicy="no-referrer">
+                    <img src="<?= $logo_url ?>" class="w-20 h-20 object-contain" referrerPolicy="no-referrer">
                 <?php else: ?>
-                    <div class="w-24 h-24 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 flex items-center justify-center text-slate-300 text-[10px] text-center p-2 uppercase">Logo</div>
+                    <div class="w-20 h-20 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 flex items-center justify-center text-slate-300 text-[10px] text-center p-2 uppercase">Logo</div>
                 <?php endif; ?>
             </div>
             
             <!-- Centered Header Text -->
             <div class="w-full text-center px-32">
-                <h1 class="text-2xl font-black text-slate-800 tracking-tight">ตารางสอนโรงเรียน<?= $school['name'] ?></h1>
-                <div class="mt-1">
-                    <p class="text-lg font-bold text-blue-700">คุณครู<?= $teacher_full_name ?> ตำแหน่ง: <?= $teacher['position'] ?: 'ครู' ?></p>
+                <h1 class="text-xl font-black text-slate-800 tracking-tight">ตารางสอนโรงเรียน<?= $school['name'] ?></h1>
+                <div class="mt-0.5">
+                    <p class="text-base font-bold text-blue-700">คุณครู<?= $teacher_full_name ?> ตำแหน่ง: <?= $teacher['position'] ?: 'ครู' ?></p>
                 </div>
-                <div class="flex items-center justify-center gap-3 mt-1 text-xs font-bold text-slate-500 uppercase tracking-widest">
-                    <span class="bg-slate-100 px-3 py-1 rounded-full border border-slate-200">ปีการศึกษา <?= $academic_year ?></span>
-                    <span class="bg-indigo-50 text-indigo-600 px-3 py-1 rounded-full border border-indigo-100">ภาคเรียนที่ <?= $semester ?></span>
+                <div class="flex items-center justify-center gap-3 mt-1 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                    <span class="bg-slate-100 px-3 py-0.5 rounded-full border border-slate-200">ปีการศึกษา <?= $academic_year ?></span>
+                    <span class="bg-indigo-50 text-indigo-600 px-3 py-0.5 rounded-full border border-indigo-100">ภาคเรียนที่ <?= $semester ?></span>
                 </div>
             </div>
         </div>
 
-        <div class="flex-1 overflow-hidden">
+        <div class="overflow-hidden">
             <table>
                 <thead>
                     <tr>
