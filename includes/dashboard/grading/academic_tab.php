@@ -17,7 +17,7 @@
             <thead>
                 <tr id="academic-header-row" class="text-slate-500 border-b border-slate-100 text-xs">
                     <th class="pb-3 font-medium w-10">เลขที่</th>
-                    <th class="pb-3 font-medium w-40">ชื่อ-นามสกุล</th>
+                    <th class="pb-3 font-medium w-60">ชื่อ-นามสกุล</th>
                     <th class="pb-3 font-medium">หน่วยการเรียนรู้</th>
                     <th class="pb-3 font-medium w-16 text-center">รวมหน่วย</th>
                     <th class="pb-3 font-medium w-16 text-center">ปลายภาค</th>
@@ -258,7 +258,7 @@
         // Rebuild Header Row
         let headerHtml = `
             <th class="pb-3 font-medium w-10">เลขที่</th>
-            <th class="pb-3 font-medium w-40">ชื่อ-นามสกุล</th>
+            <th class="pb-3 font-medium w-60">ชื่อ-นามสกุล</th>
         `;
 
         if (Array.isArray(currentUnits)) {
@@ -365,7 +365,7 @@
             return `
                 <tr class="border-b border-slate-50 hover:bg-slate-50/50">
                     <td class="py-3 text-slate-600 font-mono text-xs">${index + 1}</td>
-                    <td class="py-3 font-medium text-slate-800 text-xs">${s.name || ''}&nbsp;${s.last_name || ''}</td>
+                    <td class="py-3 font-medium text-slate-800 text-xs">${s.name || s.first_name || ''} ${s.last_name || ''}</td>
                     ${unitInputs}
                     <td class="py-3 text-center font-bold text-slate-700 text-xs" id="units-total-${s.id}">${currentTotal.toFixed(1)}</td>
                     <td class="py-3 text-center">

@@ -17,12 +17,12 @@ try {
     // Get students in classroom
     $stmt = $pdo->prepare('SELECT id, prefix, name, last_name, student_code FROM students WHERE classroom_id = ? AND academic_year = ? ORDER BY student_code ASC');
     $stmt->execute([$classroom_id, $academic_year]);
-    $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $students = $stmt->fetchAll();
 
     // Get results
     $stmt = $pdo->prepare('SELECT * FROM learner_development_results WHERE classroom_id = ? AND academic_year = ? AND semester = ?');
     $stmt->execute([$classroom_id, $academic_year, $semester]);
-    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $results = $stmt->fetchAll();
     
     $results_map = [];
     foreach ($results as $r) {
@@ -43,8 +43,8 @@ try {
         // Remove ID from result to not overwrite student ID
         if (isset($res['id'])) unset($res['id']);
         
-        // Merge results into student data
-        $merged = array_merge($s, $res);
+        // Merge student data with results (student data takes precedence for names)
+        $merged = array_merge($res, $s);
         $data[] = $merged;
     }
 
