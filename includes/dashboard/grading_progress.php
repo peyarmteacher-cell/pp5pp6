@@ -360,8 +360,9 @@
             
             const { assignment, units, students } = data;
             
+            const teacherFullName = `ครู${assignment.teacher_name}${assignment.teacher_last_name ? ' ' + assignment.teacher_last_name : ''}`;
             document.getElementById('modal_subject_name').innerText = assignment.subject_name;
-            document.getElementById('modal_teacher_info').innerText = `${assignment.subject_code} | ครู${assignment.teacher_name} ${assignment.teacher_last_name} | ${assignment.level}/${assignment.room} | ปีการศึกษา ${assignment.academic_year} เทอม ${assignment.semester}`;
+            document.getElementById('modal_teacher_info').innerText = `${assignment.subject_code} | ${teacherFullName} | ${assignment.level}/${assignment.room} | ปีการศึกษา ${assignment.academic_year} เทอม ${assignment.semester}`;
             
             // Calculate Stats
             let totalAvg = 0;
