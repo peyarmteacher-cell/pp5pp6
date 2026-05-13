@@ -666,7 +666,7 @@
             <div class="bg-amber-50 p-6 rounded-2xl border border-amber-100">
                 <h4 class="text-sm font-bold text-amber-800 mb-4 flex items-center gap-2">
                     <i data-lucide="users" class="w-4 h-4"></i>
-                    มอบหมายกิจกรรมพัฒนาผู้เรียน (แนะแนว, ลูกเสือ, ชุมนุม, เพื่อสังคมฯ)
+                    กำหนดค่าครูที่ปรึกษาเพื่อบันทึกกิจกรรมพัฒนาผู้เรียน กิจกรรมพัฒนาผู้เรียน (แนะแนว, ลูกเสือ, ชุมนุม, เพื่อสังคมฯ )
                 </h4>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -687,7 +687,7 @@
                     </div>
                 </div>
                 <button onclick="submitLDAssignment()" class="w-full bg-amber-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-amber-700 transition-all shadow-lg shadow-amber-200 cursor-pointer">
-                    บันทึกการมอบหมายกิจกรรมพัฒนาผู้เรียน
+                    บันทึกข้อมูลครูที่ปรึกษาเพื่อบันทึกกิจกรรมพัฒนาผู้เรียน
                 </button>
             </div>
 

@@ -14,14 +14,15 @@ $teacher_id = $_SESSION['user_id'];
 $school_id = $_SESSION['school_id'];
 
 try {
-    // ดึงห้องเรียนที่ครูคนนี้เป็นครูประจำชั้น
+    // ดึงห้องเรียนที่ครูคนนี้เป็นครูประจำชั้น หรือ ถูกมอบหมายกิจกรรมพัฒนาผู้เรียน
     $stmt = $pdo->prepare("
-        SELECT c.*, 
-               (SELECT year FROM academic_years WHERE school_id = c.school_id AND is_current = 1 LIMIT 1) as current_year
+        SELECT DISTINCT c.*, 
+               (SELECT year from academic_years WHERE school_id = c.school_id AND is_current = 1 LIMIT 1) as current_year
         FROM classrooms c
-        WHERE c.school_id = ? AND (c.teacher_id_1 = ? OR c.teacher_id_2 = ?)
+        LEFT JOIN learner_development_assignments lda ON c.id = lda.classroom_id
+        WHERE c.school_id = ? AND (c.teacher_id_1 = ? OR c.teacher_id_2 = ? OR lda.teacher_id = ?)
     ");
-    $stmt->execute([$school_id, $teacher_id, $teacher_id]);
+    $stmt->execute([$school_id, $teacher_id, $teacher_id, $teacher_id]);
     $classrooms = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     echo json_encode($classrooms);

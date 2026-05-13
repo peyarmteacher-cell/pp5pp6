@@ -89,13 +89,13 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div class="space-y-1">
                         <label class="text-xs font-semibold text-slate-500">ปีการศึกษา</label>
-                        <select id="report_p6_year" onchange="loadP6Students()" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20">
+                        <select id="report_p6_year" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20">
                             <!-- Populated by JS -->
                         </select>
                     </div>
                     <div class="space-y-1">
                         <label class="text-xs font-semibold text-slate-500">ห้องเรียน</label>
-                        <select id="report_p6_classroom" onchange="loadP6Students()" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20">
+                        <select id="report_p6_classroom" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20">
                             <!-- Populated by JS -->
                         </select>
                     </div>
@@ -181,8 +181,8 @@
 
             const currentYear = years.find(y => y.is_current)?.year || '2567';
 
-            // Load Classrooms (for P5 Class and P6)
-            // สำหรับครูทั่วไป ให้แสดงเฉพาะห้องที่รับผิดชอบ (ครูประจำชั้น)
+            // Load Classrooms (for P5 Class)
+            // สำหรับครูทั่วไป ให้แสดงเฉพาะห้องที่รับผิดชอบ (ครูประจำชั้น หรือ ถูกมอบหมาย LD)
             // สำหรับ Admin หรือ งานวิชาการ ให้แสดงทั้งหมด
             let classApi = 'api/academic/get_classrooms.php';
             if (userRole === 'teacher' && !isAcademic) {
@@ -194,20 +194,16 @@
             
             if (Array.isArray(classrooms)) {
                 const classP5 = document.getElementById('report_p5_classroom');
-                const classP6 = document.getElementById('report_p6_classroom');
-                
                 let classOptions = classrooms.map(c => `<option value="${c.id}">${c.level}/${c.room}</option>`).join('');
                 if (classrooms.length === 0) {
                     classOptions = '<option value="">ไม่มีข้อมูลห้องเรียนที่รับผิดชอบ</option>';
                 }
-
                 if (classP5) classP5.innerHTML = classOptions;
-                if (classP6) classP6.innerHTML = classOptions;
-            } else {
-                console.error('Classrooms is not an array:', classrooms);
             }
 
-            loadP6Students();
+            // Load P6 Classrooms (เฉพาะที่มอบหมาย LD สำหรับครู)
+            await loadP6Classrooms();
+            await loadP6Students();
 
             // Initial load for P5 assignments
             loadP5Assignments();
@@ -254,6 +250,35 @@
         } catch (e) {
             console.error('Error loading P5 assignments:', e);
             if (assignP5) assignP5.innerHTML = '<option value="">เกิดข้อผิดพลาดในการโหลดข้อมูล</option>';
+        }
+    }
+
+    async function loadP6Classrooms() {
+        const userRole = '<?= $_SESSION['role'] ?>';
+        const isAcademic = <?= $_SESSION['is_academic'] ? 'true' : 'false' ?>;
+        const year = document.getElementById('report_p6_year').value;
+        const semester = 1; // P6 is usually annual, or check semester 1 as default for LD
+
+        let api = 'api/academic/get_classrooms.php';
+        if (userRole === 'teacher' && !isAcademic) {
+            // ดึงเฉพาะห้องที่ได้รับมอบหมายกิจกรรมพัฒนาผู้เรียน
+            api = `api/teacher/get_my_ld_classrooms.php?academic_year=${year}&semester=${semester}`;
+        }
+
+        try {
+            const res = await fetch(api);
+            const classrooms = await res.json();
+            const classP6 = document.getElementById('report_p6_classroom');
+            
+            if (Array.isArray(classrooms)) {
+                let classOptions = classrooms.map(c => `<option value="${c.id}">${c.level}/${c.room}</option>`).join('');
+                if (classrooms.length === 0) {
+                    classOptions = '<option value="">ไม่มีข้อมูลห้องเรียนที่รับผิดชอบ</option>';
+                }
+                if (classP6) classP6.innerHTML = classOptions;
+            }
+        } catch (e) {
+            console.error('Error loading P6 classrooms:', e);
         }
     }
 
@@ -328,10 +353,13 @@
         window.open(url, '_blank');
     }
 
-    // Initialize P5 listeners once
-    (function initP5Listeners() {
+    // Initialize P5/P6 listeners once
+    (function initReportListeners() {
         const p5Year = document.getElementById('report_p5_year');
         const p5Sem = document.getElementById('report_p5_semester');
+        const p6Year = document.getElementById('report_p6_year');
+        const p6Class = document.getElementById('report_p6_classroom');
+
         if (p5Year && !p5Year.dataset.listenerAdded) {
             p5Year.addEventListener('change', loadP5Assignments);
             p5Year.dataset.listenerAdded = 'true';
@@ -339,6 +367,17 @@
         if (p5Sem && !p5Sem.dataset.listenerAdded) {
             p5Sem.addEventListener('change', loadP5Assignments);
             p5Sem.dataset.listenerAdded = 'true';
+        }
+        if (p6Year && !p6Year.dataset.listenerAdded) {
+            p6Year.addEventListener('change', async () => {
+                await loadP6Classrooms();
+                await loadP6Students();
+            });
+            p6Year.dataset.listenerAdded = 'true';
+        }
+        if (p6Class && !p6Class.dataset.listenerAdded) {
+            p6Class.addEventListener('change', loadP6Students);
+            p6Class.dataset.listenerAdded = 'true';
         }
     })();
 </script>
