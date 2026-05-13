@@ -175,11 +175,20 @@
                 return;
             }
             
-            const yearOptions = years.map(y => `<option value="${y.year}" ${y.is_current ? 'selected' : ''}>${y.year}</option>`).join('');
+            const yearOptions = years.map(y => `<option value="${y.year}">${y.year}</option>`).join('');
             yearP5.innerHTML = yearOptions;
             yearP6.innerHTML = yearOptions;
 
-            const currentYear = years.find(y => y.is_current)?.year || '2567';
+            const currentYearObj = years.find(y => y.is_current == 1);
+            if (currentYearObj) {
+                yearP5.value = currentYearObj.year;
+                yearP6.value = currentYearObj.year;
+            } else if (years.length > 0) {
+                yearP5.value = years[0].year;
+                yearP6.value = years[0].year;
+            }
+
+            const currentYear = yearP5.value;
 
             // Load Classrooms (for P5 Class)
             // สำหรับครูทั่วไป ให้แสดงเฉพาะห้องที่รับผิดชอบ (ครูประจำชั้น หรือ ถูกมอบหมาย LD)
