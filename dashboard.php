@@ -184,7 +184,7 @@ try {
                     if (typeof loadTeacherUsageStats === 'function') loadTeacherUsageStats();
                 } else if (sectionId === 'academic-achievement') {
                     targetId = sectionId;
-                    if (typeof loadAcademicAchievement === 'function') loadAcademicAchievement();
+                    if (typeof initAcademicAchievement === 'function') initAcademicAchievement();
                 } else if (sectionId === 'school-settings') {
                     targetId = sectionId;
                     if (typeof loadSchoolSettings === 'function') loadSchoolSettings();

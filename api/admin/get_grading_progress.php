@@ -21,8 +21,16 @@ if ($role !== 'admin' && $role !== 'super_admin' && !$is_academic && !$is_direct
 $academic_year = $_GET['academic_year'] ?? '2567';
 $semester = $_GET['semester'] ?? '1';
 $level = $_GET['level'] ?? '';
+$action = $_GET['action'] ?? '';
 
 try {
+    if ($action === 'get_years') {
+        $stmt = $pdo->prepare("SELECT year, is_current FROM academic_years WHERE school_id = ? ORDER BY year DESC");
+        $stmt->execute([$school_id]);
+        echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
+        exit;
+    }
+
     $sql = "SELECT 
                 ta.id as assignment_id,
                 sub.name AS subject_name,

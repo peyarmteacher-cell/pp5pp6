@@ -22,6 +22,13 @@
         </div>
 
         <!-- Charts Container -->
+        <div class="col-span-full">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="h-8 w-1.5 bg-blue-600 rounded-full"></div>
+                <h3 class="text-xl font-black text-slate-800">สรุปผลสัมฤทธิ์ทางการเรียน <span id="achievement-info-display" class="text-blue-600"></span></h3>
+            </div>
+        </div>
+
         <div class="col-span-full grid grid-cols-1 lg:grid-cols-2 gap-6">
             <!-- GPA Bar Chart -->
             <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
@@ -78,10 +85,17 @@ let gpaChart = null;
 let distChart = null;
 
 async function loadAcademicAchievement() {
-    const year = document.getElementById('achievement-year-select').value;
-    const semester = document.getElementById('achievement-semester-select').value;
+    const yearSelect = document.getElementById('achievement-year-select');
+    const semesterSelect = document.getElementById('achievement-semester-select');
+    const year = yearSelect.value;
+    const semester = semesterSelect.value;
     
     if (!year) return;
+
+    // Update display text
+    const yearText = yearSelect.options[yearSelect.selectedIndex].text;
+    const semesterText = semesterSelect.options[semesterSelect.selectedIndex].text;
+    document.getElementById('achievement-info-display').innerText = `${yearText} ${semesterText}`;
 
     try {
         const response = await fetch(`api/admin/get_academic_achievement_stats.php?academic_year=${year}&semester=${semester}`);
