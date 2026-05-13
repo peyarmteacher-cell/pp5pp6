@@ -48,6 +48,7 @@ try {
     <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sarabun:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
@@ -178,6 +179,12 @@ try {
                 } else if (sectionId === 'grading-progress') {
                     targetId = sectionId;
                     if (typeof initGradingProgress === 'function') initGradingProgress();
+                } else if (sectionId === 'teacher-usage-stats') {
+                    targetId = sectionId;
+                    if (typeof loadTeacherUsageStats === 'function') loadTeacherUsageStats();
+                } else if (sectionId === 'academic-achievement') {
+                    targetId = sectionId;
+                    if (typeof loadAcademicAchievement === 'function') loadAcademicAchievement();
                 } else if (sectionId === 'school-settings') {
                     targetId = sectionId;
                     if (typeof loadSchoolSettings === 'function') loadSchoolSettings();
@@ -207,6 +214,8 @@ try {
                     'school-settings': 'ตั้งค่าโรงเรียน/โลโก้',
                     'manage-super-admins': 'จัดการ Super Admin',
                     'grading-progress': 'ความคืบหน้าการบันทึกคะแนน',
+                    'teacher-usage-stats': 'สถิติการใช้งานครู',
+                    'academic-achievement': 'ผลสัมฤทธิ์ทางการเรียน',
                     'profile': 'แก้ไขโปรไฟล์',
                     'academic-management': 'จัดการปีการศึกษา/จบการศึกษา',
                     'national-test': 'บันทึกผลการทดสอบระดับชาติ'
@@ -279,7 +288,11 @@ try {
         </div>
         
         <nav class="flex-1 p-4 space-y-1 overflow-y-auto custom-scrollbar">
-            <?php if ($role !== 'teacher' || $_SESSION['is_academic']): ?>
+            <?php 
+            $is_director = (isset($_SESSION['position']) && (strpos($_SESSION['position'], 'ผู้อำนวยการ') !== false || strpos($_SESSION['position'], 'ผู้บริหาร') !== false));
+            $is_academic = (isset($_SESSION['is_academic']) && $_SESSION['is_academic'] || $_SESSION['role'] === 'admin');
+
+            if (!$is_director && ($role !== 'teacher' || $_SESSION['is_academic'])): ?>
                 <a href="javascript:void(0)" onclick="showSection('overview')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">
                     <i data-lucide="layout-dashboard" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
                     <span class="text-sm font-medium">ภาพรวม</span>
@@ -311,21 +324,36 @@ try {
             <?php endif; ?>
 
             <?php 
-            $is_director = (isset($_SESSION['position']) && strpos($_SESSION['position'], 'ผู้อำนวยการ') !== false);
             if ($role === 'admin' || $is_director): 
             ?>
                 <div class="pt-4 pb-2 px-4 text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">เมนูบริหาร</div>
-                <?php if ($role === 'admin'): ?>
-                <a href="javascript:void(0)" onclick="showSection('manage-teachers')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">
-                    <i data-lucide="users" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
-                    <span class="text-sm font-medium">จัดการข้อมูลครู</span>
-                </a>
-                <?php endif; ?>
+                
                 <a href="javascript:void(0)" onclick="showSection('grading-progress')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">
                     <i data-lucide="trending-up" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
                     <span class="text-sm font-medium">ความคืบหน้าการทำงาน</span>
                 </a>
-                <?php if ($role === 'admin'): ?>
+
+                <?php if ($is_director): ?>
+                <a href="javascript:void(0)" onclick="showSection('teacher-usage-stats')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">
+                    <i data-lucide="user-check" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
+                    <span class="text-sm font-medium">สถิติการใช้งานครู</span>
+                </a>
+                <a href="javascript:void(0)" onclick="showSection('academic-achievement')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">
+                    <i data-lucide="pie-chart" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
+                    <span class="text-sm font-medium">ผลสัมฤทธิ์ทางการเรียน</span>
+                </a>
+                <?php endif; ?>
+
+                <a href="javascript:void(0)" onclick="showSection('reports')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group text-green-400/90 hover:text-green-400">
+                    <i data-lucide="file-text" class="w-4 h-4 transition-colors"></i>
+                    <span class="text-sm font-medium">รายงานเอกสาร (ปพ.)</span>
+                </a>
+
+                <?php if ($role === 'admin' && !$is_director): ?>
+                <a href="javascript:void(0)" onclick="showSection('manage-teachers')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">
+                    <i data-lucide="users" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
+                    <span class="text-sm font-medium">จัดการข้อมูลครู</span>
+                </a>
                 <a href="javascript:void(0)" onclick="showSection('approve-teachers')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">
                     <i data-lucide="user-plus" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
                     <span class="text-sm font-medium">อนุมัติครู</span>
@@ -337,7 +365,7 @@ try {
                 <?php endif; ?>
             <?php endif; ?>
 
-            <?php if ($role === 'admin' || (isset($_SESSION['is_academic']) && $_SESSION['is_academic'])): ?>
+            <?php if (($role === 'admin' || $is_academic) && !$is_director): ?>
                 <div class="pt-4 pb-2 px-4 text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">งานวิชาการ</div>
                 <a href="javascript:void(0)" onclick="showSection('manage-students')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">
                     <i data-lucide="graduation-cap" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
@@ -887,6 +915,8 @@ try {
         <?php include 'includes/dashboard/academic_management.php'; ?>
         <?php include 'includes/dashboard/academic_documents.php'; ?>
         <?php include 'includes/dashboard/grading_progress.php'; ?>
+        <?php include 'includes/dashboard/teacher_usage_stats.php'; ?>
+        <?php include 'includes/dashboard/academic_achievement.php'; ?>
 
         <!-- Teacher: Record Grades -->
         <?php include 'includes/dashboard/grading.php'; ?>
@@ -1515,7 +1545,9 @@ try {
         }
 
         // Show default section
-        <?php if ($role === 'teacher' && !$_SESSION['is_academic']): ?>
+        <?php if ($is_director): ?>
+            showSection('grading-progress');
+        <?php elseif ($role === 'teacher' && !$_SESSION['is_academic']): ?>
             showSection('record-grades');
         <?php else: ?>
             showSection('overview');

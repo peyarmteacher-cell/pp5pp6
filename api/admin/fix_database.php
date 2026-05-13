@@ -29,6 +29,18 @@ try {
         $results[] = "เพิ่มคอลัมน์ last_name ในตาราง users สำเร็จ";
     }
 
+    // เพิ่มคอลัมน์สถิติการใช้งาน
+    $stmt = $pdo->query("SHOW COLUMNS FROM users LIKE 'login_count'");
+    if (!$stmt->fetch()) {
+        $pdo->exec("ALTER TABLE users ADD COLUMN login_count INT DEFAULT 0 AFTER is_academic");
+        $results[] = "เพิ่มคอลัมน์ login_count ในตาราง users สำเร็จ";
+    }
+    $stmt = $pdo->query("SHOW COLUMNS FROM users LIKE 'last_login'");
+    if (!$stmt->fetch()) {
+        $pdo->exec("ALTER TABLE users ADD COLUMN last_login DATETIME AFTER login_count");
+        $results[] = "เพิ่มคอลัมน์ last_login ในตาราง users สำเร็จ";
+    }
+
     // 2. ตรวจสอบและเพิ่มคอลัมน์ national_id ในตาราง students
     $stmt = $pdo->query("SHOW COLUMNS FROM students LIKE 'national_id'");
     if (!$stmt->fetch()) {

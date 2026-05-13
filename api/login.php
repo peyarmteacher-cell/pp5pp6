@@ -49,6 +49,14 @@ try {
         exit;
     }
 
+    // อัปเดตสถิติการเข้าใช้งาน
+    try {
+        $stmt_stats = $pdo->prepare('UPDATE users SET login_count = login_count + 1, last_login = NOW() WHERE id = ?');
+        $stmt_stats->execute([$user['id']]);
+    } catch (PDOException $e) {
+        // เงียบไว้ถ้าอัปเดตสถิติไม่สำเร็จ เพื่อไม่ให้กระทบการเข้าใช้งานหลัก
+    }
+
     // เก็บข้อมูลใน Session
     $_SESSION['user_id'] = $user['id'];
     $_SESSION['username'] = $user['username'];

@@ -155,7 +155,9 @@
     async function loadReportOptions() {
         console.log('Loading report options...');
         const userRole = '<?= $_SESSION['role'] ?>';
+        const position = '<?= $_SESSION['position'] ?? '' ?>';
         const isAcademic = <?= $_SESSION['is_academic'] ? 'true' : 'false' ?>;
+        const isDirector = position.includes('ผู้อำนวยการ');
 
         try {
             // Load Academic Years
@@ -192,9 +194,9 @@
 
             // Load Classrooms (for P5 Class)
             // สำหรับครูทั่วไป ให้แสดงเฉพาะห้องที่รับผิดชอบ (ครูประจำชั้น หรือ ถูกมอบหมาย LD)
-            // สำหรับ Admin หรือ งานวิชาการ ให้แสดงทั้งหมด
+            // สำหรับ Admin หรือ งานวิชาการ หรือ ผู้อำนวยการ ให้แสดงทั้งหมด
             let classApi = 'api/academic/get_classrooms.php';
-            if (userRole === 'teacher' && !isAcademic) {
+            if (userRole === 'teacher' && !isAcademic && !isDirector) {
                 classApi = 'api/teacher/get_my_classrooms.php';
             }
 
@@ -224,6 +226,10 @@
     async function loadP5Assignments() {
         const year = document.getElementById('report_p5_year').value;
         const semester = document.getElementById('report_p5_semester').value;
+        const userRole = '<?= $_SESSION['role'] ?>';
+        const position = '<?= $_SESSION['position'] ?? '' ?>';
+        const isAcademic = <?= $_SESSION['is_academic'] ? 'true' : 'false' ?>;
+        const isDirector = position.includes('ผู้อำนวยการ');
         
         if (!year || !semester) return;
 
@@ -233,7 +239,12 @@
         }
 
         try {
-            const assignRes = await fetch(`api/teacher/get_my_assignments.php?academic_year=${year}&semester=${semester}`);
+            let api = `api/teacher/get_my_assignments.php?academic_year=${year}&semester=${semester}`;
+            if (userRole === 'admin' || isAcademic || isDirector) {
+                api = `api/admin/get_all_assignments.php?academic_year=${year}&semester=${semester}`;
+            }
+
+            const assignRes = await fetch(api);
             const assignments = await assignRes.json();
             
             if (Array.isArray(assignments)) {
@@ -248,7 +259,7 @@
                 } else {
                     assignP5.innerHTML = filteredAssignments.map(a => `
                         <option value="${a.assignment_id || a.subject_id}" data-subject="${a.subject_id}" data-classroom="${a.classroom_id}">
-                            ${a.subject_code} ${a.subject_name} (${a.level}/${a.room})
+                            ${a.subject_code} ${a.subject_name} (${a.level}/${a.room}) ${(isDirector || isAcademic) ? '- ครู' + (a.teacher_name || '') : ''}
                         </option>
                     `).join('');
                 }
@@ -264,12 +275,14 @@
 
     async function loadP6Classrooms() {
         const userRole = '<?= $_SESSION['role'] ?>';
+        const position = '<?= $_SESSION['position'] ?? '' ?>';
         const isAcademic = <?= $_SESSION['is_academic'] ? 'true' : 'false' ?>;
+        const isDirector = position.includes('ผู้อำนวยการ');
         const year = document.getElementById('report_p6_year').value;
         const semester = 1; // P6 is usually annual, or check semester 1 as default for LD
 
         let api = 'api/academic/get_classrooms.php';
-        if (userRole === 'teacher' && !isAcademic) {
+        if (userRole === 'teacher' && !isAcademic && !isDirector) {
             // ดึงเฉพาะห้องที่ได้รับมอบหมายกิจกรรมพัฒนาผู้เรียน
             api = `api/teacher/get_my_ld_classrooms.php?academic_year=${year}&semester=${semester}`;
         }
