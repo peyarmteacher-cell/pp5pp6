@@ -57,53 +57,39 @@ try {
     $units = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // 3. Get students who were in this assignment's context
-    // We first try to get students who have scores or grades in this context
-    // If no scores exist yet, we fall back to current classroom members ONLY if the assignment year is the current year
+    // We want students who:
+    // a) Are currently assigned to this classroom for this academic year
+    // b) Or have already recorded grades/scores in this classroom/subject for this year
     
-    $stmt = $pdo->prepare("SELECT year FROM academic_years WHERE school_id = ? AND is_current = 1 LIMIT 1");
-    $stmt->execute([$school_id]);
-    $current_year_row = $stmt->fetch();
-    $is_current_assignment_year = ($current_year_row && $current_year_row['year'] == $assignment['academic_year']);
-
-    $students_sql = "";
-    $params = [];
-
-    // ดึงรายชื่อนักเรียนที่มีการบันทึกคะแนนไว้แล้วในวิชานี้/ห้องนี้/ปีนี้
     $students_sql = "
         SELECT DISTINCT s.id, s.prefix, s.name, s.last_name, s.student_code
         FROM students s
         LEFT JOIN grades g ON s.id = g.student_id AND g.subject_id = ? AND g.classroom_id = ? AND g.academic_year = ? AND g.semester = ?
         LEFT JOIN unit_scores us ON s.id = us.student_id 
         LEFT JOIN learning_units lu ON us.learning_unit_id = lu.id AND lu.subject_id = ? AND lu.classroom_id = ? AND lu.academic_year = ? AND lu.semester = ?
-        WHERE (g.id IS NOT NULL OR us.id IS NOT NULL)
-        AND s.school_id = ?
+        WHERE s.school_id = ?
+        AND (
+            (s.classroom_id = ? AND s.academic_year = ? AND (s.status = 'studying' OR s.status IS NULL OR s.status = ''))
+            OR (g.id IS NOT NULL)
+            OR (us.id IS NOT NULL)
+        )
     ";
+    
     $params = [
         $assignment['subject_id'], $assignment['classroom_id'], $assignment['academic_year'], $assignment['semester'],
         $assignment['subject_id'], $assignment['classroom_id'], $assignment['academic_year'], $assignment['semester'],
-        $school_id
+        $school_id,
+        $assignment['classroom_id'], $assignment['academic_year']
     ];
 
     $stmt = $pdo->prepare($students_sql);
     $stmt->execute($params);
     $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // หากยังไม่มีคนได้คะแนนเลย และเป็นปีปัจจุบัน ให้ใช้รายชื่อนักเรียนปัจจุบันในห้อง
-    if (count($students) === 0 && $is_current_assignment_year) {
-        $stmt = $pdo->prepare("
-            SELECT id, prefix, name, last_name, student_code
-            FROM students
-            WHERE classroom_id = ? AND school_id = ?
-            ORDER BY student_code ASC, name ASC
-        ");
-        $stmt->execute([$assignment['classroom_id'], $school_id]);
-        $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    } else {
-        // เรียงลำดับนักเรียน
-        usort($students, function($a, $b) {
-            return strnatcmp($a['student_code'], $b['student_code']);
-        });
-    }
+    // เรียงลำดับนักเรียนตามรหัสประจำตัว
+    usort($students, function($a, $b) {
+        return strnatcmp($a['student_code'] ?? '', $b['student_code'] ?? '');
+    });
 
     // 4. Get all unit scores for these students
     // We can fetch them all at once
