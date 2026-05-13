@@ -223,8 +223,13 @@ $female_students = $total_students - $male_students;
                 </td>
                 <td style="width: 33%; text-align: center;">
                     <p>ลงชื่อ..........................................................</p>
+                    <?php if ($deputy_director_name): ?>
+                    <p>( <?= $deputy_director_name ?> )</p>
+                    <p>ตำแหน่ง <?= $deputy_director_position ?></p>
+                    <?php else: ?>
                     <p>( <?= $academic_head_name ?: '..........................................................' ?> )</p>
                     <p>ตำแหน่ง <?= $academic_head_position ?></p>
+                    <?php endif; ?>
                 </td>
                 <td style="width: 33%; text-align: center;">
                     <p>ลงชื่อ..........................................................</p>

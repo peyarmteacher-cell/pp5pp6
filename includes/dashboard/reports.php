@@ -154,6 +154,9 @@
 
     async function loadReportOptions() {
         console.log('Loading report options...');
+        const userRole = '<?= $_SESSION['role'] ?>';
+        const isAcademic = <?= $_SESSION['is_academic'] ? 'true' : 'false' ?>;
+
         try {
             // Load Academic Years
             const yearRes = await fetch('api/academic/get_academic_years.php');
@@ -179,14 +182,25 @@
             const currentYear = years.find(y => y.is_current)?.year || '2567';
 
             // Load Classrooms (for P5 Class and P6)
-            const classRes = await fetch('api/academic/get_classrooms.php');
+            // สำหรับครูทั่วไป ให้แสดงเฉพาะห้องที่รับผิดชอบ (ครูประจำชั้น)
+            // สำหรับ Admin หรือ งานวิชาการ ให้แสดงทั้งหมด
+            let classApi = 'api/academic/get_classrooms.php';
+            if (userRole === 'teacher' && !isAcademic) {
+                classApi = 'api/teacher/get_my_classrooms.php';
+            }
+
+            const classRes = await fetch(classApi);
             const classrooms = await classRes.json();
             
             if (Array.isArray(classrooms)) {
                 const classP5 = document.getElementById('report_p5_classroom');
                 const classP6 = document.getElementById('report_p6_classroom');
                 
-                const classOptions = classrooms.map(c => `<option value="${c.id}">${c.level}/${c.room}</option>`).join('');
+                let classOptions = classrooms.map(c => `<option value="${c.id}">${c.level}/${c.room}</option>`).join('');
+                if (classrooms.length === 0) {
+                    classOptions = '<option value="">ไม่มีข้อมูลห้องเรียนที่รับผิดชอบ</option>';
+                }
+
                 if (classP5) classP5.innerHTML = classOptions;
                 if (classP6) classP6.innerHTML = classOptions;
             } else {
