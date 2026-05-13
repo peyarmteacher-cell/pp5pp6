@@ -291,8 +291,9 @@ try {
             <?php 
             $is_director = (isset($_SESSION['position']) && (strpos($_SESSION['position'], 'ผู้อำนวยการ') !== false || strpos($_SESSION['position'], 'ผู้บริหาร') !== false));
             $is_academic = (isset($_SESSION['is_academic']) && $_SESSION['is_academic'] || $_SESSION['role'] === 'admin');
+            $is_restricted_director = $is_director && $role !== 'admin';
 
-            if (!$is_director && ($role !== 'teacher' || $_SESSION['is_academic'])): ?>
+            if (!$is_restricted_director && ($role !== 'teacher' || $_SESSION['is_academic'])): ?>
                 <a href="javascript:void(0)" onclick="showSection('overview')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">
                     <i data-lucide="layout-dashboard" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
                     <span class="text-sm font-medium">ภาพรวม</span>
@@ -349,7 +350,7 @@ try {
                     <span class="text-sm font-medium">รายงานเอกสาร (ปพ.)</span>
                 </a>
 
-                <?php if ($role === 'admin' && !$is_director): ?>
+                <?php if ($role === 'admin' && !$is_restricted_director): ?>
                 <a href="javascript:void(0)" onclick="showSection('manage-teachers')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">
                     <i data-lucide="users" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
                     <span class="text-sm font-medium">จัดการข้อมูลครู</span>
@@ -365,7 +366,7 @@ try {
                 <?php endif; ?>
             <?php endif; ?>
 
-            <?php if (($role === 'admin' || $is_academic) && !$is_director): ?>
+            <?php if (($role === 'admin' || $is_academic) && !$is_restricted_director): ?>
                 <div class="pt-4 pb-2 px-4 text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">งานวิชาการ</div>
                 <a href="javascript:void(0)" onclick="showSection('manage-students')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">
                     <i data-lucide="graduation-cap" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
@@ -1545,7 +1546,7 @@ try {
         }
 
         // Show default section
-        <?php if ($is_director): ?>
+        <?php if ($is_restricted_director): ?>
             showSection('grading-progress');
         <?php elseif ($role === 'teacher' && !$_SESSION['is_academic']): ?>
             showSection('record-grades');
