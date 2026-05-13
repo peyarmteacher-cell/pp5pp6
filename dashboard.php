@@ -334,7 +334,7 @@ try {
                     <span class="text-sm font-medium">ความคืบหน้าการทำงาน</span>
                 </a>
 
-                <?php if ($is_director): ?>
+                <?php if ($role === 'admin' || $is_director): ?>
                 <a href="javascript:void(0)" onclick="showSection('teacher-usage-stats')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">
                     <i data-lucide="user-check" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
                     <span class="text-sm font-medium">สถิติการใช้งานครู</span>
@@ -1358,11 +1358,18 @@ try {
                 if (data.error) throw new Error(data.error);
 
                 // Update Stats
-                document.getElementById('ov_student_count').innerText = data.stats.student_count.toLocaleString();
-                document.getElementById('ov_male_total').innerText = data.stats.total_male.toLocaleString();
-                document.getElementById('ov_female_total').innerText = data.stats.total_female.toLocaleString();
-                document.getElementById('ov_teacher_count').innerText = data.stats.teacher_count.toLocaleString();
-                document.getElementById('ov_current_year').innerText = `ปีการศึกษา ${data.stats.academic_year}`;
+                const ovStudentCount = document.getElementById('ov_student_count');
+                const ovMaleTotal = document.getElementById('ov_male_total');
+                const ovFemaleTotal = document.getElementById('ov_female_total');
+                const ovTeacherCount = document.getElementById('ov_teacher_count');
+                const ovCurrentYear = document.getElementById('ov_current_year');
+
+                if (ovStudentCount) ovStudentCount.innerText = data.stats.student_count.toLocaleString();
+                if (ovMaleTotal) ovMaleTotal.innerText = data.stats.total_male.toLocaleString();
+                if (ovFemaleTotal) ovFemaleTotal.innerText = data.stats.total_female.toLocaleString();
+                if (ovTeacherCount) ovTeacherCount.innerText = data.stats.teacher_count.toLocaleString();
+                if (ovCurrentYear) ovCurrentYear.innerText = `ปีการศึกษา ${data.stats.academic_year}`;
+                
                 hasHighSchoolGlobal = data.stats.has_high_school;
 
                 // Student Breakdown Table
@@ -1404,14 +1411,15 @@ try {
 
         function renderNationalTestChart(data) {
             const container = d3.select("#national_test_chart");
+            if (container.empty()) return;
             container.selectAll("*").remove();
             
             const emptyState = document.getElementById('chart_empty_state');
             if (!data || data.length === 0) {
-                emptyState.classList.remove('hidden');
+                if (emptyState) emptyState.classList.remove('hidden');
                 return;
             }
-            emptyState.classList.add('hidden');
+            if (emptyState) emptyState.classList.add('hidden');
 
             const margin = {top: 20, right: 30, bottom: 40, left: 40};
             const width = container.node().getBoundingClientRect().width - margin.left - margin.right;
