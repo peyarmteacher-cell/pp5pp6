@@ -17,11 +17,26 @@ $school_name = $_SESSION['school_name'] ?? $affiliation;
 // ดึงการตั้งค่าแอป
 $app_name = 'ระบบบริหารงานวิชาการ';
 $app_logo = '';
+$current_academic_year = '2567';
+$current_semester = 1;
+
 try {
     $stmt_app = $pdo->query("SELECT setting_key, setting_value FROM app_settings");
     $settings = $stmt_app->fetchAll(PDO::FETCH_KEY_PAIR);
     if (isset($settings['app_name'])) $app_name = $settings['app_name'];
     if (isset($settings['app_logo'])) $app_logo = $settings['app_logo'];
+    
+    // ดึงปีการศึกษาล่าสุดที่มีเครื่องหมาย is_current = 1 หรือล่าสุดจากตาราง
+    $stmt_year = $pdo->query("SELECT year FROM academic_years WHERE is_current = 1 LIMIT 1");
+    $year_row = $stmt_year->fetch();
+    if ($year_row) {
+        $current_academic_year = $year_row['year'];
+    } else {
+        // ถ้าไม่มี is_current ให้ดึงปีล่าสุด
+        $stmt_latest = $pdo->query("SELECT year FROM academic_years ORDER BY year DESC LIMIT 1");
+        $latest_row = $stmt_latest->fetch();
+        if ($latest_row) $current_academic_year = $latest_row['year'];
+    }
 } catch (Exception $e) {}
 ?>
 <!DOCTYPE html>
@@ -101,8 +116,8 @@ try {
         var selectedStudentLevel = null;
         var selectedStudentRoom = null;
         var selectedSubjectLevel = null;
-        var currentAcademicYear = '2567';
-        var currentSemester = 1;
+        var currentAcademicYear = '<?= $current_academic_year ?>';
+        var currentSemester = <?= $current_semester ?>;
 
         console.log('Dashboard loaded. Session Info:', {
             user_id: '<?= $_SESSION['user_id'] ?? '' ?>',
