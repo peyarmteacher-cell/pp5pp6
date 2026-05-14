@@ -131,38 +131,6 @@ try {
             is_academic: '<?= $_SESSION['is_academic'] ?? '' ?>'
         });
 
-        // PWA Service Worker & Install Logic
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                    .then(reg => console.log('Service Worker registered'))
-                    .catch(err => console.log('Service Worker failed', err));
-            });
-        }
-
-        let deferredPrompt;
-        const pwaInstallContainer = document.getElementById('pwa-install-container');
-        const pwaInstallBtn = document.getElementById('pwa-install-btn');
-
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            if (pwaInstallContainer) pwaInstallContainer.classList.remove('hidden');
-        });
-
-        if (pwaInstallBtn) {
-            pwaInstallBtn.addEventListener('click', async () => {
-                if (deferredPrompt) {
-                    deferredPrompt.prompt();
-                    const { outcome } = await deferredPrompt.userChoice;
-                    if (outcome === 'accepted') {
-                        if (pwaInstallContainer) pwaInstallContainer.classList.add('hidden');
-                    }
-                    deferredPrompt = null;
-                }
-            });
-        }
-
         function showSection(sectionId) {
             console.log('Showing section:', sectionId);
             try {
@@ -1609,6 +1577,38 @@ try {
         if (typeof initHealthSection === 'function') initHealthSection();
         if (typeof initCompetencySection === 'function') initCompetencySection();
         if (typeof initLDSection === 'function') initLDSection();
+
+        // PWA Service Worker & Install Logic
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('Service Worker registered'))
+                    .catch(err => console.log('Service Worker failed', err));
+            });
+        }
+
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            const container = document.getElementById('pwa-install-container');
+            if (container) container.classList.remove('hidden');
+        });
+
+        const pwaBtn = document.getElementById('pwa-install-btn');
+        if (pwaBtn) {
+            pwaBtn.addEventListener('click', async () => {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    const { outcome } = await deferredPrompt.userChoice;
+                    if (outcome === 'accepted') {
+                        const container = document.getElementById('pwa-install-container');
+                        if (container) container.classList.add('hidden');
+                    }
+                    deferredPrompt = null;
+                }
+            });
+        }
 
         // Initialize Lucide Icons
         lucide.createIcons();
