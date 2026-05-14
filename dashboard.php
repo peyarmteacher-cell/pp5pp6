@@ -45,6 +45,8 @@ try {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - <?= $app_name ?></title>
+    <link rel="manifest" href="manifest.php">
+    <meta name="theme-color" content="#0f172a">
     <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://d3js.org/d3.v7.min.js"></script>
@@ -128,6 +130,38 @@ try {
             school_name: '<?= $_SESSION['school_name'] ?? '' ?>',
             is_academic: '<?= $_SESSION['is_academic'] ?? '' ?>'
         });
+
+        // PWA Service Worker & Install Logic
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('Service Worker registered'))
+                    .catch(err => console.log('Service Worker failed', err));
+            });
+        }
+
+        let deferredPrompt;
+        const pwaInstallContainer = document.getElementById('pwa-install-container');
+        const pwaInstallBtn = document.getElementById('pwa-install-btn');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            if (pwaInstallContainer) pwaInstallContainer.classList.remove('hidden');
+        });
+
+        if (pwaInstallBtn) {
+            pwaInstallBtn.addEventListener('click', async () => {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    const { outcome } = await deferredPrompt.userChoice;
+                    if (outcome === 'accepted') {
+                        if (pwaInstallContainer) pwaInstallContainer.classList.add('hidden');
+                    }
+                    deferredPrompt = null;
+                }
+            });
+        }
 
         function showSection(sectionId) {
             console.log('Showing section:', sectionId);
@@ -425,6 +459,14 @@ try {
                     <span class="text-sm font-medium">รายงานเอกสาร (ปพ.)</span>
                 </a>
             <?php endif; ?>
+
+            <!-- PWA Install Button (Hidden by default) -->
+            <div id="pwa-install-container" class="hidden px-4 pt-4 mt-2 border-t border-slate-800">
+                <button id="pwa-install-btn" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl bg-blue-600/10 text-blue-400 hover:bg-blue-600/20 transition-all group border border-blue-500/20">
+                    <i data-lucide="download" class="w-4 h-4 text-blue-400 group-hover:scale-110 transition-transform"></i>
+                    <span class="text-[10px] font-bold uppercase tracking-wider">ติดตั้งแอปบนหน้าจอ</span>
+                </button>
+            </div>
         </nav>
 
         <div class="p-4 border-t border-slate-800 bg-slate-900/50">

@@ -494,6 +494,49 @@ try {
 
         function logout() { if (confirm('คุณต้องการออกจากระบบใช่หรือไม่?')) window.location.href = 'parent_logout.php'; }
 
+        // PWA Service Worker & Install Logic
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('Service Worker registered'))
+                    .catch(err => console.log('Service Worker failed', err));
+            });
+        }
+
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            // For parents, we might not want to show a button in the main UI to keep it clean, 
+            // but we could show a snackbar or just rely on the login page.
+            // Let's add a small install banner if prompt exists.
+            const banner = document.createElement('div');
+            banner.className = 'fixed bottom-4 left-4 right-4 bg-white p-4 rounded-2xl shadow-2xl border border-rose-100 flex items-center justify-between z-[60] animate-bounce';
+            banner.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-rose-100 text-rose-600 rounded-xl flex items-center justify-center">
+                        <i data-lucide="download" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs font-bold text-slate-800">ติดตั้งแอปหน้าจอหลัก</p>
+                        <p class="text-[10px] text-slate-400">เพื่อการใช้งานที่สะดวกยิ่งขึ้น</p>
+                    </div>
+                </div>
+                <button id="pwa-install-parent" class="bg-rose-500 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-lg shadow-rose-200">ติดตั้ง</button>
+            `;
+            document.body.appendChild(banner);
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+
+            document.getElementById('pwa-install-parent').addEventListener('click', async () => {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    const { outcome } = await deferredPrompt.userChoice;
+                    if (outcome === 'accepted') banner.remove();
+                    deferredPrompt = null;
+                }
+            });
+        });
+
         loadData();
 
         function calculateDetailedAge(birthDateString) {

@@ -43,8 +43,8 @@ if (isset($_SESSION['school_id'])) {
 $manifest = [
     "name" => $app_name,
     "short_name" => $app_name,
-    "description" => "ดูผลการเรียน การเข้าเรียน และพฤติกรรมนักเรียนของ " . $app_name,
-    "start_url" => "/parent_login.php",
+    "description" => "ระบบบริหารงานวิชาการและติดตามนักเรียน " . $app_name,
+    "start_url" => "/index.php",
     "display" => "standalone",
     "background_color" => "#ffffff",
     "theme_color" => "#2563eb",

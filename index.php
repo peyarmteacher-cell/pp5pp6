@@ -15,6 +15,8 @@ try {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= $app_name ?> - Login / Register</title>
+    <link rel="manifest" href="manifest.php">
+    <meta name="theme-color" content="#2563eb">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>body { font-family: 'Sarabun', sans-serif; }</style>
@@ -57,6 +59,13 @@ try {
                 </div>
                 <div class="text-center pt-4">
                     <button type="button" onclick="toggleForm('check_school')" class="text-blue-600 font-medium hover:underline">สมัครขอใช้งานระบบ</button>
+                </div>
+                <!-- PWA Install Button -->
+                <div id="pwaInstallContainer" class="hidden pt-4 border-t border-slate-100 mt-4">
+                    <button type="button" id="pwaInstallBtn" class="w-full flex items-center justify-center gap-2 py-2 px-4 bg-blue-50 text-blue-600 rounded-xl font-bold text-xs hover:bg-blue-100 transition-all border border-blue-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        ติดตั้งแอปบนหน้าจอหลัก
+                    </button>
                 </div>
             </form>
         </div>
@@ -256,6 +265,38 @@ try {
                 error.classList.remove('hidden');
             } finally {
                 btn.disabled = false;
+            }
+        });
+    </script>
+
+    <!-- PWA Service Worker & Install Logic -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => console.log('Service Worker registered'))
+                    .catch(err => console.log('Service Worker failed', err));
+            });
+        }
+
+        let deferredPrompt;
+        const pwaInstallContainer = document.getElementById('pwaInstallContainer');
+        const pwaInstallBtn = document.getElementById('pwaInstallBtn');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            pwaInstallContainer.classList.remove('hidden');
+        });
+
+        pwaInstallBtn.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    pwaInstallContainer.classList.add('hidden');
+                }
+                deferredPrompt = null;
             }
         });
     </script>
