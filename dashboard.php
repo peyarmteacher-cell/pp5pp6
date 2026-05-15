@@ -27,13 +27,15 @@ try {
     if (isset($settings['app_logo'])) $app_logo = $settings['app_logo'];
     
     // ดึงปีการศึกษาล่าสุดที่มีเครื่องหมาย is_current = 1 หรือล่าสุดจากตาราง
-    $stmt_year = $pdo->query("SELECT year FROM academic_years WHERE is_current = 1 LIMIT 1");
+    $stmt_year = $pdo->prepare("SELECT year FROM academic_years WHERE school_id = ? AND is_current = 1 LIMIT 1");
+    $stmt_year->execute([$_SESSION['school_id']]);
     $year_row = $stmt_year->fetch();
     if ($year_row) {
         $current_academic_year = $year_row['year'];
     } else {
         // ถ้าไม่มี is_current ให้ดึงปีล่าสุด
-        $stmt_latest = $pdo->query("SELECT year FROM academic_years ORDER BY year DESC LIMIT 1");
+        $stmt_latest = $pdo->prepare("SELECT year FROM academic_years WHERE school_id = ? ORDER BY year DESC LIMIT 1");
+        $stmt_latest->execute([$_SESSION['school_id']]);
         $latest_row = $stmt_latest->fetch();
         if ($latest_row) $current_academic_year = $latest_row['year'];
     }
