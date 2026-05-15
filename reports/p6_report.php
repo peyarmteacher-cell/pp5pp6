@@ -187,7 +187,7 @@ foreach ($students_to_print as $student):
         SELECT s.code, s.name, s.hours, s.credits, g.score_total, g.grade, g.score_percent
         FROM teacher_assignments ta
         JOIN subjects s ON ta.subject_id = s.id
-        LEFT JOIN grades g ON s.id = g.subject_id AND g.student_id = ? AND g.academic_year = ? AND g.semester = ?
+        JOIN grades g ON s.id = g.subject_id AND g.student_id = ? AND g.academic_year = ? AND g.semester = ?
         WHERE ta.classroom_id = ? AND ta.academic_year = ?
         GROUP BY s.id
         ORDER BY s.code ASC
