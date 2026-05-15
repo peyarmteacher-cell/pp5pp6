@@ -77,7 +77,14 @@ if ($type === 'subject' && !isset($teacher_pos)) {
 }
 
 // ดึงรายชื่อนักเรียน
-$stmt = $pdo->prepare('SELECT * FROM students WHERE classroom_id = ? AND academic_year = ? AND status = "studying" ORDER BY student_code ASC');
+$student_fields = "s.*, 
+    IFNULL(sp.prefix, s.prefix) AS prefix, 
+    IFNULL(sp.name, s.name) AS name, 
+    IFNULL(sp.last_name, s.last_name) AS last_name,
+    IFNULL(sp.gender, s.gender) AS gender,
+    IFNULL(sp.birthday, s.birthday) AS birthday";
+
+$stmt = $pdo->prepare("SELECT $student_fields FROM students s LEFT JOIN student_profiles sp ON s.student_profile_id = sp.id WHERE s.classroom_id = ? AND s.academic_year = ? AND s.status = 'studying' ORDER BY s.student_code ASC");
 $stmt->execute([$classroom_id, $year]);
 $students = $stmt->fetchAll();
 

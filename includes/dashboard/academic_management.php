@@ -25,7 +25,7 @@
         </div>
 
         <!-- Promotion Banner -->
-        <div id="promotionBanner" class="hidden mb-8 p-6 bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-100 rounded-3xl space-y-4">
+        <div id="promotionBanner" class="hidden mb-4 p-6 bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-100 rounded-3xl space-y-4">
              <div class="flex items-start gap-4">
                 <div class="w-10 h-10 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center shrink-0">
                     <i data-lucide="arrow-up-right" class="w-5 h-5"></i>
@@ -41,6 +41,27 @@
                  </select>
                  <button onclick="promoteStudents()" class="flex-1 bg-amber-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-amber-700 transition-all cursor-pointer shadow-lg shadow-amber-600/20">
                     ดำเนินการเลื่อนชั้นนักเรียน
+                 </button>
+             </div>
+        </div>
+
+        <!-- Academic Plan Copy Banner -->
+        <div id="academicPlanBanner" class="hidden mb-8 p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-3xl space-y-4">
+             <div class="flex items-start gap-4">
+                <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center shrink-0">
+                    <i data-lucide="copy" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h4 class="font-bold text-slate-800 text-sm">คัดลอกแผนการสอน (งานวิชาการ)</h4>
+                    <p class="text-xs text-slate-500 mt-0.5">คัดลอกการมอบหมายวิชาที่สอนจากปีการศึกษาก่อนหน้ามายังปีการศึกษาปัจจุบัน (ไม่ต้องตั้งค่ารายวิชาใหม่)</p>
+                </div>
+             </div>
+             <div class="flex items-center gap-3">
+                 <select id="copy_plan_from_year" class="px-4 py-2 bg-white border border-blue-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer">
+                     <!-- Populated by JS -->
+                 </select>
+                 <button onclick="copyAcademicPlan()" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-blue-700 transition-all cursor-pointer shadow-lg shadow-blue-600/20">
+                    คัดลอกแผนการสอนเดิม
                  </button>
              </div>
         </div>
@@ -180,6 +201,7 @@
             // Check if current year has students to determine if we should show promotion banner
             const currentYear = years.find(y => y.is_current == 1);
             if (currentYear) {
+                // Students check
                 const sRes = await fetch(`api/academic/get_students.php?academic_year=${currentYear.year}&status=studying`);
                 const students = await sRes.json();
                 const banner = document.getElementById('promotionBanner');
@@ -189,6 +211,21 @@
                     promoteFrom.innerHTML = otherYears.map(y => `<option value="${y.year}">จากปีการศึกษา ${y.year}</option>`).join('');
                 } else {
                     banner.classList.add('hidden');
+                }
+
+                // Academic Plan check
+                // Check if current year has assignments
+                const aRes = await fetch(`api/teacher/get_my_assignments.php?academic_year=${currentYear.year}`);
+                const assignments = await aRes.json();
+                const planBanner = document.getElementById('academicPlanBanner');
+                
+                // If current year has no assignments but previous years exist, show copy plan banner
+                if (assignments.length === 0 && otherYears.length > 0) {
+                    planBanner.classList.remove('hidden');
+                    const copyFrom = document.getElementById('copy_plan_from_year');
+                    copyFrom.innerHTML = otherYears.map(y => `<option value="${y.year}">ข้อมูลปีการศึกษา ${y.year}</option>`).join('');
+                } else {
+                    planBanner.classList.add('hidden');
                 }
             }
             
@@ -402,6 +439,33 @@
             }
         } catch (e) {
             console.error('Error promoting students:', e);
+        }
+    }
+
+    async function copyAcademicPlan() {
+        const fromYearSelect = document.getElementById('copy_plan_from_year');
+        const fromYear = fromYearSelect.value;
+        const toYearDisplay = document.getElementById('currentYearValue').innerText.replace('ปีการศึกษา ', '');
+        
+        if (!fromYear) return;
+        
+        if (!confirm(`ยืนยันการคัดลอกแผนการจัดตารางสอนจากปี ${fromYear} มายังปี ${toYearDisplay}?\n* การดำเนินการนี้จะคัดลอกการมอบหมายงานสอนของครูทุกคนในโรงเรียน`)) return;
+        
+        try {
+            const res = await fetch('api/academic/copy_academic_plan.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ from_year: fromYear, to_year: toYearDisplay })
+            });
+            const result = await res.json();
+            if (result.message) {
+                alert(result.message);
+                loadAcademicYears();
+            } else {
+                alert(result.error);
+            }
+        } catch (e) {
+            console.error('Error copying academic plan:', e);
         }
     }
 

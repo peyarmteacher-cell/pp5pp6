@@ -12,8 +12,35 @@ $student = null;
 $school = null;
 
 if ($student_id) {
-    // Fetch student data
-    $stmt = $pdo->prepare('SELECT * FROM students WHERE id = ?');
+    // Fetch student data with profiles join
+    $student_fields = "s.*, 
+        IFNULL(sp.prefix, s.prefix) AS prefix, 
+        IFNULL(sp.name, s.name) AS name, 
+        IFNULL(sp.last_name, s.last_name) AS last_name,
+        IFNULL(sp.gender, s.gender) AS gender,
+        IFNULL(sp.birthday, s.birthday) AS birthday,
+        IFNULL(sp.religion, s.religion) AS religion,
+        IFNULL(sp.race, s.race) AS race,
+        IFNULL(sp.nationality, s.nationality) AS nationality,
+        IFNULL(sp.house_no, s.house_no) AS house_no,
+        IFNULL(sp.moo, s.moo) AS moo,
+        IFNULL(sp.road_soi, s.road_soi) AS road_soi,
+        IFNULL(sp.sub_district, s.sub_district) AS sub_district,
+        IFNULL(sp.district, s.district) AS district,
+        IFNULL(sp.province_name, s.province_name) AS province_name,
+        IFNULL(sp.parent_name, s.parent_name) AS parent_name,
+        IFNULL(sp.parent_last_name, s.parent_last_name) AS parent_last_name,
+        IFNULL(sp.parent_occupation, s.parent_occupation) AS parent_occupation,
+        IFNULL(sp.parent_relationship, s.parent_relationship) AS parent_relationship,
+        IFNULL(sp.father_name, s.father_name) AS father_name,
+        IFNULL(sp.father_last_name, s.father_last_name) AS father_last_name,
+        IFNULL(sp.father_occupation, s.father_occupation) AS father_occupation,
+        IFNULL(sp.mother_name, s.mother_name) AS mother_name,
+        IFNULL(sp.mother_last_name, s.mother_last_name) AS mother_last_name,
+        IFNULL(sp.mother_occupation, s.mother_occupation) AS mother_occupation,
+        IFNULL(sp.disadvantage, s.disadvantage) AS disadvantage";
+
+    $stmt = $pdo->prepare("SELECT $student_fields FROM students s LEFT JOIN student_profiles sp ON s.student_profile_id = sp.id WHERE s.id = ?");
     $stmt->execute([$student_id]);
     $student = $stmt->fetch();
 
