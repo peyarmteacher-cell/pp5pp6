@@ -135,12 +135,46 @@
         const tbody = document.getElementById('timetable-body');
         if (!tbody) return;
 
+        const getSubjectColor = (slot) => {
+            if (!slot) return 'bg-white border-slate-200';
+            if (slot.activity_type) {
+                const actKey = slot.activity_type.toLowerCase();
+                const actColors = {
+                    'lunch': 'bg-orange-50 text-orange-700 border-orange-100',
+                    'scouts': 'bg-emerald-50 text-emerald-700 border-emerald-100',
+                    'scout': 'bg-emerald-50 text-emerald-700 border-emerald-100',
+                    'club': 'bg-purple-50 text-purple-700 border-purple-100',
+                    'homeroom': 'bg-indigo-50 text-indigo-700 border-indigo-100',
+                    'guidance': 'bg-sky-50 text-sky-700 border-sky-100'
+                };
+                return actColors[actKey] || 'bg-slate-50 text-slate-700 border-slate-100';
+            }
+            
+            const palette = [
+                'bg-blue-50 text-blue-700 border-blue-100',
+                'bg-indigo-50 text-indigo-700 border-indigo-100',
+                'bg-cyan-50 text-cyan-700 border-cyan-100',
+                'bg-teal-50 text-teal-700 border-teal-100',
+                'bg-emerald-50 text-emerald-700 border-emerald-100',
+                'bg-violet-50 text-violet-700 border-violet-100',
+                'bg-fuchsia-50 text-fuchsia-700 border-fuchsia-100',
+                'bg-pink-50 text-pink-700 border-pink-100',
+                'bg-rose-50 text-rose-700 border-rose-100',
+                'bg-amber-50 text-amber-700 border-amber-100',
+                'bg-orange-50 text-orange-700 border-orange-100'
+            ];
+            
+            const id = slot.subject_id || 0;
+            const index = isNaN(parseInt(id)) ? 0 : parseInt(id) % palette.length;
+            return palette[index];
+        };
+
         tbody.innerHTML = days.map(day => `
             <tr>
                 <td class="p-3 border border-slate-200 font-bold text-xs text-center ${day.class}">${day.name}</td>
                 ${[1, 2, 3, 4, 5, 6, 7, 8].map(period => {
                     const slot = currentTimetable.find(t => t.day_of_week == day.id && t.period_number == period);
-                    const isLunch = slot && slot.activity_type === 'lunch';
+                    const colorClass = getSubjectColor(slot);
                     
                     let displayCode = slot ? (slot.subject_code || '') : '';
                     let displayName = slot ? (slot.subject_name || '') : '';
@@ -167,21 +201,16 @@
                     const isSingleLine = isActivity && singleLineActs.includes(slot.activity_type.toLowerCase());
                     
                     return `
-                        <td class="p-2 border border-slate-200 text-center relative group min-h-[85px] ${isLunch ? 'bg-orange-50' : ''}">
-                            <div onclick="openAssignModal(${day.id}, ${period}, '${day.name}')" class="cursor-pointer hover:bg-slate-50 transition-all h-full w-full min-h-[65px] flex flex-col justify-center gap-0.5">
+                        <td class="p-2 border transition-all text-center relative group min-h-[85px] ${colorClass}">
+                            <div onclick="openAssignModal(${day.id}, ${period}, '${day.name}')" class="cursor-pointer hover:opacity-80 transition-all h-full w-full min-h-[65px] flex flex-col justify-center gap-0.5">
                                 ${slot ? (isSingleLine ? `
-                                    <div class="text-[11px] font-bold text-blue-700 leading-none">${displayCode}</div>
+                                    <div class="text-[11px] font-bold leading-none">${displayCode}</div>
                                 ` : `
-                                    <div class="text-[10px] font-bold ${isLunch ? 'text-orange-700' : 'text-blue-700'} leading-none">${displayCode || 'กิจกรรม'}</div>
-                                    <div class="text-[9px] text-slate-600 truncate leading-none min-h-[12px]">${displayName || ''}</div>
-                                    <div class="text-[9px] font-bold text-slate-400 leading-none min-h-[12px]">${(!isActivity && slot.level) ? `${slot.level}/${slot.room}` : '&nbsp;'}</div>
+                                    <div class="text-[10px] font-bold leading-none">${displayCode || 'กิจกรรม'}</div>
+                                    <div class="text-[9px] opacity-80 truncate leading-none min-h-[12px]">${displayName || ''}</div>
+                                    <div class="text-[9px] font-bold opacity-60 leading-none min-h-[12px]">${(!isActivity && slot.level) ? `${slot.level}/${slot.room}` : '&nbsp;'}</div>
                                 `) : '<span class="text-[10px] text-slate-300 italic">ว่าง</span>'}
                             </div>
-                            ${slot ? `
-                                <button onclick="event.stopPropagation(); deleteTimetableSlot(${slot.id})" class="absolute -top-1 -right-1 p-1 bg-red-500 text-white rounded-full transition-all hover:bg-red-600 shadow-md cursor-pointer z-50 scale-75 border-2 border-white">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"></path></svg>
-                                </button>
-                            ` : ''}
                         </td>
                     `;
                 }).join('')}
