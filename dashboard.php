@@ -174,6 +174,9 @@ try {
                 } else if (sectionId === 'academic-management') {
                     targetId = sectionId;
                     if (typeof loadAcademicYears === 'function') loadAcademicYears();
+                } else if (sectionId === 'timetable-overview') {
+                    targetId = sectionId;
+                    if (typeof initTimetableOverview === 'function') initTimetableOverview();
                 } else if (sectionId === 'academic-documents') {
                     targetId = sectionId;
                     if (typeof initAcademicDocuments === 'function') initAcademicDocuments();
@@ -222,6 +225,7 @@ try {
                     'academic-achievement': 'ผลสัมฤทธิ์ทางการเรียน',
                     'profile': 'แก้ไขโปรไฟล์',
                     'academic-management': 'จัดการปีการศึกษา/จบการศึกษา',
+                    'timetable-overview': 'สำรวจตารางสอนภาพรวม',
                     'national-test': 'บันทึกผลการทดสอบระดับชาติ'
                 };
                 const titleEl = document.getElementById('section-title');
@@ -352,6 +356,10 @@ try {
                 <a href="javascript:void(0)" onclick="showSection('reports')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group text-green-400/90 hover:text-green-400">
                     <i data-lucide="file-text" class="w-4 h-4 transition-colors"></i>
                     <span class="text-sm font-medium">รายงานเอกสาร (ปพ.)</span>
+                </a>
+                <a href="javascript:void(0)" onclick="showSection('timetable-overview')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group text-blue-400/90 hover:text-blue-400">
+                    <i data-lucide="eye" class="w-4 h-4 transition-colors"></i>
+                    <span class="text-sm font-medium">ตารางสอนภาพรวม</span>
                 </a>
 
                 <?php if ($role === 'admin' && !$is_restricted_director): ?>
@@ -926,6 +934,7 @@ try {
 
         <!-- Academic Management -->
         <?php include 'includes/dashboard/academic_management.php'; ?>
+        <?php include 'includes/dashboard/timetable_overview.php'; ?>
         <?php include 'includes/dashboard/academic_documents.php'; ?>
         <?php include 'includes/dashboard/grading_progress.php'; ?>
         <?php include 'includes/dashboard/teacher_usage_stats.php'; ?>

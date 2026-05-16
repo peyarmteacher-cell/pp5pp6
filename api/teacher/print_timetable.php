@@ -6,42 +6,77 @@ if (!isset($_SESSION['user_id'])) {
     die("Unauthorized");
 }
 
-$teacher_id = $_SESSION['user_id'];
+$current_user_id = $_SESSION['user_id'];
+$is_admin = ($_SESSION['role'] === 'admin' || ($_SESSION['is_academic'] ?? false));
+
+$target_id = $_GET['target_id'] ?? $current_user_id;
+$target_type = $_GET['target_type'] ?? 'teacher'; // 'teacher' or 'classroom'
+
+// Security check: If not admin, can only print own timetable
+if (!$is_admin && $target_id != $current_user_id) {
+    die("Unauthorized access to other's timetable");
+}
+
 $academic_year = $_GET['academic_year'] ?? '2567';
 $semester = $_GET['semester'] ?? 1;
 
 try {
-    // Get Teacher Info
-    $stmt = $pdo->prepare("SELECT name, last_name, position, school_id FROM users WHERE id = ?");
-    $stmt->execute([$teacher_id]);
-    $teacher = $stmt->fetch();
-    $teacher_full_name = ($teacher['name'] ?? '') . ' ' . ($teacher['last_name'] ?? '');
+    $teacher_full_name = "";
+    $teacher_position = "";
+    $classroom_name = "";
+    $display_title = "";
+    $school_id = $_SESSION['school_id'];
+    
+    if ($target_type === 'teacher') {
+        // Get Teacher Info
+        $stmt = $pdo->prepare("SELECT prefix, name, last_name, position, school_id FROM users WHERE id = ?");
+        $stmt->execute([$target_id]);
+        $teacher = $stmt->fetch();
+        $teacher_full_name = ($teacher['prefix'] ?? '') . ($teacher['name'] ?? '') . ' ' . ($teacher['last_name'] ?? '');
+        $teacher_position = $teacher['position'] ?: 'ครู';
+        $display_title = "คุณครู" . $teacher_full_name;
+        $school_id = $teacher['school_id'];
+        
+        $where = "t.teacher_id = ?";
+        $params = [$target_id, $academic_year, $semester];
+    } else {
+        // Get Classroom Info
+        $stmt = $pdo->prepare("SELECT level, room, school_id FROM classrooms WHERE id = ?");
+        $stmt->execute([$target_id]);
+        $classroom = $stmt->fetch();
+        $classroom_name = $classroom['level'] . '/' . $classroom['room'];
+        $display_title = "ห้องเรียนชั้นประถมศึกษาปีที่ " . $classroom_name;
+        $school_id = $classroom['school_id'];
+        
+        $where = "t.classroom_id = ?";
+        $params = [$target_id, $academic_year, $semester];
+    }
 
     // Get School Info
     $stmt = $pdo->prepare("SELECT * FROM schools WHERE id = ?");
-    $stmt->execute([$teacher['school_id']]);
+    $stmt->execute([$school_id]);
     $school = $stmt->fetch();
     
-    // Fix Logo URL path (if it's a relative path in DB, it needs ../ because we are in /api/teacher/)
+    // Fix Logo URL
     $logo_url = $school['logo_url'] ?? '';
     if ($logo_url && !preg_match('/^https?:\/\//', $logo_url)) {
-        // Many files store the path relative to root, e.g., "uploads/logos/..."
-        // Since we are in /api/teacher/, we need to go up 2 levels
         $logo_url = '../../' . $logo_url;
     }
 
     // Get Timetable
-    $stmt = $pdo->prepare('
+    $stmt = $pdo->prepare("
         SELECT t.*, 
                s.name as subject_name, s.code as subject_code, 
-               c.level, c.room
+               c.level, c.room,
+               u.prefix as teacher_prefix, u.name as teacher_name, u.last_name as teacher_last_name
         FROM timetables t
         LEFT JOIN subjects s ON t.subject_id = s.id
         LEFT JOIN classrooms c ON t.classroom_id = c.id
-        WHERE t.teacher_id = ? AND t.academic_year = ? AND t.semester = ?
+        LEFT JOIN users u ON t.teacher_id = u.id
+        WHERE $where AND t.academic_year = ? AND t.semester = ?
         ORDER BY t.day_of_week ASC, t.period_number ASC
-    ');
-    $stmt->execute([$teacher_id, $academic_year, $semester]);
+    ");
+    $stmt->execute($params);
     $items = $stmt->fetchAll();
 
     $timetable = [];
@@ -81,7 +116,7 @@ $days = [
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>ตารางสอน - <?= $teacher_full_name ?></title>
+    <title>ตารางสอน - <?= $display_title ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -148,7 +183,7 @@ $days = [
             <div class="w-full text-center px-32">
                 <h1 class="text-xl font-black text-slate-800 tracking-tight">ตารางสอนโรงเรียน<?= $school['name'] ?></h1>
                 <div class="mt-0.5">
-                    <p class="text-base font-bold text-blue-700">คุณครู<?= $teacher_full_name ?> ตำแหน่ง: <?= $teacher['position'] ?: 'ครู' ?></p>
+                    <p class="text-base font-bold text-blue-700"><?= $display_title ?> <?= $target_type === 'teacher' ? 'ตำแหน่ง: ' . $teacher_position : '' ?></p>
                 </div>
                 <div class="flex items-center justify-center gap-3 mt-1 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
                     <span class="bg-slate-100 px-3 py-0.5 rounded-full border border-slate-200">ปีการศึกษา <?= $academic_year ?></span>
@@ -187,9 +222,13 @@ $days = [
                                         <div class="text-[12px] font-bold text-blue-700 leading-tight"><?= $slot['subject_code'] ?></div>
                                     <?php else: ?>
                                         <div class="text-[12px] font-bold <?= $isLunch ? 'text-orange-700' : 'text-blue-700' ?> leading-tight"><?= $slot['subject_code'] ?></div>
-                                        <div class="text-[10px] text-slate-800 my-0.5"><?= $slot['subject_name'] ?></div>
-                                        <?php if(!$isActivity && $slot['level']): ?>
-                                            <div class="text-[10px] font-bold text-slate-500 italic"><?= $slot['level'] ?>/<?= $slot['room'] ?></div>
+                                        <div class="text-[10px] my-0.5"><?= $slot['subject_name'] ?></div>
+                                        <?php if($target_type === 'teacher'): ?>
+                                            <?php if(!$isActivity && $slot['level']): ?>
+                                                <div class="text-[10px] font-bold text-slate-500 italic"><?= $slot['level'] ?>/<?= $slot['room'] ?></div>
+                                            <?php endif; ?>
+                                        <?php else: ?>
+                                            <div class="text-[10px] font-bold text-slate-500 italic"><?= ($slot['teacher_prefix'] ?? '') . ($slot['teacher_name'] ?? '') ?></div>
                                         <?php endif; ?>
                                     <?php endif; ?>
                                 <?php endif; ?>
@@ -203,9 +242,15 @@ $days = [
 
         <div class="mt-12 grid grid-cols-2 gap-10">
             <div class="text-center">
-                <p class="mb-4">ลงชื่อ..........................................................</p>
-                <p class="font-bold text-sm">( <?= $teacher_full_name ?> )</p>
-                <p class="text-xs">ครูผู้สอน</p>
+                <?php if($target_type === 'teacher'): ?>
+                    <p class="mb-4">ลงชื่อ..........................................................</p>
+                    <p class="font-bold text-sm">( <?= $teacher_full_name ?> )</p>
+                    <p class="text-xs">ครูผู้สอน</p>
+                <?php else: ?>
+                    <p class="mb-4">ลงชื่อ..........................................................</p>
+                    <p class="font-bold text-sm">( <?= $school['director_name'] ?: '..........................................................' ?> )</p>
+                    <p class="text-xs">ผู้อำนวยการโรงเรียน</p>
+                <?php endif; ?>
             </div>
             <div class="text-center">
                 <p class="mb-4">ลงชื่อ..........................................................</p>
