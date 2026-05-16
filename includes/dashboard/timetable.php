@@ -161,11 +161,21 @@
                 'bg-pink-50 text-pink-700 border-pink-100',
                 'bg-rose-50 text-rose-700 border-rose-100',
                 'bg-amber-50 text-amber-700 border-amber-100',
-                'bg-orange-50 text-orange-700 border-orange-100'
+                'bg-orange-50 text-orange-700 border-orange-100',
+                'bg-lime-50 text-lime-700 border-lime-100',
+                'bg-sky-50 text-sky-700 border-sky-100',
+                'bg-yellow-50 text-yellow-700 border-yellow-100',
+                'bg-slate-100 text-slate-700 border-slate-200'
             ];
             
-            const id = slot.subject_id || 0;
-            const index = isNaN(parseInt(id)) ? 0 : parseInt(id) % palette.length;
+            // Use hash of subject code for consistent color mapping
+            const code = slot.subject_code || '';
+            let hash = 0;
+            for (let i = 0; i < code.length; i++) {
+                hash = ((hash << 5) - hash) + code.charCodeAt(i);
+                hash |= 0;
+            }
+            const index = Math.abs(hash) % palette.length;
             return palette[index];
         };
 
