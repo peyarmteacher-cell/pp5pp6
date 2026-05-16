@@ -290,8 +290,12 @@
                 <td class="py-3 text-slate-500">${s.hours} ชม. / ${s.credits} นก.</td>
                 <td class="py-3">
                     <div class="flex gap-2">
-                        <button onclick="editSubject(${s.id}, '${s.code}', '${s.name}', '${s.level}', ${s.hours}, ${s.credits}, '${s.learning_area || ''}')" class="text-blue-600 hover:text-blue-800 text-xs font-bold cursor-pointer">แก้ไข</button>
-                        <button onclick="deleteSubject(${s.id})" class="text-red-600 hover:text-red-800 text-xs font-bold cursor-pointer">ลบ</button>
+                        <button onclick="editSubject(${s.id}, '${s.code}', '${s.name}', '${s.level}', ${s.hours}, ${s.credits}, '${s.learning_area || ''}')" class="p-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl transition-all cursor-pointer border border-blue-100 shadow-sm" title="แก้ไข">
+                            <i data-lucide="edit-2" class="w-4 h-4"></i>
+                        </button>
+                        <button onclick="deleteSubject(${s.id})" class="p-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl transition-all cursor-pointer border border-red-100 shadow-sm" title="ลบ">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
                     </div>
                 </td>
             </tr>

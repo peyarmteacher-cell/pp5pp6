@@ -71,11 +71,11 @@
                         </div>
                     </td>
                     <td class="py-3 text-right">
-                        <div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                            <button onclick="openEditTeacherModal(window.lastLoadedTeachers[${index}])" class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-all cursor-pointer" title="แก้ไข">
+                        <div class="flex justify-end gap-2 transition-all">
+                            <button onclick="openEditTeacherModal(window.lastLoadedTeachers[${index}])" class="p-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl transition-all cursor-pointer border border-blue-100 shadow-sm" title="แก้ไข">
                                 <i data-lucide="edit-2" class="w-4 h-4"></i>
                             </button>
-                            <button onclick="deleteTeacher(${t.id})" class="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-all cursor-pointer" title="ลบ">
+                            <button onclick="deleteTeacher(${t.id})" class="p-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl transition-all cursor-pointer border border-red-100 shadow-sm" title="ลบ">
                                 <i data-lucide="trash-2" class="w-4 h-4"></i>
                             </button>
                         </div>

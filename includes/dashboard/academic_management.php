@@ -239,17 +239,17 @@
                 tbody.innerHTML = otherYears.map(y => `
                     <tr class="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
                         <td class="px-6 py-4 font-bold text-slate-700 text-sm">ปีการศึกษา ${y.year}</td>
-                        <td class="px-6 py-4 text-right">
-                            <div class="flex items-center justify-end gap-3">
-                                <button onclick="setCurrentYear(${y.id})" class="text-blue-600 hover:text-blue-800 text-xs font-bold flex items-center gap-1 cursor-pointer bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100 transition-all">
-                                    <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i>
-                                    ตั้งเป็นปีปัจจุบัน
-                                </button>
-                                <button onclick="deleteAcademicYear(${y.id})" class="text-red-500 hover:text-red-700 text-sm p-1.5 hover:bg-red-50 rounded-lg transition-all cursor-pointer" title="ลบ">
-                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                </button>
-                            </div>
-                        </td>
+                    <td class="px-6 py-4 text-right">
+                        <div class="flex items-center justify-end gap-3">
+                            <button onclick="setCurrentYear(${y.id})" class="text-emerald-600 hover:text-emerald-800 text-xs font-bold flex items-center gap-1.5 cursor-pointer bg-emerald-50 px-3 py-2 rounded-xl border border-emerald-100 transition-all shadow-sm">
+                                <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+                                ตั้งเป็นปีปัจจุบัน
+                            </button>
+                            <button onclick="deleteAcademicYear(${y.id})" class="p-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl border border-red-100 transition-all cursor-pointer shadow-sm" title="ลบ">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </td>
                     </tr>
                 `).join('');
             }
@@ -314,7 +314,10 @@
                     <td class="py-4 text-sm text-slate-600">${c.teacher_name_1 ? c.teacher_name_1 : '<span class="text-slate-300 italic">ยังไม่ได้กำหนด</span>'}</td>
                     <td class="py-4 text-sm text-slate-600">${c.teacher_name_2 ? c.teacher_name_2 : '<span class="text-slate-300 italic">-</span>'}</td>
                     <td class="py-4 text-right">
-                        <button onclick="openEditClassroomModal(${JSON.stringify(c).replace(/"/g, '&quot;')})" class="text-blue-600 hover:text-blue-800 text-xs font-bold cursor-pointer">กำหนดครู</button>
+                        <button onclick="openEditClassroomModal(${JSON.stringify(c).replace(/"/g, '&quot;')})" class="flex items-center gap-1.5 px-3 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl border border-blue-100 transition-all font-bold text-xs cursor-pointer shadow-sm ml-auto">
+                            <i data-lucide="user-plus" class="w-4 h-4"></i>
+                            กำหนดครู
+                        </button>
                     </td>
                 </tr>
             `).join('');

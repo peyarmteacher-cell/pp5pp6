@@ -612,8 +612,12 @@
                                         ${s.status === 'graduated' ? `<span class="ml-2 text-[10px] bg-amber-100 text-amber-600 px-1.5 py-0.5 rounded-full font-bold">${s.generation || 'ไม่ระบุรุ่น'}</span>` : ''}
                                     </td>
                                     <td class="py-3 text-right flex gap-2 justify-end">
-                                        <button onclick='editStudent(${JSON.stringify(s)})' class="text-blue-600 hover:text-blue-800 text-xs font-bold cursor-pointer">แก้ไข</button>
-                                        <button onclick="deleteStudent(${s.id})" class="text-red-600 hover:text-red-800 text-xs font-bold cursor-pointer">ลบ</button>
+                                        <button onclick='editStudent(${JSON.stringify(s)})' class="p-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl transition-all cursor-pointer border border-blue-100 shadow-sm" title="แก้ไข">
+                                            <i data-lucide="edit-2" class="w-4 h-4"></i>
+                                        </button>
+                                        <button onclick="deleteStudent(${s.id})" class="p-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl transition-all cursor-pointer border border-red-100 shadow-sm" title="ลบ">
+                                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                        </button>
                                     </td>
                                 </tr>
                             `).join('')}

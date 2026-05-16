@@ -1213,9 +1213,13 @@ try {
                                     ${t.role !== 'admin' ? `
                                         <button onclick="promoteToAdmin(${t.id}, '${safeSchoolName}')" class="text-blue-600 hover:text-blue-800 text-[10px] font-bold cursor-pointer">กำหนดเป็น Admin</button>
                                     ` : '<span class="text-slate-400 text-[10px]">เป็น Admin แล้ว</span>'}
-                                    <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                                        <button onclick="openEditTeacherModal(window.lastLoadedTeachers[${index}], ${schoolId})" class="text-blue-500 hover:text-blue-700 text-[10px] font-bold cursor-pointer">แก้ไข</button>
-                                        <button onclick="deleteTeacher(${t.id})" class="text-red-500 hover:text-red-700 text-[10px] font-bold cursor-pointer">ลบ</button>
+                                    <div class="flex gap-2 transition-all">
+                                        <button onclick="openEditTeacherModal(window.lastLoadedTeachers[${index}], ${schoolId})" class="p-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg transition-all cursor-pointer border border-blue-100" title="แก้ไข">
+                                            <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
+                                        </button>
+                                        <button onclick="deleteTeacher(${t.id})" class="p-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg transition-all cursor-pointer border border-red-100" title="ลบ">
+                                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                        </button>
                                     </div>
                                 </div>
                             </td>
