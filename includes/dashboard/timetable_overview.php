@@ -1,47 +1,63 @@
 <div id="timetable-overview" class="section hidden space-y-6">
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
-        <div>
-            <h3 class="text-xl font-black text-slate-800">สำรวจตารางสอนภาพรวม</h3>
-            <p class="text-sm text-slate-500 font-medium">ดูตารางสอนรายครู หรือรายห้องเรียน</p>
+    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div>
+                <h3 class="text-xl font-black text-slate-800">สำรวจตารางสอนภาพรวม</h3>
+                <p class="text-sm text-slate-500 font-medium">จัดการติดตามการจัดการเรียนการสอน</p>
+            </div>
+            
+            <!-- Tab Switcher -->
+            <div class="flex bg-slate-100 p-1 rounded-2xl">
+                <button onclick="switchTTTab('teacher')" id="tab-btn-teacher" class="px-6 py-2 rounded-xl text-sm font-bold transition-all bg-white text-blue-600 shadow-sm">
+                    ตารางสอนรายครู
+                </button>
+                <button onclick="switchTTTab('classroom')" id="tab-btn-classroom" class="px-6 py-2 rounded-xl text-sm font-bold transition-all text-slate-500 hover:text-slate-700">
+                    ตารางเรียนรายห้อง
+                </button>
+            </div>
         </div>
-        <div class="flex flex-wrap items-center gap-3">
-            <select id="tt_view_type" onchange="toggleTTViewType()" class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20">
-                <option value="teacher">ดูรายครู</option>
-                <option value="classroom">ดูรายห้องเรียน</option>
-            </select>
-            <select id="tt_target_id" class="px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 min-w-[200px]">
-                <!-- Populated by JS -->
-            </select>
-            <button onclick="loadOverviewTimetable()" class="bg-blue-600 text-white px-6 py-2 rounded-xl text-sm font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20">
-                แสดงข้อมูล
+
+        <div class="mt-6 flex flex-wrap items-center gap-4 border-t border-slate-100 pt-6">
+            <div class="flex-1 min-w-[200px]">
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 ml-1" id="selection-label">เลือกครูผู้สอน</label>
+                <select id="tt_target_id" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 appearance-none cursor-pointer">
+                    <option value="">กำลังโหลดข้อมูล...</option>
+                </select>
+            </div>
+            <button onclick="loadOverviewTimetable()" class="bg-blue-600 text-white px-8 py-2.5 rounded-xl text-sm font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20 flex items-center gap-2">
+                <i data-lucide="search" class="w-4 h-4"></i>
+                แสดงตาราง
             </button>
         </div>
     </div>
 
     <!-- Timetable Display Area -->
     <div id="tt_overview_container" class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200 hidden">
-        <div class="flex items-center justify-between mb-8">
-            <div class="flex items-center gap-4">
-                <div id="tt_target_icon" class="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center">
-                    <i data-lucide="user" class="w-6 h-6"></i>
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
+            <div class="flex items-center gap-5">
+                <div id="tt_target_icon" class="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center border border-blue-100 shadow-inner">
+                    <i data-lucide="user" class="w-7 h-7"></i>
                 </div>
                 <div>
-                    <h4 id="tt_target_name" class="text-lg font-black text-slate-800">-</h4>
-                    <p id="tt_target_sub" class="text-xs text-slate-500 font-bold uppercase tracking-wider">-</p>
+                    <h4 id="tt_target_name" class="text-xl font-black text-slate-800">-</h4>
+                    <p id="tt_target_sub" class="text-xs text-slate-500 font-bold uppercase tracking-wider flex items-center gap-2">
+                        <i data-lucide="info" class="w-3.5 h-3.5"></i>
+                        <span>-</span>
+                    </p>
                 </div>
             </div>
-            <button onclick="printOverviewTimetable()" class="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-600 hover:bg-slate-200 rounded-xl text-xs font-bold transition-all no-print shadow-sm border border-slate-200">
-                <i data-lucide="printer" class="w-4 h-4"></i> พิมพ์ตารางสอน (PDF)
+            <button onclick="printOverviewTimetable()" class="flex items-center gap-2 px-5 py-2.5 bg-white text-slate-700 hover:bg-slate-50 rounded-xl text-xs font-bold transition-all border border-slate-200 shadow-sm no-print">
+                <i data-lucide="printer" class="w-4 h-4 text-blue-600"></i> พิมพ์ตารางสอน (PDF)
             </button>
         </div>
 
-        <div class="overflow-x-auto">
-            <table class="w-full border-collapse border border-slate-200 table-fixed">
+        <div class="overflow-x-auto rounded-2xl border border-slate-100">
+            <table class="w-full border-collapse table-fixed min-w-[800px]">
                 <thead>
                     <tr class="bg-slate-50">
-                        <th class="p-3 border border-slate-200 text-xs font-bold w-20">วัน / คาบ</th>
+                        <th class="p-4 border border-slate-200 text-xs font-black text-slate-400 uppercase w-24">วัน / คาบ</th>
                         <?php for($i=1; $i<=8; $i++): ?>
-                            <th class="p-3 border border-slate-200 text-xs font-bold">คาบที่ <?= $i ?></th>
+                            <th class="p-4 border border-slate-200 text-xs font-black text-slate-600">คาบที่ <?= $i ?></th>
                         <?php endfor; ?>
                     </tr>
                 </thead>
@@ -52,47 +68,68 @@
         </div>
     </div>
     
-    <div id="tt_overview_empty" class="bg-white p-20 rounded-3xl shadow-sm border border-slate-200 flex flex-col items-center justify-center text-slate-300">
-        <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-4">
-            <i data-lucide="calendar" class="w-10 h-10"></i>
+    <div id="tt_overview_empty" class="bg-white p-24 rounded-3xl shadow-sm border border-slate-200 flex flex-col items-center justify-center text-slate-400 text-center animate-pulse">
+        <div class="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mb-6 shadow-inner">
+            <i data-lucide="calendar" class="w-12 h-12 text-slate-200"></i>
         </div>
-        <p class="font-bold">กรุณาเลือก ครู/ห้องเรียน และกดปุ่มแสดงข้อมูล</p>
+        <p class="font-black text-lg text-slate-300">กรุณาเลือกข้อมูลและกดปุ่มแสดงตาราง</p>
+        <p class="text-sm mt-1">สำรวจและติดตามการสอนของคุณครูหรืองานสอนรายห้องเรียน</p>
     </div>
 </div>
 
 <script>
     let overviewTeachers = [];
     let overviewClassrooms = [];
+    let currentTTTab = 'teacher';
 
     async function initTimetableOverview() {
-        console.log('Initializing Timetable Overview...');
+        console.log('Initializing Timetable Overview tabs...');
         try {
             const [tRes, cRes] = await Promise.all([
                 fetch('api/academic/get_teachers.php'),
                 fetch('api/academic/get_classrooms.php')
             ]);
-            overviewTeachers = await tRes.json();
-            overviewClassrooms = await cRes.json();
             
-            toggleTTViewType();
+            const tData = await tRes.json();
+            const cData = await cRes.json();
+
+            overviewTeachers = Array.isArray(tData) ? tData : [];
+            overviewClassrooms = Array.isArray(cData) ? cData : [];
+            
+            if (!Array.isArray(tData) && tData.error) console.error('T-Error:', tData.error);
+            if (!Array.isArray(cData) && cData.error) console.error('C-Error:', cData.error);
+
+            switchTTTab(currentTTTab);
         } catch (e) {
             console.error('Error initTimetableOverview:', e);
         }
     }
 
-    function toggleTTViewType() {
-        const type = document.getElementById('tt_view_type').value;
+    function switchTTTab(tab) {
+        currentTTTab = tab;
         const targetSelect = document.getElementById('tt_target_id');
+        const label = document.getElementById('selection-label');
         
-        if (type === 'teacher') {
-            targetSelect.innerHTML = overviewTeachers.map(t => `<option value="${t.id}">${t.prefix}${t.name} ${t.last_name}</option>`).join('');
+        // Update Buttons
+        const teacherBtn = document.getElementById('tab-btn-teacher');
+        const classroomBtn = document.getElementById('tab-btn-classroom');
+        
+        if (tab === 'teacher') {
+            teacherBtn.className = "px-6 py-2 rounded-xl text-sm font-bold transition-all bg-white text-blue-600 shadow-sm";
+            classroomBtn.className = "px-6 py-2 rounded-xl text-sm font-bold transition-all text-slate-500 hover:text-slate-700";
+            label.innerText = 'เลือกครูผู้สอน';
+            targetSelect.innerHTML = '<option value="">-- เลือกครู --</option>' + 
+                overviewTeachers.map(t => `<option value="${t.id}">${t.name} ${t.last_name}</option>`).join('');
         } else {
-            targetSelect.innerHTML = overviewClassrooms.map(c => `<option value="${c.id}">${c.level}/${c.room}</option>`).join('');
+            classroomBtn.className = "px-6 py-2 rounded-xl text-sm font-bold transition-all bg-white text-blue-600 shadow-sm";
+            teacherBtn.className = "px-6 py-2 rounded-xl text-sm font-bold transition-all text-slate-500 hover:text-slate-700";
+            label.innerText = 'เลือกห้องเรียน';
+            targetSelect.innerHTML = '<option value="">-- เลือกห้องเรียน --</option>' + 
+                overviewClassrooms.map(c => `<option value="${c.id}">${c.level}/${c.room}</option>`).join('');
         }
     }
 
     async function loadOverviewTimetable() {
-        const type = document.getElementById('tt_view_type').value;
         const targetId = document.getElementById('tt_target_id').value;
         const targetNameEl = document.getElementById('tt_target_name');
         const targetSubEl = document.getElementById('tt_target_sub');
@@ -100,29 +137,32 @@
         const empty = document.getElementById('tt_overview_empty');
         const targetIcon = document.getElementById('tt_target_icon');
 
-        if (!targetId) return;
+        if (!targetId) {
+            alert('กรุณาเลือกเป้าหมายก่อน');
+            return;
+        }
 
         try {
             let url = `api/academic/get_timetables.php?academic_year=${currentAcademicYear}&semester=${currentSemester}`;
-            if (type === 'teacher') {
+            if (currentTTTab === 'teacher') {
                 url += `&teacher_id=${targetId}`;
                 const t = overviewTeachers.find(i => i.id == targetId);
-                targetNameEl.innerText = `${t.prefix}${t.name} ${t.last_name}`;
-                targetSubEl.innerText = `ครูผู้สอน`;
-                targetIcon.innerHTML = `<i data-lucide="user" class="w-6 h-6"></i>`;
+                targetNameEl.innerText = `${t.name} ${t.last_name}`;
+                targetSubEl.querySelector('span').innerText = `คุณครูผู้สอน • ${t.position || 'ครู'}`;
+                targetIcon.innerHTML = `<i data-lucide="user" class="w-7 h-7"></i>`;
             } else {
                 url += `&classroom_id=${targetId}`;
                 const c = overviewClassrooms.find(i => i.id == targetId);
-                targetNameEl.innerText = `ห้อง ${c.level}/${c.room}`;
-                targetSubEl.innerText = `ตารางสอนประจำชั้น`;
-                targetIcon.innerHTML = `<i data-lucide="home" class="w-6 h-6"></i>`;
+                targetNameEl.innerText = `ชั้นประถมศึกษาปีที่ ${c.level}/${c.room}`;
+                targetSubEl.querySelector('span').innerText = `ตารางเรียนประจำห้องเรียน`;
+                targetIcon.innerHTML = `<i data-lucide="home" class="w-7 h-7"></i>`;
             }
 
             const res = await fetch(url);
             const data = await res.json();
             
             if (data.error) {
-                alert(data.error);
+                alert('ไม่สามารถโหลดข้อมูลได้: ' + data.error);
                 return;
             }
 
@@ -132,15 +172,14 @@
             if (typeof lucide !== 'undefined') lucide.createIcons();
         } catch (e) {
             console.error('Error loadOverviewTimetable:', e);
+            alert('เกิดข้อผิดพลาดในการโหลดตารางสอน');
         }
     }
 
     function printOverviewTimetable() {
-        const type = document.getElementById('tt_view_type').value;
         const targetId = document.getElementById('tt_target_id').value;
         if (!targetId) return;
-        
-        window.open(`api/teacher/print_timetable.php?academic_year=${currentAcademicYear}&semester=${currentSemester}&target_type=${type}&target_id=${targetId}`, '_blank');
+        window.open(`api/teacher/print_timetable.php?academic_year=${currentAcademicYear}&semester=${currentSemester}&target_type=${currentTTTab}&target_id=${targetId}`, '_blank');
     }
 
     function renderOverviewTimetable(timetable) {
@@ -154,7 +193,7 @@
         ];
 
         const getSubjectColor = (slot) => {
-            if (!slot) return 'bg-white border-slate-200';
+            if (!slot) return 'bg-white border-slate-100';
             if (slot.activity_type) {
                 const actKey = slot.activity_type.toLowerCase();
                 const actColors = {
@@ -198,7 +237,7 @@
 
         tbody.innerHTML = days.map(day => `
             <tr>
-                <td class="p-3 border border-slate-200 font-bold text-xs text-center ${day.class}">${day.name}</td>
+                <td class="p-3 border border-slate-200 font-black text-xs text-center ${day.class}">${day.name}</td>
                 ${Array.from({length: 8}, (_, i) => i + 1).map(period => {
                     const slot = timetable.find(t => t.day_of_week == day.id && t.period_number == period);
                     const colorClass = getSubjectColor(slot);
@@ -207,20 +246,18 @@
                     const singleLineActs = ['scouts', 'scout', 'club', 'guidance'];
                     const isSingleLine = isActivity && singleLineActs.includes(slot.activity_type.toLowerCase());
                     
-                    const viewType = document.getElementById('tt_view_type').value;
-
                     return `
-                        <td class="p-2 border transition-all text-center relative group min-h-[85px] ${colorClass}">
+                        <td class="p-2 border transition-all text-center relative min-h-[85px] ${colorClass}">
                             <div class="h-full w-full min-h-[65px] flex flex-col justify-center gap-0.5">
                                 ${slot ? (isSingleLine ? `
-                                    <div class="text-[11px] font-bold leading-none">${slot.subject_code}</div>
+                                    <div class="text-[11px] font-black leading-none">${slot.subject_code}</div>
                                 ` : `
-                                    <div class="text-[10px] font-bold leading-none">${slot.subject_code || 'กิจกรรม'}</div>
-                                    <div class="text-[9px] opacity-80 truncate leading-none min-h-[12px]">${slot.subject_name || ''}</div>
-                                    <div class="text-[9px] font-bold opacity-60 leading-none min-h-[12px]">
-                                        ${viewType === 'teacher' ? `${slot.level}/${slot.room}` : `${slot.teacher_prefix}${slot.teacher_name}`}
+                                    <div class="text-[10px] font-black leading-none">${slot.subject_code || 'กิจกรรม'}</div>
+                                    <div class="text-[9px] font-medium opacity-80 truncate leading-none min-h-[12px]">${slot.subject_name || ''}</div>
+                                    <div class="text-[9px] font-black opacity-60 leading-none min-h-[12px]">
+                                        ${currentTTTab === 'teacher' ? `${slot.level}/${slot.room}` : `${slot.teacher_name}`}
                                     </div>
-                                `) : '<span class="text-[10px] text-slate-300 italic">ว่าง</span>'}
+                                `) : '<span class="text-[10px] text-slate-300 italic font-medium">ว่าง</span>'}
                             </div>
                         </td>
                     `;

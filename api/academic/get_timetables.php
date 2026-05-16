@@ -40,7 +40,7 @@ try {
         SELECT t.*, 
                s.name as subject_name, s.code as subject_code, 
                c.level, c.room,
-               u.prefix as teacher_prefix, u.name as teacher_name, u.last_name as teacher_last_name
+               u.name as teacher_name, u.last_name as teacher_last_name
         FROM timetables t
         LEFT JOIN subjects s ON t.subject_id = s.id
         LEFT JOIN classrooms c ON t.classroom_id = c.id

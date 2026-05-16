@@ -13,9 +13,9 @@ $school_id = $_SESSION['school_id'];
 
 try {
     $stmt = $pdo->prepare('
-        SELECT id, name, last_name, prefix, position, role
+        SELECT id, name, last_name, position, role
         FROM users 
-        WHERE school_id = ? AND role IN ("teacher", "admin") AND status = "approved"
+        WHERE school_id = ? AND role IN ("teacher", "admin") AND is_approved = 1
         ORDER BY name ASC
     ');
     $stmt->execute([$school_id]);

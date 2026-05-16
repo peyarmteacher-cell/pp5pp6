@@ -29,10 +29,10 @@ try {
     
     if ($target_type === 'teacher') {
         // Get Teacher Info
-        $stmt = $pdo->prepare("SELECT prefix, name, last_name, position, school_id FROM users WHERE id = ?");
+        $stmt = $pdo->prepare("SELECT name, last_name, position, school_id FROM users WHERE id = ?");
         $stmt->execute([$target_id]);
         $teacher = $stmt->fetch();
-        $teacher_full_name = ($teacher['prefix'] ?? '') . ($teacher['name'] ?? '') . ' ' . ($teacher['last_name'] ?? '');
+        $teacher_full_name = ($teacher['name'] ?? '') . ' ' . ($teacher['last_name'] ?? '');
         $teacher_position = $teacher['position'] ?: 'ครู';
         $display_title = "คุณครู" . $teacher_full_name;
         $school_id = $teacher['school_id'];
@@ -68,7 +68,7 @@ try {
         SELECT t.*, 
                s.name as subject_name, s.code as subject_code, 
                c.level, c.room,
-               u.prefix as teacher_prefix, u.name as teacher_name, u.last_name as teacher_last_name
+               u.name as teacher_name, u.last_name as teacher_last_name
         FROM timetables t
         LEFT JOIN subjects s ON t.subject_id = s.id
         LEFT JOIN classrooms c ON t.classroom_id = c.id
@@ -228,7 +228,7 @@ $days = [
                                                 <div class="text-[10px] font-bold text-slate-500 italic"><?= $slot['level'] ?>/<?= $slot['room'] ?></div>
                                             <?php endif; ?>
                                         <?php else: ?>
-                                            <div class="text-[10px] font-bold text-slate-500 italic"><?= ($slot['teacher_prefix'] ?? '') . ($slot['teacher_name'] ?? '') ?></div>
+                                            <div class="text-[10px] font-bold text-slate-500 italic"><?= ($slot['teacher_name'] ?? '') ?></div>
                                         <?php endif; ?>
                                     <?php endif; ?>
                                 <?php endif; ?>
