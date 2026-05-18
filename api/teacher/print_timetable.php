@@ -220,7 +220,7 @@ $days = [
             min-height: 297mm;
             margin: 20px auto;
             background: white;
-            padding: 0.4cm;
+            padding: 0.6cm 0.8cm 0.4cm 0.8cm;
             position: relative;
             box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
         }
@@ -229,9 +229,9 @@ $days = [
         .timetable-table th, .timetable-table td { border: 1.2px solid #64748b; padding: 2px; text-align: center; height: 50px; overflow: hidden; }
         .timetable-table th { background: #f1f5f9; font-weight: 700; color: #1e293b; font-size: 13px; height: 35px; }
         
-        .workload-table th, .workload-table td { border: 1px solid #cbd5e1; padding: 3px 6px; text-align: left; line-height: 1.2; }
-        .workload-table th { background: #f8fafc; font-size: 12px; font-weight: 800; }
-        .workload-table td { font-size: 12px; }
+        .workload-table th, .workload-table td { border: 1px solid #cbd5e1; padding: 8px 12px; text-align: left; }
+        .workload-table th { background: #f8fafc; font-size: 13px; font-weight: 800; }
+        .workload-table td { font-size: 13px; }
         .workload-table .center { text-align: center; }
         
         .period-header { font-size: 10px; color: #64748b; font-weight: normal; margin-top: 1px; }
@@ -344,21 +344,22 @@ $days = [
 
     <?php if($target_type === 'teacher' && !empty($workload)): ?>
     <div class="a4-portrait page-portrait">
-        <div class="text-center mb-4">
-             <div class="flex justify-center mb-2">
-                <?php if (!empty($logo_url)): ?>
-                    <img src="<?= $logo_url ?>" class="w-14 h-14 object-contain" referrerPolicy="no-referrer">
-                <?php endif; ?>
-            </div>
-            <h2 class="text-lg font-black text-slate-800 tracking-tight">ภาระงานการสอนของคุณครู</h2>
-            <p class="text-sm font-bold text-blue-700 mt-0.5"><?= $teacher_full_name ?></p>
-            <div class="flex items-center justify-center gap-4 mt-1">
-                <p class="text-[10px] font-medium text-slate-500">ประจำภาคเรียนที่ <?= $semester ?> ปีการศึกษา <?= $academic_year ?></p>
-                <p class="text-[10px] font-medium text-slate-500">โรงเรียน<?= $school['name'] ?></p>
+        <!-- Compact Side-by-Side Header -->
+        <div class="flex items-center gap-6 mb-6 border-b pb-4">
+             <?php if (!empty($logo_url)): ?>
+                <img src="<?= $logo_url ?>" class="w-20 h-20 object-contain" referrerPolicy="no-referrer">
+            <?php endif; ?>
+            <div class="flex-1">
+                <h2 class="text-xl font-black text-slate-800 tracking-tight">ภาระงานการสอนของคุณครู</h2>
+                <p class="text-lg font-bold text-blue-700"><?= $teacher_full_name ?></p>
+                <div class="flex items-center gap-3 mt-1">
+                    <p class="text-xs font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">ภาคเรียนที่ <?= $semester ?>/<?= $academic_year ?></p>
+                    <p class="text-xs font-semibold text-slate-500">โรงเรียน<?= $school['name'] ?></p>
+                </div>
             </div>
         </div>
 
-        <table class="workload-table mt-2">
+        <table class="workload-table">
             <thead>
                 <tr>
                     <th class="center" style="width: 12%;">ลำดับ</th>
@@ -388,11 +389,11 @@ $days = [
         </table>
 
         <div class="mt-4 flex flex-col items-center">
-            <p class="text-[10px] text-slate-600 italic font-medium">ขอรับรองว่าข้อมูลภาระงานการสอนดังกล่าวเป็นความจริงทุกประการ</p>
+            <p class="text-[10px] text-slate-500 italic font-medium">ขอรับรองว่าข้อมูลภาระงานการสอนดังกล่าวเป็นความจริงทุกประการ</p>
             <div class="mt-4 text-center">
-                <p class="mb-2">ลงชื่อ..........................................................</p>
+                <p class="mb-3">ลงชื่อ..........................................................</p>
                 <p class="font-bold text-sm">( <?= $teacher_full_name ?> )</p>
-                <p class="text-[10px] text-slate-500 mt-1">วันที่ <?= date('d') ?> เดือน <?= [
+                <p class="text-[10px] text-slate-400 mt-1">วันที่ <?= date('d') ?> เดือน <?= [
                     '01'=>'มกราคม','02'=>'กุมภาพันธ์','03'=>'มีนาคม','04'=>'เมษายน','05'=>'พฤษภาคม','06'=>'มิถุนายน',
                     '07'=>'กรกฎาคม','08'=>'สิงหาคม','09'=>'กันยายน','10'=>'ตุลาคม','11'=>'พฤศจิกายน','12'=>'ธันวาคม'
                 ][date('m')] ?> พ.ศ. <?= date('Y') + 543 ?></p>
