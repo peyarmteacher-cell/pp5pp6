@@ -220,7 +220,7 @@ $days = [
             min-height: 297mm;
             margin: 20px auto;
             background: white;
-            padding: 0.8cm;
+            padding: 0.5cm;
             position: relative;
             box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
         }
@@ -229,7 +229,7 @@ $days = [
         .timetable-table th, .timetable-table td { border: 1.2px solid #64748b; padding: 2px; text-align: center; height: 50px; overflow: hidden; }
         .timetable-table th { background: #f1f5f9; font-weight: 700; color: #1e293b; font-size: 13px; height: 35px; }
         
-        .workload-table th, .workload-table td { border: 1px solid #cbd5e1; padding: 10px; text-align: left; }
+        .workload-table th, .workload-table td { border: 1px solid #cbd5e1; padding: 6px; text-align: left; }
         .workload-table th { background: #f8fafc; font-size: 14px; font-weight: 800; }
         .workload-table td { font-size: 14px; }
         .workload-table .center { text-align: center; }
@@ -387,10 +387,10 @@ $days = [
             </tfoot>
         </table>
 
-        <div class="mt-10 flex flex-col items-center">
-            <p class="text-xs text-slate-600 italic font-medium">ขอรับรองว่าข้อมูลภาระงานการสอนดังกล่าวเป็นความจริงทุกประการ</p>
-            <div class="mt-8 text-center">
-                <p class="mb-4">ลงชื่อ..........................................................</p>
+        <div class="mt-6 flex flex-col items-center">
+            <p class="text-[10px] text-slate-600 italic font-medium">ขอรับรองว่าข้อมูลภาระงานการสอนดังกล่าวเป็นความจริงทุกประการ</p>
+            <div class="mt-6 text-center">
+                <p class="mb-3">ลงชื่อ..........................................................</p>
                 <p class="font-bold text-sm">( <?= $teacher_full_name ?> )</p>
                 <p class="text-sm text-slate-500 mt-1">วันที่ <?= date('d') ?> เดือน <?= [
                     '01'=>'มกราคม','02'=>'กุมภาพันธ์','03'=>'มีนาคม','04'=>'เมษายน','05'=>'พฤษภาคม','06'=>'มิถุนายน',
@@ -399,7 +399,7 @@ $days = [
             </div>
         </div>
 
-        <div class="absolute bottom-8 left-0 right-0 text-center text-[10px] text-slate-400">
+        <div class="absolute bottom-4 left-0 right-0 text-center text-[8px] text-slate-400">
             เอกสารสรุปภาระงานสอนรายบุคคล | ระบบบริหารงานวิชาการดิจิทัล | หน้าที่ 2
         </div>
     </div>
