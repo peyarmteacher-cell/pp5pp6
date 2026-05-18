@@ -342,7 +342,7 @@ try {
                     <span class="text-sm font-medium">ความคืบหน้าการทำงาน</span>
                 </a>
 
-                <?php if ($role === 'admin' || $is_director): ?>
+                <?php if ($role === 'admin' || $is_director || $is_academic): ?>
                 <a href="javascript:void(0)" onclick="showSection('teacher-usage-stats')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">
                     <i data-lucide="user-check" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
                     <span class="text-sm font-medium">สถิติการใช้งานครู</span>
@@ -357,10 +357,12 @@ try {
                     <i data-lucide="file-text" class="w-4 h-4 transition-colors"></i>
                     <span class="text-sm font-medium">รายงานเอกสาร (ปพ.)</span>
                 </a>
+                <?php if ($role === 'admin' || $is_director || $is_academic): ?>
                 <a href="javascript:void(0)" onclick="showSection('timetable-overview')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group text-blue-400/90 hover:text-blue-400">
                     <i data-lucide="eye" class="w-4 h-4 transition-colors"></i>
                     <span class="text-sm font-medium">ตารางสอนภาพรวม</span>
                 </a>
+                <?php endif; ?>
 
                 <?php if ($role === 'admin' && !$is_restricted_director): ?>
                 <a href="javascript:void(0)" onclick="showSection('manage-teachers')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">

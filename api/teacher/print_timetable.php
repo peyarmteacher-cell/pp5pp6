@@ -100,6 +100,53 @@ try {
         $timetable[$it['day_of_week']][$it['period_number']] = $it;
     }
 
+    // NEW: Calculate teaching workload summary
+    $workload = [];
+    $total_hours = 0;
+    if ($target_type === 'teacher') {
+        foreach ($items as $it) {
+            // Skip lunch from workload calculation
+            if (isset($it['activity_type']) && strtolower($it['activity_type']) === 'lunch') continue;
+
+            $sName = $it['subject_name'];
+            $sCode = $it['subject_code'];
+            
+            // Handle activities that might not have subject mapped
+            if (empty($sCode) && !empty($it['activity_type'])) {
+                $activities = [
+                    'guidance' => ['name' => 'กิจกรรมแนะแนว', 'code' => 'แนะแนว'],
+                    'scouts' => ['name' => 'กิจกรรมลูกเสือเนตรนารี', 'code' => 'ลูกเสือเนตรนารี'],
+                    'scout' => ['name' => 'กิจกรรมลูกเสือเนตรนารี', 'code' => 'ลูกเสือเนตรนารี'],
+                    'club' => ['name' => 'กิจกรรมชุมนุม', 'code' => 'ชุมนุม'],
+                    'social' => ['name' => 'กิจกรรมเพื่อสังคมฯ', 'code' => 'สังคมฯ'],
+                    'homeroom' => ['name' => 'Home Room', 'code' => 'โฮมรูม']
+                ];
+                $act = $activities[strtolower($it['activity_type'])] ?? null;
+                if ($act) {
+                    $sCode = $act['code'];
+                    $sName = $act['name'];
+                } else {
+                    $sCode = 'กิจกรรม';
+                    $sName = 'กิจกรรมอื่นๆ';
+                }
+            }
+
+            if (empty($sCode)) continue;
+
+            if (!isset($workload[$sCode])) {
+                $workload[$sCode] = [
+                    'code' => $sCode,
+                    'name' => $sName,
+                    'hours' => 0
+                ];
+            }
+            $workload[$sCode]['hours']++;
+            $total_hours++;
+        }
+        // Sort by code
+        ksort($workload);
+    }
+
 } catch (PDOException $e) {
     die("Database Error: " . $e->getMessage());
 }
@@ -122,17 +169,26 @@ $days = [
     <style>
         @media print {
             @page {
-                size: A4 landscape;
                 margin: 0.5cm;
             }
+            
+            /* First page landscape, others portrait or handled by break */
+            .page-landscape {
+                page: landscape-page;
+                page-break-after: always;
+            }
+            .page-portrait {
+                page: portrait-page;
+                page-break-before: always;
+            }
+            
             body { 
                 -webkit-print-color-adjust: exact; 
                 padding: 0; 
                 background: white !important;
             }
-            .a4-landscape {
+            .a4-landscape, .a4-portrait {
                 width: 100%;
-                height: auto;
                 margin: 0;
                 padding: 0;
                 box-shadow: none !important;
@@ -140,22 +196,44 @@ $days = [
             }
             .no-print { display: none; }
         }
+        
+        @page landscape-page { size: A4 landscape; }
+        @page portrait-page { size: A4 portrait; }
+
         body {
             font-family: 'Sarabun', sans-serif;
             background: #f8fafc;
         }
         .a4-landscape {
             width: 297mm;
+            height: 210mm;
             margin: 0 auto;
             background: white;
-            padding: 0.8cm;
+            padding: 1cm;
             position: relative;
             display: flex;
             flex-direction: column;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
         }
-        table { border-collapse: collapse; width: 100%; table-layout: fixed; }
-        th, td { border: 1.2px solid #64748b; padding: 2px; text-align: center; height: 50px; overflow: hidden; }
-        th { background: #f1f5f9; font-weight: 700; color: #1e293b; font-size: 13px; height: 35px; }
+        .a4-portrait {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 20px auto;
+            background: white;
+            padding: 1.5cm;
+            position: relative;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+        table { border-collapse: collapse; width: 100%; }
+        .timetable-table { table-layout: fixed; }
+        .timetable-table th, .timetable-table td { border: 1.2px solid #64748b; padding: 2px; text-align: center; height: 50px; overflow: hidden; }
+        .timetable-table th { background: #f1f5f9; font-weight: 700; color: #1e293b; font-size: 13px; height: 35px; }
+        
+        .workload-table th, .workload-table td { border: 1px solid #cbd5e1; padding: 10px; text-align: left; }
+        .workload-table th { background: #f8fafc; font-size: 14px; font-weight: 800; }
+        .workload-table td { font-size: 14px; }
+        .workload-table .center { text-align: center; }
+        
         .period-header { font-size: 10px; color: #64748b; font-weight: normal; margin-top: 1px; }
     </style>
 </head>
@@ -168,14 +246,14 @@ $days = [
         </button>
     </div>
 
-    <div class="a4-landscape">
+    <div class="a4-landscape page-landscape">
         <div class="relative mb-2 pb-2 border-b-2 border-slate-100 flex items-center min-h-[70px]">
             <!-- Logo positioned absolutely to keep text centered -->
             <div class="absolute left-0">
                 <?php if (!empty($logo_url)): ?>
-                    <img src="<?= $logo_url ?>" class="w-20 h-20 object-contain" referrerPolicy="no-referrer">
+                    <img src="<?= $logo_url ?>" class="w-16 h-16 object-contain" referrerPolicy="no-referrer">
                 <?php else: ?>
-                    <div class="w-20 h-20 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 flex items-center justify-center text-slate-300 text-[10px] text-center p-2 uppercase">Logo</div>
+                    <div class="w-16 h-16 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 flex items-center justify-center text-slate-300 text-[10px] text-center p-2 uppercase">Logo</div>
                 <?php endif; ?>
             </div>
             
@@ -193,7 +271,7 @@ $days = [
         </div>
 
         <div class="overflow-hidden">
-            <table>
+            <table class="timetable-table">
                 <thead>
                     <tr>
                         <th style="width: 100px;">วัน / คาบ</th>
@@ -240,28 +318,91 @@ $days = [
             </table>
         </div>
 
-        <div class="mt-12 grid grid-cols-2 gap-10">
+        <div class="mt-8 grid grid-cols-2 gap-10">
             <div class="text-center">
                 <?php if($target_type === 'teacher'): ?>
-                    <p class="mb-4">ลงชื่อ..........................................................</p>
+                    <p class="mb-3">ลงชื่อ..........................................................</p>
                     <p class="font-bold text-sm">( <?= $teacher_full_name ?> )</p>
-                    <p class="text-xs">ครูผู้สอน</p>
+                    <p class="text-[10px]">ครูผู้สอน</p>
                 <?php else: ?>
-                    <p class="mb-4">ลงชื่อ..........................................................</p>
+                    <p class="mb-3">ลงชื่อ..........................................................</p>
                     <p class="font-bold text-sm">( <?= $school['director_name'] ?: '..........................................................' ?> )</p>
-                    <p class="text-xs">ผู้อำนวยการโรงเรียน</p>
+                    <p class="text-[10px]">ผู้อำนวยการโรงเรียน</p>
                 <?php endif; ?>
             </div>
             <div class="text-center">
-                <p class="mb-4">ลงชื่อ..........................................................</p>
+                <p class="mb-3">ลงชื่อ..........................................................</p>
                 <p class="font-bold text-sm">( <?= $school['director_name'] ?: '..........................................................' ?> )</p>
-                <p class="text-xs">ผู้อำนวยการโรงเรียน<?= $school['name'] ?></p>
+                <p class="text-[10px]">ผู้อำนวยการโรงเรียน<?= $school['name'] ?></p>
             </div>
         </div>
 
         <div class="absolute bottom-4 right-8 text-[8px] text-slate-400">
-            พิมพ์เมื่อ: <?= date('d/m/Y H:i') ?> | ระบบบริหารงานวิชาการดิจิทัล
+            พิมพ์เมื่อ: <?= date('d/m/Y H:i') ?> | ระบบบริหารงานวิชาการดิจิทัล | หน้าที่ 1
         </div>
     </div>
+
+    <?php if($target_type === 'teacher' && !empty($workload)): ?>
+    <div class="a4-portrait page-portrait">
+        <div class="text-center mb-10">
+             <div class="flex justify-center mb-6">
+                <?php if (!empty($logo_url)): ?>
+                    <img src="<?= $logo_url ?>" class="w-24 h-24 object-contain" referrerPolicy="no-referrer">
+                <?php endif; ?>
+            </div>
+            <h2 class="text-2xl font-black text-slate-800 tracking-tight">ภาระงานการสอนของคุณครู</h2>
+            <p class="text-lg font-bold text-blue-700 mt-2"><?= $teacher_full_name ?></p>
+            <div class="flex items-center justify-center gap-4 mt-4">
+                <p class="text-sm font-medium text-slate-500">ประจำภาคเรียนที่ <?= $semester ?> ปีการศึกษา <?= $academic_year ?></p>
+                <p class="text-sm font-medium text-slate-500">โรงเรียน<?= $school['name'] ?></p>
+            </div>
+        </div>
+
+        <table class="workload-table mt-8">
+            <thead>
+                <tr>
+                    <th class="center" style="width: 15%;">ลำดับ</th>
+                    <th style="width: 20%;">รหัสวิชา</th>
+                    <th style="width: 45%;">ชื่อวิชา / กิจกรรม</th>
+                    <th class="center" style="width: 20%;">ชั่วโมง/สัปดาห์</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php 
+                $idx = 1;
+                foreach($workload as $w): ?>
+                <tr>
+                    <td class="center"><?= $idx++ ?></td>
+                    <td class="font-bold"><?= $w['code'] ?></td>
+                    <td><?= $w['name'] ?></td>
+                    <td class="center font-bold text-blue-600"><?= $w['hours'] ?></td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+            <tfoot>
+                <tr class="bg-slate-50">
+                    <td colspan="3" class="text-right font-black py-4">สรุปภาระงานสอนทั้งสิ้น</td>
+                    <td class="center font-black text-lg text-blue-700 underline decoration-double"><?= $total_hours ?></td>
+                </tr>
+            </tfoot>
+        </table>
+
+        <div class="mt-20 flex flex-col items-center">
+            <p class="text-sm text-slate-600 italic">ขอรองรับว่าข้อมูลภาระงานการสอนดังกล่าวเป็นความจริงทุกประการ</p>
+            <div class="mt-12 text-center">
+                <p class="mb-4">ลงชื่อ..........................................................</p>
+                <p class="font-bold text-base">( <?= $teacher_full_name ?> )</p>
+                <p class="text-sm text-slate-500 mt-1">วันที่ <?= date('d') ?> เดือน <?= [
+                    '01'=>'มกราคม','02'=>'กุมภาพันธ์','03'=>'มีนาคม','04'=>'เมษายน','05'=>'พฤษภาคม','06'=>'มิถุนายน',
+                    '07'=>'กรกฎาคม','08'=>'สิงหาคม','09'=>'กันยายน','10'=>'ตุลาคม','11'=>'พฤศจิกายน','12'=>'ธันวาคม'
+                ][date('m')] ?> พ.ศ. <?= date('Y') + 543 ?></p>
+            </div>
+        </div>
+
+        <div class="absolute bottom-8 left-0 right-0 text-center text-[10px] text-slate-400">
+            เอกสารสรุปภาระงานสอนรายบุคคล | ระบบบริหารงานวิชาการดิจิทัล | หน้าที่ 2
+        </div>
+    </div>
+    <?php endif; ?>
 </body>
 </html>
