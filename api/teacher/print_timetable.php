@@ -344,18 +344,18 @@ $days = [
 
     <?php if($target_type === 'teacher' && !empty($workload)): ?>
     <div class="a4-portrait page-portrait">
-        <!-- Compact Side-by-Side Header -->
-        <div class="flex items-center gap-6 mb-6 border-b pb-4">
-             <?php if (!empty($logo_url)): ?>
-                <img src="<?= $logo_url ?>" class="w-20 h-20 object-contain" referrerPolicy="no-referrer">
-            <?php endif; ?>
-            <div class="flex-1">
-                <h2 class="text-xl font-black text-slate-800 tracking-tight">ภาระงานการสอนของคุณครู</h2>
-                <p class="text-lg font-bold text-blue-700"><?= $teacher_full_name ?></p>
-                <div class="flex items-center gap-3 mt-1">
-                    <p class="text-xs font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">ภาคเรียนที่ <?= $semester ?>/<?= $academic_year ?></p>
-                    <p class="text-xs font-semibold text-slate-500">โรงเรียน<?= $school['name'] ?></p>
-                </div>
+        <!-- Centered Header -->
+        <div class="text-center mb-6 border-b pb-4">
+             <div class="flex justify-center mb-3">
+                <?php if (!empty($logo_url)): ?>
+                    <img src="<?= $logo_url ?>" class="w-16 h-16 object-contain" referrerPolicy="no-referrer">
+                <?php endif; ?>
+            </div>
+            <h2 class="text-xl font-black text-slate-800 tracking-tight">ภาระงานการสอนของคุณครู</h2>
+            <p class="text-lg font-bold text-blue-700 mt-1"><?= $teacher_full_name ?></p>
+            <div class="flex items-center justify-center gap-3 mt-2">
+                <p class="text-xs font-semibold text-slate-500 bg-slate-100 px-3 py-0.5 rounded-full border border-slate-200">ภาคเรียนที่ <?= $semester ?>/<?= $academic_year ?></p>
+                <p class="text-xs font-semibold text-slate-500">โรงเรียน<?= $school['name'] ?></p>
             </div>
         </div>
 
