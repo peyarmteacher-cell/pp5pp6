@@ -220,7 +220,7 @@ $days = [
             min-height: 297mm;
             margin: 20px auto;
             background: white;
-            padding: 1.5cm;
+            padding: 0.8cm;
             position: relative;
             box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
         }
@@ -344,21 +344,21 @@ $days = [
 
     <?php if($target_type === 'teacher' && !empty($workload)): ?>
     <div class="a4-portrait page-portrait">
-        <div class="text-center mb-10">
-             <div class="flex justify-center mb-6">
+        <div class="text-center mb-6">
+             <div class="flex justify-center mb-3">
                 <?php if (!empty($logo_url)): ?>
-                    <img src="<?= $logo_url ?>" class="w-24 h-24 object-contain" referrerPolicy="no-referrer">
+                    <img src="<?= $logo_url ?>" class="w-20 h-20 object-contain" referrerPolicy="no-referrer">
                 <?php endif; ?>
             </div>
-            <h2 class="text-2xl font-black text-slate-800 tracking-tight">ภาระงานการสอนของคุณครู</h2>
-            <p class="text-lg font-bold text-blue-700 mt-2"><?= $teacher_full_name ?></p>
-            <div class="flex items-center justify-center gap-4 mt-4">
-                <p class="text-sm font-medium text-slate-500">ประจำภาคเรียนที่ <?= $semester ?> ปีการศึกษา <?= $academic_year ?></p>
-                <p class="text-sm font-medium text-slate-500">โรงเรียน<?= $school['name'] ?></p>
+            <h2 class="text-xl font-black text-slate-800 tracking-tight">ภาระงานการสอนของคุณครู</h2>
+            <p class="text-base font-bold text-blue-700 mt-1"><?= $teacher_full_name ?></p>
+            <div class="flex items-center justify-center gap-4 mt-2">
+                <p class="text-xs font-medium text-slate-500">ประจำภาคเรียนที่ <?= $semester ?> ปีการศึกษา <?= $academic_year ?></p>
+                <p class="text-xs font-medium text-slate-500">โรงเรียน<?= $school['name'] ?></p>
             </div>
         </div>
 
-        <table class="workload-table mt-8">
+        <table class="workload-table mt-4">
             <thead>
                 <tr>
                     <th class="center" style="width: 15%;">ลำดับ</th>
@@ -387,11 +387,11 @@ $days = [
             </tfoot>
         </table>
 
-        <div class="mt-20 flex flex-col items-center">
-            <p class="text-sm text-slate-600 italic">ขอรองรับว่าข้อมูลภาระงานการสอนดังกล่าวเป็นความจริงทุกประการ</p>
-            <div class="mt-12 text-center">
+        <div class="mt-10 flex flex-col items-center">
+            <p class="text-xs text-slate-600 italic font-medium">ขอรับรองว่าข้อมูลภาระงานการสอนดังกล่าวเป็นความจริงทุกประการ</p>
+            <div class="mt-8 text-center">
                 <p class="mb-4">ลงชื่อ..........................................................</p>
-                <p class="font-bold text-base">( <?= $teacher_full_name ?> )</p>
+                <p class="font-bold text-sm">( <?= $teacher_full_name ?> )</p>
                 <p class="text-sm text-slate-500 mt-1">วันที่ <?= date('d') ?> เดือน <?= [
                     '01'=>'มกราคม','02'=>'กุมภาพันธ์','03'=>'มีนาคม','04'=>'เมษายน','05'=>'พฤษภาคม','06'=>'มิถุนายน',
                     '07'=>'กรกฎาคม','08'=>'สิงหาคม','09'=>'กันยายน','10'=>'ตุลาคม','11'=>'พฤศจิกายน','12'=>'ธันวาคม'
