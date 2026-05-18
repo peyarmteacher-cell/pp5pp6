@@ -220,7 +220,7 @@ $days = [
             min-height: 297mm;
             margin: 20px auto;
             background: white;
-            padding: 0.5cm;
+            padding: 0.4cm;
             position: relative;
             box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
         }
@@ -229,9 +229,9 @@ $days = [
         .timetable-table th, .timetable-table td { border: 1.2px solid #64748b; padding: 2px; text-align: center; height: 50px; overflow: hidden; }
         .timetable-table th { background: #f1f5f9; font-weight: 700; color: #1e293b; font-size: 13px; height: 35px; }
         
-        .workload-table th, .workload-table td { border: 1px solid #cbd5e1; padding: 6px; text-align: left; }
-        .workload-table th { background: #f8fafc; font-size: 14px; font-weight: 800; }
-        .workload-table td { font-size: 14px; }
+        .workload-table th, .workload-table td { border: 1px solid #cbd5e1; padding: 3px 6px; text-align: left; line-height: 1.2; }
+        .workload-table th { background: #f8fafc; font-size: 12px; font-weight: 800; }
+        .workload-table td { font-size: 12px; }
         .workload-table .center { text-align: center; }
         
         .period-header { font-size: 10px; color: #64748b; font-weight: normal; margin-top: 1px; }
@@ -344,26 +344,26 @@ $days = [
 
     <?php if($target_type === 'teacher' && !empty($workload)): ?>
     <div class="a4-portrait page-portrait">
-        <div class="text-center mb-6">
-             <div class="flex justify-center mb-3">
+        <div class="text-center mb-4">
+             <div class="flex justify-center mb-2">
                 <?php if (!empty($logo_url)): ?>
-                    <img src="<?= $logo_url ?>" class="w-20 h-20 object-contain" referrerPolicy="no-referrer">
+                    <img src="<?= $logo_url ?>" class="w-14 h-14 object-contain" referrerPolicy="no-referrer">
                 <?php endif; ?>
             </div>
-            <h2 class="text-xl font-black text-slate-800 tracking-tight">ภาระงานการสอนของคุณครู</h2>
-            <p class="text-base font-bold text-blue-700 mt-1"><?= $teacher_full_name ?></p>
-            <div class="flex items-center justify-center gap-4 mt-2">
-                <p class="text-xs font-medium text-slate-500">ประจำภาคเรียนที่ <?= $semester ?> ปีการศึกษา <?= $academic_year ?></p>
-                <p class="text-xs font-medium text-slate-500">โรงเรียน<?= $school['name'] ?></p>
+            <h2 class="text-lg font-black text-slate-800 tracking-tight">ภาระงานการสอนของคุณครู</h2>
+            <p class="text-sm font-bold text-blue-700 mt-0.5"><?= $teacher_full_name ?></p>
+            <div class="flex items-center justify-center gap-4 mt-1">
+                <p class="text-[10px] font-medium text-slate-500">ประจำภาคเรียนที่ <?= $semester ?> ปีการศึกษา <?= $academic_year ?></p>
+                <p class="text-[10px] font-medium text-slate-500">โรงเรียน<?= $school['name'] ?></p>
             </div>
         </div>
 
-        <table class="workload-table mt-4">
+        <table class="workload-table mt-2">
             <thead>
                 <tr>
-                    <th class="center" style="width: 15%;">ลำดับ</th>
-                    <th style="width: 20%;">รหัสวิชา</th>
-                    <th style="width: 45%;">ชื่อวิชา / กิจกรรม</th>
+                    <th class="center" style="width: 12%;">ลำดับ</th>
+                    <th style="width: 18%;">รหัสวิชา</th>
+                    <th style="width: 50%;">ชื่อวิชา / กิจกรรม</th>
                     <th class="center" style="width: 20%;">ชั่วโมง/สัปดาห์</th>
                 </tr>
             </thead>
@@ -381,18 +381,18 @@ $days = [
             </tbody>
             <tfoot>
                 <tr class="bg-slate-50">
-                    <td colspan="3" class="text-right font-black py-4">สรุปภาระงานสอนทั้งสิ้น</td>
-                    <td class="center font-black text-lg text-blue-700 underline decoration-double"><?= $total_hours ?></td>
+                    <td colspan="3" class="text-right font-black py-2.5">สรุปภาระงานสอนทั้งสิ้น</td>
+                    <td class="center font-black text-base text-blue-700 underline decoration-double"><?= $total_hours ?></td>
                 </tr>
             </tfoot>
         </table>
 
-        <div class="mt-6 flex flex-col items-center">
+        <div class="mt-4 flex flex-col items-center">
             <p class="text-[10px] text-slate-600 italic font-medium">ขอรับรองว่าข้อมูลภาระงานการสอนดังกล่าวเป็นความจริงทุกประการ</p>
-            <div class="mt-6 text-center">
-                <p class="mb-3">ลงชื่อ..........................................................</p>
+            <div class="mt-4 text-center">
+                <p class="mb-2">ลงชื่อ..........................................................</p>
                 <p class="font-bold text-sm">( <?= $teacher_full_name ?> )</p>
-                <p class="text-sm text-slate-500 mt-1">วันที่ <?= date('d') ?> เดือน <?= [
+                <p class="text-[10px] text-slate-500 mt-1">วันที่ <?= date('d') ?> เดือน <?= [
                     '01'=>'มกราคม','02'=>'กุมภาพันธ์','03'=>'มีนาคม','04'=>'เมษายน','05'=>'พฤษภาคม','06'=>'มิถุนายน',
                     '07'=>'กรกฎาคม','08'=>'สิงหาคม','09'=>'กันยายน','10'=>'ตุลาคม','11'=>'พฤศจิกายน','12'=>'ธันวาคม'
                 ][date('m')] ?> พ.ศ. <?= date('Y') + 543 ?></p>
