@@ -1,3 +1,6 @@
+<?php 
+$is_admin_or_academic = ($_SESSION['role'] === 'admin' || (isset($_SESSION['is_academic']) && $_SESSION['is_academic'] == 1)); 
+?>
 <!-- Timetable Management Section -->
 <div id="manage-timetable" class="section hidden space-y-6">
     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
@@ -7,6 +10,11 @@
                 <p class="text-sm text-slate-500">กำหนดวันและเวลาเรียนสำหรับแต่ละรายวิชา</p>
             </div>
             <div class="flex flex-wrap gap-3">
+                <?php if ($is_admin_or_academic): ?>
+                    <select id="time_teacher_select" onchange="loadTimetable()" class="px-4 py-2 bg-blue-50 border border-blue-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all text-sm font-bold text-blue-700 cursor-pointer">
+                        <option value="">-- เลือกครูผู้สอน --</option>
+                    </select>
+                <?php endif; ?>
                 <select id="time_academic_year" class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all text-sm font-bold text-slate-700 cursor-pointer">
                     <!-- Academic years will be loaded here -->
                 </select>
@@ -109,15 +117,23 @@
 
         const year = yearEl.value || '2567';
         const semester = semesterEl.value || 1;
+
+        const teacherSelect = document.getElementById('time_teacher_select');
+        const teacher_id = teacherSelect ? teacherSelect.value : '<?= $_SESSION['user_id'] ?>';
+        const teacherParam = teacher_id ? `&teacher_id=${teacher_id}` : '';
         
         try {
             // Load timetable data
-            const res = await fetch(`api/teacher/get_timetable.php?academic_year=${year}&semester=${semester}`);
+            const res = await fetch(`api/teacher/get_timetable.php?academic_year=${year}&semester=${semester}${teacherParam}`);
             currentTimetable = await res.json();
             
-            // Load my assignments to populate modal
-            const resAss = await fetch(`api/teacher/get_my_assignments.php?academic_year=${year}&semester=${semester}`);
-            myAssignments = await resAss.json();
+            // Load selected teacher's assignments to populate modal
+            const resAss = await fetch(`api/teacher/get_my_assignments.php?academic_year=${year}&semester=${semester}${teacherParam}`);
+            if (resAss.ok) {
+                myAssignments = await resAss.json();
+            } else {
+                myAssignments = [];
+            }
             
             renderTimetable();
         } catch (e) {
@@ -128,7 +144,9 @@
     function printTeacherTimetable() {
         const year = document.getElementById('time_academic_year').value;
         const semester = document.getElementById('time_semester').value;
-        window.open(`api/teacher/print_timetable.php?academic_year=${year}&semester=${semester}`, '_blank');
+        const teacherSelect = document.getElementById('time_teacher_select');
+        const teacher_id = teacherSelect ? teacherSelect.value : '<?= $_SESSION['user_id'] ?>';
+        window.open(`api/teacher/print_timetable.php?academic_year=${year}&semester=${semester}&target_type=teacher&target_id=${teacher_id}`, '_blank');
     }
 
     function renderTimetable() {
@@ -281,6 +299,8 @@
         }
 
         const currentSlot = currentTimetable.find(t => t.day_of_week == activeSlot.dayId && t.period_number == activeSlot.period);
+        const teacherSelect = document.getElementById('time_teacher_select');
+        const teacher_id = teacherSelect ? teacherSelect.value : '<?= $_SESSION['user_id'] ?>';
 
         const payload = {
             academic_year: document.getElementById('time_academic_year').value,
@@ -288,7 +308,8 @@
             day_of_week: activeSlot.dayId,
             period_number: activeSlot.period,
             subject_id: subject_id,
-            classroom_id: classroom_id || (currentSlot ? currentSlot.classroom_id : null)
+            classroom_id: classroom_id || (currentSlot ? currentSlot.classroom_id : null),
+            teacher_id: teacher_id
         };
 
         try {
@@ -328,6 +349,8 @@
     async function clearMyTimetable() {
         const year = document.getElementById('time_academic_year').value;
         const semester = document.getElementById('time_semester').value;
+        const teacherSelect = document.getElementById('time_teacher_select');
+        const teacher_id = teacherSelect ? teacherSelect.value : '<?= $_SESSION['user_id'] ?>';
         
         if (!confirm(`!!! คำเตือน !!!\nคุณต้องการลบข้อมูลตารางสอนทั้งหมดของภาคเรียนที่ ${semester} ปีการศึกษา ${year} ใช่หรือไม่?\nการดำเนินการนี้ไม่สามารถย้อนกลับได้`)) return;
         
@@ -338,7 +361,7 @@
             const res = await fetch(`api/teacher/clear_timetable.php`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ academic_year: year, semester: semester })
+                body: JSON.stringify({ academic_year: year, semester: semester, teacher_id: teacher_id })
             });
             const result = await res.json();
             if (result.message) {
@@ -354,6 +377,22 @@
 
     async function initTimetableSection() {
         try {
+            // Load teachers if admin or academic
+            const is_admin_or_academic = <?= json_encode($is_admin_or_academic) ?>;
+            if (is_admin_or_academic) {
+                const schoolId = '<?= $_SESSION['school_id'] ?? '' ?>';
+                const resTeachers = await fetch(`api/get_school_teachers.php?school_id=${schoolId}`);
+                if (resTeachers.ok) {
+                    const teachers = await resTeachers.json();
+                    const selectTeacher = document.getElementById('time_teacher_select');
+                    if (selectTeacher && Array.isArray(teachers)) {
+                        selectTeacher.innerHTML = teachers.map(t => 
+                            `<option value="${t.id}" ${t.id == '<?= $_SESSION['user_id'] ?>' ? 'selected' : ''}>${t.name} (${t.position || 'คุณครู'})</option>`
+                        ).join('');
+                    }
+                }
+            }
+
             const res = await fetch('api/academic/get_academic_years.php');
             const years = await res.json();
             const el = document.getElementById('time_academic_year');

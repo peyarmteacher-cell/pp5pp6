@@ -9,7 +9,11 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
+$is_admin_or_academic = ($_SESSION['role'] === 'admin' || (isset($_SESSION['is_academic']) && $_SESSION['is_academic'] == 1));
 $teacher_id = $_SESSION['user_id'];
+if ($is_admin_or_academic && isset($_GET['teacher_id']) && !empty($_GET['teacher_id'])) {
+    $teacher_id = $_GET['teacher_id'];
+}
 $academic_year = $_GET['academic_year'] ?? '2567';
 $semester = $_GET['semester'] ?? 1;
 
