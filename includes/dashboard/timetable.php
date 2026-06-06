@@ -87,6 +87,7 @@ $is_admin_or_academic = ($_SESSION['role'] === 'admin' || (isset($_SESSION['is_a
                     <option value="LD:homeroom" class="font-bold text-blue-600">🏠 โฮมรูม (Home Room)</option>
                     <option value="LD:reducing_time" class="font-bold text-yellow-600">💡 กิจกรรมลดเวลาเรียน เพิ่มเวลารู้</option>
                     <option value="LD:social" class="font-bold text-teal-600">🌱 กิจกรรมเพื่อสังคมและสาธารณประโยชน์</option>
+                    <option value="LD:prayer" class="font-bold text-rose-600">🙏 กิจกรรมสวดมนต์</option>
                     <!-- Assignments will be loaded here -->
                 </select>
             </div>
@@ -167,7 +168,8 @@ $is_admin_or_academic = ($_SESSION['role'] === 'admin' || (isset($_SESSION['is_a
                     'homeroom': 'bg-indigo-50 text-indigo-700 border-indigo-100',
                     'guidance': 'bg-sky-50 text-sky-700 border-sky-100',
                     'reducing_time': 'bg-amber-50 text-amber-700 border-amber-100',
-                    'social': 'bg-teal-50 text-teal-700 border-teal-100'
+                    'social': 'bg-teal-50 text-teal-700 border-teal-100',
+                    'prayer': 'bg-rose-50 text-rose-700 border-rose-100'
                 };
                 return actColors[actKey] || 'bg-slate-50 text-slate-700 border-slate-100';
             }
@@ -222,7 +224,8 @@ $is_admin_or_academic = ($_SESSION['role'] === 'admin' || (isset($_SESSION['is_a
                             'lunch': { code: 'พักกลางวัน', name: 'พักรับประทานอาหาร' },
                             'guidance': { code: 'แนะแนว', name: 'กิจกรรมแนะแนว' },
                             'reducing_time': { code: 'ลดเวลาเรียนฯ', name: 'กิจกรรมลดเวลาเรียน เพิ่มเวลารู้' },
-                            'social': { code: 'กิจกรรมเพื่อสังคมฯ', name: 'กิจกรรมเพื่อสังคมและสาธารณประโยชน์' }
+                            'social': { code: 'กิจกรรมเพื่อสังคมฯ', name: 'กิจกรรมเพื่อสังคมและสาธารณประโยชน์' },
+                            'prayer': { code: 'สวดมนต์', name: 'กิจกรรมสวดมนต์' }
                         };
                         const actKey = slot.activity_type.toLowerCase();
                         if (actMap[actKey]) {
@@ -265,8 +268,18 @@ $is_admin_or_academic = ($_SESSION['role'] === 'admin' || (isset($_SESSION['is_a
             '<option value="LD:homeroom" class="font-bold text-blue-600">🏠 โฮมรูม (Home Room)</option>' +
             '<option value="LD:reducing_time" class="font-bold text-yellow-600">💡 กิจกรรมลดเวลาเรียน เพิ่มเวลารู้</option>' +
             '<option value="LD:social" class="font-bold text-teal-600">🌱 กิจกรรมเพื่อสังคมและสาธารณประโยชน์</option>' +
+            '<option value="LD:prayer" class="font-bold text-rose-600">🙏 กิจกรรมสวดมนต์</option>' +
             myAssignments
-                .filter(a => typeof a.subject_id !== 'string' || !a.subject_id.startsWith('LD:'))
+                .filter(a => {
+                    if (typeof a.subject_id === 'string' && a.subject_id.startsWith('LD:')) return false;
+                    const code = (a.subject_code || '').toLowerCase();
+                    const name = (a.subject_name || '').toLowerCase();
+                    if (code.includes('แนะแนว') || name.includes('แนะแนว')) return false;
+                    if (code.includes('ลูกเสือ') || name.includes('ลูกเสือ') || code.includes('เนตรนารี') || name.includes('เนตรนารี')) return false;
+                    if (code.includes('ชุมนุม') || name.includes('ชุมนุม')) return false;
+                    if (code.includes('เพื่อสังคม') || name.includes('เพื่อสังคม') || code.includes('สังคม') || name.includes('สังคม')) return false;
+                    return true;
+                })
                 .map(a => `<option value="${a.subject_id}|${a.classroom_id}">${a.subject_code} - ${a.subject_name} (${a.level}/${a.room})</option>`)
                 .join('');
         
