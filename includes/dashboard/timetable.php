@@ -85,6 +85,8 @@ $is_admin_or_academic = ($_SESSION['role'] === 'admin' || (isset($_SESSION['is_a
                     <option value="LD:club" class="font-bold text-purple-600">🤝 กิจกรรมชุมนุม</option>
                     <option value="LD:guidance" class="font-bold text-blue-600">🧭 กิจกรรมแนะแนว</option>
                     <option value="LD:homeroom" class="font-bold text-blue-600">🏠 โฮมรูม (Home Room)</option>
+                    <option value="LD:reducing_time" class="font-bold text-yellow-600">💡 กิจกรรมลดเวลาเรียน เพิ่มเวลารู้</option>
+                    <option value="LD:social" class="font-bold text-teal-600">🌱 กิจกรรมเพื่อสังคมและสาธารณประโยชน์</option>
                     <!-- Assignments will be loaded here -->
                 </select>
             </div>
@@ -163,7 +165,9 @@ $is_admin_or_academic = ($_SESSION['role'] === 'admin' || (isset($_SESSION['is_a
                     'scout': 'bg-emerald-50 text-emerald-700 border-emerald-100',
                     'club': 'bg-purple-50 text-purple-700 border-purple-100',
                     'homeroom': 'bg-indigo-50 text-indigo-700 border-indigo-100',
-                    'guidance': 'bg-sky-50 text-sky-700 border-sky-100'
+                    'guidance': 'bg-sky-50 text-sky-700 border-sky-100',
+                    'reducing_time': 'bg-amber-50 text-amber-700 border-amber-100',
+                    'social': 'bg-teal-50 text-teal-700 border-teal-100'
                 };
                 return actColors[actKey] || 'bg-slate-50 text-slate-700 border-slate-100';
             }
@@ -216,7 +220,9 @@ $is_admin_or_academic = ($_SESSION['role'] === 'admin' || (isset($_SESSION['is_a
                             'club': { code: 'ชุมนุม', name: 'กิจกรรมชุมนุม' },
                             'homeroom': { code: 'โฮมรูม', name: 'Home Room' },
                             'lunch': { code: 'พักกลางวัน', name: 'พักรับประทานอาหาร' },
-                            'guidance': { code: 'แนะแนว', name: 'กิจกรรมแนะแนว' }
+                            'guidance': { code: 'แนะแนว', name: 'กิจกรรมแนะแนว' },
+                            'reducing_time': { code: 'ลดเวลาเรียนฯ', name: 'กิจกรรมลดเวลาเรียน เพิ่มเวลารู้' },
+                            'social': { code: 'กิจกรรมเพื่อสังคมฯ', name: 'กิจกรรมเพื่อสังคมและสาธารณประโยชน์' }
                         };
                         const actKey = slot.activity_type.toLowerCase();
                         if (actMap[actKey]) {
@@ -257,7 +263,12 @@ $is_admin_or_academic = ($_SESSION['role'] === 'admin' || (isset($_SESSION['is_a
             '<option value="LD:club" class="font-bold text-purple-600">🤝 กิจกรรมชุมนุม</option>' +
             '<option value="LD:guidance" class="font-bold text-blue-600">🧭 กิจกรรมแนะแนว</option>' +
             '<option value="LD:homeroom" class="font-bold text-blue-600">🏠 โฮมรูม (Home Room)</option>' +
-            myAssignments.map(a => `<option value="${a.subject_id}|${a.classroom_id}">${a.subject_code} - ${a.subject_name} (${a.level}/${a.room})</option>`).join('');
+            '<option value="LD:reducing_time" class="font-bold text-yellow-600">💡 กิจกรรมลดเวลาเรียน เพิ่มเวลารู้</option>' +
+            '<option value="LD:social" class="font-bold text-teal-600">🌱 กิจกรรมเพื่อสังคมและสาธารณประโยชน์</option>' +
+            myAssignments
+                .filter(a => typeof a.subject_id !== 'string' || !a.subject_id.startsWith('LD:'))
+                .map(a => `<option value="${a.subject_id}|${a.classroom_id}">${a.subject_code} - ${a.subject_name} (${a.level}/${a.room})</option>`)
+                .join('');
         
         // Find current value if exists
         const current = currentTimetable.find(t => t.day_of_week == dayId && t.period_number == period);
