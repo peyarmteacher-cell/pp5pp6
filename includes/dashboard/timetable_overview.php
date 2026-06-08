@@ -278,12 +278,12 @@
                             if (isSingleLine) {
                                 return `<div class="text-[10px] font-black text-blue-700 leading-none py-0.5">${s.subject_code}</div>`;
                             } else {
-                                // Hide teacher's name for lunch break in classroom view
+                                // Hide teacher's name for activities in classroom view
                                 let metaText = '';
                                 if (currentTTTab === 'teacher') {
                                     metaText = `${s.level}/${s.room}`;
                                 } else {
-                                    metaText = isLunchSlot ? '' : `${s.teacher_name}`;
+                                    metaText = isActivity ? '' : `${s.teacher_name}`;
                                 }
 
                                 return `

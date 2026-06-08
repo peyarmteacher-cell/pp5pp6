@@ -375,7 +375,7 @@ $days = [
                                                     <div class="text-[10px] font-bold text-slate-500 italic"><?= $slot['level'] ?>/<?= $slot['room'] ?></div>
                                                 <?php endif; ?>
                                             <?php else: ?>
-                                                <?php if(!$isLunchSlot): ?>
+                                                <?php if(!$isActivity): ?>
                                                     <div class="text-[10px] font-bold text-slate-500 italic"><?= ($slot['teacher_name'] ?? '') ?></div>
                                                 <?php endif; ?>
                                             <?php endif; ?>
