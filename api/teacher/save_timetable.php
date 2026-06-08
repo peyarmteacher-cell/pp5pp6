@@ -34,20 +34,42 @@ try {
         $indices = $stmt_idx->fetchAll();
         $has_teacher_id = false;
         foreach ($indices as $idx) {
-            if ($idx['Column_name'] === 'teacher_id') {
+            $col_name = $idx['Column_name'] ?? $idx['column_name'] ?? $idx['COLUMN_NAME'] ?? null;
+            if ($col_name === 'teacher_id') {
                 $has_teacher_id = true;
                 break;
             }
         }
         if (!$has_teacher_id) {
-            // Drop indices เดิม
-            try { $pdo->exec("ALTER TABLE timetables DROP INDEX unique_timetable"); } catch (PDOException $e) {}
-            try { $pdo->exec("ALTER TABLE timetables DROP INDEX unique_timetable_new"); } catch (PDOException $e) {}
-            // สร้างดัชนีใหม่ที่รวม teacher_id เข้าไปด้วยเพื่อป้องกันการชนทับข้ามคุณครู
-            $pdo->exec("ALTER TABLE timetables ADD UNIQUE KEY unique_timetable (teacher_id, classroom_id, academic_year, semester, day_of_week, period_number)");
+            // 1. เพิ่มดัชนีชั่วคราวเพื่อปลดล็อก Foreign Key ของ classroom_id ใน MySQL
+            try {
+                $pdo->exec("ALTER TABLE timetables ADD INDEX temp_classroom_idx (classroom_id)");
+            } catch (PDOException $e) {}
+
+            // 2. ลบดัชนี unique_timetable เดิมทางอ้อม
+            try {
+                $pdo->exec("ALTER TABLE timetables DROP INDEX unique_timetable");
+            } catch (PDOException $e) {}
+            try {
+                $pdo->exec("ALTER TABLE timetables DROP INDEX unique_timetable_new");
+            } catch (PDOException $e) {}
+
+            // 3. สร้างดัชนีใหม่ที่รวม teacher_id และมี classroom_id อยู่คอลัมน์แรกเพื่อช่วยเรื่อง Foreign Key คืน
+            try {
+                $pdo->exec("ALTER TABLE timetables ADD UNIQUE KEY unique_timetable (classroom_id, teacher_id, academic_year, semester, day_of_week, period_number)");
+            } catch (PDOException $e) {
+                try {
+                    $pdo->exec("ALTER TABLE timetables ADD UNIQUE KEY unique_timetable_new (classroom_id, teacher_id, academic_year, semester, day_of_week, period_number)");
+                } catch (PDOException $e_inner) {}
+            }
+
+            // 4. ลบดัชนีชั่วคราวออกเมื่อตัวหลักกลับมาคุมเรียบร้อยแล้ว
+            try {
+                $pdo->exec("ALTER TABLE timetables DROP INDEX temp_classroom_idx");
+            } catch (PDOException $e) {}
         }
     } catch (PDOException $ex) {
-        // จัดการกรณีตารางยังไม่มี หรือข้อผิดพลาดอื่นๆ อย่างปลอดภัย
+        // จัดการอย่างปลอดภัย
     }
 
     // ถอดข้อมูลรายวิชาแบบอาร์เรย์ (รองรับการควบชั้น) หรือแบบค่าเดี่ยว

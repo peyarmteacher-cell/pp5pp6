@@ -620,8 +620,41 @@ try {
         FOREIGN KEY (teacher_id) REFERENCES users(id) ON DELETE CASCADE,
         FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE CASCADE,
         FOREIGN KEY (classroom_id) REFERENCES classrooms(id) ON DELETE CASCADE,
-        UNIQUE KEY unique_timetable (classroom_id, academic_year, semester, day_of_week, period_number)
+        UNIQUE KEY unique_timetable (classroom_id, teacher_id, academic_year, semester, day_of_week, period_number)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+    // รัน Migration ตรวจสอบ/แทนที่ดัชนี unique_timetable ให้รวม teacher_id เพื่อปลดล็อกการจัดตารางวิชาและวันหยุด/พักกลางวัน ซ้ำห้องเรียนเดียวกัน ได้ทั่วถึงทุกคุณครู
+    try {
+        $stmt_idx = $pdo->query("SHOW INDEX FROM timetables WHERE Key_name = 'unique_timetable'");
+        $indices = $stmt_idx->fetchAll();
+        $has_teacher_id = false;
+        foreach ($indices as $idx) {
+            $col_name = $idx['Column_name'] ?? $idx['column_name'] ?? $idx['COLUMN_NAME'] ?? null;
+            if ($col_name === 'teacher_id') {
+                $has_teacher_id = true;
+                break;
+            }
+        }
+        if (!$has_teacher_id) {
+            try { $pdo->exec("ALTER TABLE timetables ADD INDEX temp_classroom_idx (classroom_id)"); } catch (PDOException $e) {}
+            try { $pdo->exec("ALTER TABLE timetables DROP INDEX unique_timetable"); } catch (PDOException $e) {}
+            try { $pdo->exec("ALTER TABLE timetables DROP INDEX unique_timetable_new"); } catch (PDOException $e) {}
+            try {
+                $pdo->exec("ALTER TABLE timetables ADD UNIQUE KEY unique_timetable (classroom_id, teacher_id, academic_year, semester, day_of_week, period_number)");
+                $results[] = "อัปเกรดดัชนีตารางสอนสำเร็จ (รองรับการจัดกิจกรรมร่วมชั้น/สระเวลาทับซ้อนอย่างสมบูรณ์)";
+            } catch (PDOException $e) {
+                try {
+                    $pdo->exec("ALTER TABLE timetables ADD UNIQUE KEY unique_timetable_new (classroom_id, teacher_id, academic_year, semester, day_of_week, period_number)");
+                    $results[] = "อัปเกรดดัชนีตารางสอนสำรองสำเร็จ";
+                } catch (PDOException $e_inner) {
+                    $results[] = "ไม่สามารถเปลี่ยนดัชนีตารางสอนได้: " . $e_inner->getMessage();
+                }
+            }
+            try { $pdo->exec("ALTER TABLE timetables DROP INDEX temp_classroom_idx"); } catch (PDOException $e) {}
+        }
+    } catch (PDOException $ex) {
+        $results[] = "วิเคราะห์/ปรับดัชนีตารางสอนไม่สำเร็จ: " . $ex->getMessage();
+    }
 
     // ตรวจสอบและเพิ่มคอลัมน์ activity_type ใน timetables
     $stmt = $pdo->query("SHOW COLUMNS FROM timetables LIKE 'activity_type'");
