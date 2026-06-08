@@ -100,20 +100,21 @@ try {
             }
         }
         
-        // Deduplicate lunch break at classroom level
-        if ($target_type === 'classroom' && !empty($it['activity_type']) && strtolower($it['activity_type']) === 'lunch') {
+        // Deduplicate activity slots at classroom level (only display once per classroom per day/period for each activity type)
+        if ($target_type === 'classroom' && !empty($it['activity_type'])) {
             $day = $it['day_of_week'];
             $period = $it['period_number'];
-            $already_has_lunch = false;
+            $act_type = strtolower($it['activity_type']);
+            $already_has_act = false;
             if (isset($timetable[$day][$period])) {
                 foreach ($timetable[$day][$period] as $existing) {
-                    if (!empty($existing['activity_type']) && strtolower($existing['activity_type']) === 'lunch') {
-                        $already_has_lunch = true;
+                    if (!empty($existing['activity_type']) && strtolower($existing['activity_type']) === $act_type) {
+                        $already_has_act = true;
                         break;
                     }
                 }
             }
-            if ($already_has_lunch) {
+            if ($already_has_act) {
                 continue;
             }
         }

@@ -244,22 +244,19 @@
                 ${Array.from({length: 8}, (_, i) => i + 1).map(period => {
                     let slots = timetable.filter(t => t.day_of_week == day.id && t.period_number == period);
                     
-                    // Deduplicate lunch slots for classroom view
+                    // Deduplicate activity slots for classroom view
                     if (currentTTTab === 'classroom') {
-                        const hasLunch = slots.some(s => s.activity_type && s.activity_type.toLowerCase() === 'lunch');
-                        if (hasLunch) {
-                            let lunchPicked = false;
-                            slots = slots.filter(s => {
-                                if (s.activity_type && s.activity_type.toLowerCase() === 'lunch') {
-                                    if (!lunchPicked) {
-                                        lunchPicked = true;
-                                        return true;
-                                    }
+                        const seenActivities = new Set();
+                        slots = slots.filter(s => {
+                            if (s.activity_type) {
+                                const actType = s.activity_type.toLowerCase();
+                                if (seenActivities.has(actType)) {
                                     return false;
                                 }
-                                return true;
-                            });
-                        }
+                                seenActivities.add(actType);
+                            }
+                            return true;
+                        });
                     }
 
                     const slot = slots[0];
