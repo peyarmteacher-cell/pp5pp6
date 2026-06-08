@@ -242,25 +242,38 @@
             <tr>
                 <td class="p-3 border border-slate-200 font-black text-xs text-center ${day.class}">${day.name}</td>
                 ${Array.from({length: 8}, (_, i) => i + 1).map(period => {
-                    const slot = timetable.find(t => t.day_of_week == day.id && t.period_number == period);
+                    const slots = timetable.filter(t => t.day_of_week == day.id && t.period_number == period);
+                    const slot = slots[0];
                     const colorClass = getSubjectColor(slot);
                     
-                    const isActivity = slot && !!slot.activity_type;
-                    const singleLineActs = ['scouts', 'scout', 'club', 'guidance'];
-                    const isSingleLine = isActivity && singleLineActs.includes(slot.activity_type.toLowerCase());
+                    let innerContent = '';
+                    if (slots.length === 0) {
+                        innerContent = '<span class="text-[10px] text-slate-300 italic font-medium">ว่าง</span>';
+                    } else {
+                        innerContent = slots.map(s => {
+                            const isActivity = s && !!s.activity_type;
+                            const singleLineActs = ['scouts', 'scout', 'club', 'guidance', 'prayer'];
+                            const isSingleLine = isActivity && singleLineActs.includes(s.activity_type.toLowerCase());
+                            if (isSingleLine) {
+                                return `<div class="text-[10px] font-black text-blue-700 leading-none py-0.5">${s.subject_code}</div>`;
+                            } else {
+                                return `
+                                    <div class="py-0.5 border-b border-dashed border-slate-200/50 last:border-0">
+                                        <div class="text-[9px] font-black leading-none">${s.subject_code || 'กิจกรรม'}</div>
+                                        <div class="text-[8px] font-medium opacity-80 truncate leading-none min-h-[10px] my-0.5">${s.subject_name || ''}</div>
+                                        <div class="text-[8px] font-black opacity-60 leading-none">
+                                            ${currentTTTab === 'teacher' ? `${s.level}/${s.room}` : `${s.teacher_name}`}
+                                        </div>
+                                    </div>
+                                `;
+                            }
+                        }).join('');
+                    }
                     
                     return `
                         <td class="p-2 border transition-all text-center relative min-h-[85px] ${colorClass}">
                             <div class="h-full w-full min-h-[65px] flex flex-col justify-center gap-0.5">
-                                ${slot ? (isSingleLine ? `
-                                    <div class="text-[11px] font-black leading-none">${slot.subject_code}</div>
-                                ` : `
-                                    <div class="text-[10px] font-black leading-none">${slot.subject_code || 'กิจกรรม'}</div>
-                                    <div class="text-[9px] font-medium opacity-80 truncate leading-none min-h-[12px]">${slot.subject_name || ''}</div>
-                                    <div class="text-[9px] font-black opacity-60 leading-none min-h-[12px]">
-                                        ${currentTTTab === 'teacher' ? `${slot.level}/${slot.room}` : `${slot.teacher_name}`}
-                                    </div>
-                                `) : '<span class="text-[10px] text-slate-300 italic font-medium">ว่าง</span>'}
+                                ${innerContent}
                             </div>
                         </td>
                     `;

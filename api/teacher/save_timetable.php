@@ -28,30 +28,70 @@ if (!$day_of_week || !$period_number || !$academic_year) {
 }
 
 try {
-    if ($subject_id === null) {
-        // ลบข้อมูล
+    // 💡 รัน Migration ดัชนี Unique ของ timetables ให้รวม teacher_id ด้วย เพื่อให้หลายคนจัดซ้ำห้องเรียน / กิจกรรมเดียวกันได้
+    try {
+        $stmt_idx = $pdo->query("SHOW INDEX FROM timetables WHERE Key_name = 'unique_timetable'");
+        $indices = $stmt_idx->fetchAll();
+        $has_teacher_id = false;
+        foreach ($indices as $idx) {
+            if ($idx['Column_name'] === 'teacher_id') {
+                $has_teacher_id = true;
+                break;
+            }
+        }
+        if (!$has_teacher_id) {
+            // Drop indices เดิม
+            try { $pdo->exec("ALTER TABLE timetables DROP INDEX unique_timetable"); } catch (PDOException $e) {}
+            try { $pdo->exec("ALTER TABLE timetables DROP INDEX unique_timetable_new"); } catch (PDOException $e) {}
+            // สร้างดัชนีใหม่ที่รวม teacher_id เข้าไปด้วยเพื่อป้องกันการชนทับข้ามคุณครู
+            $pdo->exec("ALTER TABLE timetables ADD UNIQUE KEY unique_timetable (teacher_id, classroom_id, academic_year, semester, day_of_week, period_number)");
+        }
+    } catch (PDOException $ex) {
+        // จัดการกรณีตารางยังไม่มี หรือข้อผิดพลาดอื่นๆ อย่างปลอดภัย
+    }
+
+    // ถอดข้อมูลรายวิชาแบบอาร์เรย์ (รองรับการควบชั้น) หรือแบบค่าเดี่ยว
+    $assignments = $data['assignments'] ?? null;
+    if ($assignments === null) {
+        if ($subject_id !== null) {
+            $assignments = [
+                ['subject_id' => $subject_id, 'classroom_id' => $classroom_id]
+            ];
+        } else {
+            $assignments = [];
+        }
+    }
+
+    if (empty($assignments)) {
+        // ลบข้อมูลทั้งหมดที่มีสำหรับคาบสอนนี้ของคุณครูท่านนี้
         $stmt = $pdo->prepare('DELETE FROM timetables WHERE teacher_id = ? AND academic_year = ? AND semester = ? AND day_of_week = ? AND period_number = ?');
         $stmt->execute([$teacher_id, $academic_year, $semester, $day_of_week, $period_number]);
     } else {
-        $activity_type = null;
-        $real_subject_id = $subject_id;
+        // ชำระข้อมูลเดิมของคุณครูคนนี้ในคาบเวลานี้ออกให้หมดก่อน แล้วเขียนชุดใหม่ลงไปแทน
+        $stmt = $pdo->prepare('DELETE FROM timetables WHERE teacher_id = ? AND academic_year = ? AND semester = ? AND day_of_week = ? AND period_number = ?');
+        $stmt->execute([$teacher_id, $academic_year, $semester, $day_of_week, $period_number]);
 
-        // ตรวจสอบว่าเป็นกิจกรรมพัฒนาผู้เรียนหรือไม่
-        if (is_string($subject_id) && strpos($subject_id, 'LD:') === 0) {
-            $activity_type = str_replace('LD:', '', $subject_id);
-            $real_subject_id = null;
+        foreach ($assignments as $item) {
+            $sub_id = $item['subject_id'] ?? null;
+            $class_id = $item['classroom_id'] ?? null;
+            
+            if ($sub_id === null) continue;
+
+            $activity_type = null;
+            $real_subject_id = $sub_id;
+
+            // ตรวจสอบว่าเป็นกิจกรรมพัฒนาผู้เรียนหรือไม่
+            if (is_string($sub_id) && strpos($sub_id, 'LD:') === 0) {
+                $activity_type = str_replace('LD:', '', $sub_id);
+                $real_subject_id = null;
+            }
+
+            $stmt = $pdo->prepare('
+                INSERT INTO timetables (teacher_id, subject_id, activity_type, classroom_id, academic_year, semester, day_of_week, period_number)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ');
+            $stmt->execute([$teacher_id, $real_subject_id, $activity_type, $class_id, $academic_year, $semester, $day_of_week, $period_number]);
         }
-
-        // บันทึกหรืออัปเดต
-        $stmt = $pdo->prepare('
-            INSERT INTO timetables (teacher_id, subject_id, activity_type, classroom_id, academic_year, semester, day_of_week, period_number)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            ON DUPLICATE KEY UPDATE 
-            teacher_id = VALUES(teacher_id),
-            subject_id = VALUES(subject_id),
-            activity_type = VALUES(activity_type)
-        ');
-        $stmt->execute([$teacher_id, $real_subject_id, $activity_type, $classroom_id, $academic_year, $semester, $day_of_week, $period_number]);
     }
 
     echo json_encode(['message' => 'บันทึกตารางสอนเรียบร้อยแล้ว']);

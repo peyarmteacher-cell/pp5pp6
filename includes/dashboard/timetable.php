@@ -76,10 +76,17 @@ $is_admin_or_academic = ($_SESSION['role'] === 'admin' || (isset($_SESSION['is_a
         <div class="space-y-4">
             <p id="assign-slot-info" class="text-sm font-bold text-blue-600 bg-blue-50 p-3 rounded-xl"></p>
             
-            <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">เลือกวิชาและห้องเรียน</label>
-                <select id="assign_subject_classroom" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer">
-                    <option value="">-- ว่าง / ลบข้อมูล --</option>
+            <div class="flex items-center gap-2 pb-2 border-b border-slate-100">
+                <span class="font-bold text-slate-700 text-xs">ตัวเลือกคาบเรียน:</span>
+                <button type="button" onclick="clearAssignmentSelection()" class="text-xs px-2.5 py-1.5 bg-red-50 text-red-600 rounded-xl hover:bg-red-100 transition-all font-bold cursor-pointer ml-auto flex items-center gap-1">
+                    🧹 ลบข้อมูล/ทำเป็นคาบว่าง
+                </button>
+            </div>
+
+            <div class="bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">🧭 1. กิจกรรมพิเศษ (จัดพร้อมกันได้ซ้ำกันทุกคน)</label>
+                <select id="assign_special_activity" onchange="onSpecialActivityChanged()" class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer text-sm font-semibold">
+                    <option value="">-- ไม่เลือกกิจกรรมพิเศษ --</option>
                     <option value="LD:lunch" class="font-bold text-orange-600">🍴 พักรับประทานอาหาร</option>
                     <option value="LD:scouts" class="font-bold text-green-600">⚜️ กิจกรรมลูกเสือ-เนตรนารี</option>
                     <option value="LD:club" class="font-bold text-purple-600">🤝 กิจกรรมชุมนุม</option>
@@ -88,13 +95,19 @@ $is_admin_or_academic = ($_SESSION['role'] === 'admin' || (isset($_SESSION['is_a
                     <option value="LD:reducing_time" class="font-bold text-yellow-600">💡 กิจกรรมลดเวลาเรียน เพิ่มเวลารู้</option>
                     <option value="LD:social" class="font-bold text-teal-600">🌱 กิจกรรมเพื่อสังคมและสาธารณประโยชน์</option>
                     <option value="LD:prayer" class="font-bold text-rose-600">🙏 กิจกรรมสวดมนต์</option>
-                    <!-- Assignments will be loaded here -->
                 </select>
             </div>
             
-            <div class="flex gap-3 pt-4">
-                <button onclick="closeModal('assignSubjectModal')" class="flex-1 px-4 py-2 border border-slate-200 rounded-xl text-slate-600 font-semibold hover:bg-slate-50 transition-all cursor-pointer">ยกเลิก</button>
-                <button onclick="saveTimetableSlot()" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-all cursor-pointer">บันทึก</button>
+            <div class="bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">📚 2. รายวิชาที่สอน (เลือกได้มากกว่า 1 เพื่อ "เรียนควบชั้น")</label>
+                <div id="assign_subjects_container" class="space-y-1.5 max-h-[180px] overflow-y-auto pr-1">
+                    <!-- Checkboxes will be populated here -->
+                </div>
+            </div>
+            
+            <div class="flex gap-3 pt-2">
+                <button onclick="closeModal('assignSubjectModal')" class="flex-1 px-4 py-2.5 border border-slate-200 rounded-xl text-slate-600 font-semibold hover:bg-slate-50 transition-all cursor-pointer text-sm">ยกเลิก</button>
+                <button onclick="saveTimetableSlot()" class="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-all cursor-pointer text-sm">บันทึก</button>
             </div>
         </div>
     </div>
@@ -207,46 +220,61 @@ $is_admin_or_academic = ($_SESSION['role'] === 'admin' || (isset($_SESSION['is_a
             <tr>
                 <td class="p-3 border border-slate-200 font-bold text-xs text-center ${day.class}">${day.name}</td>
                 ${[1, 2, 3, 4, 5, 6, 7, 8].map(period => {
-                    const slot = currentTimetable.find(t => t.day_of_week == day.id && t.period_number == period);
+                    const slots = currentTimetable.filter(t => t.day_of_week == day.id && t.period_number == period);
+                    const slot = slots[0];
                     const colorClass = getSubjectColor(slot);
                     
-                    let displayCode = slot ? (slot.subject_code || '') : '';
-                    let displayName = slot ? (slot.subject_name || '') : '';
-                    const isActivity = slot && !!slot.activity_type;
+                    let innerContent = '';
+                    if (slots.length === 0) {
+                        innerContent = '<span class="text-[10px] text-slate-300 italic font-medium">ว่าง</span>';
+                    } else {
+                        innerContent = slots.map(s => {
+                            let displayCode = s.subject_code || '';
+                            let displayName = s.subject_name || '';
+                            const isActivity = s && !!s.activity_type;
 
-                    // Fallback mapping if API provides empty strings
-                    if (isActivity && (!displayCode || !displayName)) {
-                        const actMap = {
-                            'scouts': { code: 'ลูกเสือเนตรนารี', name: 'กิจกรรมลูกเสือเนตรนารี' },
-                            'scout': { code: 'ลูกเสือเนตรนารี', name: 'กิจกรรมลูกเสือเนตรนารี' },
-                            'club': { code: 'ชุมนุม', name: 'กิจกรรมชุมนุม' },
-                            'homeroom': { code: 'โฮมรูม', name: 'Home Room' },
-                            'lunch': { code: 'พักกลางวัน', name: 'พักรับประทานอาหาร' },
-                            'guidance': { code: 'แนะแนว', name: 'กิจกรรมแนะแนว' },
-                            'reducing_time': { code: 'ลดเวลาเรียนฯ', name: 'กิจกรรมลดเวลาเรียน เพิ่มเวลารู้' },
-                            'social': { code: 'กิจกรรมเพื่อสังคมฯ', name: 'กิจกรรมเพื่อสังคมและสาธารณประโยชน์' },
-                            'prayer': { code: 'สวดมนต์', name: 'กิจกรรมสวดมนต์' }
-                        };
-                        const actKey = slot.activity_type.toLowerCase();
-                        if (actMap[actKey]) {
-                            displayCode = displayCode || actMap[actKey].code;
-                            displayName = displayName || actMap[actKey].name;
-                        }
+                            if (isActivity && (!displayCode || !displayName)) {
+                                const actMap = {
+                                    'scouts': { code: 'ลูกเสือเนตรนารี', name: 'กิจกรรมลูกเสือเนตรนารี' },
+                                    'scout': { code: 'ลูกเสือเนตรนารี', name: 'กิจกรรมลูกเสือเนตรนารี' },
+                                    'club': { code: 'ชุมนุม', name: 'กิจกรรมชุมนุม' },
+                                    'homeroom': { code: 'โฮมรูม', name: 'Home Room' },
+                                    'lunch': { code: 'พักกลางวัน', name: 'พักรับประทานอาหาร' },
+                                    'guidance': { code: 'แนะแนว', name: 'กิจกรรมแนะแนว' },
+                                    'reducing_time': { code: 'ลดเวลาเรียนฯ', name: 'กิจกรรมลดเวลาเรียน เพิ่มเวลารู้' },
+                                    'social': { code: 'กิจกรรมเพื่อสังคมฯ', name: 'กิจกรรมเพื่อสังคมและสาธารณประโยชน์' },
+                                    'prayer': { code: 'สวดมนต์', name: 'กิจกรรมสวดมนต์' }
+                                };
+                                const actKey = s.activity_type.toLowerCase();
+                                if (actMap[actKey]) {
+                                    displayCode = displayCode || actMap[actKey].code;
+                                    displayName = displayName || actMap[actKey].name;
+                                }
+                            }
+
+                            const singleLineActs = ['scouts', 'scout', 'club', 'guidance', 'prayer'];
+                            const isSingleLine = isActivity && singleLineActs.includes(s.activity_type.toLowerCase());
+                            
+                            if (isSingleLine) {
+                                return `<div class="text-[10px] font-bold text-blue-700 leading-tight py-0.5">${displayCode}</div>`;
+                            } else {
+                                return `
+                                    <div class="py-1 border-b border-dashed border-slate-200/60 last:border-0">
+                                        <div class="text-[10px] font-bold text-blue-700 leading-tight">${displayCode || 'กิจกรรม'}</div>
+                                        <div class="text-[9px] text-slate-600 truncate leading-tight my-0.5">${displayName || ''}</div>
+                                        <div class="text-[9px] font-bold text-slate-400 leading-tight">
+                                            ${(!isActivity && s.level) ? `${s.level}/${s.room}` : '&nbsp;'}
+                                        </div>
+                                    </div>
+                                `;
+                            }
+                        }).join('');
                     }
-
-                    const singleLineActs = ['scouts', 'scout', 'club', 'guidance'];
-                    const isSingleLine = isActivity && singleLineActs.includes(slot.activity_type.toLowerCase());
                     
                     return `
                         <td class="p-2 border transition-all text-center relative group min-h-[85px] ${colorClass}">
-                            <div onclick="openAssignModal(${day.id}, ${period}, '${day.name}')" class="cursor-pointer hover:opacity-80 transition-all h-full w-full min-h-[65px] flex flex-col justify-center gap-0.5">
-                                ${slot ? (isSingleLine ? `
-                                    <div class="text-[11px] font-bold leading-none">${displayCode}</div>
-                                ` : `
-                                    <div class="text-[10px] font-bold leading-none">${displayCode || 'กิจกรรม'}</div>
-                                    <div class="text-[9px] opacity-80 truncate leading-none min-h-[12px]">${displayName || ''}</div>
-                                    <div class="text-[9px] font-bold opacity-60 leading-none min-h-[12px]">${(!isActivity && slot.level) ? `${slot.level}/${slot.room}` : '&nbsp;'}</div>
-                                `) : '<span class="text-[10px] text-slate-300 italic">ว่าง</span>'}
+                            <div onclick="openAssignModal(${day.id}, ${period}, '${day.name}')" class="cursor-pointer hover:opacity-85 transition-all h-full w-full min-h-[65px] flex flex-col justify-center gap-0.5">
+                                ${innerContent}
                             </div>
                         </td>
                     `;
@@ -255,44 +283,79 @@ $is_admin_or_academic = ($_SESSION['role'] === 'admin' || (isset($_SESSION['is_a
         `).join('');
     }
 
+    // ฟังก์ชันเคลียร์ค่าเพื่อจัดเป็นคาบว่าง
+    function clearAssignmentSelection() {
+        document.getElementById('assign_special_activity').value = "";
+        const checkboxes = document.querySelectorAll('.assignment-cb');
+        checkboxes.forEach(cb => cb.checked = false);
+    }
+
+    // สลับค่าระหว่างกิจกรรมพิเศษและรายวิชา
+    function onSpecialActivityChanged() {
+        const actVal = document.getElementById('assign_special_activity').value;
+        if (actVal !== "") {
+            const checkboxes = document.querySelectorAll('.assignment-cb');
+            checkboxes.forEach(cb => cb.checked = false);
+        }
+    }
+
+    function onSubjectCbChanged() {
+        const checkboxes = document.querySelectorAll('.assignment-cb');
+        let hasChecked = false;
+        checkboxes.forEach(cb => {
+            if (cb.checked) hasChecked = true;
+        });
+        if (hasChecked) {
+            document.getElementById('assign_special_activity').value = "";
+        }
+    }
+
     function openAssignModal(dayId, period, dayName) {
         activeSlot = { dayId, period };
         document.getElementById('assign-slot-info').innerText = `วัน${dayName} คาบที่ ${period}`;
         
-        const select = document.getElementById('assign_subject_classroom');
-        select.innerHTML = '<option value="">-- ว่าง / ลบข้อมูล --</option>' + 
-            '<option value="LD:lunch" class="font-bold text-orange-600">🍴 พักรับประทานอาหาร</option>' +
-            '<option value="LD:scouts" class="font-bold text-green-600">⚜️ กิจกรรมลูกเสือเนตรนารี</option>' +
-            '<option value="LD:club" class="font-bold text-purple-600">🤝 กิจกรรมชุมนุม</option>' +
-            '<option value="LD:guidance" class="font-bold text-blue-600">🧭 กิจกรรมแนะแนว</option>' +
-            '<option value="LD:homeroom" class="font-bold text-blue-600">🏠 โฮมรูม (Home Room)</option>' +
-            '<option value="LD:reducing_time" class="font-bold text-yellow-600">💡 กิจกรรมลดเวลาเรียน เพิ่มเวลารู้</option>' +
-            '<option value="LD:social" class="font-bold text-teal-600">🌱 กิจกรรมเพื่อสังคมและสาธารณประโยชน์</option>' +
-            '<option value="LD:prayer" class="font-bold text-rose-600">🙏 กิจกรรมสวดมนต์</option>' +
-            myAssignments
-                .filter(a => {
-                    if (typeof a.subject_id === 'string' && a.subject_id.startsWith('LD:')) return false;
-                    const code = (a.subject_code || '').toLowerCase();
-                    const name = (a.subject_name || '').toLowerCase();
-                    if (code.includes('แนะแนว') || name.includes('แนะแนว')) return false;
-                    if (code.includes('ลูกเสือ') || name.includes('ลูกเสือ') || code.includes('เนตรนารี') || name.includes('เนตรนารี')) return false;
-                    if (code.includes('ชุมนุม') || name.includes('ชุมนุม')) return false;
-                    if (code.includes('เพื่อสังคม') || name.includes('เพื่อสังคม') || code.includes('สังคม') || name.includes('สังคม')) return false;
-                    return true;
-                })
-                .map(a => `<option value="${a.subject_id}|${a.classroom_id}">${a.subject_code} - ${a.subject_name} (${a.level}/${a.room})</option>`)
-                .join('');
+        const specialSelect = document.getElementById('assign_special_activity');
+        const container = document.getElementById('assign_subjects_container');
         
-        // Find current value if exists
-        const current = currentTimetable.find(t => t.day_of_week == dayId && t.period_number == period);
-        if (current) {
-            if (current.activity_type) {
-                select.value = 'LD:' + current.activity_type;
-            } else {
-                select.value = `${current.subject_id}|${current.classroom_id}`;
-            }
+        // ค้นหาข้อมูลรายวิชาและกิจกรรมที่บันทึกอยู่ในคาบนี้แล้ว
+        const entriesInSlot = currentTimetable.filter(t => t.day_of_week == dayId && t.period_number == period);
+        
+        // รีเซ็ตกิจกรรมพิเศษ
+        specialSelect.value = "";
+        const activeSpecial = entriesInSlot.find(t => t.activity_type);
+        if (activeSpecial) {
+            specialSelect.value = 'LD:' + activeSpecial.activity_type;
+        }
+        
+        // ฟิลเตอร์เฉพาะรายวิชาหลัก (ไม่ใช่ แนะแนว, ลูกเสือ, ชุมนุม, เพื่อสังคม เพื่อนำไปตั้งค่าเฉพาะกิจกรรมพิเศษแยกต่างหาก)
+        const filteredAssignments = myAssignments.filter(a => {
+            if (typeof a.subject_id === 'string' && a.subject_id.startsWith('LD:')) return false;
+            const code = (a.subject_code || '').toLowerCase();
+            const name = (a.subject_name || '').toLowerCase();
+            if (code.includes('แนะแนว') || name.includes('แนะแนว')) return false;
+            if (code.includes('ลูกเสือ') || name.includes('ลูกเสือ') || code.includes('เนตรนารี') || name.includes('เนตรนารี')) return false;
+            if (code.includes('ชุมนุม') || name.includes('ชุมนุม')) return false;
+            if (code.includes('เพื่อสังคม') || name.includes('เพื่อสังคม') || code.includes('สังคม') || name.includes('สังคม')) return false;
+            return true;
+        });
+        
+        if (filteredAssignments.length === 0) {
+            container.innerHTML = '<span class="text-xs text-slate-400 italic block py-4 text-center">ไม่มีวิชาสอนอื่นที่ได้รับมอบหมาย</span>';
         } else {
-            select.value = "";
+            container.innerHTML = filteredAssignments.map(a => {
+                const combinedKey = `${a.subject_id}|${a.classroom_id}`;
+                const isChecked = entriesInSlot.some(t => !t.activity_type && t.subject_id == a.subject_id && t.classroom_id == a.classroom_id);
+                
+                return `
+                    <label class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-white bg-slate-100/45 cursor-pointer transition-all border border-transparent hover:border-slate-200/80">
+                        <input type="checkbox" value="${combinedKey}" class="assignment-cb w-4.5 h-4.5 text-blue-600 rounded border-slate-300 focus:ring-blue-500/20" onchange="onSubjectCbChanged()" ${isChecked ? 'checked' : ''}>
+                        <div class="leading-tight flex-1">
+                            <div class="text-xs font-bold text-slate-700">${a.subject_code} - ${a.subject_name}</div>
+                            <div class="text-[10px] text-slate-500 font-bold mt-0.5">ชั้นเรียน ${a.level}/${a.room}</div>
+                        </div>
+                    </label>
+                `;
+            }).join('');
         }
         
         openModal('assignSubjectModal');
@@ -301,39 +364,44 @@ $is_admin_or_academic = ($_SESSION['role'] === 'admin' || (isset($_SESSION['is_a
     async function saveTimetableSlot() {
         if (!activeSlot) return;
         
-        const val = document.getElementById('assign_subject_classroom').value;
-        let subject_id = null;
-        let classroom_id = null;
-        
-        if (val) {
-            if (val.startsWith('LD:')) {
-                subject_id = val;
-                // สำหรับกิจกรรมพิเศษ ลองหาห้องเรียนที่คุณครูสอนอยู่สักห้อง
-                if (myAssignments.length > 0) {
-                    classroom_id = myAssignments[0].classroom_id;
-                } else {
-                    alert('กรุณาติดต่อเจ้าหน้าที่วิชาการเพื่อกำหนดห้องเรียนให้คุณครูอย่างน้อย 1 ห้องก่อนครับ');
-                    return;
-                }
-            } else {
-                const parts = val.split('|');
-                subject_id = parts[0];
-                classroom_id = parts[1];
-            }
-        }
-
-        const currentSlot = currentTimetable.find(t => t.day_of_week == activeSlot.dayId && t.period_number == activeSlot.period);
         const teacherSelect = document.getElementById('time_teacher_select');
         const teacher_id = teacherSelect ? teacherSelect.value : '<?= $_SESSION['user_id'] ?>';
-
+        const academic_year = document.getElementById('time_academic_year').value;
+        const semester = document.getElementById('time_semester').value;
+        
+        const specialAct = document.getElementById('assign_special_activity').value;
+        let selectedAssignments = [];
+        
+        if (specialAct) {
+            let classroom_id = null;
+            if (myAssignments.length > 0) {
+                classroom_id = myAssignments[0].classroom_id;
+            } else {
+                alert('กรุณาติดต่อเจ้าหน้าที่วิชาการเพื่อกำหนดห้องเรียนให้คุณครูอย่างน้อย 1 ห้องก่อนครับ');
+                return;
+            }
+            selectedAssignments.push({
+                subject_id: specialAct,
+                classroom_id: classroom_id
+            });
+        } else {
+            const checkboxes = document.querySelectorAll('.assignment-cb:checked');
+            checkboxes.forEach(cb => {
+                const parts = cb.value.split('|');
+                selectedAssignments.push({
+                    subject_id: parts[0],
+                    classroom_id: parts[1]
+                });
+            });
+        }
+        
         const payload = {
-            academic_year: document.getElementById('time_academic_year').value,
-            semester: document.getElementById('time_semester').value,
+            academic_year: academic_year,
+            semester: semester,
             day_of_week: activeSlot.dayId,
             period_number: activeSlot.period,
-            subject_id: subject_id,
-            classroom_id: classroom_id || (currentSlot ? currentSlot.classroom_id : null),
-            teacher_id: teacher_id
+            teacher_id: teacher_id,
+            assignments: selectedAssignments
         };
 
         try {

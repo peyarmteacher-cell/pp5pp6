@@ -99,54 +99,89 @@ try {
                 $it['subject_code'] = $act['code'];
             }
         }
-        $timetable[$it['day_of_week']][$it['period_number']] = $it;
+        $timetable[$it['day_of_week']][$it['period_number']][] = $it;
     }
 
-    // NEW: Calculate teaching workload summary
+    // NEW: Calculate teaching workload summary by slot (deduplicate simultaneous combined classes)
     $workload = [];
     $total_hours = 0;
     if ($target_type === 'teacher') {
+        $slot_map = [];
         foreach ($items as $it) {
             // Skip lunch from workload calculation
             if (isset($it['activity_type']) && strtolower($it['activity_type']) === 'lunch') continue;
 
-            $sName = $it['subject_name'];
-            $sCode = $it['subject_code'];
+            $period_key = $it['day_of_week'] . '_' . $it['period_number'];
+            if (!isset($slot_map[$period_key])) {
+                $slot_map[$period_key] = [];
+            }
+            $slot_map[$period_key][] = $it;
+        }
+
+        foreach ($slot_map as $period_key => $period_slots) {
+            $sCodes = [];
+            $sNames = [];
+            $levels = [];
             
-            // Handle activities that might not have subject mapped
-            if (empty($sCode) && !empty($it['activity_type'])) {
-                $activities = [
-                    'guidance' => ['name' => 'กิจกรรมแนะแนว', 'code' => 'แนะแนว'],
-                    'scouts' => ['name' => 'กิจกรรมลูกเสือเนตรนารี', 'code' => 'ลูกเสือเนตรนารี'],
-                    'scout' => ['name' => 'กิจกรรมลูกเสือเนตรนารี', 'code' => 'ลูกเสือเนตรนารี'],
-                    'club' => ['name' => 'กิจกรรมชุมนุม', 'code' => 'ชุมนุม'],
-                    'social' => ['name' => 'กิจกรรมเพื่อสังคมและสาธารณประโยชน์', 'code' => 'กิจกรรมเพื่อสังคมฯ'],
-                    'homeroom' => ['name' => 'Home Room', 'code' => 'โฮมรูม'],
-                    'reducing_time' => ['name' => 'กิจกรรมลดเวลาเรียน เพิ่มเวลารู้', 'code' => 'ลดเวลาเรียนฯ'],
-                    'prayer' => ['name' => 'กิจกรรมสวดมนต์', 'code' => 'สวดมนต์']
-                ];
-                $act = $activities[strtolower($it['activity_type'])] ?? null;
-                if ($act) {
-                    $sCode = $act['code'];
-                    $sName = $act['name'];
-                } else {
-                    $sCode = 'กิจกรรม';
-                    $sName = 'กิจกรรมอื่นๆ';
+            foreach ($period_slots as $it) {
+                $sName = $it['subject_name'];
+                $sCode = $it['subject_code'];
+                
+                // Handle activities that might not have subject mapped
+                if (empty($sCode) && !empty($it['activity_type'])) {
+                    $activities = [
+                        'guidance' => ['name' => 'กิจกรรมแนะแนว', 'code' => 'แนะแนว'],
+                        'scouts' => ['name' => 'กิจกรรมลูกเสือเนตรนารี', 'code' => 'ลูกเสือเนตรนารี'],
+                        'scout' => ['name' => 'กิจกรรมลูกเสือเนตรนารี', 'code' => 'ลูกเสือเนตรนารี'],
+                        'club' => ['name' => 'กิจกรรมชุมนุม', 'code' => 'ชุมนุม'],
+                        'social' => ['name' => 'กิจกรรมเพื่อสังคมและสาธารณประโยชน์', 'code' => 'กิจกรรมเพื่อสังคมฯ'],
+                        'homeroom' => ['name' => 'Home Room', 'code' => 'โฮมรูม'],
+                        'reducing_time' => ['name' => 'กิจกรรมลดเวลาเรียน เพิ่มเวลารู้', 'code' => 'ลดเวลาเรียนฯ'],
+                        'prayer' => ['name' => 'กิจกรรมสวดมนต์', 'code' => 'สวดมนต์']
+                    ];
+                    $act = $activities[strtolower($it['activity_type'])] ?? null;
+                    if ($act) {
+                        $sCode = $act['code'];
+                        $sName = $act['name'];
+                    } else {
+                        $sCode = 'กิจกรรม';
+                        $sName = 'กิจกรรมอื่นๆ';
+                    }
+                }
+
+                if (!empty($sCode)) {
+                    $sCodes[] = $sCode;
+                    $sNames[] = $sName;
+                    if (!empty($it['level'])) {
+                        $levels[] = $it['level'] . '/' . $it['room'];
+                    }
                 }
             }
 
-            if (empty($sCode)) continue;
+            if (empty($sCodes)) continue;
 
-            if (!isset($workload[$sCode])) {
-                $workload[$sCode] = [
-                    'code' => $sCode,
-                    'name' => $sName,
+            $unique_codes = array_unique($sCodes);
+            $unique_names = array_unique($sNames);
+            $unique_levels = array_unique($levels);
+
+            // Combine name and code representation for workload row
+            $combined_code = implode(' + ', $unique_codes);
+            $combined_name = implode(' + ', $unique_names);
+            if (!empty($unique_levels)) {
+                $combined_name .= ' (' . implode(', ', $unique_levels) . ')';
+            }
+
+            if (!isset($workload[$combined_code])) {
+                $workload[$combined_code] = [
+                    'code' => $combined_code,
+                    'name' => $combined_name,
                     'hours' => 0
                 ];
             }
-            $workload[$sCode]['hours']++;
+            $workload[$combined_code]['hours']++;
             $total_hours++;
         }
+        
         // Sort by code
         ksort($workload);
     }
@@ -291,28 +326,39 @@ $days = [
                     <tr>
                         <td style="background: <?= $day['color'] ?>; font-weight: bold; border-left: 5px solid #94a3b8;"><?= $day['name'] ?></td>
                         <?php for($p=1; $p<=8; $p++): 
-                                $slot = $timetable[$dayId][$p] ?? null;
-                                $isLunch = ($slot && isset($slot['activity_type']) && $slot['activity_type'] === 'lunch');
+                                $slots = $timetable[$dayId][$p] ?? [];
+                                $isLunch = false;
+                                foreach ($slots as $s) {
+                                    if (isset($s['activity_type']) && $s['activity_type'] === 'lunch') {
+                                        $isLunch = true;
+                                    }
+                                }
                         ?>
                             <td class="<?= $isLunch ? 'bg-orange-50' : '' ?>">
-                                <?php if($slot): 
-                                    $isActivity = !empty($slot['activity_type']);
-                                    $singleLineActs = ['scouts', 'scout', 'club', 'guidance'];
-                                    $isSingleLine = $isActivity && in_array(strtolower($slot['activity_type']), $singleLineActs);
-                                ?>
-                                    <?php if($isSingleLine): ?>
-                                        <div class="text-[12px] font-bold text-blue-700 leading-tight"><?= $slot['subject_code'] ?></div>
-                                    <?php else: ?>
-                                        <div class="text-[12px] font-bold <?= $isLunch ? 'text-orange-700' : 'text-blue-700' ?> leading-tight"><?= $slot['subject_code'] ?></div>
-                                        <div class="text-[10px] my-0.5"><?= $slot['subject_name'] ?></div>
-                                        <?php if($target_type === 'teacher'): ?>
-                                            <?php if(!$isActivity && $slot['level']): ?>
-                                                <div class="text-[10px] font-bold text-slate-500 italic"><?= $slot['level'] ?>/<?= $slot['room'] ?></div>
-                                            <?php endif; ?>
-                                        <?php else: ?>
-                                            <div class="text-[10px] font-bold text-slate-500 italic"><?= ($slot['teacher_name'] ?? '') ?></div>
+                                <?php if(!empty($slots)): ?>
+                                    <?php foreach($slots as $slotIdx => $slot): 
+                                        $isActivity = !empty($slot['activity_type']);
+                                        $singleLineActs = ['scouts', 'scout', 'club', 'guidance', 'prayer'];
+                                        $isSingleLine = $isActivity && in_array(strtolower($slot['activity_type']), $singleLineActs);
+                                    ?>
+                                        <?php if($slotIdx > 0): ?>
+                                            <div style="border-top: 1px dashed #cbd5e1; margin: 4px 0; padding-top: 4px;"></div>
                                         <?php endif; ?>
-                                    <?php endif; ?>
+
+                                        <?php if($isSingleLine): ?>
+                                            <div class="text-[12px] font-bold text-blue-700 leading-tight"><?= $slot['subject_code'] ?></div>
+                                        <?php else: ?>
+                                            <div class="text-[12px] font-bold <?= $isLunch ? 'text-orange-700' : 'text-blue-700' ?> leading-tight"><?= $slot['subject_code'] ?></div>
+                                            <div class="text-[10px] my-0.5"><?= $slot['subject_name'] ?></div>
+                                            <?php if($target_type === 'teacher'): ?>
+                                                <?php if(!$isActivity && $slot['level']): ?>
+                                                    <div class="text-[10px] font-bold text-slate-500 italic"><?= $slot['level'] ?>/<?= $slot['room'] ?></div>
+                                                <?php endif; ?>
+                                            <?php else: ?>
+                                                <div class="text-[10px] font-bold text-slate-500 italic"><?= ($slot['teacher_name'] ?? '') ?></div>
+                                            <?php endif; ?>
+                                        <?php endif; ?>
+                                    <?php endforeach; ?>
                                 <?php endif; ?>
                             </td>
                         <?php endfor; ?>
