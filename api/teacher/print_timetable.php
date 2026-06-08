@@ -99,6 +99,25 @@ try {
                 $it['subject_code'] = $act['code'];
             }
         }
+        
+        // Deduplicate lunch break at classroom level
+        if ($target_type === 'classroom' && !empty($it['activity_type']) && strtolower($it['activity_type']) === 'lunch') {
+            $day = $it['day_of_week'];
+            $period = $it['period_number'];
+            $already_has_lunch = false;
+            if (isset($timetable[$day][$period])) {
+                foreach ($timetable[$day][$period] as $existing) {
+                    if (!empty($existing['activity_type']) && strtolower($existing['activity_type']) === 'lunch') {
+                        $already_has_lunch = true;
+                        break;
+                    }
+                }
+            }
+            if ($already_has_lunch) {
+                continue;
+            }
+        }
+        
         $timetable[$it['day_of_week']][$it['period_number']][] = $it;
     }
 
@@ -340,6 +359,7 @@ $days = [
                                         $isActivity = !empty($slot['activity_type']);
                                         $singleLineActs = ['scouts', 'scout', 'club', 'guidance', 'prayer'];
                                         $isSingleLine = $isActivity && in_array(strtolower($slot['activity_type']), $singleLineActs);
+                                        $isLunchSlot = $isActivity && strtolower($slot['activity_type']) === 'lunch';
                                     ?>
                                         <?php if($slotIdx > 0): ?>
                                             <div style="border-top: 1px dashed #cbd5e1; margin: 4px 0; padding-top: 4px;"></div>
@@ -355,7 +375,9 @@ $days = [
                                                     <div class="text-[10px] font-bold text-slate-500 italic"><?= $slot['level'] ?>/<?= $slot['room'] ?></div>
                                                 <?php endif; ?>
                                             <?php else: ?>
-                                                <div class="text-[10px] font-bold text-slate-500 italic"><?= ($slot['teacher_name'] ?? '') ?></div>
+                                                <?php if(!$isLunchSlot): ?>
+                                                    <div class="text-[10px] font-bold text-slate-500 italic"><?= ($slot['teacher_name'] ?? '') ?></div>
+                                                <?php endif; ?>
                                             <?php endif; ?>
                                         <?php endif; ?>
                                     <?php endforeach; ?>

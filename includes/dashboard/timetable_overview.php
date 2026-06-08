@@ -242,7 +242,26 @@
             <tr>
                 <td class="p-3 border border-slate-200 font-black text-xs text-center ${day.class}">${day.name}</td>
                 ${Array.from({length: 8}, (_, i) => i + 1).map(period => {
-                    const slots = timetable.filter(t => t.day_of_week == day.id && t.period_number == period);
+                    let slots = timetable.filter(t => t.day_of_week == day.id && t.period_number == period);
+                    
+                    // Deduplicate lunch slots for classroom view
+                    if (currentTTTab === 'classroom') {
+                        const hasLunch = slots.some(s => s.activity_type && s.activity_type.toLowerCase() === 'lunch');
+                        if (hasLunch) {
+                            let lunchPicked = false;
+                            slots = slots.filter(s => {
+                                if (s.activity_type && s.activity_type.toLowerCase() === 'lunch') {
+                                    if (!lunchPicked) {
+                                        lunchPicked = true;
+                                        return true;
+                                    }
+                                    return false;
+                                }
+                                return true;
+                            });
+                        }
+                    }
+
                     const slot = slots[0];
                     const colorClass = getSubjectColor(slot);
                     
@@ -254,16 +273,24 @@
                             const isActivity = s && !!s.activity_type;
                             const singleLineActs = ['scouts', 'scout', 'club', 'guidance', 'prayer'];
                             const isSingleLine = isActivity && singleLineActs.includes(s.activity_type.toLowerCase());
+                            const isLunchSlot = isActivity && s.activity_type.toLowerCase() === 'lunch';
+                            
                             if (isSingleLine) {
                                 return `<div class="text-[10px] font-black text-blue-700 leading-none py-0.5">${s.subject_code}</div>`;
                             } else {
+                                // Hide teacher's name for lunch break in classroom view
+                                let metaText = '';
+                                if (currentTTTab === 'teacher') {
+                                    metaText = `${s.level}/${s.room}`;
+                                } else {
+                                    metaText = isLunchSlot ? '' : `${s.teacher_name}`;
+                                }
+
                                 return `
                                     <div class="py-0.5 border-b border-dashed border-slate-200/50 last:border-0">
                                         <div class="text-[9px] font-black leading-none">${s.subject_code || 'กิจกรรม'}</div>
                                         <div class="text-[8px] font-medium opacity-80 truncate leading-none min-h-[10px] my-0.5">${s.subject_name || ''}</div>
-                                        <div class="text-[8px] font-black opacity-60 leading-none">
-                                            ${currentTTTab === 'teacher' ? `${s.level}/${s.room}` : `${s.teacher_name}`}
-                                        </div>
+                                        ${metaText ? `<div class="text-[8px] font-black opacity-60 leading-none">${metaText}</div>` : ''}
                                     </div>
                                 `;
                             }
