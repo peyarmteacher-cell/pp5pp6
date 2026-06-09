@@ -268,7 +268,7 @@ $days = [
             height: 210mm;
             margin: 0 auto;
             background: white;
-            padding: 1cm;
+            padding: 0.6cm 1cm 0.4cm 1cm;
             position: relative;
             display: flex;
             flex-direction: column;
@@ -356,28 +356,45 @@ $days = [
                         ?>
                             <td class="<?= $isLunch ? 'bg-orange-50' : '' ?>">
                                 <?php if(!empty($slots)): ?>
-                                    <?php foreach($slots as $slotIdx => $slot): 
-                                        $isActivity = !empty($slot['activity_type']);
-                                        $singleLineActs = ['scouts', 'scout', 'club', 'guidance', 'prayer'];
-                                        $isSingleLine = $isActivity && in_array(strtolower($slot['activity_type']), $singleLineActs);
-                                        $isLunchSlot = $isActivity && strtolower($slot['activity_type']) === 'lunch';
+                                    <?php 
+                                        $isCombined = (count($slots) > 1);
+                                        foreach($slots as $slotIdx => $slot): 
+                                            $isActivity = !empty($slot['activity_type']);
+                                            $singleLineActs = ['scouts', 'scout', 'club', 'guidance', 'prayer'];
+                                            $isSingleLine = $isActivity && in_array(strtolower($slot['activity_type']), $singleLineActs);
+                                            $isLunchSlot = $isActivity && strtolower($slot['activity_type']) === 'lunch';
                                     ?>
                                         <?php if($slotIdx > 0): ?>
                                             <div style="border-top: 1px dashed #cbd5e1; margin: 4px 0; padding-top: 4px;"></div>
                                         <?php endif; ?>
 
-                                        <?php if($isSingleLine): ?>
-                                            <div class="text-[12px] font-bold text-blue-700 leading-tight"><?= $slot['subject_code'] ?></div>
-                                        <?php else: ?>
-                                            <div class="text-[12px] font-bold <?= $isLunch ? 'text-orange-700' : 'text-blue-700' ?> leading-tight"><?= $slot['subject_code'] ?></div>
-                                            <div class="text-[10px] my-0.5"><?= $slot['subject_name'] ?></div>
-                                            <?php if($target_type === 'teacher'): ?>
-                                                <?php if(!$isActivity && $slot['level']): ?>
-                                                    <div class="text-[10px] font-bold text-slate-500 italic"><?= $slot['level'] ?>/<?= $slot['room'] ?></div>
-                                                <?php endif; ?>
+                                        <?php if($isCombined): ?>
+                                            <?php if($isSingleLine || $isLunchSlot): ?>
+                                                <div class="text-[11px] font-bold text-blue-700 leading-tight"><?= $slot['subject_code'] ?></div>
                                             <?php else: ?>
-                                                <?php if(!$isActivity): ?>
-                                                    <div class="text-[10px] font-bold text-slate-500 italic"><?= ($slot['teacher_name'] ?? '') ?></div>
+                                                <div class="text-[11px] font-bold <?= $isLunch ? 'text-orange-700' : 'text-blue-700' ?> leading-tight">
+                                                    <?= $slot['subject_code'] ?>
+                                                    <?php if($target_type === 'teacher' && !$isActivity && $slot['level']): ?>
+                                                        <span class="text-slate-500 font-normal italic text-[10px] ml-1">(<?= $slot['level'] ?>/<?= $slot['room'] ?>)</span>
+                                                    <?php elseif($target_type !== 'teacher' && !$isActivity && !empty($slot['teacher_name'])): ?>
+                                                        <span class="text-slate-500 font-normal italic text-[10px] ml-1">(<?= $slot['teacher_name'] ?>)</span>
+                                                    <?php endif; ?>
+                                                </div>
+                                            <?php endif; ?>
+                                        <?php else: ?>
+                                            <?php if($isSingleLine): ?>
+                                                <div class="text-[12px] font-bold text-blue-700 leading-tight"><?= $slot['subject_code'] ?></div>
+                                            <?php else: ?>
+                                                <div class="text-[12px] font-bold <?= $isLunch ? 'text-orange-700' : 'text-blue-700' ?> leading-tight"><?= $slot['subject_code'] ?></div>
+                                                <div class="text-[10px] my-0.5"><?= $slot['subject_name'] ?></div>
+                                                <?php if($target_type === 'teacher'): ?>
+                                                    <?php if(!$isActivity && $slot['level']): ?>
+                                                        <div class="text-[10px] font-bold text-slate-500 italic"><?= $slot['level'] ?>/<?= $slot['room'] ?></div>
+                                                    <?php endif; ?>
+                                                <?php else: ?>
+                                                    <?php if(!$isActivity): ?>
+                                                        <div class="text-[10px] font-bold text-slate-500 italic"><?= ($slot['teacher_name'] ?? '') ?></div>
+                                                    <?php endif; ?>
                                                 <?php endif; ?>
                                             <?php endif; ?>
                                         <?php endif; ?>
@@ -391,20 +408,20 @@ $days = [
             </table>
         </div>
 
-        <div class="mt-8 grid grid-cols-2 gap-10">
+        <div class="mt-4 grid grid-cols-2 gap-4">
             <div class="text-center">
                 <?php if($target_type === 'teacher'): ?>
-                    <p class="mb-3">ลงชื่อ..........................................................</p>
+                    <p class="mb-2">ลงชื่อ..........................................................</p>
                     <p class="font-bold text-sm">( <?= $teacher_full_name ?> )</p>
                     <p class="text-[10px]">ครูผู้สอน</p>
                 <?php else: ?>
-                    <p class="mb-3">ลงชื่อ..........................................................</p>
+                    <p class="mb-2">ลงชื่อ..........................................................</p>
                     <p class="font-bold text-sm">( <?= $school['director_name'] ?: '..........................................................' ?> )</p>
                     <p class="text-[10px]">ผู้อำนวยการโรงเรียน</p>
                 <?php endif; ?>
             </div>
             <div class="text-center">
-                <p class="mb-3">ลงชื่อ..........................................................</p>
+                <p class="mb-2">ลงชื่อ..........................................................</p>
                 <p class="font-bold text-sm">( <?= $school['director_name'] ?: '..........................................................' ?> )</p>
                 <p class="text-[10px]">ผู้อำนวยการโรงเรียน<?= $school['name'] ?></p>
             </div>
