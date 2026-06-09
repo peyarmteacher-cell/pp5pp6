@@ -335,7 +335,7 @@ $is_admin_or_academic = ($_SESSION['role'] === 'admin' || (isset($_SESSION['is_a
             if (code.includes('แนะแนว') || name.includes('แนะแนว')) return false;
             if (code.includes('ลูกเสือ') || name.includes('ลูกเสือ') || code.includes('เนตรนารี') || name.includes('เนตรนารี')) return false;
             if (code.includes('ชุมนุม') || name.includes('ชุมนุม')) return false;
-            if (code.includes('เพื่อสังคม') || name.includes('เพื่อสังคม') || code.includes('สังคม') || name.includes('สังคม')) return false;
+            if (code.includes('เพื่อสังคม') || name.includes('เพื่อสังคม')) return false;
             return true;
         });
         
