@@ -142,8 +142,12 @@ try {
             $sCodes = [];
             $sNames = [];
             $levels = [];
+            $is_activity_workload = false;
             
             foreach ($period_slots as $it) {
+                if (!empty($it['activity_type'])) {
+                    $is_activity_workload = true;
+                }
                 $sName = $it['subject_name'];
                 $sCode = $it['subject_code'];
                 
@@ -195,15 +199,22 @@ try {
                 $workload[$combined_code] = [
                     'code' => $combined_code,
                     'name' => $combined_name,
-                    'hours' => 0
+                    'hours' => 0,
+                    'is_activity' => $is_activity_workload
                 ];
             }
             $workload[$combined_code]['hours']++;
             $total_hours++;
         }
         
-        // Sort by code
-        ksort($workload);
+        // Sort: general subjects (is_activity = false) first, and activities (is_activity = true) last.
+        // Within each group, sort alphabetically by code.
+        uasort($workload, function($a, $b) {
+            if ($a['is_activity'] !== $b['is_activity']) {
+                return $a['is_activity'] ? 1 : -1;
+            }
+            return strcmp($a['code'], $b['code']);
+        });
     }
 
 } catch (PDOException $e) {
