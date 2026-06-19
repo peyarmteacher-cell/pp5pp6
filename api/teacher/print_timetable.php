@@ -172,7 +172,7 @@ try {
                 if (!empty($sCode)) {
                     $sCodes[] = $sCode;
                     $sNames[] = $sName;
-                    if (!empty($it['level'])) {
+                    if (empty($it['activity_type']) && !empty($it['level'])) {
                         $levels[] = $it['level'] . '/' . $it['room'];
                     }
                 }
