@@ -525,7 +525,7 @@
 <?php endif; ?>
 
 <!-- Modal: เพิ่ม/แก้ไขคุณครู -->
-<div id="editTeacherModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center p-4 z-50">
+<div id="editTeacherModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center p-4 z-[60]">
     <div class="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl">
         <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
             <h3 id="editTeacherModalTitle" class="text-xl font-bold text-slate-800">เพิ่มข้อมูลคุณครู</h3>

@@ -1222,8 +1222,16 @@ try {
                             <td class="py-3 text-right">
                                 <div class="flex flex-col items-end gap-1">
                                     ${t.role !== 'admin' ? `
-                                        <button onclick="promoteToAdmin(${t.id}, '${safeSchoolName}')" class="text-blue-600 hover:text-blue-800 text-[10px] font-bold cursor-pointer">กำหนดเป็น Admin</button>
-                                    ` : '<span class="text-slate-400 text-[10px]">เป็น Admin แล้ว</span>'}
+                                        <button onclick="promoteToAdmin(${t.id}, '${safeSchoolName}')" class="px-3 py-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-[11px] font-bold rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer flex items-center gap-1">
+                                            <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+                                            กำหนดเป็น Admin
+                                        </button>
+                                    ` : `
+                                        <span class="px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-bold rounded-lg flex items-center gap-1">
+                                            <i data-lucide="shield" class="w-3.5 h-3.5 text-emerald-500"></i>
+                                            เป็น Admin แล้ว
+                                        </span>
+                                    `}
                                     <div class="flex gap-2 transition-all">
                                         <button onclick="openEditTeacherModal(window.lastLoadedTeachers[${index}], ${schoolId})" class="p-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg transition-all cursor-pointer border border-blue-100" title="แก้ไข">
                                             <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
