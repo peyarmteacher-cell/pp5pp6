@@ -371,15 +371,70 @@
                 if (headerRowIndex === -1) {
                     // Fallback to standard mapping if DMC headers not found
                     const json = XLSX.utils.sheet_to_json(worksheet);
-                    studentsToImport = json.map(row => ({
-                        student_code: String(row['รหัสประจำตัว'] || row['student_code'] || row['รหัส'] || ''),
-                        national_id: String(row['เลขบัตรประชาชน'] || row['national_id'] || row['เลขบัตร'] || ''),
-                        prefix: String(row['คำนำหน้า'] || row['prefix'] || ''),
-                        name: String(row['ชื่อ-นามสกุล'] || row['name'] || row['ชื่อ'] || ''),
-                        level: String(row['ระดับชั้น'] || row['level'] || row['ชั้น'] || ''),
-                        room: String(row['ห้อง'] || row['room'] || '1'),
-                        academic_year: String(row['ปีการศึกษา'] || row['academic_year'] || '2567')
-                    })).filter(s => s.student_code && s.name && s.level);
+                    const currentAcademicYear = document.getElementById('filter_academic_year')?.value || '2567';
+                    
+                    studentsToImport = json.map(row => {
+                        let rawStudentCode = '';
+                        let rawNationalId = '';
+                        let rawPrefix = '';
+                        let rawFullName = '';
+                        let rawLastName = '';
+                        let rawLevel = '';
+                        let rawRoom = '';
+                        let rawAcademicYear = '';
+
+                        // Loop through keys of the row to handle variations and spaces flexibly
+                        for (let key in row) {
+                            if (!row.hasOwnProperty(key)) continue;
+                            const cleanKey = key.replace(/\s+/g, '').trim();
+                            const val = String(row[key] || '').trim();
+
+                            if (cleanKey === 'รหัสประจำตัว' || cleanKey === 'student_code' || cleanKey === 'รหัส' || cleanKey === 'เลขประจำตัว' || cleanKey === 'รหัสประจำตัวนักเรียน') {
+                                rawStudentCode = val;
+                            } else if (cleanKey === 'เลขบัตรประชาชน' || cleanKey === 'national_id' || cleanKey === 'เลขบัตร' || cleanKey === 'เลขประจำตัวประชาชน' || cleanKey === 'เลขบัตรประชาชนนักเรียน') {
+                                rawNationalId = val.replace(/[-_\s]/g, ''); // strip hyphens and spaces
+                            } else if (cleanKey === 'คำนำหน้า' || cleanKey === 'prefix' || cleanKey === 'คำนำหน้าชื่อ') {
+                                rawPrefix = val;
+                            } else if (cleanKey === 'ชื่อ-นามสกุล' || cleanKey === 'name' || cleanKey === 'ชื่อ' || cleanKey === 'ชื่อจริง' || cleanKey === 'ชื่อและนามสกุล') {
+                                rawFullName = val;
+                            } else if (cleanKey === 'นามสกุล' || cleanKey === 'last_name') {
+                                rawLastName = val;
+                            } else if (cleanKey === 'ระดับชั้น' || cleanKey === 'level' || cleanKey === 'ชั้น') {
+                                rawLevel = val;
+                            } else if (cleanKey === 'ห้อง' || cleanKey === 'room') {
+                                rawRoom = val;
+                            } else if (cleanKey === 'ปีการศึกษา' || cleanKey === 'academic_year') {
+                                rawAcademicYear = val;
+                            }
+                        }
+
+                        let student_code = rawStudentCode;
+                        let national_id = rawNationalId;
+                        let prefix = rawPrefix;
+                        let name = rawFullName;
+                        let last_name = rawLastName;
+                        let level = rawLevel;
+                        let room = rawRoom || '1';
+                        let academic_year = rawAcademicYear || currentAcademicYear;
+
+                        // Auto split name and last name if they are in a single field and last_name is empty
+                        if (!last_name && name.includes(' ')) {
+                            const parts = name.split(/\s+/);
+                            name = parts[0];
+                            last_name = parts.slice(1).join(' ');
+                        }
+
+                        return {
+                            student_code,
+                            national_id,
+                            prefix,
+                            name,
+                            last_name,
+                            level,
+                            room,
+                            academic_year
+                        };
+                    }).filter(s => s.student_code && s.name && s.level);
                 } else {
                     // DMC Mapping
                     const headers = rawData[headerRowIndex];
