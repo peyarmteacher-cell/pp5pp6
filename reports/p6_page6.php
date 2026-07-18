@@ -49,15 +49,18 @@
         <?php if ($teacher_name_2): ?>
         <div style="display: flex; justify-content: flex-end; gap: 40px; margin-top: 35px; text-align: center; font-size: 14px; margin-right: 5%;">
             <div>
-                ลงชื่อ...................................ครูประจำชั้น
+                <p>ลงชื่อ...................................ครูประจำชั้น</p>
+                <p style="margin-top: 4px;">( <?= $teacher_name_1 ?> )</p>
             </div>
             <div>
-                ลงชื่อ...................................ครูประจำชั้น
+                <p>ลงชื่อ...................................ครูประจำชั้น</p>
+                <p style="margin-top: 4px;">( <?= $teacher_name_2 ?> )</p>
             </div>
         </div>
         <?php else: ?>
-        <div class="sig-block" style="margin-top: 35px; text-align: center; margin-left: 45%;">
-            ลงชื่อ...................................ครูประจำชั้น/ครูที่ปรึกษา
+        <div class="sig-block" style="margin-top: 35px; text-align: center; margin-left: 45%; font-size: 14px;">
+            <p>ลงชื่อ...................................ครูประจำชั้น/ครูที่ปรึกษา</p>
+            <p style="margin-top: 4px;">( <?= $teacher_name_1 ?> )</p>
         </div>
         <?php endif; ?>
 

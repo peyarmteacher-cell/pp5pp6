@@ -37,12 +37,15 @@ if (!$class_teacher_1) {
         FROM learner_development_assignments lda
         JOIN users u ON lda.teacher_id = u.id
         WHERE lda.classroom_id = ? AND lda.academic_year = ?
-        LIMIT 1
+        ORDER BY lda.id ASC
     ');
     $stmt_ld->execute([$classroom_id, $year]);
-    $ld_t = $stmt_ld->fetch();
-    if ($ld_t) {
-        $class_teacher_1 = $ld_t['name'] . ' ' . $ld_t['last_name'];
+    $ld_teachers = $stmt_ld->fetchAll();
+    if (isset($ld_teachers[0])) {
+        $class_teacher_1 = $ld_teachers[0]['name'] . ' ' . $ld_teachers[0]['last_name'];
+    }
+    if (isset($ld_teachers[1])) {
+        $class_teacher_2 = $ld_teachers[1]['name'] . ' ' . $ld_teachers[1]['last_name'];
     }
 }
 
