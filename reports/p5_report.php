@@ -45,8 +45,8 @@ if ($type === 'subject' && $assignment_id) {
     
     // ดึงชื่อครูประจำชั้น
     $stmt_t = $pdo->prepare('
-        SELECT u1.name as t1_name, u1.last_name as t1_last,
-               u2.name as t2_name, u2.last_name as t2_last
+        SELECT u1.name as t1_name, u1.last_name as t1_last, u1.position as t1_pos,
+               u2.name as t2_name, u2.last_name as t2_last, u2.position as t2_pos
         FROM classrooms c
         LEFT JOIN users u1 ON c.teacher_id_1 = u1.id
         LEFT JOIN users u2 ON c.teacher_id_2 = u2.id
@@ -60,6 +60,24 @@ if ($type === 'subject' && $assignment_id) {
     if ($ct['t2_name']) {
         $teacher_name .= ($teacher_name ? ' และ ' : '') . $ct['t2_name'] . ' ' . $ct['t2_last'];
     }
+    
+    // Fallback to Learner Development assignment if no classroom teacher is set in the classrooms table
+    if (!$teacher_name) {
+        $stmt_ld = $pdo->prepare('
+            SELECT u.name, u.last_name, u.position
+            FROM learner_development_assignments lda
+            JOIN users u ON lda.teacher_id = u.id
+            WHERE lda.classroom_id = ? AND lda.academic_year = ?
+            LIMIT 1
+        ');
+        $stmt_ld->execute([$classroom_id, $year]);
+        $ld_t = $stmt_ld->fetch();
+        if ($ld_t) {
+            $teacher_name = $ld_t['name'] . ' ' . $ld_t['last_name'];
+            $teacher_pos = formatTeacherPosition($ld_t['position'] ?? 'ครู');
+        }
+    }
+    
     if (!$teacher_name) {
         $teacher_name = $_SESSION['name'];
         $teacher_pos = formatTeacherPosition($_SESSION['position'] ?? 'ครู');

@@ -233,6 +233,23 @@ foreach ($students_to_print as $student):
     }
     $teacher_pos = formatTeacherPosition($ct['t1_pos'] ?? '');
 
+    // Fallback to Learner Development assignment if no classroom teacher is set in the classrooms table
+    if (!$teacher_name) {
+        $stmt_ld = $pdo->prepare('
+            SELECT u.name, u.last_name, u.position
+            FROM learner_development_assignments lda
+            JOIN users u ON lda.teacher_id = u.id
+            WHERE lda.classroom_id = ? AND lda.academic_year = ?
+            LIMIT 1
+        ');
+        $stmt_ld->execute([$classroom_id, $year]);
+        $ld_t = $stmt_ld->fetch();
+        if ($ld_t) {
+            $teacher_name = $ld_t['name'] . ' ' . $ld_t['last_name'];
+            $teacher_pos = formatTeacherPosition($ld_t['position'] ?? '');
+        }
+    }
+
     // ดึงหัวหน้าวิชาการ หรือ รองผู้อำนวยการ ตามที่ผู้ใช้ต้องการ
     $acad_name = !empty($deputy_director_name) ? $deputy_director_name : $academic_head_name;
     $acad_pos = !empty($deputy_director_name) ? $deputy_director_position : $academic_head_position;

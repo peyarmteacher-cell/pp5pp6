@@ -32,9 +32,10 @@ if ($current_role !== 'super_admin' && (string)$school_id !== (string)$current_s
 
 try {
     $query = 'SELECT u.id, u.username, u.name, u.last_name, u.position, u.role, u.is_approved, u.is_academic,
-                     (SELECT GROUP_CONCAT(CONCAT(c.level, \'/\', c.room) SEPARATOR \', \') 
+                     (SELECT GROUP_CONCAT(DISTINCT CONCAT(c.level, \'/\', c.room) SEPARATOR \', \') 
                       FROM classrooms c 
-                      WHERE c.teacher_id_1 = u.id OR c.teacher_id_2 = u.id) as homeroom_classrooms
+                      LEFT JOIN learner_development_assignments lda ON c.id = lda.classroom_id
+                      WHERE c.teacher_id_1 = u.id OR c.teacher_id_2 = u.id OR lda.teacher_id = u.id) as homeroom_classrooms
               FROM users u
               WHERE u.school_id = ?';
     

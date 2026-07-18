@@ -93,6 +93,23 @@ if ($type === 'subject' && $assignment_id) {
             $class_teacher_name .= ($class_teacher_name ? ' และ ' : '') . $ct['t2_name'] . ' ' . $ct['t2_last'];
         }
         $class_teacher_position = formatTeacherPosition($ct['t1_pos'] ?? '');
+
+        // Fallback to Learner Development assignment if no classroom teacher is set in the classrooms table
+        if (!$class_teacher_name) {
+            $stmt_ld = $pdo->prepare('
+                SELECT u.name, u.last_name, u.position
+                FROM learner_development_assignments lda
+                JOIN users u ON lda.teacher_id = u.id
+                WHERE lda.classroom_id = ? AND lda.academic_year = ?
+                LIMIT 1
+            ');
+            $stmt_ld->execute([$classroom_id, $year]);
+            $ld_t = $stmt_ld->fetch();
+            if ($ld_t) {
+                $class_teacher_name = $ld_t['name'] . ' ' . $ld_t['last_name'];
+                $class_teacher_position = formatTeacherPosition($ld_t['position'] ?? '');
+            }
+        }
     }
 } else if ($classroom_id) {
     $stmt = $pdo->prepare('SELECT * FROM classrooms WHERE id = ?');
@@ -118,6 +135,24 @@ if ($type === 'subject' && $assignment_id) {
             $class_teacher_name .= ($class_teacher_name ? ' และ ' : '') . $ct['t2_name'] . ' ' . $ct['t2_last'];
         }
         $class_teacher_position = formatTeacherPosition($ct['t1_pos'] ?? '');
+
+        // Fallback to Learner Development assignment if no classroom teacher is set in the classrooms table
+        if (!$class_teacher_name) {
+            $stmt_ld = $pdo->prepare('
+                SELECT u.name, u.last_name, u.position
+                FROM learner_development_assignments lda
+                JOIN users u ON lda.teacher_id = u.id
+                WHERE lda.classroom_id = ? AND lda.academic_year = ?
+                LIMIT 1
+            ');
+            $stmt_ld->execute([$classroom_id, $year]);
+            $ld_t = $stmt_ld->fetch();
+            if ($ld_t) {
+                $class_teacher_name = $ld_t['name'] . ' ' . $ld_t['last_name'];
+                $class_teacher_position = formatTeacherPosition($ld_t['position'] ?? '');
+            }
+        }
+
         $teacher_name = $class_teacher_name;
         $teacher_position = $class_teacher_position;
     }

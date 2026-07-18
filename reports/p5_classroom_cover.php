@@ -30,6 +30,22 @@ $room_name = $classroom['room'];
 $class_teacher_1 = $classroom['t1_name'] ? $classroom['t1_name'] . ' ' . $classroom['t1_last'] : '';
 $class_teacher_2 = $classroom['t2_name'] ? $classroom['t2_name'] . ' ' . $classroom['t2_last'] : '';
 
+// Fallback to Learner Development assignment if no classroom teacher is set in the classrooms table
+if (!$class_teacher_1) {
+    $stmt_ld = $pdo->prepare('
+        SELECT u.name, u.last_name, u.position
+        FROM learner_development_assignments lda
+        JOIN users u ON lda.teacher_id = u.id
+        WHERE lda.classroom_id = ? AND lda.academic_year = ?
+        LIMIT 1
+    ');
+    $stmt_ld->execute([$classroom_id, $year]);
+    $ld_t = $stmt_ld->fetch();
+    if ($ld_t) {
+        $class_teacher_1 = $ld_t['name'] . ' ' . $ld_t['last_name'];
+    }
+}
+
 // 2. ดึงสถิตินักเรียน
 $male_count = 0;
 $female_count = 0;
