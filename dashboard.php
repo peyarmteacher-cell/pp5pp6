@@ -1242,6 +1242,9 @@ try {
                                         </span>
                                     `}
                                     <div class="flex gap-2 transition-all">
+                                        <button onclick="resetTeacherPassword(${t.id}, '${teacherName}')" class="p-1.5 bg-amber-50 text-amber-600 hover:bg-amber-100 rounded-lg transition-all cursor-pointer border border-amber-100" title="รีเซ็ตรหัสผ่าน">
+                                            <i data-lucide="key" class="w-3.5 h-3.5"></i>
+                                        </button>
                                         <button onclick="openEditTeacherModal(window.lastLoadedTeachers[${index}], ${schoolId})" class="p-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg transition-all cursor-pointer border border-blue-100" title="แก้ไข">
                                             <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
                                         </button>

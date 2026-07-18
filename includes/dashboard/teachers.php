@@ -78,6 +78,9 @@
                     </td>
                     <td class="py-3 text-right">
                         <div class="flex justify-end gap-2 transition-all">
+                            <button onclick="resetTeacherPassword(${t.id}, '${safeName}')" class="p-2 bg-amber-50 text-amber-600 hover:bg-amber-100 rounded-xl transition-all cursor-pointer border border-amber-100 shadow-sm" title="รีเซ็ตรหัสผ่าน">
+                                <i data-lucide="key" class="w-4 h-4"></i>
+                            </button>
                             <button onclick="openEditTeacherModal(window.lastLoadedTeachers[${index}])" class="p-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl transition-all cursor-pointer border border-blue-100 shadow-sm" title="แก้ไข">
                                 <i data-lucide="edit-2" class="w-4 h-4"></i>
                             </button>
@@ -199,6 +202,27 @@
             }
         } catch (e) {
             console.error('Error deleting teacher:', e);
+        }
+    }
+
+    async function resetTeacherPassword(id, name) {
+        if (!confirm(`คุณต้องการรีเซ็ตรหัสผ่านของ คุณครู ${name} เป็น 123456 ใช่หรือไม่?`)) return;
+        
+        try {
+            const res = await fetch('api/admin/reset_teacher_password.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id })
+            });
+            const result = await res.json();
+            if (result.status === 'success') {
+                alert(`รีเซ็ตรหัสผ่านสําเร็จ!\nรหัสผ่านใหม่ของคุณครู ${name} คือ 123456 (1-6)`);
+            } else {
+                alert(result.error || 'เกิดข้อผิดพลาดในการรีเซ็ตรหัสผ่าน');
+            }
+        } catch (e) {
+            console.error('Error resetting teacher password:', e);
+            alert('เกิดข้อผิดพลาดในการเชื่อมต่อ');
         }
     }
 
