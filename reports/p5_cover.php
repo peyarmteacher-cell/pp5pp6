@@ -90,7 +90,7 @@ if ($type === 'subject' && $assignment_id) {
         $ct = $stmt_ct->fetch();
         $class_teacher_name = $ct['t1_name'] ? $ct['t1_name'] . ' ' . $ct['t1_last'] : '';
         if ($ct['t2_name']) {
-            $class_teacher_name .= ($class_teacher_name ? ' และ ' : '') . $ct['t2_name'] . ' ' . $ct['t2_last'];
+            $class_teacher_name .= ($class_teacher_name ? ' / ' : '') . $ct['t2_name'] . ' ' . $ct['t2_last'];
         }
         $class_teacher_position = formatTeacherPosition($ct['t1_pos'] ?? '');
 
@@ -110,7 +110,7 @@ if ($type === 'subject' && $assignment_id) {
                 $class_teacher_position = formatTeacherPosition($ld_teachers[0]['position'] ?? '');
             }
             if (isset($ld_teachers[1])) {
-                $class_teacher_name .= ($class_teacher_name ? ' และ ' : '') . $ld_teachers[1]['name'] . ' ' . $ld_teachers[1]['last_name'];
+                $class_teacher_name .= ($class_teacher_name ? ' / ' : '') . $ld_teachers[1]['name'] . ' ' . $ld_teachers[1]['last_name'];
             }
         }
     }
@@ -135,7 +135,7 @@ if ($type === 'subject' && $assignment_id) {
         $ct = $stmt_t->fetch();
         $class_teacher_name = $ct['t1_name'] ? $ct['t1_name'] . ' ' . $ct['t1_last'] : '';
         if ($ct['t2_name']) {
-            $class_teacher_name .= ($class_teacher_name ? ' และ ' : '') . $ct['t2_name'] . ' ' . $ct['t2_last'];
+            $class_teacher_name .= ($class_teacher_name ? ' / ' : '') . $ct['t2_name'] . ' ' . $ct['t2_last'];
         }
         $class_teacher_position = formatTeacherPosition($ct['t1_pos'] ?? '');
 
@@ -155,7 +155,7 @@ if ($type === 'subject' && $assignment_id) {
                 $class_teacher_position = formatTeacherPosition($ld_teachers[0]['position'] ?? '');
             }
             if (isset($ld_teachers[1])) {
-                $class_teacher_name .= ($class_teacher_name ? ' และ ' : '') . $ld_teachers[1]['name'] . ' ' . $ld_teachers[1]['last_name'];
+                $class_teacher_name .= ($class_teacher_name ? ' / ' : '') . $ld_teachers[1]['name'] . ' ' . $ld_teachers[1]['last_name'];
             }
         }
 

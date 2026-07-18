@@ -1210,7 +1210,7 @@ try {
                     window.lastLoadedTeachers = teachers;
                     
                     tbody.innerHTML = teachers.map((t, index) => {
-                        const teacherName = t.name || 'ไม่ระบุชื่อ';
+                        const teacherName = (t.name || 'ไม่ระบุชื่อ') + (t.last_name ? ' ' + t.last_name : '');
                         const safeSchoolName = schoolName.replace(/'/g, "\\'");
                         return `
                         <tr class="border-b border-slate-50 group">
@@ -1298,7 +1298,7 @@ try {
                 if (!tbody) return;
                 tbody.innerHTML = users.map(u => `
                     <tr class="border-b border-slate-50 hover:bg-slate-50/50">
-                        <td class="py-3 font-medium text-slate-800">${u.name}</td>
+                        <td class="py-3 font-medium text-slate-800">${u.name}${u.last_name ? ' ' + u.last_name : ''}</td>
                         <td class="py-3 text-slate-500">${u.school_name || 'ไม่มีสังกัด'}</td>
                         <td class="py-3 text-slate-500">${u.position}</td>
                         <td class="py-3">

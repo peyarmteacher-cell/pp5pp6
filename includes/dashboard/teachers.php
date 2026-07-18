@@ -111,11 +111,13 @@
         form.reset();
         document.getElementById('edit_teacher_id').value = '';
         document.getElementById('edit_teacher_school_id').value = schoolId || '<?= $_SESSION['school_id'] ?? '' ?>';
+        document.getElementById('edit_teacher_last_name').value = '';
         
         if (t) {
             title.innerText = 'แก้ไขข้อมูลคุณครู';
             document.getElementById('edit_teacher_id').value = t.id;
             document.getElementById('edit_teacher_name').value = t.name;
+            document.getElementById('edit_teacher_last_name').value = t.last_name || '';
             document.getElementById('edit_teacher_position').value = t.position;
             document.getElementById('edit_teacher_is_academic').checked = t.is_academic == 1;
             if (userField) userField.classList.add('hidden');
@@ -144,6 +146,7 @@
                 school_id: document.getElementById('edit_teacher_school_id').value,
                 username: document.getElementById('edit_teacher_username').value,
                 name: document.getElementById('edit_teacher_name').value,
+                last_name: document.getElementById('edit_teacher_last_name').value,
                 position: document.getElementById('edit_teacher_position').value,
                 is_academic: document.getElementById('edit_teacher_is_academic').checked ? 1 : 0
             };
@@ -551,9 +554,15 @@
                 <p class="text-[10px] text-slate-400 mt-1">* รหัสผ่านเริ่มต้นคือ 123456</p>
             </div>
             
-            <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">ชื่อ-นามสกุล</label>
-                <input type="text" id="edit_teacher_name" required placeholder="เช่น นายสมชาย ใจดี" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">ชื่อ</label>
+                    <input type="text" id="edit_teacher_name" required placeholder="เช่น สมชาย" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">นามสกุล</label>
+                    <input type="text" id="edit_teacher_last_name" required placeholder="เช่น ใจดี" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all">
+                </div>
             </div>
             
             <div>

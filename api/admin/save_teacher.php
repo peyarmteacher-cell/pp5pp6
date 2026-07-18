@@ -13,6 +13,7 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION[
 $data = json_decode(file_get_contents('php://input'), true);
 $id = $data['id'] ?? '';
 $name = $data['name'] ?? '';
+$last_name = $data['last_name'] ?? '';
 $position = $data['position'] ?? '';
 $username = $data['username'] ?? ''; // เลขบัตรประชาชน
 $password = $data['password'] ?? '';
@@ -27,8 +28,8 @@ if (empty($name) || empty($position) || (empty($id) && empty($username))) {
 try {
     if (!empty($id)) {
         // Update
-        $sql = "UPDATE users SET name = ?, position = ?, is_academic = ? WHERE id = ?";
-        $params = [$name, $position, $is_academic, $id];
+        $sql = "UPDATE users SET name = ?, last_name = ?, position = ?, is_academic = ? WHERE id = ?";
+        $params = [$name, $last_name, $position, $is_academic, $id];
         
         // ถ้าเป็น Admin โรงเรียน ต้องเช็คว่าครูอยู่ในโรงเรียนตัวเอง
         if ($_SESSION['role'] === 'admin') {
@@ -50,8 +51,8 @@ try {
         }
 
         $hashed_password = password_hash($password ?: '123456', PASSWORD_DEFAULT);
-        $stmt = $pdo->prepare("INSERT INTO users (username, password, name, position, role, school_id, is_approved, is_academic) VALUES (?, ?, ?, ?, 'teacher', ?, 1, ?)");
-        $stmt->execute([$username, $hashed_password, $name, $position, $school_id, $is_academic]);
+        $stmt = $pdo->prepare("INSERT INTO users (username, password, name, last_name, position, role, school_id, is_approved, is_academic) VALUES (?, ?, ?, ?, ?, 'teacher', ?, 1, ?)");
+        $stmt->execute([$username, $hashed_password, $name, $last_name, $position, $school_id, $is_academic]);
         echo json_encode(['status' => 'success', 'message' => 'เพิ่มข้อมูลคุณครูเรียบร้อยแล้ว']);
     }
 } catch (PDOException $e) {

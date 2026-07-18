@@ -384,7 +384,7 @@ $approval_date = formatThaiDate($approval_date_raw);
         </div>
 
         <div class="flex-row" style="margin-bottom: 15px;">
-            <div class="flex-fill"><?= $class_teacher_1 ?><?= $class_teacher_2 ? ' และ ' . $class_teacher_2 : '' ?></div>
+            <div class="flex-fill"><?= $class_teacher_1 ?><?= $class_teacher_2 ? ' / ' . $class_teacher_2 : '' ?></div>
             <div class="flex-fixed">ครูผู้สอน/ครูประจำชั้น</div>
         </div>
 

@@ -58,7 +58,7 @@ if ($type === 'subject' && $assignment_id) {
     $teacher_name = $ct['t1_name'] ? $ct['t1_name'] . ' ' . $ct['t1_last'] : '';
     $teacher_pos = formatTeacherPosition($ct['t1_pos'] ?? 'ครู');
     if ($ct['t2_name']) {
-        $teacher_name .= ($teacher_name ? ' และ ' : '') . $ct['t2_name'] . ' ' . $ct['t2_last'];
+        $teacher_name .= ($teacher_name ? ' / ' : '') . $ct['t2_name'] . ' ' . $ct['t2_last'];
     }
     
     // Fallback to Learner Development assignment if no classroom teacher is set in the classrooms table
