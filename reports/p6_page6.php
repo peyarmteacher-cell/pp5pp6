@@ -46,9 +46,20 @@
             <?php endforeach; ?>
         </table>
 
+        <?php if ($teacher_name_2): ?>
+        <div style="display: flex; justify-content: flex-end; gap: 40px; margin-top: 35px; text-align: center; font-size: 14px; margin-right: 5%;">
+            <div>
+                ลงชื่อ...................................ครูประจำชั้น
+            </div>
+            <div>
+                ลงชื่อ...................................ครูประจำชั้น
+            </div>
+        </div>
+        <?php else: ?>
         <div class="sig-block" style="margin-top: 35px; text-align: center; margin-left: 45%;">
             ลงชื่อ...................................ครูประจำชั้น/ครูที่ปรึกษา
         </div>
+        <?php endif; ?>
 
         <!-- Parent Comments Section -->
         <h3 class="text-center font-bold mb-4" style="font-size: 18px; margin-top: 45px;">ความคิดเห็นและข้อเสนอแนะของผู้ปกครอง</h3>

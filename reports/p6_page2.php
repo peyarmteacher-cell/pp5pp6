@@ -44,11 +44,26 @@
     </div>
 
     <div style="margin-top: 50px; text-align: center;">
+        <?php if ($teacher_name_2): ?>
+        <div style="display: flex; justify-content: space-around; gap: 10px; margin-bottom: 25px; width: 100%;">
+            <div class="sig-block" style="margin-bottom: 0; flex: 1;">
+                <p>ลงชื่อ..........................................................</p>
+                <p>( <?= $teacher_name_1 ?> )</p>
+                <p>ครูประจำชั้น/ครูที่ปรึกษา</p>
+            </div>
+            <div class="sig-block" style="margin-bottom: 0; flex: 1;">
+                <p>ลงชื่อ..........................................................</p>
+                <p>( <?= $teacher_name_2 ?> )</p>
+                <p>ครูประจำชั้น/ครูที่ปรึกษา</p>
+            </div>
+        </div>
+        <?php else: ?>
         <div class="sig-block" style="margin-bottom: 25px;">
             <p>ลงชื่อ..........................................................</p>
-            <p>( <?= $teacher_name ?> )</p>
+            <p>( <?= $teacher_name_1 ?> )</p>
             <p>ครูประจำชั้น/ครูที่ปรึกษา</p>
         </div>
+        <?php endif; ?>
         <div class="sig-block" style="margin-bottom: 25px;">
             <p>ลงชื่อ..........................................................</p>
             <p>( <?= $acad_name ?> )</p>

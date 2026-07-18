@@ -227,14 +227,12 @@ foreach ($students_to_print as $student):
     $stmt_t->execute([$classroom_id]);
     $ct = $stmt_t->fetch();
     
-    $teacher_name = $ct['t1_name'] ? $ct['t1_name'] . ' ' . $ct['t1_last'] : '';
-    if ($ct['t2_name']) {
-        $teacher_name .= ($teacher_name ? ' และ ' : '') . $ct['t2_name'] . ' ' . $ct['t2_last'];
-    }
+    $teacher_name_1 = $ct['t1_name'] ? $ct['t1_name'] . ' ' . $ct['t1_last'] : '';
+    $teacher_name_2 = $ct['t2_name'] ? $ct['t2_name'] . ' ' . $ct['t2_last'] : '';
     $teacher_pos = formatTeacherPosition($ct['t1_pos'] ?? '');
 
     // Fallback to Learner Development assignment if no classroom teacher is set in the classrooms table
-    if (!$teacher_name) {
+    if (!$teacher_name_1) {
         $stmt_ld = $pdo->prepare('
             SELECT u.name, u.last_name, u.position
             FROM learner_development_assignments lda
@@ -245,9 +243,14 @@ foreach ($students_to_print as $student):
         $stmt_ld->execute([$classroom_id, $year]);
         $ld_t = $stmt_ld->fetch();
         if ($ld_t) {
-            $teacher_name = $ld_t['name'] . ' ' . $ld_t['last_name'];
+            $teacher_name_1 = $ld_t['name'] . ' ' . $ld_t['last_name'];
             $teacher_pos = formatTeacherPosition($ld_t['position'] ?? '');
         }
+    }
+
+    $teacher_name = $teacher_name_1;
+    if ($teacher_name_2) {
+        $teacher_name .= ' และ ' . $teacher_name_2;
     }
 
     // ดึงหัวหน้าวิชาการ หรือ รองผู้อำนวยการ ตามที่ผู้ใช้ต้องการ

@@ -497,14 +497,35 @@ $approval_date = formatThaiDate($approval_date_raw);
             <div class="approval-title">การอนุมัติผลการเรียน</div>
             
             <div class="signature-group">
+                <?php if ($class_teacher_2): ?>
+                <div style="display: flex; justify-content: space-around; width: 100%; margin-bottom: 10px; gap: 10px;">
+                    <div class="signature-item-container" style="flex: 1; margin-bottom: 0;">
+                        <div class="signature-row" style="grid-template-columns: 1fr 180px 1fr;">
+                            <div class="sig-label" style="font-size: 13px;">ลงชื่อ</div>
+                            <div class="sig-dotted" style="width: 180px;"></div>
+                            <div class="sig-pos" style="text-align: left; padding-left: 5px; font-size: 13px;">ครูประจำชั้น</div>
+                        </div>
+                        <div class="sig-name" style="text-align: center; margin-top: 3px; font-size: 13px;">( <?= $class_teacher_1 ?> )</div>
+                    </div>
+                    <div class="signature-item-container" style="flex: 1; margin-bottom: 0;">
+                        <div class="signature-row" style="grid-template-columns: 1fr 180px 1fr;">
+                            <div class="sig-label" style="font-size: 13px;">ลงชื่อ</div>
+                            <div class="sig-dotted" style="width: 180px;"></div>
+                            <div class="sig-pos" style="text-align: left; padding-left: 5px; font-size: 13px;">ครูประจำชั้น</div>
+                        </div>
+                        <div class="sig-name" style="text-align: center; margin-top: 3px; font-size: 13px;">( <?= $class_teacher_2 ?> )</div>
+                    </div>
+                </div>
+                <?php else: ?>
                 <div class="signature-item-container">
                     <div class="signature-row">
                         <div class="sig-label">ลงชื่อ</div>
                         <div class="sig-dotted"></div>
                         <div class="sig-pos">ครูประจำชั้น/ครูที่ปรึกษา</div>
                     </div>
-                    <div class="sig-name">( <?= ($class_teacher_1 || $class_teacher_2) ? ($class_teacher_1 . ($class_teacher_2 ? ' / ' . $class_teacher_2 : '')) : '..........................................................' ?> )</div>
+                    <div class="sig-name">( <?= $class_teacher_1 ?: '..........................................................' ?> )</div>
                 </div>
+                <?php endif; ?>
 
                 <?php if ($deputy_director_name): ?>
                 <div class="signature-item-container">

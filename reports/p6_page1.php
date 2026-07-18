@@ -117,11 +117,26 @@
             </table>
         </div>
         <div class="summary-right">
+            <?php if ($teacher_name_2): ?>
+            <div style="display: flex; justify-content: space-around; gap: 10px; margin-top: 15px; width: 100%;">
+                <div class="sig-block" style="margin-top: 0; flex: 1;">
+                    <p>ลงชื่อ..........................................................</p>
+                    <p>( <?= $teacher_name_1 ?> )</p>
+                    <p>ครูประจำชั้น/ครูที่ปรึกษา</p>
+                </div>
+                <div class="sig-block" style="margin-top: 0; flex: 1;">
+                    <p>ลงชื่อ..........................................................</p>
+                    <p>( <?= $teacher_name_2 ?> )</p>
+                    <p>ครูประจำชั้น/ครูที่ปรึกษา</p>
+                </div>
+            </div>
+            <?php else: ?>
             <div class="sig-block">
                 <p>ลงชื่อ..........................................................</p>
-                <p>( <?= $teacher_name ?> )</p>
+                <p>( <?= $teacher_name_1 ?> )</p>
                 <p>ครูประจำชั้น/ครูที่ปรึกษา</p>
             </div>
+            <?php endif; ?>
             <div class="sig-block">
                 <p>ลงชื่อ..........................................................</p>
                 <p>( <?= $acad_name ?> )</p>
