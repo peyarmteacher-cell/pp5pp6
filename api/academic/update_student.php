@@ -25,6 +25,9 @@ $school_id = $_SESSION['school_id'];
 // DMC Fields
 $gender = $data['gender'] ?? '';
 $birthday = $data['birthday'] ?? null;
+if (empty($birthday) || trim($birthday) === '') {
+    $birthday = null;
+}
 $age = intval($data['age'] ?? 0);
 $weight = floatval($data['weight'] ?? 0);
 $height = floatval($data['height'] ?? 0);

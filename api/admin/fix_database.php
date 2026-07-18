@@ -1031,9 +1031,10 @@ try {
                     father_occupation, mother_name, mother_last_name, mother_occupation, disadvantage
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
                 
+                $birthday_val = (!isset($s['birthday']) || trim($s['birthday']) === '') ? null : $s['birthday'];
                 $ins->execute([
                     $s['school_id'], $s['student_code'], $s['national_id'], $s['prefix'], $s['name'], $s['last_name'],
-                    $s['gender'] ?? null, $s['birthday'] ?? null, $s['parent_telegram_id'] ?? null, 
+                    $s['gender'] ?? null, $birthday_val, $s['parent_telegram_id'] ?? null, 
                     $s['blood_group'] ?? null, $s['religion'] ?? null, $s['race'] ?? null, $s['nationality'] ?? null,
                     $s['house_no'] ?? null, $s['moo'] ?? null, $s['road_soi'] ?? null, $s['sub_district'] ?? null,
                     $s['district'] ?? null, $s['province_name'] ?? null, $s['parent_name'] ?? null, $s['parent_last_name'] ?? null,

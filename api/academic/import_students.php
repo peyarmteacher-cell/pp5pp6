@@ -72,6 +72,10 @@ try {
             }
         }
 
+        if (empty($birthday) || trim($birthday) === '') {
+            $birthday = null;
+        }
+
         if (empty($student_code) || empty($name) || empty($level)) continue;
 
         // 1. ตรวจสอบ/สร้างห้องเรียน
