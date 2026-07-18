@@ -1,6 +1,7 @@
 <!-- Academic/Admin: Manage Students -->
-<?php if ($role === 'admin' || (isset($_SESSION['is_academic']) && $_SESSION['is_academic'])): ?>
+<?php if ($role === 'admin' || (isset($_SESSION['is_academic']) && $_SESSION['is_academic']) || (isset($is_homeroom_teacher) && $is_homeroom_teacher)): ?>
 <div id="manage-students" class="section hidden space-y-6">
+    <?php if ($role === 'admin' || (isset($_SESSION['is_academic']) && $_SESSION['is_academic'])): ?>
     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
         <h3 class="text-lg font-bold mb-4">เพิ่มนักเรียนใหม่</h3>
         <form id="addStudentForm" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -27,10 +28,12 @@
             <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-xl font-semibold hover:bg-blue-700 cursor-pointer transition-all">บันทึก</button>
         </form>
     </div>
+    <?php endif; ?>
     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
         <div class="flex justify-between items-center mb-4">
             <h3 class="text-lg font-bold">รายชื่อนักเรียน</h3>
             <div class="flex gap-2">
+                <?php if ($role === 'admin' || (isset($_SESSION['is_academic']) && $_SESSION['is_academic'])): ?>
                 <button onclick="downloadStudentTemplate()" class="bg-slate-100 text-slate-600 px-4 py-2 rounded-xl text-sm font-semibold hover:bg-slate-200 cursor-pointer transition-all flex items-center gap-2">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                     ดาวน์โหลด Template
@@ -38,6 +41,7 @@
                 <input type="file" id="importExcel" accept=".xlsx, .xls" class="hidden" onchange="handleExcelImport(event)">
                 <button onclick="document.getElementById('importExcel').click()" class="bg-green-600 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-green-700 cursor-pointer transition-all">นำเข้าจาก Excel</button>
                 <button onclick="promoteStudents()" class="bg-amber-600 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-amber-700 cursor-pointer transition-all">เลื่อนระดับชั้น</button>
+                <?php endif; ?>
             </div>
         </div>
         
@@ -328,6 +332,8 @@
 </div>
 
 <script>
+    const isAdminOrAcademic = <?php echo ($role === 'admin' || (isset($_SESSION['is_academic']) && $_SESSION['is_academic'])) ? 'true' : 'false'; ?>;
+
     function downloadStudentTemplate() {
         const data = [
             ['รหัสประจำตัว', 'เลขบัตรประชาชน', 'คำนำหน้า', 'ชื่อ-นามสกุล', 'ระดับชั้น', 'ห้อง', 'ปีการศึกษา'],
@@ -670,9 +676,11 @@
                                         <button onclick='editStudent(${JSON.stringify(s)})' class="p-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl transition-all cursor-pointer border border-blue-100 shadow-sm" title="แก้ไข">
                                             <i data-lucide="edit-2" class="w-4 h-4"></i>
                                         </button>
+                                        ${isAdminOrAcademic ? `
                                         <button onclick="deleteStudent(${s.id})" class="p-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl transition-all cursor-pointer border border-red-100 shadow-sm" title="ลบ">
                                             <i data-lucide="trash-2" class="w-4 h-4"></i>
                                         </button>
+                                        ` : ''}
                                     </td>
                                 </tr>
                             `).join('')}

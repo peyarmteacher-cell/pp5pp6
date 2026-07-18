@@ -4,14 +4,39 @@ require_once '../config.php';
 
 header('Content-Type: application/json');
 
-// ต้องเป็น Admin หรือ งานวิชาการ
-if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && !$_SESSION['is_academic'])) {
+if (!isset($_SESSION['user_id'])) {
     http_response_code(403);
+    echo json_encode(['error' => 'กรุณาเข้าสู่ระบบ']);
     exit;
 }
 
 $data = json_decode(file_get_contents('php://input'), true);
 $id = $data['id'] ?? '';
+
+$is_allowed = false;
+if ($_SESSION['role'] === 'admin' || !empty($_SESSION['is_academic'])) {
+    $is_allowed = true;
+} else {
+    // ตรวจสอบว่าเป็นครูประจำชั้นของนักเรียนคนนี้หรือไม่
+    if (!empty($id)) {
+        $stmt_check = $pdo->prepare('
+            SELECT c.id 
+            FROM classrooms c
+            JOIN students s ON s.classroom_id = c.id
+            WHERE s.id = ? AND (c.teacher_id_1 = ? OR c.teacher_id_2 = ?) AND s.school_id = ?
+        ');
+        $stmt_check->execute([$id, $_SESSION['user_id'], $_SESSION['user_id'], $_SESSION['school_id']]);
+        if ($stmt_check->fetch()) {
+            $is_allowed = true;
+        }
+    }
+}
+
+if (!$is_allowed) {
+    http_response_code(403);
+    echo json_encode(['error' => 'คุณไม่มีสิทธิ์แก้ไขข้อมูลนักเรียนคนนี้ (สิทธิ์นี้สำหรับ Admin, งานวิชาการ หรือครูประจำชั้นของนักเรียนเท่านั้น)']);
+    exit;
+}
 $prefix = $data['prefix'] ?? '';
 $name = $data['name'] ?? '';
 $last_name = $data['last_name'] ?? '';

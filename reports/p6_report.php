@@ -228,6 +228,9 @@ foreach ($students_to_print as $student):
     $ct = $stmt_t->fetch();
     
     $teacher_name = $ct['t1_name'] ? $ct['t1_name'] . ' ' . $ct['t1_last'] : '';
+    if ($ct['t2_name']) {
+        $teacher_name .= ($teacher_name ? ' และ ' : '') . $ct['t2_name'] . ' ' . $ct['t2_last'];
+    }
     $teacher_pos = formatTeacherPosition($ct['t1_pos'] ?? '');
 
     // ดึงหัวหน้าวิชาการ หรือ รองผู้อำนวยการ ตามที่ผู้ใช้ต้องการ

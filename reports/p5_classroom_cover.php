@@ -487,7 +487,7 @@ $approval_date = formatThaiDate($approval_date_raw);
                         <div class="sig-dotted"></div>
                         <div class="sig-pos">ครูประจำชั้น/ครูที่ปรึกษา</div>
                     </div>
-                    <div class="sig-name">( <?= $class_teacher_1 ?: '..........................................................' ?> )</div>
+                    <div class="sig-name">( <?= ($class_teacher_1 || $class_teacher_2) ? ($class_teacher_1 . ($class_teacher_2 ? ' / ' . $class_teacher_2 : '')) : '..........................................................' ?> )</div>
                 </div>
 
                 <?php if ($deputy_director_name): ?>

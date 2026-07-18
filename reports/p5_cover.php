@@ -79,14 +79,19 @@ if ($type === 'subject' && $assignment_id) {
 
         // ดึงชื่อครูประจำชั้น
         $stmt_ct = $pdo->prepare('
-            SELECT u1.name as t1_name, u1.last_name as t1_last, u1.position as t1_pos
+            SELECT u1.name as t1_name, u1.last_name as t1_last, u1.position as t1_pos,
+                   u2.name as t2_name, u2.last_name as t2_last, u2.position as t2_pos
             FROM classrooms c
             LEFT JOIN users u1 ON c.teacher_id_1 = u1.id
+            LEFT JOIN users u2 ON c.teacher_id_2 = u2.id
             WHERE c.id = ?
         ');
         $stmt_ct->execute([$classroom_id]);
         $ct = $stmt_ct->fetch();
         $class_teacher_name = $ct['t1_name'] ? $ct['t1_name'] . ' ' . $ct['t1_last'] : '';
+        if ($ct['t2_name']) {
+            $class_teacher_name .= ($class_teacher_name ? ' และ ' : '') . $ct['t2_name'] . ' ' . $ct['t2_last'];
+        }
         $class_teacher_position = formatTeacherPosition($ct['t1_pos'] ?? '');
     }
 } else if ($classroom_id) {
@@ -99,14 +104,19 @@ if ($type === 'subject' && $assignment_id) {
         
         // ดึงชื่อครูประจำชั้น
         $stmt_t = $pdo->prepare('
-            SELECT u1.name as t1_name, u1.last_name as t1_last, u1.position as t1_pos
+            SELECT u1.name as t1_name, u1.last_name as t1_last, u1.position as t1_pos,
+                   u2.name as t2_name, u2.last_name as t2_last, u2.position as t2_pos
             FROM classrooms c
             LEFT JOIN users u1 ON c.teacher_id_1 = u1.id
+            LEFT JOIN users u2 ON c.teacher_id_2 = u2.id
             WHERE c.id = ?
         ');
         $stmt_t->execute([$classroom_id]);
         $ct = $stmt_t->fetch();
         $class_teacher_name = $ct['t1_name'] ? $ct['t1_name'] . ' ' . $ct['t1_last'] : '';
+        if ($ct['t2_name']) {
+            $class_teacher_name .= ($class_teacher_name ? ' และ ' : '') . $ct['t2_name'] . ' ' . $ct['t2_last'];
+        }
         $class_teacher_position = formatTeacherPosition($ct['t1_pos'] ?? '');
         $teacher_name = $class_teacher_name;
         $teacher_position = $class_teacher_position;

@@ -39,16 +39,22 @@
             window.lastLoadedTeachers = teachers;
 
             tbody.innerHTML = teachers.map((t, index) => {
-                const teacherName = t.name || 'ไม่ระบุชื่อ';
-                const safeName = teacherName.replace(/'/g, "\\'");
+                const fullName = (t.name || 'ไม่ระบุชื่อ') + (t.last_name ? ' ' + t.last_name : '');
+                const safeName = fullName.replace(/'/g, "\\'");
                 const isApproved = t.is_approved == 1 || t.is_approved === true || t.is_approved === '1';
                 const isAcademic = t.is_academic == 1 || t.is_academic === true || t.is_academic === '1';
                 
                 return `
                 <tr class="border-b border-slate-50 hover:bg-slate-50/50 group">
                     <td class="py-3">
-                        <div class="font-medium text-slate-800">${teacherName}</div>
+                        <div class="font-medium text-slate-800">${fullName}</div>
                         <div class="text-[10px] text-slate-400">ID: ${t.username || '-'}</div>
+                        ${t.homeroom_classrooms ? `
+                            <div class="mt-1.5 inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 bg-blue-50/70 px-2 py-0.5 rounded-md border border-blue-100">
+                                <i data-lucide="home" class="w-3 h-3 text-blue-500"></i>
+                                ครูประจำชั้น: ชั้น ${t.homeroom_classrooms}
+                            </div>
+                        ` : ''}
                     </td>
                     <td class="py-3 text-slate-500">${t.position || '-'}</td>
                     <td class="py-3">
@@ -214,7 +220,9 @@
     async function openAssignSubjectsModal(teacherId, teacherName) {
         window.currentAssignTeacherId = teacherId;
         const nameEl = document.getElementById('assignTeacherName');
-        if (nameEl) nameEl.innerText = `มอบหมายงานสอน - ${teacherName}`;
+        const teacher = window.lastLoadedTeachers ? window.lastLoadedTeachers.find(t => t.id === teacherId) : null;
+        const homeroomInfo = teacher && teacher.homeroom_classrooms ? ` (ครูประจำชั้น: ชั้น ${teacher.homeroom_classrooms})` : '';
+        if (nameEl) nameEl.innerText = `มอบหมายงานสอน - ${teacherName}${homeroomInfo}`;
         
         // Reset form
         document.getElementById('assign_level').value = '';

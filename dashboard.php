@@ -301,6 +301,13 @@ try {
             $is_academic = (isset($_SESSION['is_academic']) && $_SESSION['is_academic'] || $_SESSION['role'] === 'admin');
             $is_restricted_director = $is_director && $role !== 'admin';
 
+            $is_homeroom_teacher = false;
+            if ($role === 'teacher' && isset($_SESSION['user_id'])) {
+                $stmt_hr = $pdo->prepare('SELECT COUNT(*) FROM classrooms WHERE school_id = ? AND (teacher_id_1 = ? OR teacher_id_2 = ?)');
+                $stmt_hr->execute([$_SESSION['school_id'], $_SESSION['user_id'], $_SESSION['user_id']]);
+                $is_homeroom_teacher = ($stmt_hr->fetchColumn() > 0);
+            }
+
             if (!$is_restricted_director && ($role !== 'teacher' || $_SESSION['is_academic'])): ?>
                 <a href="javascript:void(0)" onclick="showSection('overview')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">
                     <i data-lucide="layout-dashboard" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
@@ -380,28 +387,30 @@ try {
                 <?php endif; ?>
             <?php endif; ?>
 
-            <?php if (($role === 'admin' || $is_academic) && !$is_restricted_director): ?>
+            <?php if (($role === 'admin' || $is_academic || $is_homeroom_teacher) && !$is_restricted_director): ?>
                 <div class="pt-4 pb-2 px-4 text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">งานวิชาการ</div>
                 <a href="javascript:void(0)" onclick="showSection('manage-students')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">
                     <i data-lucide="graduation-cap" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
                     <span class="text-sm font-medium">จัดการนักเรียน</span>
                 </a>
-                <a href="javascript:void(0)" onclick="showSection('manage-subjects')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">
-                    <i data-lucide="book-open" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
-                    <span class="text-sm font-medium">จัดการรายวิชา</span>
-                </a>
-                <a href="javascript:void(0)" onclick="showSection('academic-management')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">
-                    <i data-lucide="calendar" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
-                    <span class="text-sm font-medium">จัดการปีการศึกษา</span>
-                </a>
-                <a href="javascript:void(0)" onclick="showSection('academic-documents')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">
-                    <i data-lucide="file-text" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
-                    <span class="text-sm font-medium">เอกสารวิชาการ</span>
-                </a>
-                <a href="javascript:void(0)" onclick="showSection('national-test')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">
-                    <i data-lucide="award" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
-                    <span class="text-sm font-medium">บันทึกผลการสอบระดับชาติ</span>
-                </a>
+                <?php if ($role === 'admin' || $is_academic): ?>
+                    <a href="javascript:void(0)" onclick="showSection('manage-subjects')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">
+                        <i data-lucide="book-open" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
+                        <span class="text-sm font-medium">จัดการรายวิชา</span>
+                    </a>
+                    <a href="javascript:void(0)" onclick="showSection('academic-management')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">
+                        <i data-lucide="calendar" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
+                        <span class="text-sm font-medium">จัดการปีการศึกษา</span>
+                    </a>
+                    <a href="javascript:void(0)" onclick="showSection('academic-documents')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">
+                        <i data-lucide="file-text" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
+                        <span class="text-sm font-medium">เอกสารวิชาการ</span>
+                    </a>
+                    <a href="javascript:void(0)" onclick="showSection('national-test')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">
+                        <i data-lucide="award" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
+                        <span class="text-sm font-medium">บันทึกผลการสอบระดับชาติ</span>
+                    </a>
+                <?php endif; ?>
             <?php endif; ?>
 
             <?php if ($role === 'teacher' || $role === 'admin'): ?>
