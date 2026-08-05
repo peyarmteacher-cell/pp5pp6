@@ -67,9 +67,14 @@ try {
     $params = [$school_id, $academic_year];
     
     if (!empty($target_room)) {
-        // Flexible room matching: try exact match OR match by stripping 'ห้อง' prefix
+        // Flexible room matching: try exact classroom_id OR level & room match
         $clean_room = str_replace('ห้อง', '', $target_room);
-        $query_where .= " AND s.level = ? AND (s.room = ? OR s.room = ? OR REPLACE(s.room, 'ห้อง', '') = ?)";
+        if (!empty($classroom_id)) {
+            $query_where .= " AND (s.classroom_id = ? OR (s.level = ? AND (s.room = ? OR s.room = ? OR REPLACE(s.room, 'ห้อง', '') = ?)))";
+            $params[] = $classroom_id;
+        } else {
+            $query_where .= " AND (s.level = ? AND (s.room = ? OR s.room = ? OR REPLACE(s.room, 'ห้อง', '') = ?))";
+        }
         $params[] = $target_level;
         $params[] = $target_room;
         $params[] = $clean_room;

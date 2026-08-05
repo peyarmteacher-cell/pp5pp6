@@ -41,7 +41,7 @@ try {
                 u.name AS teacher_name,
                 u.last_name AS teacher_last_name,
                 /* Count total students in this classroom for the specific academic year */
-                (SELECT COUNT(*) FROM students s WHERE s.classroom_id = ta.classroom_id AND s.school_id = u.school_id AND s.academic_year = ta.academic_year AND (s.status = 'studying' OR s.status IS NULL OR s.status = '')) as student_count,
+                (SELECT COUNT(*) FROM students s WHERE (s.classroom_id = ta.classroom_id OR (c.id IS NOT NULL AND s.level = c.level AND (s.room = c.room OR REPLACE(s.room, 'ห้อง', '') = REPLACE(c.room, 'ห้อง', '')))) AND s.school_id = u.school_id AND s.academic_year = ta.academic_year AND (s.status = 'studying' OR s.status IS NULL OR s.status = '')) as student_count,
                 
                 /* Learning Units Progress */
                 (SELECT COUNT(*) FROM learning_units lu WHERE lu.subject_id = ta.subject_id AND lu.classroom_id = ta.classroom_id AND lu.academic_year = ta.academic_year AND lu.semester = ta.semester) as total_units,

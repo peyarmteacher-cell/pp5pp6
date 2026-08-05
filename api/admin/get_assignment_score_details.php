@@ -57,19 +57,22 @@ try {
     $units = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // 3. Get students who were in this assignment's context
-    // We want students who:
-    // a) Are currently assigned to this classroom for this academic year
-    // b) Or have already recorded grades/scores in this classroom/subject for this year
-    
+    // Scope strictly to students in this specific classroom (level & room) for this academic year
+    $clean_room = str_replace('ห้อง', '', $assignment['room'] ?? '');
+
     $students_sql = "
         SELECT DISTINCT s.id, s.prefix, s.name, s.last_name, s.student_code
         FROM students s
         LEFT JOIN grades g ON s.id = g.student_id AND g.subject_id = ? AND g.classroom_id = ? AND g.academic_year = ? AND g.semester = ?
-        LEFT JOIN unit_scores us ON s.id = us.student_id 
-        LEFT JOIN learning_units lu ON us.learning_unit_id = lu.id AND lu.subject_id = ? AND lu.classroom_id = ? AND lu.academic_year = ? AND lu.semester = ?
+        LEFT JOIN learning_units lu ON lu.subject_id = ? AND lu.classroom_id = ? AND lu.academic_year = ? AND lu.semester = ?
+        LEFT JOIN unit_scores us ON s.id = us.student_id AND us.learning_unit_id = lu.id
         WHERE s.school_id = ?
         AND (
-            (s.classroom_id = ? AND s.academic_year = ? AND (s.status = 'studying' OR s.status IS NULL OR s.status = ''))
+            (
+                (s.classroom_id = ? OR (s.level = ? AND (s.room = ? OR s.room = ? OR REPLACE(s.room, 'ห้อง', '') = ?)))
+                AND s.academic_year = ? 
+                AND (s.status = 'studying' OR s.status IS NULL OR s.status = '')
+            )
             OR (g.id IS NOT NULL)
             OR (us.id IS NOT NULL)
         )
@@ -79,7 +82,8 @@ try {
         $assignment['subject_id'], $assignment['classroom_id'], $assignment['academic_year'], $assignment['semester'],
         $assignment['subject_id'], $assignment['classroom_id'], $assignment['academic_year'], $assignment['semester'],
         $school_id,
-        $assignment['classroom_id'], $assignment['academic_year']
+        $assignment['classroom_id'], $assignment['level'], $assignment['room'], $clean_room, $clean_room,
+        $assignment['academic_year']
     ];
 
     $stmt = $pdo->prepare($students_sql);
