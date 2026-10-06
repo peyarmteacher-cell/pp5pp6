@@ -112,9 +112,15 @@
                         <p id="modal_teacher_info" class="text-sm font-medium text-slate-500 uppercase tracking-wider">ครูผู้สอน / ห้องเรียน</p>
                     </div>
                 </div>
-                <button onclick="closeScoreDetailsModal()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-slate-600 hover:border-slate-300 transition-all shadow-sm">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
+                <div class="flex items-center gap-3">
+                    <button id="modal_change_teacher_btn" onclick="changeTeacherFromScoreModal()" class="flex items-center gap-1.5 px-3.5 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700 transition-all shadow-sm shadow-blue-500/20 cursor-pointer" title="เปลี่ยนครูผู้สอนสำหรับรายวิชานี้">
+                        <i data-lucide="user-check" class="w-4 h-4"></i>
+                        <span>เปลี่ยนครูผู้สอน</span>
+                    </button>
+                    <button onclick="closeScoreDetailsModal()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-slate-600 hover:border-slate-300 transition-all shadow-sm">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
             </div>
 
             <!-- Modal Body -->
@@ -151,6 +157,26 @@
 <script>
     let currentProgressTab = 'academics';
     let progressDataCache = [];
+    let currentDetailedAssignment = null;
+
+    function changeTeacherFromScoreModal() {
+        if (!currentDetailedAssignment) return;
+        const a = currentDetailedAssignment;
+        if (typeof openChangeAssignmentTeacherModal === 'function') {
+            openChangeAssignmentTeacherModal(a.id, a.subject_code, a.subject_name, `${a.level}/${a.room}`, a.teacher_id, () => {
+                viewAssignmentScoreDetails(a.id);
+                loadGradingProgress();
+            });
+        }
+    }
+
+    function quickChangeTeacher(assignmentId, code, name, classInfo, teacherId) {
+        if (typeof openChangeAssignmentTeacherModal === 'function') {
+            openChangeAssignmentTeacherModal(assignmentId, code, name, classInfo, teacherId, () => {
+                loadGradingProgress();
+            });
+        }
+    }
 
     function switchProgressTab(tab) {
         currentProgressTab = tab;
@@ -265,7 +291,12 @@
                             <div class="overflow-hidden">
                                 <span class="text-[10px] font-bold text-blue-500 uppercase tracking-widest block mb-1">${item.subject_code}</span>
                                 <h4 class="text-sm font-bold text-slate-800 truncate mb-1 group-hover:text-blue-600 transition-all">${item.subject_name}</h4>
-                                <p class="text-xs text-slate-500 font-medium truncate">${item.teacher_name} ${item.teacher_last_name || ''}</p>
+                                <div class="flex items-center gap-1.5">
+                                    <p class="text-xs text-slate-500 font-medium truncate">${item.teacher_name} ${item.teacher_last_name || ''}</p>
+                                    <button onclick="event.stopPropagation(); quickChangeTeacher(${item.assignment_id}, '${item.subject_code}', '${item.subject_name.replace(/'/g, "\\'")}', '${item.subject_level}${item.room ? '/' + item.room : ''}', ${item.teacher_id || 0})" class="p-1 text-blue-600 hover:text-blue-800 hover:bg-blue-100 rounded-md transition-all cursor-pointer" title="เปลี่ยนครูผู้สอน">
+                                        <i data-lucide="user-check" class="w-3.5 h-3.5"></i>
+                                    </button>
+                                </div>
                                 <div class="flex gap-1.5 mt-2">
                                     <span class="px-2 py-0.5 bg-slate-50 border border-slate-200 rounded text-[9px] font-bold text-slate-500">${item.subject_level}</span>
                                     ${item.room ? `<span class="px-2 py-0.5 bg-blue-50 border border-blue-100 rounded text-[9px] font-black text-blue-600">/ ${item.room}</span>` : ''}
@@ -359,6 +390,7 @@
             if (data.error) throw new Error(data.error);
             
             const { assignment, units, students } = data;
+            currentDetailedAssignment = assignment;
             
             const teacherFullName = `ครู${assignment.teacher_name}${assignment.teacher_last_name ? ' ' + assignment.teacher_last_name : ''}`;
             document.getElementById('modal_subject_name').innerText = assignment.subject_name;

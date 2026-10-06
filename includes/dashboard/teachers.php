@@ -78,6 +78,9 @@
                     </td>
                     <td class="py-3 text-right">
                         <div class="flex justify-end gap-2 transition-all">
+                            <button onclick="openTransferAllModal(${t.id}, '${safeName}')" class="p-2 bg-purple-50 text-purple-600 hover:bg-purple-100 rounded-xl transition-all cursor-pointer border border-purple-100 shadow-sm" title="โอนย้ายงานสอนทั้งหมด (กรณีครูย้ายโรงเรียน)">
+                                <i data-lucide="arrow-right-left" class="w-4 h-4"></i>
+                            </button>
                             <button onclick="resetTeacherPassword(${t.id}, '${safeName}')" class="p-2 bg-amber-50 text-amber-600 hover:bg-amber-100 rounded-xl transition-all cursor-pointer border border-amber-100 shadow-sm" title="รีเซ็ตรหัสผ่าน">
                                 <i data-lucide="key" class="w-4 h-4"></i>
                             </button>
@@ -180,7 +183,10 @@
     });
 
     async function deleteTeacher(id) {
-        if (!confirm('คุณต้องการลบข้อมูลคุณครูท่านนี้ใช่หรือไม่? การดำเนินการนี้จะลบข้อมูลงานสอนและผลการเรียนที่เกี่ยวข้องทั้งหมด')) return;
+        const teacher = window.lastLoadedTeachers?.find(t => t.id == id);
+        const teacherName = teacher ? `${teacher.name} ${teacher.last_name || ''}` : 'คุณครู';
+        
+        if (!confirm(`คุณต้องการลบข้อมูลคุณครู ${teacherName} ใช่หรือไม่?`)) return;
         
         try {
             const res = await fetch('api/admin/delete_teacher.php', {
@@ -197,11 +203,175 @@
                 if (typeof viewTeachers === 'function' && window.currentViewingSchool && document.getElementById('teacherModal')?.classList.contains('flex')) {
                     viewTeachers(window.currentViewingSchool.id, window.currentViewingSchool.name);
                 }
+            } else if (result.has_active_data) {
+                const doTransfer = confirm(`${result.error}\n\nคุณต้องการเปิดหน้าจอโอนย้ายงานสอนไปยังคุณครูท่านอื่นก่อนลบหรือไม่?`);
+                if (doTransfer) {
+                    openTransferAllModal(id, teacherName);
+                }
             } else {
                 alert(result.error);
             }
         } catch (e) {
             console.error('Error deleting teacher:', e);
+        }
+    }
+
+    async function ensureLoadedTeachers() {
+        if (!window.lastLoadedTeachers || window.lastLoadedTeachers.length === 0) {
+            try {
+                const schoolId = '<?= $_SESSION['school_id'] ?? '' ?>';
+                const mockRole = new URLSearchParams(window.location.search).get('mock_role') || '';
+                const res = await fetch(`api/get_school_teachers.php?school_id=${schoolId}&mock_role=${mockRole}`);
+                const teachers = await res.json();
+                if (Array.isArray(teachers)) window.lastLoadedTeachers = teachers;
+            } catch (e) {
+                console.error('Failed to prefetch teachers:', e);
+            }
+        }
+    }
+
+    // Modal & Logic for Changing Course Teacher
+    async function openChangeAssignmentTeacherModal(assignmentId, subjectCode, subjectName, classInfo, currentTeacherId, callback = null) {
+        await ensureLoadedTeachers();
+        document.getElementById('change_assign_id').value = assignmentId;
+        document.getElementById('change_assign_info').innerText = `${subjectCode} ${subjectName} (${classInfo})`;
+        
+        const currentTeacher = window.lastLoadedTeachers?.find(t => t.id == currentTeacherId);
+        const currentName = currentTeacher ? `${currentTeacher.name} ${currentTeacher.last_name || ''}` : 'คุณครูท่านเดิม';
+        document.getElementById('change_assign_current_teacher').innerText = currentName;
+        
+        const select = document.getElementById('change_assign_new_teacher');
+        if (window.lastLoadedTeachers && window.lastLoadedTeachers.length > 0) {
+            select.innerHTML = '<option value="">-- เลือกคุณครูผู้สอนท่านใหม่ --</option>' + 
+                window.lastLoadedTeachers
+                    .filter(t => t.id != currentTeacherId && (t.is_approved == 1 || t.is_approved === true || t.is_approved === '1'))
+                    .map(t => {
+                        const fn = t.name + (t.last_name ? ' ' + t.last_name : '');
+                        return `<option value="${t.id}">${fn} (${t.position || 'คุณครู'})</option>`;
+                    }).join('');
+        } else {
+            select.innerHTML = '<option value="">ไม่มีข้อมูลคุณครู</option>';
+        }
+        
+        window._afterTeacherChangedCallback = callback;
+        openModal('changeAssignmentTeacherModal');
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+    window.openChangeAssignmentTeacherModal = openChangeAssignmentTeacherModal;
+
+    async function submitChangeAssignmentTeacher() {
+        const assignmentId = document.getElementById('change_assign_id').value;
+        const newTeacherId = document.getElementById('change_assign_new_teacher').value;
+        
+        if (!newTeacherId) {
+            alert('กรุณาเลือกคุณครูผู้สอนท่านใหม่');
+            return;
+        }
+        
+        try {
+            const res = await fetch('api/admin/change_assignment_teacher.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    assignment_id: assignmentId,
+                    new_teacher_id: newTeacherId
+                })
+            });
+            const result = await res.json();
+            if (result.status === 'success') {
+                alert(result.message);
+                closeModal('changeAssignmentTeacherModal');
+                if (window.currentAssignTeacherId) {
+                    loadTeacherAssignments(window.currentAssignTeacherId);
+                }
+                if (typeof window._afterTeacherChangedCallback === 'function') {
+                    window._afterTeacherChangedCallback();
+                }
+                if (typeof loadGradingProgress === 'function') {
+                    loadGradingProgress();
+                }
+                loadSchoolTeachers();
+            } else {
+                alert(result.error || 'เกิดข้อผิดพลาดในการเปลี่ยนครูผู้สอน');
+            }
+        } catch (e) {
+            console.error('Error changing teacher:', e);
+            alert('เกิดข้อผิดพลาดในการเชื่อมต่อ');
+        }
+    }
+
+    // Modal & Logic for Transferring All Assignments (e.g. Teacher Transferring School)
+    async function openTransferAllModal(fromTeacherId, fromTeacherName) {
+        await ensureLoadedTeachers();
+        document.getElementById('transfer_from_teacher_id').value = fromTeacherId;
+        document.getElementById('transfer_from_teacher_name').innerText = fromTeacherName;
+        
+        const select = document.getElementById('transfer_to_teacher_id');
+        if (window.lastLoadedTeachers && window.lastLoadedTeachers.length > 0) {
+            select.innerHTML = '<option value="">-- เลือกคุณครูท่านใหม่ที่จะรับโอนงานทั้งหมด --</option>' + 
+                window.lastLoadedTeachers
+                    .filter(t => t.id != fromTeacherId && (t.is_approved == 1 || t.is_approved === true || t.is_approved === '1'))
+                    .map(t => {
+                        const fn = t.name + (t.last_name ? ' ' + t.last_name : '');
+                        return `<option value="${t.id}">${fn} (${t.position || 'คุณครู'})</option>`;
+                    }).join('');
+        } else {
+            select.innerHTML = '<option value="">ไม่มีข้อมูลคุณครู</option>';
+        }
+        
+        openModal('transferAllAssignmentsModal');
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+    window.openTransferAllModal = openTransferAllModal;
+
+    function openTransferFromAssignModal() {
+        if (!window.currentAssignTeacherId) return;
+        const teacher = window.lastLoadedTeachers?.find(t => t.id == window.currentAssignTeacherId);
+        const teacherName = teacher ? `${teacher.name} ${teacher.last_name || ''}` : 'คุณครูท่านนี้';
+        openTransferAllModal(window.currentAssignTeacherId, teacherName);
+    }
+
+    async function submitTransferAllAssignments() {
+        const fromId = document.getElementById('transfer_from_teacher_id').value;
+        const toId = document.getElementById('transfer_to_teacher_id').value;
+        const transferHomeroom = document.getElementById('transfer_homeroom_checkbox').checked;
+        const transferLd = document.getElementById('transfer_ld_checkbox').checked;
+        
+        if (!toId) {
+            alert('กรุณาเลือกคุณครูผู้รับโอนงาน');
+            return;
+        }
+        
+        if (!confirm('ยืนยันการโอนย้ายงานสอนและคะแนนทั้งหมด? ข้อมูลคะแนนทุกวิชาที่เคยบันทึกไว้จะถูกโอนไปให้คุณครูท่านใหม่โดยอัตโนมัติ')) return;
+        
+        try {
+            const res = await fetch('api/admin/transfer_teacher_assignments.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    from_teacher_id: fromId,
+                    to_teacher_id: toId,
+                    transfer_homeroom: transferHomeroom,
+                    transfer_ld: transferLd
+                })
+            });
+            const result = await res.json();
+            if (result.status === 'success') {
+                alert(result.message);
+                closeModal('transferAllAssignmentsModal');
+                if (document.getElementById('assignSubjectsModal')?.classList.contains('flex')) {
+                    closeModal('assignSubjectsModal');
+                }
+                loadSchoolTeachers();
+                if (typeof loadGradingProgress === 'function') {
+                    loadGradingProgress();
+                }
+            } else {
+                alert(result.error || 'เกิดข้อผิดพลาดในการโอนย้ายงานสอน');
+            }
+        } catch (e) {
+            console.error('Error transferring assignments:', e);
+            alert('เกิดข้อผิดพลาดในการเชื่อมต่อ');
         }
     }
 
@@ -377,10 +547,17 @@
                     <td class="px-4 py-3 text-slate-500">${a.level}${a.room ? ' / ห้อง ' + a.room : ''}</td>
                     <td class="px-4 py-3 text-slate-500">${a.hours} ชม. / ${a.credits} นก.</td>
                     <td class="px-4 py-3 text-right">
-                        <button onclick="removeAssignment(${a.assignment_id}, ${teacherId})" class="text-red-600 hover:text-red-800 font-bold cursor-pointer">ยกเลิก</button>
+                        <div class="flex items-center justify-end gap-2">
+                            <button onclick="openChangeAssignmentTeacherModal(${a.assignment_id}, '${a.code}', '${a.name.replace(/'/g, "\\'")}', '${a.level}${a.room ? ' / ห้อง ' + a.room : ''}', ${teacherId})" class="px-2.5 py-1 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg text-xs font-bold cursor-pointer transition-all border border-blue-100 flex items-center gap-1" title="เปลี่ยนครูผู้สอนและโอนย้ายคะแนนเดิม">
+                                <i data-lucide="user-check" class="w-3.5 h-3.5"></i>
+                                เปลี่ยนครูผู้สอน
+                            </button>
+                            <button onclick="removeAssignment(${a.assignment_id}, ${teacherId})" class="px-2.5 py-1 text-red-600 hover:bg-red-50 rounded-lg text-xs font-bold cursor-pointer transition-all border border-transparent hover:border-red-100">ยกเลิก</button>
+                        </div>
                     </td>
                 </tr>
             `).join('');
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         }
     }
 
@@ -740,10 +917,16 @@
                             <i data-lucide="clipboard-list" class="w-4 h-4"></i>
                             รายวิชาที่รับผิดชอบในปัจจุบัน
                         </h4>
-                        <button onclick="copyPreviousAssignments()" class="text-xs bg-amber-500 text-white px-3 py-1.5 rounded-lg font-bold hover:bg-amber-600 transition-all shadow-sm cursor-pointer flex items-center gap-1">
-                            <i data-lucide="copy" class="w-3 h-3"></i>
-                            คัดลอกงานสอนจากปีที่แล้ว
-                        </button>
+                        <div class="flex items-center gap-2">
+                            <button onclick="openTransferFromAssignModal()" class="text-xs bg-purple-600 text-white px-3 py-1.5 rounded-lg font-bold hover:bg-purple-700 transition-all shadow-sm cursor-pointer flex items-center gap-1" title="โอนย้ายงานสอนทั้งหมดให้คุณครูท่านอื่น (กรณีครูย้ายโรงเรียน)">
+                                <i data-lucide="arrow-right-left" class="w-3 h-3"></i>
+                                โอนย้ายงานสอนทั้งหมด
+                            </button>
+                            <button onclick="copyPreviousAssignments()" class="text-xs bg-amber-500 text-white px-3 py-1.5 rounded-lg font-bold hover:bg-amber-600 transition-all shadow-sm cursor-pointer flex items-center gap-1">
+                                <i data-lucide="copy" class="w-3 h-3"></i>
+                                คัดลอกงานสอนจากปีที่แล้ว
+                            </button>
+                        </div>
                     </div>
                     <div class="overflow-x-auto border border-slate-100 rounded-2xl">
                         <table class="w-full text-left">
@@ -782,6 +965,131 @@
                         </table>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: เปลี่ยนครูผู้สอนประจำรายวิชา -->
+<div id="changeAssignmentTeacherModal" class="fixed inset-0 bg-black/60 hidden items-center justify-center p-4 z-[70]">
+    <div class="bg-white rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl">
+        <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+            <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-blue-100 text-blue-700 rounded-2xl">
+                    <i data-lucide="user-check" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-slate-800">เปลี่ยนครูผู้สอน</h3>
+                    <p class="text-xs text-slate-500">กรณีคุณครูย้ายโรงเรียนหรือสับเปลี่ยนผู้รับผิดชอบวิชา</p>
+                </div>
+            </div>
+            <button onclick="closeModal('changeAssignmentTeacherModal')" class="text-slate-400 hover:text-slate-600 cursor-pointer p-2 hover:bg-slate-200 rounded-full transition-all">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+        
+        <div class="p-6 space-y-5">
+            <input type="hidden" id="change_assign_id">
+            
+            <div class="bg-blue-50/70 p-4 rounded-2xl border border-blue-100">
+                <div class="text-xs font-bold text-blue-600 uppercase tracking-wider mb-1">รายวิชาที่ต้องการเปลี่ยน</div>
+                <div id="change_assign_info" class="text-base font-black text-slate-800">-</div>
+                <div class="mt-2 text-xs text-slate-600 flex items-center gap-1.5">
+                    <span class="text-slate-400">ครูผู้สอนเดิม:</span>
+                    <span id="change_assign_current_teacher" class="font-bold text-slate-700">-</span>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-bold text-slate-700 mb-2">เลือกคุณครูผู้สอนท่านใหม่ <span class="text-red-500">*</span></label>
+                <select id="change_assign_new_teacher" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all cursor-pointer font-medium text-slate-700">
+                    <option value="">-- เลือกคุณครูผู้สอนท่านใหม่ --</option>
+                </select>
+            </div>
+
+            <div class="p-4 bg-emerald-50 rounded-2xl border border-emerald-100 flex items-start gap-3">
+                <i data-lucide="shield-check" class="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5"></i>
+                <div class="text-xs text-emerald-800 space-y-1">
+                    <p class="font-bold">ข้อมูลคะแนนที่เคยลงไว้จะไม่สูญหาย</p>
+                    <p class="text-emerald-700 leading-relaxed">
+                        คะแนนเก็บทุกหน่วยการเรียนรู้, ผลสอบปลายภาค, คุณลักษณะพึงประสงค์ และเกรดที่เคยบันทึกไว้ในรายวิชานี้ทั้งหมด จะถูกโอนย้ายไปยังคุณครูท่านใหม่โดยอัตโนมัติ โดยคุณครูท่านใหม่สามารถตรวจดูและจัดการต่อได้ทันที
+                    </p>
+                </div>
+            </div>
+
+            <div class="pt-2 flex gap-3">
+                <button type="button" onclick="closeModal('changeAssignmentTeacherModal')" class="flex-1 px-4 py-3 border border-slate-200 text-slate-600 rounded-xl font-bold hover:bg-slate-50 cursor-pointer transition-all">ยกเลิก</button>
+                <button type="button" onclick="submitChangeAssignmentTeacher()" class="flex-1 bg-blue-600 text-white px-4 py-3 rounded-xl font-bold hover:bg-blue-700 cursor-pointer transition-all shadow-lg shadow-blue-200 flex items-center justify-center gap-2">
+                    <i data-lucide="check" class="w-4 h-4"></i>
+                    บันทึกการเปลี่ยนครูผู้สอน
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: โอนย้ายงานสอนทั้งหมด (กรณีครูย้ายโรงเรียน) -->
+<div id="transferAllAssignmentsModal" class="fixed inset-0 bg-black/60 hidden items-center justify-center p-4 z-[70]">
+    <div class="bg-white rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl">
+        <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+            <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-purple-100 text-purple-700 rounded-2xl">
+                    <i data-lucide="arrow-right-left" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-slate-800">โอนย้ายงานสอนทั้งหมด</h3>
+                    <p class="text-xs text-slate-500">สำหรับกรณีคุณครูย้ายโรงเรียน โอนทุกวิชาและคะแนนให้ครูท่านใหม่</p>
+                </div>
+            </div>
+            <button onclick="closeModal('transferAllAssignmentsModal')" class="text-slate-400 hover:text-slate-600 cursor-pointer p-2 hover:bg-slate-200 rounded-full transition-all">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+        
+        <div class="p-6 space-y-5">
+            <input type="hidden" id="transfer_from_teacher_id">
+            
+            <div class="bg-purple-50/70 p-4 rounded-2xl border border-purple-100">
+                <div class="text-xs font-bold text-purple-600 uppercase tracking-wider mb-1">คุณครูผู้ส่งมอบภาระงาน (ครูย้าย)</div>
+                <div id="transfer_from_teacher_name" class="text-base font-black text-slate-800">-</div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-bold text-slate-700 mb-2">เลือกคุณครูท่านใหม่ที่จะรับโอนงาน <span class="text-red-500">*</span></label>
+                <select id="transfer_to_teacher_id" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none transition-all cursor-pointer font-medium text-slate-700">
+                    <option value="">-- เลือกคุณครูท่านใหม่ที่จะรับโอนงานทั้งหมด --</option>
+                </select>
+            </div>
+
+            <div class="space-y-2 p-4 bg-slate-50 rounded-2xl border border-slate-200">
+                <div class="text-xs font-bold text-slate-700 mb-2">รายการที่ต้องการโอนย้าย:</div>
+                <label class="flex items-center gap-2.5 cursor-pointer text-xs font-medium text-slate-700">
+                    <input type="checkbox" checked disabled class="w-4 h-4 text-purple-600 rounded">
+                    <span>รายวิชาที่สอนและผลการเรียนทั้งหมด (คะแนนเก็บ, ปลายภาค, คุณลักษณะ, เวลาเรียน)</span>
+                </label>
+                <label class="flex items-center gap-2.5 cursor-pointer text-xs font-medium text-slate-700">
+                    <input type="checkbox" id="transfer_homeroom_checkbox" checked class="w-4 h-4 text-purple-600 rounded">
+                    <span>หน้าที่ครูประจำชั้น (Homeroom Teacher)</span>
+                </label>
+                <label class="flex items-center gap-2.5 cursor-pointer text-xs font-medium text-slate-700">
+                    <input type="checkbox" id="transfer_ld_checkbox" checked class="w-4 h-4 text-purple-600 rounded">
+                    <span>กิจกรรมพัฒนาผู้เรียน (แนะแนว, ลูกเสือ, ชุมนุม)</span>
+                </label>
+            </div>
+
+            <div class="p-4 bg-amber-50 rounded-2xl border border-amber-100 flex items-start gap-3">
+                <i data-lucide="info" class="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5"></i>
+                <p class="text-xs text-amber-800 leading-relaxed">
+                    เมื่อโอนย้ายเสร็จสิ้น คุณครูท่านใหม่จะสามารถเข้าถึงรายวิชาทั้งหมดของครูเดิมได้ทันที และผลการประเมินคะแนนที่ลงไว้แล้วจะไม่สูญหาย
+                </p>
+            </div>
+
+            <div class="pt-2 flex gap-3">
+                <button type="button" onclick="closeModal('transferAllAssignmentsModal')" class="flex-1 px-4 py-3 border border-slate-200 text-slate-600 rounded-xl font-bold hover:bg-slate-50 cursor-pointer transition-all">ยกเลิก</button>
+                <button type="button" onclick="submitTransferAllAssignments()" class="flex-1 bg-purple-600 text-white px-4 py-3 rounded-xl font-bold hover:bg-purple-700 cursor-pointer transition-all shadow-lg shadow-purple-200 flex items-center justify-center gap-2">
+                    <i data-lucide="arrow-right-left" class="w-4 h-4"></i>
+                    ยืนยันการโอนย้ายทั้งหมด
+                </button>
             </div>
         </div>
     </div>

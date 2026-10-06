@@ -307,8 +307,8 @@ try {
                 $stmt_hr->execute([$_SESSION['school_id'], $_SESSION['user_id'], $_SESSION['user_id']]);
                 $is_homeroom_teacher = ($stmt_hr->fetchColumn() > 0);
             }
-
-            if (!$is_restricted_director && ($role !== 'teacher' || $_SESSION['is_academic'])): ?>
+            ?>
+            <?php if (!$is_restricted_director && ($role !== 'teacher' || $_SESSION['is_academic'])): ?>
                 <a href="javascript:void(0)" onclick="showSection('overview')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">
                     <i data-lucide="layout-dashboard" class="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
                     <span class="text-sm font-medium">ภาพรวม</span>
@@ -339,9 +339,7 @@ try {
                 </a>
             <?php endif; ?>
 
-            <?php 
-            if ($role === 'admin' || $is_director): 
-            ?>
+            <?php if ($role === 'admin' || $is_director): ?>
                 <div class="pt-4 pb-2 px-4 text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">เมนูบริหาร</div>
                 
                 <a href="javascript:void(0)" onclick="showSection('grading-progress')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all group">

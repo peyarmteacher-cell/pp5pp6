@@ -33,6 +33,7 @@ try {
 
     $sql = "SELECT 
                 ta.id as assignment_id,
+                ta.teacher_id,
                 sub.name AS subject_name,
                 sub.code AS subject_code,
                 sub.level AS subject_level,

@@ -10,7 +10,13 @@ const app = express();
 const PORT = 3000;
 
 app.use(express.json());
-app.use(express.static(__dirname));
+// Serve static assets except PHP files so Express routes handle them
+app.use((req, res, next) => {
+    if (req.path.startsWith('/api/') || req.path.endsWith('.php') || req.path === '/') {
+        return next();
+    }
+    express.static(__dirname)(req, res, next);
+});
 
 // --- Mock Data Store ---
 let mockUsers = [
@@ -157,16 +163,129 @@ app.post('/api/admin/save_teacher.php', (req, res) => {
     res.json({ status: 'success', message: 'บันทึกข้อมูลคุณครูเรียบร้อยแล้ว (Mock)' });
 });
 
+let mockAssignments = [
+    { assignment_id: 1, teacher_id: 3, teacher_name: 'คุณครูสมชาย ใจดี', code: 'ท11101', name: 'ภาษาไทย', level: 'ป.1', room: '1', hours: 200, credits: 5.0, academic_year: '2567', semester: 1 },
+    { assignment_id: 2, teacher_id: 4, teacher_name: 'คุณครูสมหญิง รักเรียน', code: 'ค11101', name: 'คณิตศาสตร์', level: 'ป.1', room: '1', hours: 200, credits: 5.0, academic_year: '2567', semester: 1 },
+    { assignment_id: 3, teacher_id: 3, teacher_name: 'คุณครูสมชาย ใจดี', code: 'ว11101', name: 'วิทยาศาสตร์', level: 'ป.1', room: '1', hours: 80, credits: 2.0, academic_year: '2567', semester: 1 }
+];
+
 app.post('/api/admin/delete_teacher.php', (req, res) => {
-    const { id } = req.body;
+    const { id, transfer_to_id } = req.body;
+    const hasAssignments = mockAssignments.some(a => a.teacher_id == id);
+    if (hasAssignments && !transfer_to_id) {
+        return res.json({
+            error: 'คุณครูท่านนี้ยังมีภาระงานสอนที่รับผิดชอบ หากคุณครูย้ายโรงเรียน แนะนำให้โอนย้ายงานสอนไปยังคุณครูท่านอื่นก่อนลบ เพื่อป้องกันข้อมูลคะแนนสูญหาย',
+            has_active_data: true,
+            ta_count: mockAssignments.filter(a => a.teacher_id == id).length
+        });
+    }
+    if (transfer_to_id) {
+        mockAssignments.forEach(a => {
+            if (a.teacher_id == id) {
+                const targetTeacher = mockUsers.find(u => u.id == transfer_to_id);
+                a.teacher_id = parseInt(transfer_to_id);
+                if (targetTeacher) a.teacher_name = targetTeacher.name;
+            }
+        });
+    }
     mockUsers = mockUsers.filter(u => u.id != id);
     res.json({ status: 'success', message: 'ลบข้อมูลคุณครูเรียบร้อยแล้ว (Mock)' });
 });
 
 app.get('/api/admin/get_teacher_assignments.php', (req, res) => {
-    res.json([
-        { assignment_id: 1, code: 'ท11101', name: 'ภาษาไทย', level: 'ป.1', hours: 200, credits: 5.0 }
-    ]);
+    const teacherId = parseInt(req.query.teacher_id);
+    const list = isNaN(teacherId) ? mockAssignments : mockAssignments.filter(a => a.teacher_id === teacherId);
+    res.json(list);
+});
+
+app.post('/api/admin/change_assignment_teacher.php', (req, res) => {
+    const { assignment_id, new_teacher_id } = req.body;
+    const assignment = mockAssignments.find(a => a.assignment_id == assignment_id);
+    const newTeacher = mockUsers.find(u => u.id == new_teacher_id);
+    if (!assignment) return res.status(404).json({ error: 'ไม่พบงานสอน' });
+    if (!newTeacher) return res.status(404).json({ error: 'ไม่พบข้อมูลคุณครูท่านใหม่' });
+
+    assignment.teacher_id = parseInt(new_teacher_id);
+    assignment.teacher_name = newTeacher.name;
+
+    res.json({
+        status: 'success',
+        message: `เปลี่ยนครูผู้สอนเป็น คุณครู${newTeacher.name} เรียบร้อยแล้ว (คะแนนและข้อมูลที่เคยบันทึกไว้ทั้งหมดถูกโอนไปยังครูท่านใหม่เรียบร้อย)`,
+        new_teacher_name: newTeacher.name
+    });
+});
+
+app.post('/api/admin/transfer_teacher_assignments.php', (req, res) => {
+    const { from_teacher_id, to_teacher_id } = req.body;
+    const fromTeacher = mockUsers.find(u => u.id == from_teacher_id);
+    const toTeacher = mockUsers.find(u => u.id == to_teacher_id);
+    if (!fromTeacher || !toTeacher) return res.status(404).json({ error: 'ไม่พบคุณครูในระบบ' });
+
+    let count = 0;
+    mockAssignments.forEach(a => {
+        if (a.teacher_id == from_teacher_id) {
+            a.teacher_id = parseInt(to_teacher_id);
+            a.teacher_name = toTeacher.name;
+            count++;
+        }
+    });
+
+    res.json({
+        status: 'success',
+        message: `โอนย้ายภาระงานสอนและคะแนนจาก คุณครู${fromTeacher.name} ไปยัง คุณครู${toTeacher.name} สำเร็จเรียบร้อยแล้ว`,
+        transferred_courses: count,
+        transferred_grades: count * 30
+    });
+});
+
+app.get('/api/admin/get_grading_progress.php', (req, res) => {
+    const list = mockAssignments.map(a => ({
+        assignment_id: a.assignment_id,
+        teacher_id: a.teacher_id,
+        subject_name: a.name,
+        subject_code: a.code,
+        subject_level: a.level,
+        room: a.room || '1',
+        classroom_id: 1,
+        teacher_name: a.teacher_name,
+        teacher_last_name: '',
+        student_count: 30,
+        total_units: 4,
+        completed_units: 4,
+        final_count: 30,
+        characteristics_count: 30,
+        analytical_count: 30,
+        competency_count: 30,
+        learner_dev_count: 30
+    }));
+    res.json(list);
+});
+
+app.get('/api/admin/get_assignment_score_details.php', (req, res) => {
+    const assignmentId = parseInt(req.query.assignment_id);
+    const a = mockAssignments.find(x => x.assignment_id === assignmentId) || mockAssignments[0];
+    res.json({
+        assignment: {
+            id: a.assignment_id,
+            teacher_id: a.teacher_id,
+            subject_name: a.name,
+            subject_code: a.code,
+            level: a.level,
+            room: a.room || '1',
+            teacher_name: a.teacher_name,
+            teacher_last_name: '',
+            academic_year: '2567',
+            semester: 1
+        },
+        units: [
+            { id: 1, unit_name: 'หน่วยที่ 1 การอ่าน', max_score: 10 },
+            { id: 2, unit_name: 'หน่วยที่ 2 การเขียน', max_score: 10 }
+        ],
+        students: [
+            { id: 1, student_code: '66001', full_name: 'เด็กชายกอไก่ ใจดี', unit_scores: { 1: 9, 2: 8 }, final_score: 28, total_score: 85, grade: '4' },
+            { id: 2, student_code: '66002', full_name: 'เด็กหญิงขอไข่ ใฝ่เรียน', unit_scores: { 1: 8, 2: 7 }, final_score: 25, total_score: 78, grade: '3.5' }
+        ]
+    });
 });
 
 app.post('/api/admin/assign_subjects.php', (req, res) => {
@@ -276,6 +395,18 @@ const servePhpAsHtml = (filePath, req, res) => {
             is_academic: 0
         };
 
+        // ประมวลผล include / require
+        const processIncludes = (text, currentDir) => {
+            return text.replace(/<\?php\s*(?:include|require|require_once|include_once)\s*['"](.*?)['"]\s*;\s*\?>/g, (match, relPath) => {
+                const fullIncludePath = path.resolve(currentDir, relPath);
+                if (fs.existsSync(fullIncludePath)) {
+                    return processIncludes(fs.readFileSync(fullIncludePath, 'utf8'), path.dirname(fullIncludePath));
+                }
+                return '';
+            });
+        };
+        content = processIncludes(content, path.dirname(filePath));
+
         // แทนที่ <?= ... ?>
         content = content.replace(/<\?=\s*\$_SESSION\['(.*?)'\]\s*\?>/g, (match, key) => {
             return mockSession[key] !== undefined ? mockSession[key] : '';
@@ -316,15 +447,23 @@ const servePhpAsHtml = (filePath, req, res) => {
 
         const processIfBlocks = (text) => {
             let oldText;
+            let iter = 0;
             do {
                 oldText = text;
-                // ค้นหาบล็อก if/endif ที่อยู่ชั้นในสุด (Innermost)
-                // ใช้ Negative Lookahead เพื่อให้แน่ใจว่าไม่มี if ซ้อนอยู่ข้างใน
-                text = text.replace(/<\?php\s*if\s*\((.*?)\):\s*\?>(?!.*?<\?php\s*if\s*\(.*?\):\s*\?>)(.*?)<\?php\s*endif;\s*\?>/gs, (match, condition, inner) => {
+                // ค้นหาบล็อก if/endif ที่อยู่ชั้นในสุด (Innermost) และรองรับ else block
+                text = text.replace(/<\?php\s*if\s*\((.*?)\):\s*\?>(?!.*?<\?php\s*if\s*\(.*?\):\s*\?>)([\s\S]*?)<\?php\s*endif;\s*\?>/g, (match, condition, inner) => {
                     const result = evaluateCondition(condition, mockSession);
+                    if (inner.includes('<?php else: ?>')) {
+                        const parts = inner.split('<?php else: ?>');
+                        return result ? parts[0] : (parts[1] || '');
+                    } else if (inner.includes('<?php else : ?>')) {
+                        const parts = inner.split('<?php else : ?>');
+                        return result ? parts[0] : (parts[1] || '');
+                    }
                     return result ? inner : '';
                 });
-            } while (text !== oldText);
+                iter++;
+            } while (text !== oldText && iter < 100);
             return text;
         };
 
