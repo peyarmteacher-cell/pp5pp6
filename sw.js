@@ -1,20 +1,8 @@
 // Service Worker for Academic Management App
-const CACHE_NAME = 'academic-app-v2';
-const ASSETS_TO_CACHE = [
-  'index.php',
-  'dashboard.php',
-  'manifest.php'
-];
+const CACHE_NAME = 'academic-app-v3';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      // Use addAll but catch individual failures if needed, 
-      // but for simplicity we'll just try to cache these
-      return cache.addAll(ASSETS_TO_CACHE).catch(err => console.log('Caching failed', err));
-    })
-  );
 });
 
 self.addEventListener('activate', (event) => {
@@ -27,7 +15,7 @@ self.addEventListener('activate', (event) => {
           }
         })
       );
-    })
+    }).then(() => self.clients.claim())
   );
 });
 
@@ -35,20 +23,25 @@ self.addEventListener('fetch', (event) => {
   // Only handle GET requests
   if (event.request.method !== 'GET') return;
 
-  // For navigating actions (HTML pages), prefer network first
-  if (event.request.mode === 'navigate') {
-    event.respondWith(
-      fetch(event.request).catch(() => {
-        return caches.match(event.request);
-      })
-    );
+  const url = new URL(event.request.url);
+
+  // Do NOT intercept dynamic PHP pages or API calls
+  if (url.pathname.includes('/api/') || url.pathname.endsWith('.php') || url.pathname === '/') {
     return;
   }
 
-  // For other assets, use cache first
+  // Handle static assets with graceful fallback
   event.respondWith(
-    caches.match(event.request).then((response) => {
-      return response || fetch(event.request);
+    caches.match(event.request).then((cachedResponse) => {
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+      return fetch(event.request).catch((err) => {
+        // Return a safe fallback rather than rejecting the promise
+        return new Response('', { status: 404, statusText: 'Not Found' });
+      });
+    }).catch(() => {
+      return new Response('', { status: 404, statusText: 'Not Found' });
     })
   );
 });

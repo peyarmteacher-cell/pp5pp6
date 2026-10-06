@@ -1,0 +1,23 @@
+# SchoolOS - Apache & LiteSpeed Configuration
+DirectoryIndex index.php index.html
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # Ensure index.php is loaded when accessing root
+    RewriteRule ^$ index.php [L]
+</IfModule>
+
+# Disable directory browsing
+Options -Indexes
+
+# Set default charset
+AddDefaultCharset UTF-8
+
+# MIME Types for PWA and Fonts
+<IfModule mod_mime.c>
+    AddType application/manifest+json .webmanifest
+    AddType application/json .json
+    AddType font/woff2 .woff2
+</IfModule>
