@@ -72,23 +72,58 @@ $stmt_subs = $pdo->prepare("
 $stmt_subs->execute([$level_name, $school_id]);
 $subjects = $stmt_subs->fetchAll();
 
-$semester_query = $semester === 'annual' ? "IN (1, 2)" : "= ?";
-$semester_params = $semester === 'annual' ? [] : [$semester];
+$primary_grading_mode = $school['primary_grading_mode'] ?? 'average';
 
 foreach ($subjects as $sub) {
     $grade_dist = array_fill_keys(['4', '3.5', '3', '2.5', '2', '1.5', '1', '0', 'ร', 'มส'], 0);
-    $query = "
-        SELECT grade, COUNT(*) as count 
-        FROM grades 
-        WHERE subject_id = ? AND classroom_id = ? AND academic_year = ? AND semester $semester_query
-        GROUP BY grade
-    ";
-    $stmt_grades = $pdo->prepare($query);
-    $params = array_merge([$sub['subject_id'], $classroom_id, $year], $semester_params);
-    $stmt_grades->execute($params);
-    while ($row = $stmt_grades->fetch()) {
-        if (isset($grade_dist[$row['grade']])) $grade_dist[$row['grade']] = $row['count'];
+    
+    if ($semester === 'annual') {
+        $stmt_g = $pdo->prepare("SELECT student_id, semester, score_total, score_percent, grade FROM grades WHERE subject_id = ? AND classroom_id = ? AND academic_year = ?");
+        $stmt_g->execute([$sub['subject_id'], $classroom_id, $year]);
+        $rows = $stmt_g->fetchAll();
+        $student_records = [];
+        foreach ($rows as $r) {
+            $student_records[$r['student_id']][$r['semester']] = $r;
+        }
+        foreach ($student_records as $sid => $sems) {
+            $g1 = $sems[1] ?? null;
+            $g2 = $sems[2] ?? null;
+            $s1_t = $g1 ? (float)($g1['score_total'] !== null ? $g1['score_total'] : $g1['score_percent']) : 0;
+            $s2_t = $g2 ? (float)($g2['score_total'] !== null ? $g2['score_total'] : $g2['score_percent']) : 0;
+
+            if ($primary_grading_mode === 'sum') {
+                $final_pct = $s1_t + $s2_t;
+            } else {
+                $final_pct = ($s1_t + $s2_t) / 2;
+            }
+
+            $calc_grade = '0';
+            if ($final_pct >= 80) $calc_grade = '4';
+            else if ($final_pct >= 75) $calc_grade = '3.5';
+            else if ($final_pct >= 70) $calc_grade = '3';
+            else if ($final_pct >= 65) $calc_grade = '2.5';
+            else if ($final_pct >= 60) $calc_grade = '2';
+            else if ($final_pct >= 55) $calc_grade = '1.5';
+            else if ($final_pct >= 50) $calc_grade = '1';
+
+            if (isset($grade_dist[$calc_grade])) {
+                $grade_dist[$calc_grade]++;
+            }
+        }
+    } else {
+        $query = "
+            SELECT grade, COUNT(*) as count 
+            FROM grades 
+            WHERE subject_id = ? AND classroom_id = ? AND academic_year = ? AND semester = ?
+            GROUP BY grade
+        ";
+        $stmt_grades = $pdo->prepare($query);
+        $stmt_grades->execute([$sub['subject_id'], $classroom_id, $year, $semester]);
+        while ($row = $stmt_grades->fetch()) {
+            if (isset($grade_dist[$row['grade']])) $grade_dist[$row['grade']] = $row['count'];
+        }
     }
+
     $subjects_data[] = [
         'code' => $sub['code'],
         'name' => $sub['name'],

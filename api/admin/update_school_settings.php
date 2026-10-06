@@ -22,6 +22,7 @@ $academic_head_name = $data['academic_head_name'] ?? '';
 $academic_head_position = $data['academic_head_position'] ?? 'หัวหน้างานวิชาการ';
 $telegram_bot_token = $data['telegram_bot_token'] ?? '';
 $show_grades = isset($data['show_grades']) ? intval($data['show_grades']) : 1;
+$primary_grading_mode = in_array($data['primary_grading_mode'] ?? '', ['sum', 'average']) ? $data['primary_grading_mode'] : 'average';
 
 if (empty($name) || empty($province)) {
     echo json_encode(['error' => 'กรุณากรอกข้อมูลให้ครบถ้วน']);
@@ -43,8 +44,15 @@ try {
         $pdo->exec("ALTER TABLE schools ADD COLUMN show_grades TINYINT(1) DEFAULT 1 AFTER telegram_bot_token");
     }
 
-    $stmt = $pdo->prepare('UPDATE schools SET name = ?, affiliation = ?, district = ?, province = ?, logo_url = ?, garuda_url = ?, director_name = ?, academic_head_name = ?, academic_head_position = ?, telegram_bot_token = ?, show_grades = ? WHERE id = ?');
-    $stmt->execute([$name, $affiliation, $district, $province, $logo_url, $garuda_url, $director_name, $academic_head_name, $academic_head_position, $telegram_bot_token, $show_grades, $_SESSION['school_id']]);
+    // Check if primary_grading_mode column exists
+    try {
+        $pdo->query("SELECT primary_grading_mode FROM schools LIMIT 1");
+    } catch (Exception $e) {
+        $pdo->exec("ALTER TABLE schools ADD COLUMN primary_grading_mode VARCHAR(20) DEFAULT 'average' AFTER show_grades");
+    }
+
+    $stmt = $pdo->prepare('UPDATE schools SET name = ?, affiliation = ?, district = ?, province = ?, logo_url = ?, garuda_url = ?, director_name = ?, academic_head_name = ?, academic_head_position = ?, telegram_bot_token = ?, show_grades = ?, primary_grading_mode = ? WHERE id = ?');
+    $stmt->execute([$name, $affiliation, $district, $province, $logo_url, $garuda_url, $director_name, $academic_head_name, $academic_head_position, $telegram_bot_token, $show_grades, $primary_grading_mode, $_SESSION['school_id']]);
 
     // Update session school name
     $_SESSION['school_name'] = $name;

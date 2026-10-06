@@ -90,9 +90,10 @@ try {
                    IFNULL(sp.name, s.name) AS name, 
                    IFNULL(sp.last_name, s.last_name) AS last_name, 
                    IFNULL(sp.prefix, s.prefix) AS prefix,
-                   g1.score_units as sem1_units, g1.score_percent as sem1_percent, g1.grade as sem1_grade,
-                   g2.score_units as sem2_units, g2.score_percent as sem2_percent, g2.grade as sem2_grade,
-                   ((IFNULL(g1.score_percent, 0) + IFNULL(g2.score_percent, 0)) / 2) as annual_percent
+                   g1.score_units as sem1_units, g1.score_final as sem1_final, g1.score_total as sem1_total, g1.score_percent as sem1_percent, g1.grade as sem1_grade,
+                   g2.score_units as sem2_units, g2.score_final as sem2_final, g2.score_total as sem2_total, g2.score_percent as sem2_percent, g2.grade as sem2_grade,
+                   ((IFNULL(g1.score_percent, IFNULL(g1.score_total, 0)) + IFNULL(g2.score_percent, IFNULL(g2.score_total, 0))) / 2) as annual_percent,
+                   (IFNULL(g1.score_total, IFNULL(g1.score_percent, 0)) + IFNULL(g2.score_total, IFNULL(g2.score_percent, 0))) as annual_sum
             FROM students s
             LEFT JOIN student_profiles sp ON s.student_profile_id = sp.id
             LEFT JOIN grades g1 ON s.id = g1.student_id AND g1.subject_id = ? AND g1.academic_year = ? AND g1.semester = 1 AND (g1.classroom_id = ? OR ? = '')
@@ -133,10 +134,23 @@ try {
     }
     
     $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
+
+    // Fetch School Primary Grading Mode
+    $primary_grading_mode = 'average';
+    try {
+        $school_id = $_SESSION['school_id'] ?? 0;
+        $stmt_sch = $pdo->prepare('SELECT primary_grading_mode FROM schools WHERE id = ?');
+        $stmt_sch->execute([$school_id]);
+        $sch = $stmt_sch->fetch();
+        if ($sch && !empty($sch['primary_grading_mode'])) {
+            $primary_grading_mode = $sch['primary_grading_mode'];
+        }
+    } catch (Exception $e) {}
+
     // Fetch Unit Scores
     if ($semester !== 'annual') {
         foreach ($students as &$student) {
+            $student['primary_grading_mode'] = $primary_grading_mode;
             $stmt = $pdo->prepare('
                 SELECT us.learning_unit_id, us.score
                 FROM unit_scores us
@@ -148,6 +162,7 @@ try {
         }
     } else {
         foreach ($students as &$student) {
+            $student['primary_grading_mode'] = $primary_grading_mode;
             $student['unit_scores'] = [];
         }
     }

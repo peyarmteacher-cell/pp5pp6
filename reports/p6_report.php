@@ -75,6 +75,19 @@ function formatPassFail($val) {
     if ($val === 'F' || $val === 'ไม่ผ่าน') return 'ไม่ผ่าน';
     return $val;
 }
+
+function calculateGradeFromScore($percent) {
+    if ($percent >= 80) return '4';
+    if ($percent >= 75) return '3.5';
+    if ($percent >= 70) return '3';
+    if ($percent >= 65) return '2.5';
+    if ($percent >= 60) return '2';
+    if ($percent >= 55) return '1.5';
+    if ($percent >= 50) return '1';
+    return '0';
+}
+
+$primary_grading_mode = $school['primary_grading_mode'] ?? 'average';
 ?>
 
 <style>
@@ -183,37 +196,108 @@ foreach ($students_to_print as $student):
     if (!$student) continue;
     
     // ดึงผลการเรียน
-    $stmt = $pdo->prepare('
-        SELECT s.code, s.name, s.hours, s.credits, g.score_total, g.grade, g.score_percent
-        FROM teacher_assignments ta
-        JOIN subjects s ON ta.subject_id = s.id
-        JOIN grades g ON s.id = g.subject_id AND g.student_id = ? AND g.academic_year = ? AND g.semester = ?
-        WHERE ta.classroom_id = ? AND ta.academic_year = ?
-        GROUP BY s.id
-        ORDER BY s.code ASC
-    ');
-    $stmt->execute([$student['id'], $year, $semester === 'annual' ? 0 : $semester, $classroom_id, $year]);
-    $grades = $stmt->fetchAll();
+    if ($semester === 'annual') {
+        $stmt_subs = $pdo->prepare('
+            SELECT DISTINCT s.id, s.code, s.name, s.hours, s.credits
+            FROM teacher_assignments ta
+            JOIN subjects s ON ta.subject_id = s.id
+            WHERE ta.classroom_id = ? AND ta.academic_year = ?
+            ORDER BY s.code ASC
+        ');
+        $stmt_subs->execute([$classroom_id, $year]);
+        $sub_list = $stmt_subs->fetchAll();
+        
+        $grades = [];
+        foreach ($sub_list as $sub) {
+            $stmt_g1 = $pdo->prepare('SELECT score_total, score_percent, grade FROM grades WHERE student_id = ? AND subject_id = ? AND academic_year = ? AND semester = 1 AND (classroom_id = ? OR ? = "") LIMIT 1');
+            $stmt_g1->execute([$student['id'], $sub['id'], $year, $classroom_id, $classroom_id]);
+            $g1 = $stmt_g1->fetch();
 
-    // ดึงกิจกรรมพัฒนาผู้เรียน
-    $stmt = $pdo->prepare('SELECT * FROM learner_development_results WHERE student_id = ? AND academic_year = ? AND semester = ?');
-    $stmt->execute([$student['id'], $year, $semester === 'annual' ? 0 : $semester]);
-    $ld_result = $stmt->fetch();
+            $stmt_g2 = $pdo->prepare('SELECT score_total, score_percent, grade FROM grades WHERE student_id = ? AND subject_id = ? AND academic_year = ? AND semester = 2 AND (classroom_id = ? OR ? = "") LIMIT 1');
+            $stmt_g2->execute([$student['id'], $sub['id'], $year, $classroom_id, $classroom_id]);
+            $g2 = $stmt_g2->fetch();
 
-    // ดึงคะแนนคุณลักษณะ
-    $stmt = $pdo->prepare('SELECT average_score FROM characteristics_scores WHERE student_id = ? AND academic_year = ? AND semester = ? LIMIT 1');
-    $stmt->execute([$student['id'], $year, $semester === 'annual' ? 0 : $semester]);
-    $behavior = $stmt->fetch();
+            if ($g1 || $g2) {
+                $s1_total = $g1 ? (float)($g1['score_total'] !== null ? $g1['score_total'] : $g1['score_percent']) : 0;
+                $s2_total = $g2 ? (float)($g2['score_total'] !== null ? $g2['score_total'] : $g2['score_percent']) : 0;
 
-    // ดึงคะแนนอ่านคิดวิเคราะห์
-    $stmt = $pdo->prepare('SELECT average_score FROM analytical_scores WHERE student_id = ? AND academic_year = ? AND semester = ? LIMIT 1');
-    $stmt->execute([$student['id'], $year, $semester === 'annual' ? 0 : $semester]);
-    $analytical = $stmt->fetch();
+                $s1_pct = $g1 ? (float)($g1['score_percent'] !== null ? $g1['score_percent'] : $g1['score_total']) : 0;
+                $s2_pct = $g2 ? (float)($g2['score_percent'] !== null ? $g2['score_percent'] : $g2['score_total']) : 0;
 
-    // ดึงคะแนนสมรรถนะ
-    $stmt = $pdo->prepare('SELECT average_score FROM competency_scores WHERE student_id = ? AND academic_year = ? AND semester = ? LIMIT 1');
-    $stmt->execute([$student['id'], $year, $semester === 'annual' ? 0 : $semester]);
-    $competency = $stmt->fetch();
+                if ($primary_grading_mode === 'sum') {
+                    // รวมคะแนนทั้ง 2 ภาคเรียนโดยตรง ไม่หาร 50%
+                    $final_score = $s1_total + $s2_total;
+                    $final_pct = $final_score;
+                } else {
+                    // แบ่งครึ่งเฉลี่ย 50% ทั้ง 2 ภาคเรียน
+                    $final_score = ($s1_total + $s2_total) / 2;
+                    $final_pct = ($s1_pct + $s2_pct) / 2;
+                }
+
+                $grades[] = [
+                    'code' => $sub['code'],
+                    'name' => $sub['name'],
+                    'hours' => $sub['hours'],
+                    'credits' => $sub['credits'],
+                    'score_total' => $final_score,
+                    'score_percent' => $final_pct,
+                    'grade' => calculateGradeFromScore($final_pct)
+                ];
+            }
+        }
+
+        // ดึงกิจกรรมพัฒนาผู้เรียน (สำหรับรายปี เอาเทอมล่าสุด หรือเทอม 2)
+        $stmt = $pdo->prepare('SELECT * FROM learner_development_results WHERE student_id = ? AND academic_year = ? ORDER BY semester DESC LIMIT 1');
+        $stmt->execute([$student['id'], $year]);
+        $ld_result = $stmt->fetch();
+
+        // ดึงคะแนนคุณลักษณะ
+        $stmt = $pdo->prepare('SELECT average_score FROM characteristics_scores WHERE student_id = ? AND academic_year = ? ORDER BY semester DESC LIMIT 1');
+        $stmt->execute([$student['id'], $year]);
+        $behavior = $stmt->fetch();
+
+        // ดึงคะแนนอ่านคิดวิเคราะห์
+        $stmt = $pdo->prepare('SELECT average_score FROM analytical_scores WHERE student_id = ? AND academic_year = ? ORDER BY semester DESC LIMIT 1');
+        $stmt->execute([$student['id'], $year]);
+        $analytical = $stmt->fetch();
+
+        // ดึงคะแนนสมรรถนะ
+        $stmt = $pdo->prepare('SELECT average_score FROM competency_scores WHERE student_id = ? AND academic_year = ? ORDER BY semester DESC LIMIT 1');
+        $stmt->execute([$student['id'], $year]);
+        $competency = $stmt->fetch();
+    } else {
+        $stmt = $pdo->prepare('
+            SELECT s.code, s.name, s.hours, s.credits, g.score_total, g.grade, g.score_percent
+            FROM teacher_assignments ta
+            JOIN subjects s ON ta.subject_id = s.id
+            JOIN grades g ON s.id = g.subject_id AND g.student_id = ? AND g.academic_year = ? AND g.semester = ?
+            WHERE ta.classroom_id = ? AND ta.academic_year = ?
+            GROUP BY s.id
+            ORDER BY s.code ASC
+        ');
+        $stmt->execute([$student['id'], $year, $semester, $classroom_id, $year]);
+        $grades = $stmt->fetchAll();
+
+        // ดึงกิจกรรมพัฒนาผู้เรียน
+        $stmt = $pdo->prepare('SELECT * FROM learner_development_results WHERE student_id = ? AND academic_year = ? AND semester = ?');
+        $stmt->execute([$student['id'], $year, $semester]);
+        $ld_result = $stmt->fetch();
+
+        // ดึงคะแนนคุณลักษณะ
+        $stmt = $pdo->prepare('SELECT average_score FROM characteristics_scores WHERE student_id = ? AND academic_year = ? AND semester = ? LIMIT 1');
+        $stmt->execute([$student['id'], $year, $semester]);
+        $behavior = $stmt->fetch();
+
+        // ดึงคะแนนอ่านคิดวิเคราะห์
+        $stmt = $pdo->prepare('SELECT average_score FROM analytical_scores WHERE student_id = ? AND academic_year = ? AND semester = ? LIMIT 1');
+        $stmt->execute([$student['id'], $year, $semester]);
+        $analytical = $stmt->fetch();
+
+        // ดึงคะแนนสมรรถนะ
+        $stmt = $pdo->prepare('SELECT average_score FROM competency_scores WHERE student_id = ? AND academic_year = ? AND semester = ? LIMIT 1');
+        $stmt->execute([$student['id'], $year, $semester]);
+        $competency = $stmt->fetch();
+    }
 
     // ดึงชื่อครูประจำชั้น
     $stmt_t = $pdo->prepare('

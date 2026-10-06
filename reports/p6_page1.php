@@ -4,7 +4,7 @@
         <img src="<?= !empty($logo_url) ? $logo_url : $garuda_url ?>" class="p6-logo-left" referrerPolicy="no-referrer">
         <h3 style="margin: 0; font-size: 18px; padding-top: 10px;">แบบรายงานประจำตัวนักเรียน : ผลการพัฒนาคุณภาพผู้เรียนรายบุคคล (ปพ.6)</h3>
         <p style="margin: 5px 0; font-size: 16px;">โรงเรียน<?= $school_name ?> <?= $affiliation ?></p>
-        <p style="margin: 5px 0; font-size: 16px;">ชั้นประถมศึกษาปีที่ <?= $clean_level ?> <?= $semester === 'annual' ? '' : 'ภาคเรียนที่ ' . $semester ?> ปีการศึกษา <?= $year ?></p>
+        <p style="margin: 5px 0; font-size: 16px;">ชั้น<?= formatLevelName($classroom['level']) ?> <?= $semester === 'annual' ? '' : 'ภาคเรียนที่ ' . $semester ?> ปีการศึกษา <?= $year ?></p>
     </div>
 
     <div style="margin-bottom: 10px; font-size: 14px; display: flex; justify-content: space-between;">

@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS schools (
     code VARCHAR(8) UNIQUE NOT NULL, -- รหัส 8 หลัก
     name VARCHAR(255) NOT NULL,
     province VARCHAR(100),
+    primary_grading_mode VARCHAR(20) DEFAULT 'average', -- 'average' (หาร 50%) หรือ 'sum' (รวมคะแนนตรง)
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

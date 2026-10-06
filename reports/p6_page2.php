@@ -33,7 +33,7 @@
         </div>
         <div style="display: flex; margin-bottom: 25px;">
             <span style="white-space: nowrap;">ชั้น</span> 
-            <span class="dotted-line" style="flex: 1; margin: 0 5px;">ประถมศึกษาปีที่ <?= $clean_level ?></span> 
+            <span class="dotted-line" style="flex: 1; margin: 0 5px;"><?= formatLevelName($classroom['level']) ?></span> 
             <span style="white-space: nowrap;">เลขที่</span> 
             <span class="dotted-line" style="width: 100px; margin-left: 5px;"><?= array_search($student['id'], array_column($students_to_print, 'id')) + 1 ?></span>
         </div>

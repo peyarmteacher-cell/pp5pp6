@@ -110,6 +110,12 @@ try {
         $results[] = "เพิ่มคอลัมน์ show_grades ในตาราง schools สำเร็จ";
     }
 
+    $stmt = $pdo->query("SHOW COLUMNS FROM schools LIKE 'primary_grading_mode'");
+    if (!$stmt->fetch()) {
+        $pdo->exec("ALTER TABLE schools ADD COLUMN primary_grading_mode VARCHAR(20) DEFAULT 'average' AFTER show_grades");
+        $results[] = "เพิ่มคอลัมน์ primary_grading_mode ในตาราง schools สำเร็จ";
+    }
+
     // 5. เพิ่มตาราง classrooms
     $pdo->exec("CREATE TABLE IF NOT EXISTS classrooms (
         id INT AUTO_INCREMENT PRIMARY KEY,

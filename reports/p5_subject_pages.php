@@ -30,8 +30,57 @@ $stmt_grades = $pdo->prepare("SELECT * FROM grades WHERE subject_id = ? AND clas
 $stmt_grades->execute(array_merge([$subject_id, $classroom_id, $year], $semester_params));
 $grades_raw = $stmt_grades->fetchAll();
 $student_grades = [];
-foreach ($grades_raw as $g) {
-    $student_grades[$g['student_id']] = $g;
+
+$primary_grading_mode = $school['primary_grading_mode'] ?? 'average';
+
+if ($semester === 'annual') {
+    $grouped = [];
+    foreach ($grades_raw as $g) {
+        $grouped[$g['student_id']][$g['semester']] = $g;
+    }
+    foreach ($grouped as $sid => $sems) {
+        $g1 = $sems[1] ?? null;
+        $g2 = $sems[2] ?? null;
+        $s1_u = $g1 ? (float)$g1['score_units'] : 0;
+        $s2_u = $g2 ? (float)$g2['score_units'] : 0;
+        $s1_f = $g1 ? (float)$g1['score_final'] : 0;
+        $s2_f = $g2 ? (float)$g2['score_final'] : 0;
+        $s1_t = $g1 ? (float)($g1['score_total'] !== null ? $g1['score_total'] : $g1['score_percent']) : 0;
+        $s2_t = $g2 ? (float)($g2['score_total'] !== null ? $g2['score_total'] : $g2['score_percent']) : 0;
+
+        if ($primary_grading_mode === 'sum') {
+            $tot = $s1_t + $s2_t;
+            $u_tot = $s1_u + $s2_u;
+            $f_tot = $s1_f + $s2_f;
+            $pct = $tot;
+        } else {
+            $tot = ($s1_t + $s2_t) / 2;
+            $u_tot = ($s1_u + $s2_u) / 2;
+            $f_tot = ($s1_f + $s2_f) / 2;
+            $pct = $tot;
+        }
+
+        $calc_grade = '0';
+        if ($pct >= 80) $calc_grade = '4';
+        else if ($pct >= 75) $calc_grade = '3.5';
+        else if ($pct >= 70) $calc_grade = '3';
+        else if ($pct >= 65) $calc_grade = '2.5';
+        else if ($pct >= 60) $calc_grade = '2';
+        else if ($pct >= 55) $calc_grade = '1.5';
+        else if ($pct >= 50) $calc_grade = '1';
+
+        $student_grades[$sid] = [
+            'score_units' => number_format($u_tot, 1),
+            'score_final' => number_format($f_tot, 1),
+            'score_total' => number_format($tot, 1),
+            'score_percent' => number_format($pct, 1),
+            'grade' => $calc_grade
+        ];
+    }
+} else {
+    foreach ($grades_raw as $g) {
+        $student_grades[$g['student_id']] = $g;
+    }
 }
 ?>
 

@@ -70,6 +70,37 @@
                 </div>
             </div>
 
+            <!-- การคิดคะแนนรวมรายปี ระดับประถมศึกษา -->
+            <div class="pt-6 border-t border-slate-100">
+                <div class="space-y-3">
+                    <div class="flex items-center gap-2">
+                        <div class="p-1.5 bg-blue-50 text-blue-600 rounded-lg">
+                            <i data-lucide="calculator" class="w-4 h-4"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-bold text-slate-800">รูปแบบการคิดคะแนนรวมทั้งปีการศึกษา (ระดับประถมศึกษา)</h4>
+                            <p class="text-xs text-slate-500">กำหนดวิธีคิดคะแนนรวมเมื่อจบปีการศึกษาของระดับชั้นประถมศึกษาตามนโยบายของโรงเรียน</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <label class="relative flex items-start p-4 bg-slate-50 border border-slate-200 rounded-2xl cursor-pointer hover:bg-slate-100/60 transition-all">
+                            <input type="radio" name="setting_primary_grading_mode" id="mode_average" value="average" class="mt-1 text-blue-600 focus:ring-blue-500" checked>
+                            <div class="ml-3">
+                                <span class="block text-sm font-bold text-slate-800">แบ่งครึ่งเฉลี่ย 50% ทั้ง 2 ภาคเรียน</span>
+                                <span class="block text-xs text-slate-500 mt-1">สูตร: (ภาคเรียนที่ 1 + ภาคเรียนที่ 2) ÷ 2<br><span class="text-blue-600 font-medium">เหมาะสำหรับ:</span> โรงเรียนที่เก็บคะแนนแต่ละเทอมเต็ม 100 คะแนน แล้วนำมาเฉลี่ย 50% : 50%</span>
+                            </div>
+                        </label>
+                        <label class="relative flex items-start p-4 bg-slate-50 border border-slate-200 rounded-2xl cursor-pointer hover:bg-slate-100/60 transition-all">
+                            <input type="radio" name="setting_primary_grading_mode" id="mode_sum" value="sum" class="mt-1 text-blue-600 focus:ring-blue-500">
+                            <div class="ml-3">
+                                <span class="block text-sm font-bold text-slate-800">รวมคะแนน 2 ภาคเรียนโดยตรง (ไม่หาร 50%)</span>
+                                <span class="block text-xs text-slate-500 mt-1">สูตร: ภาคเรียนที่ 1 + ภาคเรียนที่ 2<br><span class="text-emerald-600 font-medium">เหมาะสำหรับ:</span> โรงเรียนที่เก็บคะแนนสะสมต่อเนื่อง เช่น เทอม 1 เก็บ 50 คะแนน + เทอม 2 เก็บ 50 คะแนน = รวมทั้งปี 100 คะแนน</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
             <div class="space-y-4">
                 <label class="text-sm font-semibold text-slate-700">โลโก้โรงเรียน / โลโก้ สพฐ.</label>
                 <div class="flex flex-col md:flex-row items-start gap-6">
@@ -319,6 +350,15 @@
                 document.getElementById('setting_academic_head_position').value = data.school.academic_head_position || 'หัวหน้างานวิชาการ';
                 document.getElementById('setting_telegram_bot_token').value = data.school.telegram_bot_token || '';
                 document.getElementById('setting_show_grades').checked = (data.school.show_grades == 1);
+                
+                const gradingMode = data.school.primary_grading_mode || 'average';
+                if (gradingMode === 'sum') {
+                    const r = document.getElementById('mode_sum');
+                    if (r) r.checked = true;
+                } else {
+                    const r = document.getElementById('mode_average');
+                    if (r) r.checked = true;
+                }
                 
                 if (data.school.logo_url) {
                     const img = document.getElementById('logo_preview');
@@ -605,7 +645,8 @@
                     academic_head_name: document.getElementById('setting_academic_head_name').value,
                     academic_head_position: document.getElementById('setting_academic_head_position').value,
                     telegram_bot_token: document.getElementById('setting_telegram_bot_token').value,
-                    show_grades: document.getElementById('setting_show_grades').checked ? 1 : 0
+                    show_grades: document.getElementById('setting_show_grades').checked ? 1 : 0,
+                    primary_grading_mode: document.querySelector('input[name="setting_primary_grading_mode"]:checked')?.value || 'average'
                 })
             });
             const result = await res.json();

@@ -308,7 +308,8 @@ let mockSchool = {
     logo_url: '',
     director_name: 'นายสยาม เชียงเครือ',
     academic_head_name: 'นางสาวสมศรี รักเรียน',
-    academic_head_position: 'หัวหน้างานวิชาการ'
+    academic_head_position: 'หัวหน้างานวิชาการ',
+    primary_grading_mode: 'average'
 };
 
 app.get('/api/academic/get_classrooms.php', (req, res) => {
@@ -358,13 +359,14 @@ app.get('/api/admin/get_school_info.php', (req, res) => {
 });
 
 app.post('/api/admin/update_school_settings.php', (req, res) => {
-    const { name, province, logo_url, director_name, academic_head_name, academic_head_position } = req.body;
+    const { name, province, logo_url, director_name, academic_head_name, academic_head_position, primary_grading_mode } = req.body;
     mockSchool.name = name;
     mockSchool.province = province;
     mockSchool.logo_url = logo_url;
     mockSchool.director_name = director_name;
     mockSchool.academic_head_name = academic_head_name;
     mockSchool.academic_head_position = academic_head_position;
+    mockSchool.primary_grading_mode = primary_grading_mode || 'average';
     res.json({ status: 'success', message: 'อัปเดตข้อมูลโรงเรียนเรียบร้อยแล้ว (Mock)' });
 });
 
