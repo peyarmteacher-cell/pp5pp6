@@ -364,6 +364,165 @@ app.post('/api/academic/update_classroom_teachers.php', (req, res) => {
     res.json({ status: 'success', message: 'อัปเดตครูประจำชั้นเรียบร้อยแล้ว (Mock)' });
 });
 
+// --- Mock Attendance Endpoints for Preview ---
+const mockAttendanceClassrooms = [
+    {
+        id: 1, level: 'ป.1', room: '1', school_id: 1,
+        subjects: [
+            { subject_id: 101, subject_code: 'ค11101', subject_name: 'คณิตศาสตร์ 1', level: 'ป.1' },
+            { subject_id: 102, subject_code: 'ท11101', subject_name: 'ภาษาไทย 1', level: 'ป.1' }
+        ]
+    },
+    {
+        id: 2, level: 'ป.2', room: '1', school_id: 1,
+        subjects: [
+            { subject_id: 201, subject_code: 'ค12101', subject_name: 'คณิตศาสตร์ 2', level: 'ป.2' },
+            { subject_id: 202, subject_code: 'ว12101', subject_name: 'วิทยาศาสตร์ 2', level: 'ป.2' }
+        ]
+    },
+    {
+        id: 3, level: 'ป.3', room: '1', school_id: 1,
+        subjects: [
+            { subject_id: 301, subject_code: 'ค13101', subject_name: 'คณิตศาสตร์ 3', level: 'ป.3' },
+            { subject_id: 302, subject_code: 'อ13101', subject_name: 'ภาษาอังกฤษ 3', level: 'ป.3' }
+        ]
+    },
+    {
+        id: 4, level: 'ป.4', room: '1', school_id: 1,
+        subjects: [
+            { subject_id: 401, subject_code: 'ค14101', subject_name: 'คณิตศาสตร์ 4', level: 'ป.4' }
+        ]
+    },
+    {
+        id: 5, level: 'ป.5', room: '1', school_id: 1,
+        subjects: [
+            { subject_id: 501, subject_code: 'ค15101', subject_name: 'คณิตศาสตร์ 5', level: 'ป.5' }
+        ]
+    },
+    {
+        id: 6, level: 'ป.6', room: '1', school_id: 1,
+        subjects: [
+            { subject_id: 601, subject_code: 'ค16101', subject_name: 'คณิตศาสตร์ 6', level: 'ป.6' }
+        ]
+    }
+];
+
+const mockStudentsByClassroom = {
+    1: [
+        { id: 101, student_code: '66001', prefix: 'เด็กชาย', name: 'ก้องภพ', last_name: 'ใจดี' },
+        { id: 102, student_code: '66002', prefix: 'เด็กหญิง', name: 'ขวัญข้าว', last_name: 'สุขสันต์' },
+        { id: 103, student_code: '66003', prefix: 'เด็กชาย', name: 'จิรายุ', last_name: 'วัฒนา' },
+        { id: 104, student_code: '66004', prefix: 'เด็กหญิง', name: 'ชลธิชา', last_name: 'บุญมี' },
+        { id: 105, student_code: '66005', prefix: 'เด็กชาย', name: 'ณัฐพงษ์', last_name: 'เจริญผล' }
+    ],
+    2: [
+        { id: 201, student_code: '65001', prefix: 'เด็กชาย', name: 'ปิติ', last_name: 'รักชาติ' },
+        { id: 202, student_code: '65002', prefix: 'เด็กหญิง', name: 'มานี', last_name: 'มีตา' },
+        { id: 203, student_code: '65003', prefix: 'เด็กชาย', name: 'ชูใจ', last_name: 'เลิศล้ำ' }
+    ]
+};
+
+app.get('/api/teacher/get_attendance_classrooms.php', (req, res) => {
+    res.json(mockAttendanceClassrooms);
+});
+
+app.get('/api/teacher/get_daily_schedule.php', (req, res) => {
+    const checkDate = req.query.check_date || new Date().toISOString().split('T')[0];
+    const dateObj = new Date(checkDate);
+    const dayOfWeek = dateObj.getDay() === 0 ? 7 : dateObj.getDay(); // 1=Mon..7=Sun
+    const thaiDays = ['', 'วันจันทร์', 'วันอังคาร', 'วันพุธ', 'วันพฤหัสบดี', 'วันศุกร์', 'วันเสาร์', 'วันอาทิตย์'];
+    const thaiMonths = ['', 'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
+
+    const formattedDate = `${thaiDays[dayOfWeek]}ที่ ${dateObj.getDate()} ${thaiMonths[dateObj.getMonth() + 1]} พ.ศ. ${dateObj.getFullYear() + 543}`;
+
+    // Sample daily timetable schedule
+    const schedule = [
+        { id: 1, period_number: 1, classroom_id: 1, classroom_name: 'ป.1/1', level: 'ป.1', room: '1', subject_id: 101, subject_code: 'ค11101', subject_name: 'คณิตศาสตร์ 1' },
+        { id: 2, period_number: 2, classroom_id: 2, classroom_name: 'ป.2/1', level: 'ป.2', room: '1', subject_id: 201, subject_code: 'ค12101', subject_name: 'คณิตศาสตร์ 2' },
+        { id: 3, period_number: 3, classroom_id: 3, classroom_name: 'ป.3/1', level: 'ป.3', room: '1', subject_id: 301, subject_code: 'ค13101', subject_name: 'คณิตศาสตร์ 3' },
+        { id: 4, period_number: 4, classroom_id: 4, classroom_name: 'ป.4/1', level: 'ป.4', room: '1', subject_id: 401, subject_code: 'ค14101', subject_name: 'คณิตศาสตร์ 4' }
+    ];
+
+    res.json({
+        check_date: checkDate,
+        day_of_week: dayOfWeek,
+        day_name: thaiDays[dayOfWeek],
+        formatted_thai_date: formattedDate,
+        schedule: schedule,
+        total_classes: schedule.length,
+        is_weekend: dayOfWeek >= 6
+    });
+});
+
+app.get('/api/teacher/get_attendance_data.php', (req, res) => {
+    const classId = parseInt(req.query.classroom_id) || 1;
+    const cls = mockAttendanceClassrooms.find(c => c.id === classId) || mockAttendanceClassrooms[0];
+    const students = mockStudentsByClassroom[classId] || mockStudentsByClassroom[1];
+    
+    res.json({
+        classroom: cls,
+        subjects: cls.subjects.map((s, idx) => ({ ...s, period_number: idx + 1 })),
+        students: students,
+        attendance: []
+    });
+});
+
+app.post('/api/teacher/save_attendance.php', (req, res) => {
+    res.json({ status: 'success', message: 'บันทึกการมาเรียนเรียบร้อยแล้ว (Mock)' });
+});
+
+app.get('/api/teacher/get_monthly_attendance_data.php', (req, res) => {
+    const classId = parseInt(req.query.classroom_id) || 1;
+    const subId = req.query.subject_id;
+    const month = req.query.month || '2026-07';
+    const cls = mockAttendanceClassrooms.find(c => c.id === classId) || mockAttendanceClassrooms[0];
+    const sub = cls.subjects.find(s => s.subject_id == subId) || cls.subjects[0];
+    const students = mockStudentsByClassroom[classId] || mockStudentsByClassroom[1];
+
+    // Mock 8 sessions in the month
+    const parts = month.split('-');
+    const y = parts[0];
+    const m = parts[1];
+    const sessions = [
+        { date: `${y}-${m}-02`, day: 2, dow: 4, day_name: 'พฤหัสบดี', period_number: 1 },
+        { date: `${y}-${m}-06`, day: 6, dow: 1, day_name: 'จันทร์', period_number: 1 },
+        { date: `${y}-${m}-09`, day: 9, dow: 4, day_name: 'พฤหัสบดี', period_number: 1 },
+        { date: `${y}-${m}-13`, day: 13, dow: 1, day_name: 'จันทร์', period_number: 1 },
+        { date: `${y}-${m}-16`, day: 16, dow: 4, day_name: 'พฤหัสบดี', period_number: 1 },
+        { date: `${y}-${m}-20`, day: 20, dow: 1, day_name: 'จันทร์', period_number: 1 },
+        { date: `${y}-${m}-23`, day: 23, dow: 4, day_name: 'พฤหัสบดี', period_number: 1 },
+        { date: `${y}-${m}-27`, day: 27, dow: 1, day_name: 'จันทร์', period_number: 1 }
+    ];
+
+    const student_summary = {};
+    students.forEach(s => {
+        student_summary[s.id] = { present: 8, absent: 0, late: 0, leave: 0, sick: 0, total_recorded: 8 };
+    });
+
+    res.json({
+        classroom: cls,
+        subject: sub,
+        month: month,
+        total_sessions: sessions.length,
+        teaching_sessions: sessions,
+        has_timetable: true,
+        students: students,
+        existing_attendance: [],
+        student_summary: student_summary
+    });
+});
+
+app.post('/api/teacher/save_monthly_attendance.php', (req, res) => {
+    const { students = [], sessions = [] } = req.body;
+    res.json({
+        status: 'success',
+        message: `บันทึกเวลาเรียนทั้งเดือนเรียบร้อยแล้ว (${students.length} คน x ${sessions.length} คาบ รวม ${students.length * sessions.length} รายการ)`,
+        total_records: students.length * sessions.length,
+        student_count: students.length,
+        session_count: sessions.length
+    });
+});
+
 let mockOfficials = [
     { id: 1, school_id: 1, name: 'นายสยาม เชียงเครือ', position: 'ผู้อำนวยการโรงเรียนบ้านหนองบัว', role_key: 'director' },
     { id: 2, school_id: 1, name: 'นางสาวสมศรี รักเรียน', position: 'หัวหน้างานวิชาการ', role_key: 'academic_head' }
