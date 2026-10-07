@@ -18,25 +18,48 @@ $academic_year = $_GET['academic_year'] ?? '2567';
 $semester = $_GET['semester'] ?? 1;
 
 try {
-    $stmt = $pdo->prepare('
-        SELECT ta.id as assignment_id, s.id as subject_id, s.code as subject_code, s.code, s.name as subject_name, s.level, c.id as classroom_id, c.room
-        FROM teacher_assignments ta
-        JOIN subjects s ON ta.subject_id = s.id
-        LEFT JOIN classrooms c ON ta.classroom_id = c.id
-        WHERE ta.teacher_id = ? AND ta.academic_year = ? AND ta.semester = ?
-        ORDER BY s.level ASC, c.room ASC
-    ');
-    $stmt->execute([$teacher_id, $academic_year, $semester]);
+    if ($semester === 'annual') {
+        $stmt = $pdo->prepare('
+            SELECT MIN(ta.id) as assignment_id, s.id as subject_id, s.code as subject_code, s.code, s.name as subject_name, s.level, c.id as classroom_id, c.room
+            FROM teacher_assignments ta
+            JOIN subjects s ON ta.subject_id = s.id
+            LEFT JOIN classrooms c ON ta.classroom_id = c.id
+            WHERE ta.teacher_id = ? AND ta.academic_year = ?
+            GROUP BY s.id, c.id, s.code, s.name, s.level, c.room
+            ORDER BY s.level ASC, c.room ASC
+        ');
+        $stmt->execute([$teacher_id, $academic_year]);
+    } else {
+        $stmt = $pdo->prepare('
+            SELECT ta.id as assignment_id, s.id as subject_id, s.code as subject_code, s.code, s.name as subject_name, s.level, c.id as classroom_id, c.room
+            FROM teacher_assignments ta
+            JOIN subjects s ON ta.subject_id = s.id
+            LEFT JOIN classrooms c ON ta.classroom_id = c.id
+            WHERE ta.teacher_id = ? AND ta.academic_year = ? AND ta.semester = ?
+            ORDER BY s.level ASC, c.room ASC
+        ');
+        $stmt->execute([$teacher_id, $academic_year, $semester]);
+    }
     $assignments = $stmt->fetchAll();
 
     // ดึงงานกิจกรรมพัฒนาผู้เรียน
-    $stmt_ld = $pdo->prepare('
-        SELECT lda.classroom_id, c.level, c.room
-        FROM learner_development_assignments lda
-        JOIN classrooms c ON lda.classroom_id = c.id
-        WHERE lda.teacher_id = ? AND lda.academic_year = ? AND lda.semester = ?
-    ');
-    $stmt_ld->execute([$teacher_id, $academic_year, $semester]);
+    if ($semester === 'annual') {
+        $stmt_ld = $pdo->prepare('
+            SELECT DISTINCT lda.classroom_id, c.level, c.room
+            FROM learner_development_assignments lda
+            JOIN classrooms c ON lda.classroom_id = c.id
+            WHERE lda.teacher_id = ? AND lda.academic_year = ?
+        ');
+        $stmt_ld->execute([$teacher_id, $academic_year]);
+    } else {
+        $stmt_ld = $pdo->prepare('
+            SELECT lda.classroom_id, c.level, c.room
+            FROM learner_development_assignments lda
+            JOIN classrooms c ON lda.classroom_id = c.id
+            WHERE lda.teacher_id = ? AND lda.academic_year = ? AND lda.semester = ?
+        ');
+        $stmt_ld->execute([$teacher_id, $academic_year, $semester]);
+    }
     $ld_assignments = $stmt_ld->fetchAll();
 
     foreach ($ld_assignments as $ld) {

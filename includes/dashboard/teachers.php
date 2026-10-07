@@ -1,5 +1,146 @@
 <script>
     console.log('teachers.php script block started');
+    let allSchoolTeachers = [];
+    let filteredSchoolTeachers = [];
+    let currentTeacherPage = 1;
+    const teacherPageSize = 10;
+
+    function onTeacherSearch() {
+        const q = (document.getElementById('teacherSearchInput')?.value || '').trim().toLowerCase();
+        if (!q) {
+            filteredSchoolTeachers = [...allSchoolTeachers];
+        } else {
+            filteredSchoolTeachers = allSchoolTeachers.filter(t => {
+                const fullName = `${t.name || ''} ${t.last_name || ''}`.toLowerCase();
+                const pos = (t.position || '').toLowerCase();
+                const uname = (t.username || '').toLowerCase();
+                return fullName.includes(q) || pos.includes(q) || uname.includes(q);
+            });
+        }
+        currentTeacherPage = 1;
+        renderTeacherTable();
+    }
+
+    function goToTeacherPage(page) {
+        const totalPages = Math.ceil(filteredSchoolTeachers.length / teacherPageSize) || 1;
+        if (page < 1) page = 1;
+        if (page > totalPages) page = totalPages;
+        currentTeacherPage = page;
+        renderTeacherTable();
+    }
+
+    function renderTeacherTable() {
+        const tbody = document.getElementById('schoolTeachersTableBody');
+        const pagContainer = document.getElementById('teacherPaginationContainer');
+        if (!tbody) return;
+
+        if (!Array.isArray(filteredSchoolTeachers) || filteredSchoolTeachers.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-400">ไม่พบข้อมูลคุณครู</td></tr>`;
+            if (pagContainer) pagContainer.innerHTML = '';
+            return;
+        }
+
+        const total = filteredSchoolTeachers.length;
+        const totalPages = Math.ceil(total / teacherPageSize) || 1;
+        if (currentTeacherPage > totalPages) currentTeacherPage = totalPages;
+        
+        const startIdx = (currentTeacherPage - 1) * teacherPageSize;
+        const endIdx = Math.min(startIdx + teacherPageSize, total);
+        const pageItems = filteredSchoolTeachers.slice(startIdx, endIdx);
+
+        tbody.innerHTML = pageItems.map((t) => {
+            const origIndex = (window.lastLoadedTeachers || []).findIndex(x => x.id === t.id);
+            const fullName = (t.name || 'ไม่ระบุชื่อ') + (t.last_name ? ' ' + t.last_name : '');
+            const safeName = fullName.replace(/'/g, "\\'");
+            const isApproved = t.is_approved == 1 || t.is_approved === true || t.is_approved === '1';
+            const isAcademic = t.is_academic == 1 || t.is_academic === true || t.is_academic === '1';
+            
+            return `
+            <tr class="border-b border-slate-50 hover:bg-slate-50/50 group">
+                <td class="py-3">
+                    <div class="font-medium text-slate-800">${fullName}</div>
+                    <div class="text-[10px] text-slate-400">ID: ${t.username || '-'}</div>
+                    ${t.homeroom_classrooms ? `
+                        <div class="mt-1.5 inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 bg-blue-50/70 px-2 py-0.5 rounded-md border border-blue-100">
+                            <i data-lucide="home" class="w-3 h-3 text-blue-500"></i>
+                            ครูประจำชั้น: ชั้น ${t.homeroom_classrooms}
+                        </div>
+                    ` : ''}
+                </td>
+                <td class="py-3 text-slate-500">${t.position || '-'}</td>
+                <td class="py-3">
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" class="sr-only peer" ${isAcademic ? 'checked' : ''} onchange="toggleAcademic(${t.id}, this.checked)">
+                        <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                    </label>
+                </td>
+                <td class="py-3">
+                    <div class="flex items-center gap-3">
+                        <span class="px-2 py-1 rounded-full text-[10px] font-bold ${isApproved ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">
+                            ${isApproved ? 'อนุมัติแล้ว' : 'รออนุมัติ'}
+                        </span>
+                        ${isApproved ? `
+                            <button onclick="openAssignSubjectsModal(${t.id}, '${safeName}')" class="text-blue-600 hover:text-blue-800 text-xs font-bold cursor-pointer flex items-center gap-1">
+                                <i data-lucide="book-open" class="w-3 h-3"></i>
+                                มอบหมายงานสอน
+                            </button>
+                        ` : ''}
+                    </div>
+                </td>
+                <td class="py-3 text-right">
+                    <div class="flex justify-end gap-2 transition-all">
+                        <button onclick="openTransferAllModal(${t.id}, '${safeName}')" class="p-2 bg-purple-50 text-purple-600 hover:bg-purple-100 rounded-xl transition-all cursor-pointer border border-purple-100 shadow-sm" title="โอนย้ายงานสอนทั้งหมด (กรณีครูย้ายโรงเรียน)">
+                            <i data-lucide="arrow-right-left" class="w-4 h-4"></i>
+                        </button>
+                        <button onclick="resetTeacherPassword(${t.id}, '${safeName}')" class="p-2 bg-amber-50 text-amber-600 hover:bg-amber-100 rounded-xl transition-all cursor-pointer border border-amber-100 shadow-sm" title="รีเซ็ตรหัสผ่าน">
+                            <i data-lucide="key" class="w-4 h-4"></i>
+                        </button>
+                        <button onclick="openEditTeacherModal(window.lastLoadedTeachers[${origIndex >= 0 ? origIndex : 0}])" class="p-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl transition-all cursor-pointer border border-blue-100 shadow-sm" title="แก้ไข">
+                            <i data-lucide="edit-2" class="w-4 h-4"></i>
+                        </button>
+                        <button onclick="deleteTeacher(${t.id})" class="p-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl transition-all cursor-pointer border border-red-100 shadow-sm" title="ลบ">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `}).join('');
+
+        if (pagContainer) {
+            let pagesHtml = '';
+            for (let p = 1; p <= totalPages; p++) {
+                if (p === 1 || p === totalPages || (p >= currentTeacherPage - 1 && p <= currentTeacherPage + 1)) {
+                    pagesHtml += `
+                        <button onclick="goToTeacherPage(${p})" class="w-8 h-8 rounded-lg font-bold transition-all cursor-pointer ${p === currentTeacherPage ? 'bg-blue-600 text-white shadow-sm shadow-blue-500/20' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">
+                            ${p}
+                        </button>
+                    `;
+                } else if (p === currentTeacherPage - 2 || p === currentTeacherPage + 2) {
+                    pagesHtml += `<span class="px-1 text-slate-400">...</span>`;
+                }
+            }
+
+            pagContainer.innerHTML = `
+                <div>
+                    แสดงรายการที่ <span class="font-bold text-slate-700">${startIdx + 1}</span> - <span class="font-bold text-slate-700">${endIdx}</span> จากทั้งหมด <span class="font-bold text-slate-700">${total}</span> รายชื่อ (หน้า ${currentTeacherPage}/${totalPages})
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <button onclick="goToTeacherPage(${currentTeacherPage - 1})" ${currentTeacherPage === 1 ? 'disabled' : ''} class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white font-medium hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer">
+                        ก่อนหน้า
+                    </button>
+                    <div class="flex items-center gap-1">
+                        ${pagesHtml}
+                    </div>
+                    <button onclick="goToTeacherPage(${currentTeacherPage + 1})" ${currentTeacherPage === totalPages ? 'disabled' : ''} class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white font-medium hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer">
+                        ถัดไป
+                    </button>
+                </div>
+            `;
+        }
+            
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+
     async function loadSchoolTeachers() {
         const schoolId = '<?= $_SESSION['school_id'] ?? '' ?>';
         const mockRole = new URLSearchParams(window.location.search).get('mock_role') || '';
@@ -32,70 +173,22 @@
             if (!Array.isArray(teachers) || teachers.length === 0) {
                 console.log('loadSchoolTeachers: No teachers found or invalid response');
                 tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-400">ยังไม่มีข้อมูลคุณครูในโรงเรียนนี้</td></tr>`;
+                const pagContainer = document.getElementById('teacherPaginationContainer');
+                if (pagContainer) pagContainer.innerHTML = '';
                 return;
             }
 
             // Store globally for safety
             window.lastLoadedTeachers = teachers;
-
-            tbody.innerHTML = teachers.map((t, index) => {
-                const fullName = (t.name || 'ไม่ระบุชื่อ') + (t.last_name ? ' ' + t.last_name : '');
-                const safeName = fullName.replace(/'/g, "\\'");
-                const isApproved = t.is_approved == 1 || t.is_approved === true || t.is_approved === '1';
-                const isAcademic = t.is_academic == 1 || t.is_academic === true || t.is_academic === '1';
-                
-                return `
-                <tr class="border-b border-slate-50 hover:bg-slate-50/50 group">
-                    <td class="py-3">
-                        <div class="font-medium text-slate-800">${fullName}</div>
-                        <div class="text-[10px] text-slate-400">ID: ${t.username || '-'}</div>
-                        ${t.homeroom_classrooms ? `
-                            <div class="mt-1.5 inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 bg-blue-50/70 px-2 py-0.5 rounded-md border border-blue-100">
-                                <i data-lucide="home" class="w-3 h-3 text-blue-500"></i>
-                                ครูประจำชั้น: ชั้น ${t.homeroom_classrooms}
-                            </div>
-                        ` : ''}
-                    </td>
-                    <td class="py-3 text-slate-500">${t.position || '-'}</td>
-                    <td class="py-3">
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" class="sr-only peer" ${isAcademic ? 'checked' : ''} onchange="toggleAcademic(${t.id}, this.checked)">
-                            <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                        </label>
-                    </td>
-                    <td class="py-3">
-                        <div class="flex items-center gap-3">
-                            <span class="px-2 py-1 rounded-full text-[10px] font-bold ${isApproved ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">
-                                ${isApproved ? 'อนุมัติแล้ว' : 'รออนุมัติ'}
-                            </span>
-                            ${isApproved ? `
-                                <button onclick="openAssignSubjectsModal(${t.id}, '${safeName}')" class="text-blue-600 hover:text-blue-800 text-xs font-bold cursor-pointer flex items-center gap-1">
-                                    <i data-lucide="book-open" class="w-3 h-3"></i>
-                                    มอบหมายงานสอน
-                                </button>
-                            ` : ''}
-                        </div>
-                    </td>
-                    <td class="py-3 text-right">
-                        <div class="flex justify-end gap-2 transition-all">
-                            <button onclick="openTransferAllModal(${t.id}, '${safeName}')" class="p-2 bg-purple-50 text-purple-600 hover:bg-purple-100 rounded-xl transition-all cursor-pointer border border-purple-100 shadow-sm" title="โอนย้ายงานสอนทั้งหมด (กรณีครูย้ายโรงเรียน)">
-                                <i data-lucide="arrow-right-left" class="w-4 h-4"></i>
-                            </button>
-                            <button onclick="resetTeacherPassword(${t.id}, '${safeName}')" class="p-2 bg-amber-50 text-amber-600 hover:bg-amber-100 rounded-xl transition-all cursor-pointer border border-amber-100 shadow-sm" title="รีเซ็ตรหัสผ่าน">
-                                <i data-lucide="key" class="w-4 h-4"></i>
-                            </button>
-                            <button onclick="openEditTeacherModal(window.lastLoadedTeachers[${index}])" class="p-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl transition-all cursor-pointer border border-blue-100 shadow-sm" title="แก้ไข">
-                                <i data-lucide="edit-2" class="w-4 h-4"></i>
-                            </button>
-                            <button onclick="deleteTeacher(${t.id})" class="p-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl transition-all cursor-pointer border border-red-100 shadow-sm" title="ลบ">
-                                <i data-lucide="trash-2" class="w-4 h-4"></i>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-            `}).join('');
+            allSchoolTeachers = teachers;
+            filteredSchoolTeachers = [...teachers];
+            currentTeacherPage = 1;
             
-        if (typeof lucide !== 'undefined') lucide.createIcons();
+            // Reset search input if any
+            const searchInput = document.getElementById('teacherSearchInput');
+            if (searchInput) searchInput.value = '';
+
+            renderTeacherTable();
         } catch (e) {
             console.error('Error in loadSchoolTeachers:', e);
             alert('เกิดข้อผิดพลาดในการโหลดข้อมูลคุณครู');
@@ -707,7 +800,11 @@
                     <p class="text-xs text-slate-500">จัดการรายชื่อและมอบหมายหน้าที่งานวิชาการ</p>
                 </div>
             </div>
-            <div class="flex gap-2">
+            <div class="flex items-center gap-2">
+                <div class="relative">
+                    <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+                    <input type="text" id="teacherSearchInput" oninput="onTeacherSearch()" placeholder="ค้นหาชื่อคุณครู, ตำแหน่ง..." class="pl-9 pr-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 w-48 sm:w-60 transition-all">
+                </div>
                 <button onclick="loadSchoolTeachers()" class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all cursor-pointer" title="รีเฟรช">
                     <i data-lucide="refresh-cw" class="w-5 h-5"></i>
                 </button>
@@ -732,6 +829,9 @@
                 <tbody id="schoolTeachersTableBody"></tbody>
             </table>
         </div>
+
+        <!-- Teacher Pagination Container (10 per page) -->
+        <div id="teacherPaginationContainer" class="mt-4 flex flex-col sm:flex-row justify-between items-center gap-3 pt-4 border-t border-slate-100 text-xs text-slate-500"></div>
     </div>
 </div>
 <?php endif; ?>

@@ -24,17 +24,32 @@ $academic_year = $_GET['academic_year'] ?? '';
 $semester = $_GET['semester'] ?? 1;
 
 try {
-    $sql = '
-        SELECT ta.id as assignment_id, s.id as subject_id, s.code as subject_code, s.code, s.name as subject_name, s.level, c.id as classroom_id, c.room, u.name as teacher_name
-        FROM teacher_assignments ta
-        JOIN subjects s ON ta.subject_id = s.id
-        LEFT JOIN classrooms c ON ta.classroom_id = c.id
-        LEFT JOIN users u ON ta.teacher_id = u.id
-        WHERE u.school_id = ? AND ta.academic_year = ? AND ta.semester = ?
-        ORDER BY s.level ASC, c.room ASC, s.code ASC
-    ';
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute([$school_id, $academic_year, $semester]);
+    if ($semester === 'annual') {
+        $sql = '
+            SELECT MIN(ta.id) as assignment_id, s.id as subject_id, s.code as subject_code, s.code, s.name as subject_name, s.level, c.id as classroom_id, c.room, u.name as teacher_name
+            FROM teacher_assignments ta
+            JOIN subjects s ON ta.subject_id = s.id
+            LEFT JOIN classrooms c ON ta.classroom_id = c.id
+            LEFT JOIN users u ON ta.teacher_id = u.id
+            WHERE u.school_id = ? AND ta.academic_year = ?
+            GROUP BY s.id, c.id, s.code, s.name, s.level, c.room, u.name
+            ORDER BY s.level ASC, c.room ASC, s.code ASC
+        ';
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([$school_id, $academic_year]);
+    } else {
+        $sql = '
+            SELECT ta.id as assignment_id, s.id as subject_id, s.code as subject_code, s.code, s.name as subject_name, s.level, c.id as classroom_id, c.room, u.name as teacher_name
+            FROM teacher_assignments ta
+            JOIN subjects s ON ta.subject_id = s.id
+            LEFT JOIN classrooms c ON ta.classroom_id = c.id
+            LEFT JOIN users u ON ta.teacher_id = u.id
+            WHERE u.school_id = ? AND ta.academic_year = ? AND ta.semester = ?
+            ORDER BY s.level ASC, c.room ASC, s.code ASC
+        ';
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([$school_id, $academic_year, $semester]);
+    }
     $assignments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // Filter labels to include teacher name

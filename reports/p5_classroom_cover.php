@@ -52,14 +52,70 @@ if (!$class_teacher_1) {
 // 2. ดึงสถิตินักเรียน
 $male_count = 0;
 $female_count = 0;
-$stmt_stats = $pdo->prepare("SELECT gender, COUNT(*) as count FROM students WHERE classroom_id = ? AND status = 'studying' GROUP BY gender");
-$stmt_stats->execute([$classroom_id]);
-$stats_rows = $stmt_stats->fetchAll();
-foreach ($stats_rows as $row) {
-    if ($row['gender'] === 'ชาย') $male_count = $row['count'];
-    if ($row['gender'] === 'หญิง') $female_count = $row['count'];
+$total_count = 0;
+$student_ids = [];
+$students_list = [];
+
+if (isset($students) && is_array($students) && !empty($students)) {
+    $students_list = $students;
+} else if ($classroom_id) {
+    $c_level = $classroom['level'] ?? '';
+    $c_room = $classroom['room'] ?? '';
+    $clean_room = str_replace('ห้อง', '', $c_room);
+
+    $query_std = "
+        SELECT s.id, s.gender, s.prefix, sp.gender as sp_gender, sp.prefix as sp_prefix
+        FROM students s
+        LEFT JOIN student_profiles sp ON s.student_profile_id = sp.id
+        WHERE (
+            s.classroom_id = ? 
+            OR (s.level = ? AND (s.room = ? OR s.room = ? OR REPLACE(s.room, 'ห้อง', '') = ?))
+        )
+        AND (s.school_id = ? OR ? = 0)
+        AND (s.academic_year = ? OR ? = '')
+        AND (s.status = 'studying' OR s.status IS NULL OR s.status = '' OR s.status = 'กำลังศึกษา')
+        ORDER BY s.student_code ASC
+    ";
+    try {
+        $stmt_stats = $pdo->prepare($query_std);
+        $stmt_stats->execute([
+            $classroom_id, $c_level, $c_room, $clean_room, $clean_room,
+            $school_id, $school_id,
+            $year, $year
+        ]);
+        $students_list = $stmt_stats->fetchAll();
+
+        if (empty($students_list)) {
+            $query_fallback = "
+                SELECT s.id, s.gender, s.prefix, sp.gender as sp_gender, sp.prefix as sp_prefix
+                FROM students s
+                LEFT JOIN student_profiles sp ON s.student_profile_id = sp.id
+                WHERE (
+                    s.classroom_id = ? 
+                    OR (s.level = ? AND (s.room = ? OR s.room = ? OR REPLACE(s.room, 'ห้อง', '') = ?))
+                )
+                ORDER BY s.student_code ASC
+            ";
+            $stmt_fb = $pdo->prepare($query_fallback);
+            $stmt_fb->execute([$classroom_id, $c_level, $c_room, $clean_room, $clean_room]);
+            $students_list = $stmt_fb->fetchAll();
+        }
+    } catch (Exception $e) {}
 }
-$total_count = $male_count + $female_count;
+
+foreach ($students_list as $row) {
+    $student_ids[] = $row['id'];
+    $g = trim($row['sp_gender'] ?? ($row['gender'] ?? ''));
+    $p = trim($row['sp_prefix'] ?? ($row['prefix'] ?? ''));
+    if ($g === 'ชาย' || strpos($p, 'ชาย') !== false || strpos($p, 'ด.ช.') !== false || strpos($p, 'นาย') !== false) {
+        $male_count++;
+    } else if ($g === 'หญิง' || strpos($p, 'หญิง') !== false || strpos($p, 'ด.ญ.') !== false || strpos($p, 'นาง') !== false) {
+        $female_count++;
+    } else {
+        $male_count++;
+    }
+}
+$total_count = count($students_list);
 
 // 3. ดึงรายวิชาทั้งหมดตามระดับชั้น
 $subjects_data = [];
@@ -161,6 +217,65 @@ while ($row = $stmt_ld->fetch()) {
     if ($row['social_result'] === 'P') $ld_stats['social']['P'] += $row['count'];
     if ($row['social_result'] === 'F') $ld_stats['social']['F'] += $row['count'];
 }
+
+// 5. สรุปคุณลักษณะฯ, อ่านคิดวิเคราะห์ และสมรรถนะสำคัญ ของห้องเรียน
+$char_dist = array_fill_keys(['0', '1', '2', '3'], 0);
+$anal_dist = array_fill_keys(['0', '1', '2', '3'], 0);
+$comp_dist = array_fill_keys(['0', '1', '2', '3'], 0);
+
+try {
+    $sem_cond = ($semester === 'annual') ? "IN (1, 2)" : "= ?";
+    $sem_p = ($semester === 'annual') ? [] : [$semester];
+
+    if (!empty($student_ids)) {
+        $in_p = implode(',', array_fill(0, count($student_ids), '?'));
+
+        // คุณลักษณะอันพึงประสงค์
+        $stmt_c = $pdo->prepare("SELECT ROUND(average_score) as score, COUNT(DISTINCT student_id) as count FROM characteristics_scores WHERE academic_year = ? AND semester $sem_cond AND student_id IN ($in_p) GROUP BY score");
+        $stmt_c->execute(array_merge([$year], $sem_p, $student_ids));
+        while ($row = $stmt_c->fetch()) {
+            $s = (string)round($row['score']);
+            if (isset($char_dist[$s])) $char_dist[$s] = (int)$row['count'];
+        }
+
+        // การอ่าน คิดวิเคราะห์ และเขียน
+        $stmt_a = $pdo->prepare("SELECT ROUND(average_score) as score, COUNT(DISTINCT student_id) as count FROM analytical_scores WHERE academic_year = ? AND semester $sem_cond AND student_id IN ($in_p) GROUP BY score");
+        $stmt_a->execute(array_merge([$year], $sem_p, $student_ids));
+        while ($row = $stmt_a->fetch()) {
+            $s = (string)round($row['score']);
+            if (isset($anal_dist[$s])) $anal_dist[$s] = (int)$row['count'];
+        }
+
+        // สมรรถนะสำคัญของผู้เรียน
+        $stmt_comp = $pdo->prepare("SELECT ROUND(average_score) as score, COUNT(DISTINCT student_id) as count FROM competency_scores WHERE academic_year = ? AND semester $sem_cond AND student_id IN ($in_p) GROUP BY score");
+        $stmt_comp->execute(array_merge([$year], $sem_p, $student_ids));
+        while ($row = $stmt_comp->fetch()) {
+            $s = (string)round($row['score']);
+            if (isset($comp_dist[$s])) $comp_dist[$s] = (int)$row['count'];
+        }
+    } else {
+        $stmt_c = $pdo->prepare("SELECT ROUND(average_score) as score, COUNT(DISTINCT student_id) as count FROM characteristics_scores WHERE classroom_id = ? AND academic_year = ? AND semester $sem_cond GROUP BY score");
+        $stmt_c->execute(array_merge([$classroom_id, $year], $sem_p));
+        while ($row = $stmt_c->fetch()) {
+            $s = (string)round($row['score']);
+            if (isset($char_dist[$s])) $char_dist[$s] = (int)$row['count'];
+        }
+
+        $stmt_a = $pdo->prepare("SELECT ROUND(average_score) as score, COUNT(DISTINCT student_id) as count FROM analytical_scores WHERE classroom_id = ? AND academic_year = ? AND semester $sem_cond GROUP BY score");
+        $stmt_a->execute(array_merge([$classroom_id, $year], $sem_p));
+        while ($row = $stmt_a->fetch()) {
+            $s = (string)round($row['score']);
+            if (isset($anal_dist[$s])) $anal_dist[$s] = (int)$row['count'];
+        }
+
+        $stmt_comp = $pdo->prepare("SELECT ROUND(average_score) as score, COUNT(DISTINCT student_id) as count FROM competency_scores WHERE classroom_id = ? AND academic_year = ? AND semester $sem_cond GROUP BY score");
+        $stmt_comp->execute(array_merge([$classroom_id, $year], $sem_p));
+        while ($row = $stmt_comp->fetch()) {
+            $s = (string)round($row['score']);
+            if (isset($comp_dist[$s])) $comp_dist[$s] = (int)$row['count'];
+        }
+    }
+} catch (Exception $e) {}
 
 $approval_date_raw = $_GET['approval_date'] ?? '';
 $approval_date = formatThaiDate($approval_date_raw);
@@ -510,8 +625,14 @@ $approval_date = formatThaiDate($approval_date_raw);
                 </tr>
                 <tr>
                     <td class="font-bold">จำนวนนักเรียน</td>
-                    <td>-</td><td>-</td><td>-</td><td>-</td>
-                    <td>-</td><td>-</td><td>-</td><td>-</td>
+                    <td><?= $char_dist['0'] ?: '-' ?></td>
+                    <td><?= $char_dist['1'] ?: '-' ?></td>
+                    <td><?= $char_dist['2'] ?: '-' ?></td>
+                    <td><?= $char_dist['3'] ?: '-' ?></td>
+                    <td><?= $anal_dist['0'] ?: '-' ?></td>
+                    <td><?= $anal_dist['1'] ?: '-' ?></td>
+                    <td><?= $anal_dist['2'] ?: '-' ?></td>
+                    <td><?= $anal_dist['3'] ?: '-' ?></td>
                 </tr>
             </table>
         </div>
@@ -523,10 +644,10 @@ $approval_date = formatThaiDate($approval_date_raw);
                 </tr>
                 <tr>
                     <td width="30%" class="font-bold">จำนวนนักเรียน</td>
-                    <td width="17.5%">ปรับปรุง<br>-</td>
-                    <td width="17.5%">พอใช้<br>-</td>
-                    <td width="17.5%">ดี<br>-</td>
-                    <td width="17.5%">ดีเยี่ยม<br>-</td>
+                    <td width="17.5%">ปรับปรุง<br><?= $comp_dist['0'] ?: '-' ?></td>
+                    <td width="17.5%">พอใช้<br><?= $comp_dist['1'] ?: '-' ?></td>
+                    <td width="17.5%">ดี<br><?= $comp_dist['2'] ?: '-' ?></td>
+                    <td width="17.5%">ดีเยี่ยม<br><?= $comp_dist['3'] ?: '-' ?></td>
                 </tr>
             </table>
         </div>

@@ -102,9 +102,39 @@ $student_fields = "s.*,
     IFNULL(sp.gender, s.gender) AS gender,
     IFNULL(sp.birthday, s.birthday) AS birthday";
 
-$stmt = $pdo->prepare("SELECT $student_fields FROM students s LEFT JOIN student_profiles sp ON s.student_profile_id = sp.id WHERE s.classroom_id = ? AND s.academic_year = ? AND s.status = 'studying' ORDER BY s.student_code ASC");
-$stmt->execute([$classroom_id, $year]);
+$c_level = $assignment['level'] ?? ($classroom['level'] ?? '');
+$c_room = $assignment['room'] ?? ($classroom['room'] ?? '');
+$clean_room = str_replace('ห้อง', '', $c_room);
+
+$stmt = $pdo->prepare("
+    SELECT $student_fields 
+    FROM students s 
+    LEFT JOIN student_profiles sp ON s.student_profile_id = sp.id 
+    WHERE (
+        s.classroom_id = ? 
+        OR (s.level = ? AND (s.room = ? OR s.room = ? OR REPLACE(s.room, 'ห้อง', '') = ?))
+    )
+    AND (s.academic_year = ? OR ? = '')
+    AND (s.status = 'studying' OR s.status IS NULL OR s.status = '' OR s.status = 'กำลังศึกษา')
+    ORDER BY s.student_code ASC
+");
+$stmt->execute([$classroom_id, $c_level, $c_room, $clean_room, $clean_room, $year, $year]);
 $students = $stmt->fetchAll();
+
+if (empty($students)) {
+    $stmt_fb = $pdo->prepare("
+        SELECT $student_fields 
+        FROM students s 
+        LEFT JOIN student_profiles sp ON s.student_profile_id = sp.id 
+        WHERE (
+            s.classroom_id = ? 
+            OR (s.level = ? AND (s.room = ? OR s.room = ? OR REPLACE(s.room, 'ห้อง', '') = ?))
+        )
+        ORDER BY s.student_code ASC
+    ");
+    $stmt_fb->execute([$classroom_id, $c_level, $c_room, $clean_room, $clean_room]);
+    $students = $stmt_fb->fetchAll();
+}
 
 if ($type === 'class' && $classroom_id) {
     include 'p5_classroom_cover.php';

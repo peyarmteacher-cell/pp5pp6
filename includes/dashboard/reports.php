@@ -42,7 +42,15 @@
                 </div>
 
                 <div id="p5_subject_select" class="space-y-1">
-                    <label class="text-xs font-semibold text-slate-500">เลือกวิชาที่สอน</label>
+                    <div class="flex justify-between items-center">
+                        <label class="text-xs font-semibold text-slate-500">เลือกวิชาที่สอน (รายวิชาของตนเอง)</label>
+                        <?php if (($_SESSION['role'] ?? '') === 'admin' || strpos($_SESSION['position'] ?? '', 'ผู้อำนวยการ') !== false): ?>
+                            <label class="text-[11px] text-slate-500 flex items-center gap-1 cursor-pointer hover:text-green-600">
+                                <input type="checkbox" id="p5_show_all_school_subjects" onchange="loadP5Assignments()" class="rounded border-slate-300 text-green-600 focus:ring-green-500">
+                                <span>ดูวิชาทั้งหมดในโรงเรียน (Admin)</span>
+                            </label>
+                        <?php endif; ?>
+                    </div>
                     <select id="report_p5_assignment" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-green-500/20">
                         <!-- Populated by JS -->
                     </select>
@@ -228,7 +236,6 @@
         const semester = document.getElementById('report_p5_semester').value;
         const userRole = '<?= $_SESSION['role'] ?>';
         const position = '<?= $_SESSION['position'] ?? '' ?>';
-        const isAcademic = <?= $_SESSION['is_academic'] ? 'true' : 'false' ?>;
         const isDirector = position.includes('ผู้อำนวยการ');
         
         if (!year || !semester) return;
@@ -239,8 +246,13 @@
         }
 
         try {
+            // ค่าเริ่มต้น: แสดงเฉพาะรายวิชาของคุณครูท่านนั้น หรือรายวิชาของตนเองเท่านั้น
             let api = `api/teacher/get_my_assignments.php?academic_year=${year}&semester=${semester}`;
-            if (userRole === 'admin' || isAcademic || isDirector) {
+            
+            // เฉพาะผู้ดูแลระบบ (Admin) หรือผู้อำนวยการ ที่เลือกติ๊กดูวิชาทั้งหมดในโรงเรียน
+            const showAllToggle = document.getElementById('p5_show_all_school_subjects');
+            const isShowingAll = (userRole === 'admin' || isDirector) && showAllToggle && showAllToggle.checked;
+            if (isShowingAll) {
                 api = `api/admin/get_all_assignments.php?academic_year=${year}&semester=${semester}`;
             }
 
@@ -259,7 +271,7 @@
                 } else {
                     assignP5.innerHTML = filteredAssignments.map(a => `
                         <option value="${a.assignment_id || a.subject_id}" data-subject="${a.subject_id}" data-classroom="${a.classroom_id}">
-                            ${a.subject_code} ${a.subject_name} (${a.level}/${a.room}) ${(isDirector || isAcademic) ? '- ครู' + (a.teacher_name || '') : ''}
+                            ${a.subject_code} ${a.subject_name} (${a.level}/${a.room})${isShowingAll && a.teacher_name ? ' - ครู' + a.teacher_name : ''}
                         </option>
                     `).join('');
                 }

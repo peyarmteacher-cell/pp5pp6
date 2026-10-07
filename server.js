@@ -198,6 +198,47 @@ app.get('/api/admin/get_teacher_assignments.php', (req, res) => {
     res.json(list);
 });
 
+app.get('/api/teacher/get_my_assignments.php', (req, res) => {
+    const teacherId = parseInt(req.query.teacher_id) || 3;
+    const semester = req.query.semester;
+    
+    let list = mockAssignments.filter(a => a.teacher_id === teacherId);
+    if (semester && semester !== 'annual') {
+        list = list.filter(a => a.semester == semester || !a.semester);
+    }
+    res.json(list.map(a => ({
+        assignment_id: a.assignment_id,
+        subject_id: a.assignment_id,
+        subject_code: a.code,
+        code: a.code,
+        subject_name: a.name,
+        level: a.level,
+        classroom_id: 1,
+        room: a.room || '1',
+        teacher_name: a.teacher_name
+    })));
+});
+
+app.get('/api/admin/get_all_assignments.php', (req, res) => {
+    const semester = req.query.semester;
+    
+    let list = [...mockAssignments];
+    if (semester && semester !== 'annual') {
+        list = list.filter(a => a.semester == semester || !a.semester);
+    }
+    res.json(list.map(a => ({
+        assignment_id: a.assignment_id,
+        subject_id: a.assignment_id,
+        subject_code: a.code,
+        code: a.code,
+        subject_name: a.name,
+        level: a.level,
+        classroom_id: 1,
+        room: a.room || '1',
+        teacher_name: a.teacher_name
+    })));
+});
+
 app.post('/api/admin/change_assignment_teacher.php', (req, res) => {
     const { assignment_id, new_teacher_id } = req.body;
     const assignment = mockAssignments.find(a => a.assignment_id == assignment_id);

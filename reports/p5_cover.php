@@ -167,25 +167,141 @@ if ($type === 'subject' && $assignment_id) {
 // 1. สถิตินักเรียน
 $male_count = 0;
 $female_count = 0;
-if ($classroom_id) {
-    $stmt_stats = $pdo->prepare("SELECT gender, COUNT(*) as count FROM students WHERE classroom_id = ? AND status = 'studying' GROUP BY gender");
-    $stmt_stats->execute([$classroom_id]);
-    $stats_rows = $stmt_stats->fetchAll();
-    foreach ($stats_rows as $row) {
-        if ($row['gender'] === 'ชาย') $male_count = $row['count'];
-        if ($row['gender'] === 'หญิง') $female_count = $row['count'];
+$total_count = 0;
+$student_ids = [];
+$students_for_cover = [];
+
+if (isset($students) && is_array($students) && !empty($students)) {
+    $students_for_cover = $students;
+} else if ($classroom_id || (!empty($assignment) && !empty($assignment['level']))) {
+    $c_level = $assignment['level'] ?? ($classroom['level'] ?? '');
+    $c_room = $assignment['room'] ?? ($classroom['room'] ?? '');
+    $clean_room = str_replace('ห้อง', '', $c_room);
+
+    $query_std = "
+        SELECT s.id, s.gender, s.prefix, sp.gender as sp_gender, sp.prefix as sp_prefix
+        FROM students s
+        LEFT JOIN student_profiles sp ON s.student_profile_id = sp.id
+        WHERE (
+            s.classroom_id = ? 
+            OR (s.level = ? AND (s.room = ? OR s.room = ? OR REPLACE(s.room, 'ห้อง', '') = ?))
+        )
+        AND (s.school_id = ? OR ? = 0)
+        AND (s.academic_year = ? OR ? = '')
+        AND (s.status = 'studying' OR s.status IS NULL OR s.status = '' OR s.status = 'กำลังศึกษา')
+        ORDER BY s.student_code ASC
+    ";
+    try {
+        $stmt_stats = $pdo->prepare($query_std);
+        $stmt_stats->execute([
+            $classroom_id, $c_level, $c_room, $clean_room, $clean_room,
+            $school_id, $school_id,
+            $year, $year
+        ]);
+        $students_for_cover = $stmt_stats->fetchAll();
+
+        if (empty($students_for_cover)) {
+            $query_fallback = "
+                SELECT s.id, s.gender, s.prefix, sp.gender as sp_gender, sp.prefix as sp_prefix
+                FROM students s
+                LEFT JOIN student_profiles sp ON s.student_profile_id = sp.id
+                WHERE (
+                    s.classroom_id = ? 
+                    OR (s.level = ? AND (s.room = ? OR s.room = ? OR REPLACE(s.room, 'ห้อง', '') = ?))
+                )
+                ORDER BY s.student_code ASC
+            ";
+            $stmt_fb = $pdo->prepare($query_fallback);
+            $stmt_fb->execute([$classroom_id, $c_level, $c_room, $clean_room, $clean_room]);
+            $students_for_cover = $stmt_fb->fetchAll();
+        }
+    } catch (Exception $e) {}
+}
+
+foreach ($students_for_cover as $row) {
+    $student_ids[] = $row['id'];
+    $g = trim($row['sp_gender'] ?? ($row['gender'] ?? ''));
+    $p = trim($row['sp_prefix'] ?? ($row['prefix'] ?? ''));
+    if ($g === 'ชาย' || strpos($p, 'ชาย') !== false || strpos($p, 'ด.ช.') !== false || strpos($p, 'นาย') !== false) {
+        $male_count++;
+    } else if ($g === 'หญิง' || strpos($p, 'หญิง') !== false || strpos($p, 'ด.ญ.') !== false || strpos($p, 'นาง') !== false) {
+        $female_count++;
+    } else {
+        $male_count++;
     }
 }
-$total_count = $male_count + $female_count;
+$total_count = count($students_for_cover);
 
 // 2. สรุปผลสัมฤทธิ์ (ถ้าเป็นรายวิชา)
 $grade_dist = array_fill_keys(['4', '3.5', '3', '2.5', '2', '1.5', '1', '0', 'ร', 'มส'], 0);
-if ($type === 'subject' && isset($subject_id) && $classroom_id) {
+if ($type === 'subject' && isset($subject_id)) {
     try {
-        $stmt_grades = $pdo->prepare("SELECT grade, COUNT(*) as count FROM grades WHERE subject_id = ? AND classroom_id = ? AND academic_year = ? AND semester = ? GROUP BY grade");
-        $stmt_grades->execute([$subject_id, $classroom_id, $year, $semester]);
-        while ($row = $stmt_grades->fetch()) {
-            if (isset($grade_dist[$row['grade']])) $grade_dist[$row['grade']] = $row['count'];
+        if ($semester === 'annual') {
+            $primary_grading_mode = $school['primary_grading_mode'] ?? 'average';
+            $stmt_g = $pdo->prepare("
+                SELECT student_id, semester, score_total, score_percent, grade 
+                FROM grades 
+                WHERE subject_id = ? AND academic_year = ?
+            ");
+            $stmt_g->execute([$subject_id, $year]);
+            $rows = $stmt_g->fetchAll();
+            $student_records = [];
+            foreach ($rows as $r) {
+                if (empty($student_ids) || in_array($r['student_id'], $student_ids)) {
+                    $student_records[$r['student_id']][$r['semester']] = $r;
+                }
+            }
+            foreach ($student_records as $sid => $sems) {
+                $g1 = $sems[1] ?? null;
+                $g2 = $sems[2] ?? null;
+                $s1_t = $g1 ? (float)($g1['score_total'] !== null ? $g1['score_total'] : $g1['score_percent']) : 0;
+                $s2_t = $g2 ? (float)($g2['score_total'] !== null ? $g2['score_total'] : $g2['score_percent']) : 0;
+
+                if ($primary_grading_mode === 'sum') {
+                    $final_pct = $s1_t + $s2_t;
+                } else {
+                    $final_pct = ($s1_t + $s2_t) / 2;
+                }
+
+                $calc_grade = '0';
+                if ($final_pct >= 80) $calc_grade = '4';
+                else if ($final_pct >= 75) $calc_grade = '3.5';
+                else if ($final_pct >= 70) $calc_grade = '3';
+                else if ($final_pct >= 65) $calc_grade = '2.5';
+                else if ($final_pct >= 60) $calc_grade = '2';
+                else if ($final_pct >= 55) $calc_grade = '1.5';
+                else if ($final_pct >= 50) $calc_grade = '1';
+
+                if (($g1 && $g1['grade'] === 'ร') || ($g2 && $g2['grade'] === 'ร')) $calc_grade = 'ร';
+                if (($g1 && $g1['grade'] === 'มส') || ($g2 && $g2['grade'] === 'มส')) $calc_grade = 'มส';
+
+                if (isset($grade_dist[$calc_grade])) {
+                    $grade_dist[$calc_grade]++;
+                }
+            }
+        } else {
+            if (!empty($student_ids)) {
+                $in_placeholders = implode(',', array_fill(0, count($student_ids), '?'));
+                $stmt_grades = $pdo->prepare("
+                    SELECT grade, COUNT(*) as count 
+                    FROM grades 
+                    WHERE subject_id = ? AND academic_year = ? AND semester = ? AND student_id IN ($in_placeholders) 
+                    GROUP BY grade
+                ");
+                $stmt_grades->execute(array_merge([$subject_id, $year, $semester], $student_ids));
+            } else {
+                $stmt_grades = $pdo->prepare("
+                    SELECT grade, COUNT(*) as count 
+                    FROM grades 
+                    WHERE subject_id = ? AND academic_year = ? AND semester = ? 
+                    AND (classroom_id = ? OR classroom_id = 0 OR classroom_id IS NULL)
+                    GROUP BY grade
+                ");
+                $stmt_grades->execute([$subject_id, $year, $semester, $classroom_id]);
+            }
+            while ($row = $stmt_grades->fetch()) {
+                if (isset($grade_dist[$row['grade']])) $grade_dist[$row['grade']] = (int)$row['count'];
+            }
         }
     } catch (Exception $e) {}
 }
@@ -195,36 +311,64 @@ $char_dist = array_fill_keys(['0', '1', '2', '3'], 0);
 $anal_dist = array_fill_keys(['0', '1', '2', '3'], 0);
 $comp_dist = array_fill_keys(['0', '1', '2', '3'], 0);
 
-if ($type === 'subject' && isset($subject_id) && $classroom_id) {
+if ($type === 'subject' && isset($subject_id)) {
     try {
-        // คุณลักษณะ
-        $stmt_c = $pdo->prepare("SELECT ROUND(average_score) as score, COUNT(*) as count FROM characteristics_scores WHERE subject_id = ? AND classroom_id = ? AND academic_year = ? AND semester = ? GROUP BY score");
-        $stmt_c->execute([$subject_id, $classroom_id, $year, $semester]);
-        while ($row = $stmt_c->fetch()) {
-            $s = (string)round($row['score']);
-            if (isset($char_dist[$s])) $char_dist[$s] = $row['count'];
-        }
-        // อ่านคิดวิเคราะห์
-        $stmt_a = $pdo->prepare("SELECT ROUND(average_score) as score, COUNT(*) as count FROM analytical_scores WHERE subject_id = ? AND classroom_id = ? AND academic_year = ? AND semester = ? GROUP BY score");
-        $stmt_a->execute([$subject_id, $classroom_id, $year, $semester]);
-        while ($row = $stmt_a->fetch()) {
-            $s = (string)round($row['score']);
-            if (isset($anal_dist[$s])) $anal_dist[$s] = $row['count'];
+        $sem_cond = ($semester === 'annual') ? "IN (1, 2)" : "= ?";
+        $sem_p = ($semester === 'annual') ? [] : [$semester];
+
+        if (!empty($student_ids)) {
+            $in_p = implode(',', array_fill(0, count($student_ids), '?'));
+            
+            // คุณลักษณะ
+            $stmt_c = $pdo->prepare("SELECT ROUND(average_score) as score, COUNT(DISTINCT student_id) as count FROM characteristics_scores WHERE subject_id = ? AND academic_year = ? AND semester $sem_cond AND student_id IN ($in_p) GROUP BY score");
+            $stmt_c->execute(array_merge([$subject_id, $year], $sem_p, $student_ids));
+            while ($row = $stmt_c->fetch()) {
+                $s = (string)round($row['score']);
+                if (isset($char_dist[$s])) $char_dist[$s] = (int)$row['count'];
+            }
+
+            // อ่านคิดวิเคราะห์
+            $stmt_a = $pdo->prepare("SELECT ROUND(average_score) as score, COUNT(DISTINCT student_id) as count FROM analytical_scores WHERE subject_id = ? AND academic_year = ? AND semester $sem_cond AND student_id IN ($in_p) GROUP BY score");
+            $stmt_a->execute(array_merge([$subject_id, $year], $sem_p, $student_ids));
+            while ($row = $stmt_a->fetch()) {
+                $s = (string)round($row['score']);
+                if (isset($anal_dist[$s])) $anal_dist[$s] = (int)$row['count'];
+            }
+        } else {
+            $stmt_c = $pdo->prepare("SELECT ROUND(average_score) as score, COUNT(*) as count FROM characteristics_scores WHERE subject_id = ? AND academic_year = ? AND semester $sem_cond AND (classroom_id = ? OR classroom_id = 0) GROUP BY score");
+            $stmt_c->execute(array_merge([$subject_id, $year], $sem_p, [$classroom_id]));
+            while ($row = $stmt_c->fetch()) {
+                $s = (string)round($row['score']);
+                if (isset($char_dist[$s])) $char_dist[$s] = (int)$row['count'];
+            }
+
+            $stmt_a = $pdo->prepare("SELECT ROUND(average_score) as score, COUNT(*) as count FROM analytical_scores WHERE subject_id = ? AND academic_year = ? AND semester $sem_cond AND (classroom_id = ? OR classroom_id = 0) GROUP BY score");
+            $stmt_a->execute(array_merge([$subject_id, $year], $sem_p, [$classroom_id]));
+            while ($row = $stmt_a->fetch()) {
+                $s = (string)round($row['score']);
+                if (isset($anal_dist[$s])) $anal_dist[$s] = (int)$row['count'];
+            }
         }
     } catch (Exception $e) {}
 }
 
-// สมรรถนะ (มักจะเป็นรายเทอม/รายปี ของห้องเรียน)
-if ($classroom_id) {
-    try {
-        $stmt_comp = $pdo->prepare("SELECT ROUND(average_score) as score, COUNT(*) as count FROM competency_scores WHERE classroom_id = ? AND academic_year = ? AND semester = ? GROUP BY score");
-        $stmt_comp->execute([$classroom_id, $year, $semester]);
-        while ($row = $stmt_comp->fetch()) {
-            $s = (string)round($row['score']);
-            if (isset($comp_dist[$s])) $comp_dist[$s] = $row['count'];
-        }
-    } catch (Exception $e) {}
-}
+// สมรรถนะสำคัญ
+try {
+    $sem_cond = ($semester === 'annual') ? "IN (1, 2)" : "= ?";
+    $sem_p = ($semester === 'annual') ? [] : [$semester];
+    if (!empty($student_ids)) {
+        $in_p = implode(',', array_fill(0, count($student_ids), '?'));
+        $stmt_comp = $pdo->prepare("SELECT ROUND(average_score) as score, COUNT(DISTINCT student_id) as count FROM competency_scores WHERE academic_year = ? AND semester $sem_cond AND student_id IN ($in_p) GROUP BY score");
+        $stmt_comp->execute(array_merge([$year], $sem_p, $student_ids));
+    } else {
+        $stmt_comp = $pdo->prepare("SELECT ROUND(average_score) as score, COUNT(*) as count FROM competency_scores WHERE classroom_id = ? AND academic_year = ? AND semester $sem_cond GROUP BY score");
+        $stmt_comp->execute(array_merge([$classroom_id, $year], $sem_p));
+    }
+    while ($row = $stmt_comp->fetch()) {
+        $s = (string)round($row['score']);
+        if (isset($comp_dist[$s])) $comp_dist[$s] = (int)$row['count'];
+    }
+} catch (Exception $e) {}
 
 $approval_date_raw = $_GET['approval_date'] ?? '';
 $approval_date = formatThaiDate($approval_date_raw);
