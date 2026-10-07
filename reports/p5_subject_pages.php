@@ -179,74 +179,166 @@ if ($semester === 'annual') {
 /**
  * หน้าที่ 3: เวลาเรียน
  */
-// ดึงข้อมูลการมาเรียน
-$stmt_att = $pdo->prepare('
-    SELECT student_id, check_date, status 
+// ดึงข้อมูลการมาเรียนเฉพาะในรายวิชานี้และห้องเรียนนี้เท่านั้น
+$semester_att_query = ($semester === 'annual') ? "IN (1, 2)" : "= ?";
+$semester_att_params = ($semester === 'annual') ? [] : [(int)$semester];
+
+$student_ids_list = !empty($students) ? array_column($students, 'id') : [];
+$std_in_clause = !empty($student_ids_list) ? implode(',', array_fill(0, count($student_ids_list), '?')) : '0';
+
+// 1. ดึงข้อมูลการมาเรียนที่ระบุ subject_id ของรายวิชานี้โดยตรง
+$att_sql = "
+    SELECT student_id, check_date, period_number, status 
     FROM attendance 
-    WHERE classroom_id = ? AND academic_year = ? AND semester = ?
-    ORDER BY check_date ASC
-');
-$stmt_att->execute([$classroom_id, $year, $semester]);
+    WHERE subject_id = ? 
+      AND (classroom_id = ? OR classroom_id = 0 OR classroom_id IS NULL)
+      AND academic_year = ? 
+      AND semester $semester_att_query
+      AND student_id IN ($std_in_clause)
+    ORDER BY check_date ASC, period_number ASC
+";
+$att_params = array_merge([$subject_id, $classroom_id, $year], $semester_att_params, $student_ids_list);
+$stmt_att = $pdo->prepare($att_sql);
+$stmt_att->execute($att_params);
 $att_data = $stmt_att->fetchAll();
 
-$months = []; // [ 'YYYY-MM' => [ 'name' => '...', 'days' => [date1, date2, ...] ] ]
-$student_att = []; // [ student_id => [ 'YYYY-MM' => count_present ] ]
+// กรณีที่โรงเรียนยังไม่ได้บันทึก attendance แบบระบุ subject_id (อาจบันทึกแบบรวมห้องเรียนโดย subject_id เป็น NULL หรือ 0)
+if (empty($att_data) && !empty($student_ids_list)) {
+    $stmt_att_fallback = $pdo->prepare("
+        SELECT student_id, check_date, period_number, status 
+        FROM attendance 
+        WHERE (subject_id IS NULL OR subject_id = 0)
+          AND (classroom_id = ? OR classroom_id = 0 OR classroom_id IS NULL)
+          AND academic_year = ? 
+          AND semester $semester_att_query
+          AND student_id IN ($std_in_clause)
+        ORDER BY check_date ASC, period_number ASC
+    ");
+    $stmt_att_fallback->execute(array_merge([$classroom_id, $year], $semester_att_params, $student_ids_list));
+    $att_data = $stmt_att_fallback->fetchAll();
+}
 
 $thai_months = [
-    '01' => 'มกราคม', '02' => 'กุมภาพันธ์', '03' => 'มีนาคม', '04' => 'เมษายน',
-    '05' => 'พฤษภาคม', '06' => 'มิถุนายน', '07' => 'กรกฎาคม', '08' => 'สิงหาคม',
-    '09' => 'กันยายน', '10' => 'ตุลาคม', '11' => 'พฤศจิกายน', '12' => 'ธันวาคม'
+    '01' => 'ม.ค.', '02' => 'ก.พ.', '03' => 'มี.ค.', '04' => 'เม.ย.',
+    '05' => 'พ.ค.', '06' => 'มิ.ย.', '07' => 'ก.ค.', '08' => 'ส.ค.',
+    '09' => 'ก.ย.', '10' => 'ต.ค.', '11' => 'พ.ย.', '12' => 'ธ.ค.'
 ];
+
+$months = []; // [ 'YYYY-MM' => [ 'name' => 'มิ.ย.', 'sessions' => [session_key => true] ] ]
+$student_att = []; // [ student_id => [ 'YYYY-MM' => [session_key => true] ] ]
 
 foreach ($att_data as $row) {
     $m_key = substr($row['check_date'], 0, 7);
     if (!isset($months[$m_key])) {
         $m_parts = explode('-', $m_key);
+        $m_num = $m_parts[1] ?? '01';
         $months[$m_key] = [
-            'name' => $thai_months[$m_parts[1]],
-            'days' => []
+            'name' => $thai_months[$m_num] ?? $m_num,
+            'sessions' => []
         ];
     }
-    if (!in_array($row['check_date'], $months[$m_key]['days'])) {
-        $months[$m_key]['days'][] = $row['check_date'];
-    }
     
-    if (!isset($student_att[$row['student_id']][$m_key])) {
-        $student_att[$row['student_id']][$m_key] = 0;
+    // คาบ/รอบการสอนในวันนั้น เพื่อให้นับถูกต้องไม่ซ้ำซ้อน
+    $session_key = $row['check_date'] . '_' . ($row['period_number'] ?? '1');
+    $months[$m_key]['sessions'][$session_key] = true;
+    
+    $sid = $row['student_id'];
+    if (!isset($student_att[$sid][$m_key])) {
+        $student_att[$sid][$m_key] = [];
     }
-    if ($row['status'] === 'present') {
-        $student_att[$row['student_id']][$m_key]++;
+    if ($row['status'] === 'present' || $row['status'] === 'late') {
+        $student_att[$sid][$m_key][$session_key] = true;
     }
 }
 
-$total_school_days = 0;
-foreach ($months as $m) $total_school_days += count($m['days']);
+// เรียงลำดับเดือน
+ksort($months);
+
+// ถ้าไม่มีข้อมูล attendance เลย ให้จำลองเดือนของภาคเรียนนั้นเพื่อแสดงตารางเปล่าอย่างสวยงาม
+if (empty($months)) {
+    if ($semester == '2') {
+        $default_m = ['11' => 'พ.ย.', '12' => 'ธ.ค.', '01' => 'ม.ค.', '02' => 'ก.พ.', '03' => 'มี.ค.'];
+    } else {
+        $default_m = ['06' => 'มิ.ย.', '07' => 'ก.ค.', '08' => 'ส.ค.', '09' => 'ก.ย.', '10' => 'ต.ค.'];
+    }
+    foreach ($default_m as $num => $name) {
+        $months['def-' . $num] = ['name' => $name, 'sessions' => []];
+    }
+}
+
+$total_school_sessions = 0;
+foreach ($months as $m) {
+    $total_school_sessions += count($m['sessions']);
+}
 ?>
 
-<div class="page">
+<style>
+    .page-attendance {
+        padding-left: 8mm !important;
+        padding-right: 8mm !important;
+    }
+    .page-attendance table {
+        font-size: 11.5px !important;
+        width: 100% !important;
+        border-collapse: collapse;
+    }
+    .page-attendance th, .page-attendance td {
+        padding: 3px 2px !important;
+        text-align: center;
+        border: 1px solid #000;
+        vertical-align: middle;
+    }
+    .col-att-no {
+        width: 32px !important;
+    }
+    .col-att-name {
+        text-align: left !important;
+        padding-left: 6px !important;
+        padding-right: 4px !important;
+        white-space: nowrap !important;
+        min-width: 175px !important;
+        font-size: 12px !important;
+    }
+    .col-att-month {
+        width: 28px !important;
+        font-size: 11px !important;
+    }
+    .col-att-total {
+        width: 30px !important;
+        font-size: 11px !important;
+        font-weight: bold;
+    }
+    .col-att-pct {
+        width: 40px !important;
+        font-size: 11px !important;
+        font-weight: bold;
+    }
+</style>
+
+<div class="page page-attendance">
     <div class="header">
         <h3 style="margin: 0;">บันทึกเวลาเรียน</h3>
         <p style="margin: 5px 0;">รายวิชา <?= $subject_code ?> <?= $subject_name ?> ชั้น <?= $level ?>/<?= $room ?> <?= $semester === 'annual' ? '' : 'ภาคเรียนที่ ' . $semester ?> ปีการศึกษา <?= $year ?></p>
     </div>
 
-    <table>
+    <table class="table-bordered">
         <thead>
             <tr>
-                <th rowspan="2" style="width: 40px;">เลขที่</th>
-                <th rowspan="2">ชื่อ - นามสกุล</th>
+                <th rowspan="2" class="col-att-no">เลขที่</th>
+                <th rowspan="2" class="col-att-name">ชื่อ - นามสกุล</th>
                 <?php foreach ($months as $m): ?>
                     <th colspan="2"><?= $m['name'] ?></th>
                 <?php endforeach; ?>
                 <th colspan="2">รวม</th>
-                <th rowspan="2">%</th>
+                <th rowspan="2" class="col-att-pct">%</th>
             </tr>
             <tr>
                 <?php foreach ($months as $m): ?>
-                    <th style="width: 40px;">มา</th>
-                    <th style="width: 40px;">เต็ม</th>
+                    <th class="col-att-month">มา</th>
+                    <th class="col-att-month">เต็ม</th>
                 <?php endforeach; ?>
-                <th style="width: 40px;">มา</th>
-                <th style="width: 40px;">เต็ม</th>
+                <th class="col-att-total">มา</th>
+                <th class="col-att-total">เต็ม</th>
             </tr>
         </thead>
         <tbody>
@@ -256,19 +348,19 @@ foreach ($months as $m) $total_school_days += count($m['days']);
                 ?>
                 <tr>
                     <td><?= $index + 1 ?></td>
-                    <td class="text-left"><?= $student['prefix'] ?><?= $student['name'] ?> <?= $student['last_name'] ?></td>
+                    <td class="col-att-name"><?= $student['prefix'] ?><?= $student['name'] ?> <?= $student['last_name'] ?></td>
                     <?php foreach ($months as $m_key => $m): ?>
                         <?php 
-                        $present = $student_att[$student['id']][$m_key] ?? 0;
-                        $full = count($m['days']);
+                        $present = isset($student_att[$student['id']][$m_key]) ? count($student_att[$student['id']][$m_key]) : 0;
+                        $full = count($m['sessions']);
                         $total_present += $present;
                         ?>
                         <td><?= $present ?></td>
                         <td><?= $full ?></td>
                     <?php endforeach; ?>
-                    <td><?= $total_present ?></td>
-                    <td><?= $total_school_days ?></td>
-                    <td><?= $total_school_days > 0 ? round(($total_present / $total_school_days) * 100, 1) : 0 ?></td>
+                    <td class="font-bold"><?= $total_present ?></td>
+                    <td class="font-bold"><?= $total_school_sessions ?></td>
+                    <td class="font-bold"><?= $total_school_sessions > 0 ? round(($total_present / $total_school_sessions) * 100, 1) : 0 ?></td>
                 </tr>
             <?php endforeach; ?>
         </tbody>
