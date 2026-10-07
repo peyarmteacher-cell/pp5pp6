@@ -13,11 +13,13 @@ if ($type === 'subject' && $assignment_id) {
     // ดึงข้อมูลการสอน
     $stmt = $pdo->prepare('
         SELECT ta.*, s.name as subject_name, s.code as subject_code, s.hours, s.credits,
-               c.level, c.room, u.name as teacher_name
+               s.level as subject_level, s.school_id as subject_school_id,
+               c.level as classroom_level, c.room as classroom_room, c.school_id as classroom_school_id,
+               u.name as teacher_name, u.last_name as teacher_last_name, u.position as teacher_position
         FROM teacher_assignments ta
         JOIN subjects s ON ta.subject_id = s.id
-        JOIN classrooms c ON ta.classroom_id = c.id
-        JOIN users u ON ta.teacher_id = u.id
+        LEFT JOIN classrooms c ON ta.classroom_id = c.id
+        LEFT JOIN users u ON ta.teacher_id = u.id
         WHERE ta.id = ?
     ');
     $stmt->execute([$assignment_id]);
@@ -25,13 +27,18 @@ if ($type === 'subject' && $assignment_id) {
     
     if (!$assignment) die('Assignment not found');
     
-    $classroom_id = $assignment['classroom_id'];
+    $classroom_id = (int)($assignment['classroom_id'] ?? 0);
     $subject_id = $assignment['subject_id'];
-    $level = formatLevelName($assignment['level']);
-    $room = $assignment['room'];
+    $raw_level = !empty($assignment['classroom_level']) ? $assignment['classroom_level'] : ($assignment['subject_level'] ?? '');
+    $raw_room = $assignment['classroom_room'] ?? '';
+    $level = formatLevelName($raw_level);
+    $room = $raw_room;
     $subject_name = $assignment['subject_name'];
     $subject_code = $assignment['subject_code'];
-    $teacher_name = $assignment['teacher_name'];
+    $teacher_name = trim(($assignment['teacher_name'] ?? '') . ' ' . ($assignment['teacher_last_name'] ?? ''));
+    if (!empty($assignment['teacher_position'])) {
+        $teacher_pos = formatTeacherPosition($assignment['teacher_position']);
+    }
 } else if ($type === 'class' && $classroom_id) {
     // ดึงข้อมูลห้องเรียน
     $stmt = $pdo->prepare('SELECT * FROM classrooms WHERE id = ?');
@@ -40,8 +47,10 @@ if ($type === 'subject' && $assignment_id) {
     
     if (!$classroom) die('Classroom not found');
     
-    $level = formatLevelName($classroom['level']);
-    $room = $classroom['room'];
+    $raw_level = $classroom['level'];
+    $raw_room = $classroom['room'];
+    $level = formatLevelName($raw_level);
+    $room = $raw_room;
     
     // ดึงชื่อครูประจำชั้น
     $stmt_t = $pdo->prepare('
@@ -79,7 +88,7 @@ if ($type === 'subject' && $assignment_id) {
     }
     
     if (!$teacher_name) {
-        $teacher_name = $_SESSION['name'];
+        $teacher_name = $_SESSION['name'] ?? 'ครูประจำชั้น';
         $teacher_pos = formatTeacherPosition($_SESSION['position'] ?? 'ครู');
     }
 } else {
@@ -88,13 +97,17 @@ if ($type === 'subject' && $assignment_id) {
 
 // Fetch teacher position for subject type if not already fetched
 if ($type === 'subject' && !isset($teacher_pos)) {
-    $stmt_p = $pdo->prepare('SELECT position FROM users WHERE id = ?');
-    $stmt_p->execute([$assignment['teacher_id']]);
-    $u_pos = $stmt_p->fetch();
-    $teacher_pos = formatTeacherPosition($u_pos['position'] ?? 'ครู');
+    if (!empty($assignment['teacher_id'])) {
+        $stmt_p = $pdo->prepare('SELECT position FROM users WHERE id = ?');
+        $stmt_p->execute([$assignment['teacher_id']]);
+        $u_pos = $stmt_p->fetch();
+        $teacher_pos = formatTeacherPosition($u_pos['position'] ?? 'ครู');
+    } else {
+        $teacher_pos = 'ครู';
+    }
 }
 
-// ดึงรายชื่อนักเรียน
+// ดึงรายชื่อนักเรียนเฉพาะที่เรียนในรายวิชานั้น และในระดับชั้นนั้นเท่านั้น
 $student_fields = "s.*, 
     IFNULL(sp.prefix, s.prefix) AS prefix, 
     IFNULL(sp.name, s.name) AS name, 
@@ -102,38 +115,199 @@ $student_fields = "s.*,
     IFNULL(sp.gender, s.gender) AS gender,
     IFNULL(sp.birthday, s.birthday) AS birthday";
 
-$c_level = $assignment['level'] ?? ($classroom['level'] ?? '');
-$c_room = $assignment['room'] ?? ($classroom['room'] ?? '');
-$clean_room = str_replace('ห้อง', '', $c_room);
+$c_level = $raw_level ?? '';
+$c_room = $raw_room ?? '';
+$level_variants = getLevelVariants($c_level);
+$room_variants = getRoomVariants($c_room);
 
-$stmt = $pdo->prepare("
-    SELECT $student_fields 
-    FROM students s 
-    LEFT JOIN student_profiles sp ON s.student_profile_id = sp.id 
-    WHERE (
-        s.classroom_id = ? 
-        OR (s.level = ? AND (s.room = ? OR s.room = ? OR REPLACE(s.room, 'ห้อง', '') = ?))
-    )
-    AND (s.academic_year = ? OR ? = '')
-    AND (s.status = 'studying' OR s.status IS NULL OR s.status = '' OR s.status = 'กำลังศึกษา')
-    ORDER BY s.student_code ASC
-");
-$stmt->execute([$classroom_id, $c_level, $c_room, $clean_room, $clean_room, $year, $year]);
-$students = $stmt->fetchAll();
+$students = [];
 
-if (empty($students)) {
-    $stmt_fb = $pdo->prepare("
-        SELECT $student_fields 
-        FROM students s 
-        LEFT JOIN student_profiles sp ON s.student_profile_id = sp.id 
-        WHERE (
-            s.classroom_id = ? 
-            OR (s.level = ? AND (s.room = ? OR s.room = ? OR REPLACE(s.room, 'ห้อง', '') = ?))
-        )
-        ORDER BY s.student_code ASC
-    ");
-    $stmt_fb->execute([$classroom_id, $c_level, $c_room, $clean_room, $clean_room]);
-    $students = $stmt_fb->fetchAll();
+if ($type === 'subject') {
+    // 1. ตรวจสอบว่ามีรายชื่อนักเรียนที่มีการบันทึกคะแนน/เกรดในรายวิชานี้หรือไม่
+    $enrolled_ids = [];
+    try {
+        $g_sql = "SELECT DISTINCT student_id FROM grades WHERE subject_id = ? AND academic_year = ?";
+        $g_params = [$subject_id, $year];
+        if ($classroom_id > 0) {
+            $g_sql .= " AND (classroom_id = ? OR classroom_id = 0 OR classroom_id IS NULL)";
+            $g_params[] = $classroom_id;
+        }
+        if ($semester && $semester !== 'annual') {
+            $g_sql .= " AND semester = ?";
+            $g_params[] = (int)$semester;
+        }
+        $stmt_g = $pdo->prepare($g_sql);
+        $stmt_g->execute($g_params);
+        $enrolled_ids = $stmt_g->fetchAll(PDO::FETCH_COLUMN);
+    } catch (Exception $e) {}
+
+    // ถ้ามีนักเรียนที่มีการบันทึกคะแนนในวิชานี้ ให้ดึงนักเรียนเหล่านั้น และกรองให้อยู่ในระดับชั้นและโรงเรียนที่ถูกต้อง
+    if (!empty($enrolled_ids)) {
+        $in_ids = implode(',', array_fill(0, count($enrolled_ids), '?'));
+        $where_e = "s.id IN ($in_ids) AND (s.status = 'studying' OR s.status IS NULL OR s.status = '' OR s.status = 'กำลังศึกษา')";
+        $params_e = $enrolled_ids;
+        if (!empty($level_variants)) {
+            $lvl_place = implode(',', array_fill(0, count($level_variants), '?'));
+            $where_e .= " AND s.level IN ($lvl_place)";
+            $params_e = array_merge($params_e, $level_variants);
+        }
+        if (!empty($school_id)) {
+            $where_e .= " AND (s.school_id = ? OR s.school_id = 0 OR s.school_id IS NULL)";
+            $params_e[] = $school_id;
+        }
+        $stmt_e = $pdo->prepare("SELECT $student_fields FROM students s LEFT JOIN student_profiles sp ON s.student_profile_id = sp.id WHERE $where_e ORDER BY s.student_code ASC");
+        $stmt_e->execute($params_e);
+        $students = $stmt_e->fetchAll();
+    }
+
+    // 2. หากยังไม่มีข้อมูลเกรด หรือต้องการดึงนักเรียนตามห้องและระดับชั้นของรายวิชานี้
+    if (empty($students)) {
+        $where_parts = [];
+        $params = [];
+
+        // สำคัญที่สุด: ต้องจำกัดเฉพาะระดับชั้นของรายวิชานั้นเท่านั้น เพื่อป้องกันนักเรียนต่างระดับชั้นปนเข้ามา
+        if (!empty($level_variants)) {
+            $lvl_in = implode(',', array_fill(0, count($level_variants), '?'));
+            $where_parts[] = "s.level IN ($lvl_in)";
+            $params = array_merge($params, $level_variants);
+        }
+
+        // กรองห้องเรียน (ถ้ามีห้องเรียนที่ระบุ)
+        if ($classroom_id > 0 && !empty($room_variants)) {
+            $rm_in = implode(',', array_fill(0, count($room_variants), '?'));
+            $where_parts[] = "(s.classroom_id = ? OR s.room IN ($rm_in))";
+            $params[] = $classroom_id;
+            $params = array_merge($params, $room_variants);
+        } else if ($classroom_id > 0) {
+            $where_parts[] = "s.classroom_id = ?";
+            $params[] = $classroom_id;
+        } else if (!empty($room_variants)) {
+            $rm_in = implode(',', array_fill(0, count($room_variants), '?'));
+            $where_parts[] = "s.room IN ($rm_in)";
+            $params = array_merge($params, $room_variants);
+        }
+
+        if (!empty($school_id)) {
+            $where_parts[] = "(s.school_id = ? OR s.school_id = 0 OR s.school_id IS NULL)";
+            $params[] = $school_id;
+        }
+
+        if (!empty($year)) {
+            $where_parts[] = "(s.academic_year = ? OR s.academic_year IS NULL OR s.academic_year = '')";
+            $params[] = $year;
+        }
+
+        $where_parts[] = "(s.status = 'studying' OR s.status IS NULL OR s.status = '' OR s.status = 'กำลังศึกษา')";
+
+        $where_sql = implode(' AND ', $where_parts);
+        $stmt = $pdo->prepare("SELECT $student_fields FROM students s LEFT JOIN student_profiles sp ON s.student_profile_id = sp.id WHERE $where_sql ORDER BY s.student_code ASC");
+        $stmt->execute($params);
+        $students = $stmt->fetchAll();
+    }
+
+    // Fallback สำรองหากยังไม่พบข้อมูล (กรณี academic_year ในตาราง students ว่างเปล่า) แต่ยังคงจำกัดระดับชั้นอย่างเคร่งครัด
+    if (empty($students) && !empty($level_variants)) {
+        $where_fb = [];
+        $params_fb = [];
+
+        $lvl_in = implode(',', array_fill(0, count($level_variants), '?'));
+        $where_fb[] = "s.level IN ($lvl_in)";
+        $params_fb = array_merge($params_fb, $level_variants);
+
+        if ($classroom_id > 0 && !empty($room_variants)) {
+            $rm_in = implode(',', array_fill(0, count($room_variants), '?'));
+            $where_fb[] = "(s.classroom_id = ? OR s.room IN ($rm_in))";
+            $params_fb[] = $classroom_id;
+            $params_fb = array_merge($params_fb, $room_variants);
+        } else if ($classroom_id > 0) {
+            $where_fb[] = "s.classroom_id = ?";
+            $params_fb[] = $classroom_id;
+        } else if (!empty($room_variants)) {
+            $rm_in = implode(',', array_fill(0, count($room_variants), '?'));
+            $where_fb[] = "s.room IN ($rm_in)";
+            $params_fb = array_merge($params_fb, $room_variants);
+        }
+
+        if (!empty($school_id)) {
+            $where_fb[] = "(s.school_id = ? OR s.school_id = 0 OR s.school_id IS NULL)";
+            $params_fb[] = $school_id;
+        }
+
+        $where_fb[] = "(s.status = 'studying' OR s.status IS NULL OR s.status = '' OR s.status = 'กำลังศึกษา')";
+        $stmt_fb = $pdo->prepare("SELECT $student_fields FROM students s LEFT JOIN student_profiles sp ON s.student_profile_id = sp.id WHERE " . implode(' AND ', $where_fb) . " ORDER BY s.student_code ASC");
+        $stmt_fb->execute($params_fb);
+        $students = $stmt_fb->fetchAll();
+    }
+} else {
+    // สำหรับระดับห้องเรียน (class)
+    $where_parts = [];
+    $params = [];
+
+    if (!empty($level_variants)) {
+        $lvl_in = implode(',', array_fill(0, count($level_variants), '?'));
+        $where_parts[] = "s.level IN ($lvl_in)";
+        $params = array_merge($params, $level_variants);
+    }
+
+    if ($classroom_id > 0 && !empty($room_variants)) {
+        $rm_in = implode(',', array_fill(0, count($room_variants), '?'));
+        $where_parts[] = "(s.classroom_id = ? OR s.room IN ($rm_in))";
+        $params[] = $classroom_id;
+        $params = array_merge($params, $room_variants);
+    } else if ($classroom_id > 0) {
+        $where_parts[] = "s.classroom_id = ?";
+        $params[] = $classroom_id;
+    } else if (!empty($room_variants)) {
+        $rm_in = implode(',', array_fill(0, count($room_variants), '?'));
+        $where_parts[] = "s.room IN ($rm_in)";
+        $params = array_merge($params, $room_variants);
+    }
+
+    if (!empty($school_id)) {
+        $where_parts[] = "(s.school_id = ? OR s.school_id = 0 OR s.school_id IS NULL)";
+        $params[] = $school_id;
+    }
+
+    if (!empty($year)) {
+        $where_parts[] = "(s.academic_year = ? OR s.academic_year IS NULL OR s.academic_year = '')";
+        $params[] = $year;
+    }
+
+    $where_parts[] = "(s.status = 'studying' OR s.status IS NULL OR s.status = '' OR s.status = 'กำลังศึกษา')";
+
+    $where_sql = implode(' AND ', $where_parts);
+    $stmt = $pdo->prepare("SELECT $student_fields FROM students s LEFT JOIN student_profiles sp ON s.student_profile_id = sp.id WHERE $where_sql ORDER BY s.student_code ASC");
+    $stmt->execute($params);
+    $students = $stmt->fetchAll();
+
+    if (empty($students) && !empty($level_variants)) {
+        $where_fb = [];
+        $params_fb = [];
+
+        $lvl_in = implode(',', array_fill(0, count($level_variants), '?'));
+        $where_fb[] = "s.level IN ($lvl_in)";
+        $params_fb = array_merge($params_fb, $level_variants);
+
+        if ($classroom_id > 0 && !empty($room_variants)) {
+            $rm_in = implode(',', array_fill(0, count($room_variants), '?'));
+            $where_fb[] = "(s.classroom_id = ? OR s.room IN ($rm_in))";
+            $params_fb[] = $classroom_id;
+            $params_fb = array_merge($params_fb, $room_variants);
+        } else if ($classroom_id > 0) {
+            $where_fb[] = "s.classroom_id = ?";
+            $params_fb[] = $classroom_id;
+        }
+
+        if (!empty($school_id)) {
+            $where_fb[] = "(s.school_id = ? OR s.school_id = 0 OR s.school_id IS NULL)";
+            $params_fb[] = $school_id;
+        }
+
+        $where_fb[] = "(s.status = 'studying' OR s.status IS NULL OR s.status = '' OR s.status = 'กำลังศึกษา')";
+        $stmt_fb = $pdo->prepare("SELECT $student_fields FROM students s LEFT JOIN student_profiles sp ON s.student_profile_id = sp.id WHERE " . implode(' AND ', $where_fb) . " ORDER BY s.student_code ASC");
+        $stmt_fb->execute($params_fb);
+        $students = $stmt_fb->fetchAll();
+    }
 }
 
 if ($type === 'class' && $classroom_id) {

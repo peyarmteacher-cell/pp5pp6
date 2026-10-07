@@ -173,46 +173,81 @@ $students_for_cover = [];
 
 if (isset($students) && is_array($students) && !empty($students)) {
     $students_for_cover = $students;
-} else if ($classroom_id || (!empty($assignment) && !empty($assignment['level']))) {
-    $c_level = $assignment['level'] ?? ($classroom['level'] ?? '');
-    $c_room = $assignment['room'] ?? ($classroom['room'] ?? '');
-    $clean_room = str_replace('ห้อง', '', $c_room);
+} else if ($classroom_id || (!empty($assignment) && (!empty($assignment['level']) || !empty($assignment['classroom_level']) || !empty($assignment['subject_level'])))) {
+    $raw_c_lvl = $assignment['classroom_level'] ?? ($assignment['level'] ?? ($assignment['subject_level'] ?? ($classroom['level'] ?? '')));
+    $raw_c_rm = $assignment['classroom_room'] ?? ($assignment['room'] ?? ($classroom['room'] ?? ''));
+    $lvl_vars = function_exists('getLevelVariants') ? getLevelVariants($raw_c_lvl) : [$raw_c_lvl];
+    $rm_vars = function_exists('getRoomVariants') ? getRoomVariants($raw_c_rm) : [$raw_c_rm];
+
+    $where_parts = [];
+    $params = [];
+
+    if (!empty($lvl_vars)) {
+        $lvl_in = implode(',', array_fill(0, count($lvl_vars), '?'));
+        $where_parts[] = "s.level IN ($lvl_in)";
+        $params = array_merge($params, $lvl_vars);
+    }
+
+    if ($classroom_id > 0 && !empty($rm_vars)) {
+        $rm_in = implode(',', array_fill(0, count($rm_vars), '?'));
+        $where_parts[] = "(s.classroom_id = ? OR s.room IN ($rm_in))";
+        $params[] = $classroom_id;
+        $params = array_merge($params, $rm_vars);
+    } else if ($classroom_id > 0) {
+        $where_parts[] = "s.classroom_id = ?";
+        $params[] = $classroom_id;
+    } else if (!empty($rm_vars)) {
+        $rm_in = implode(',', array_fill(0, count($rm_vars), '?'));
+        $where_parts[] = "s.room IN ($rm_in)";
+        $params = array_merge($params, $rm_vars);
+    }
+
+    if (!empty($school_id)) {
+        $where_parts[] = "(s.school_id = ? OR s.school_id = 0 OR s.school_id IS NULL)";
+        $params[] = $school_id;
+    }
+
+    if (!empty($year)) {
+        $where_parts[] = "(s.academic_year = ? OR s.academic_year IS NULL OR s.academic_year = '')";
+        $params[] = $year;
+    }
+
+    $where_parts[] = "(s.status = 'studying' OR s.status IS NULL OR s.status = '' OR s.status = 'กำลังศึกษา')";
 
     $query_std = "
         SELECT s.id, s.gender, s.prefix, sp.gender as sp_gender, sp.prefix as sp_prefix
         FROM students s
         LEFT JOIN student_profiles sp ON s.student_profile_id = sp.id
-        WHERE (
-            s.classroom_id = ? 
-            OR (s.level = ? AND (s.room = ? OR s.room = ? OR REPLACE(s.room, 'ห้อง', '') = ?))
-        )
-        AND (s.school_id = ? OR ? = 0)
-        AND (s.academic_year = ? OR ? = '')
-        AND (s.status = 'studying' OR s.status IS NULL OR s.status = '' OR s.status = 'กำลังศึกษา')
+        WHERE " . implode(' AND ', $where_parts) . "
         ORDER BY s.student_code ASC
     ";
     try {
         $stmt_stats = $pdo->prepare($query_std);
-        $stmt_stats->execute([
-            $classroom_id, $c_level, $c_room, $clean_room, $clean_room,
-            $school_id, $school_id,
-            $year, $year
-        ]);
+        $stmt_stats->execute($params);
         $students_for_cover = $stmt_stats->fetchAll();
 
-        if (empty($students_for_cover)) {
-            $query_fallback = "
-                SELECT s.id, s.gender, s.prefix, sp.gender as sp_gender, sp.prefix as sp_prefix
-                FROM students s
-                LEFT JOIN student_profiles sp ON s.student_profile_id = sp.id
-                WHERE (
-                    s.classroom_id = ? 
-                    OR (s.level = ? AND (s.room = ? OR s.room = ? OR REPLACE(s.room, 'ห้อง', '') = ?))
-                )
-                ORDER BY s.student_code ASC
-            ";
-            $stmt_fb = $pdo->prepare($query_fallback);
-            $stmt_fb->execute([$classroom_id, $c_level, $c_room, $clean_room, $clean_room]);
+        if (empty($students_for_cover) && !empty($lvl_vars)) {
+            // Fallback without academic_year, strictly enforcing grade level
+            $where_fb = ["s.level IN (" . implode(',', array_fill(0, count($lvl_vars), '?')) . ")"];
+            $params_fb = $lvl_vars;
+            if ($classroom_id > 0 && !empty($rm_vars)) {
+                $where_fb[] = "(s.classroom_id = ? OR s.room IN (" . implode(',', array_fill(0, count($rm_vars), '?')) . "))";
+                $params_fb[] = $classroom_id;
+                $params_fb = array_merge($params_fb, $rm_vars);
+            } else if ($classroom_id > 0) {
+                $where_fb[] = "s.classroom_id = ?";
+                $params_fb[] = $classroom_id;
+            } else if (!empty($rm_vars)) {
+                $where_fb[] = "s.room IN (" . implode(',', array_fill(0, count($rm_vars), '?')) . ")";
+                $params_fb = array_merge($params_fb, $rm_vars);
+            }
+            if (!empty($school_id)) {
+                $where_fb[] = "(s.school_id = ? OR s.school_id = 0 OR s.school_id IS NULL)";
+                $params_fb[] = $school_id;
+            }
+            $where_fb[] = "(s.status = 'studying' OR s.status IS NULL OR s.status = '' OR s.status = 'กำลังศึกษา')";
+            $stmt_fb = $pdo->prepare("SELECT s.id, s.gender, s.prefix, sp.gender as sp_gender, sp.prefix as sp_prefix FROM students s LEFT JOIN student_profiles sp ON s.student_profile_id = sp.id WHERE " . implode(' AND ', $where_fb) . " ORDER BY s.student_code ASC");
+            $stmt_fb->execute($params_fb);
             $students_for_cover = $stmt_fb->fetchAll();
         }
     } catch (Exception $e) {}
@@ -222,9 +257,9 @@ foreach ($students_for_cover as $row) {
     $student_ids[] = $row['id'];
     $g = trim($row['sp_gender'] ?? ($row['gender'] ?? ''));
     $p = trim($row['sp_prefix'] ?? ($row['prefix'] ?? ''));
-    if ($g === 'ชาย' || strpos($p, 'ชาย') !== false || strpos($p, 'ด.ช.') !== false || strpos($p, 'นาย') !== false) {
-        $male_count++;
-    } else if ($g === 'หญิง' || strpos($p, 'หญิง') !== false || strpos($p, 'ด.ญ.') !== false || strpos($p, 'นาง') !== false) {
+    $is_female = ($g === 'หญิง' || $g === 'female' || $g === 'f' || $g === '2' || 
+                  strpos($p, 'หญิง') !== false || strpos($p, 'ด.ญ.') !== false || strpos($p, 'ด.ญ') !== false || strpos($p, 'นาง') !== false || strpos($p, 'น.ส.') !== false);
+    if ($is_female) {
         $female_count++;
     } else {
         $male_count++;

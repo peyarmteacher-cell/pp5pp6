@@ -530,6 +530,10 @@ app.get('/dashboard.php', (req, res) => {
     servePhpAsHtml(path.join(__dirname, 'dashboard.php'), req, res);
 });
 
+app.get('*.php', (req, res) => {
+    servePhpAsHtml(path.join(__dirname, req.path), req, res);
+});
+
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`Preview server running on http://localhost:${PORT}`);
 });

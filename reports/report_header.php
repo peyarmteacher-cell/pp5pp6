@@ -115,6 +115,67 @@ function formatLevelName($level) {
     return $level;
 }
 
+/**
+ * ฟังก์ชันสร้างตัวแปรชื่อระดับชั้นในทุกรูปแบบที่อาจถูกบันทึกในฐานข้อมูล
+ * เช่น "ป.1" -> ["ป.1", "ป. 1", "ป1", "ประถมศึกษาปีที่ 1", "ประถมศึกษาปีที่1", "ชั้นประถมศึกษาปีที่ 1", "1"]
+ * @param string $level
+ * @return array
+ */
+function getLevelVariants($level) {
+    if (empty($level)) return [];
+    $level = trim((string)$level);
+    $variants = [$level];
+    
+    if (preg_match('/(?:ป\.?|ประถมศึกษาปีที่\s*)(\d+)/u', $level, $m)) {
+        $num = $m[1];
+        $variants[] = 'ป.' . $num;
+        $variants[] = 'ป. ' . $num;
+        $variants[] = 'ป' . $num;
+        $variants[] = 'ประถมศึกษาปีที่ ' . $num;
+        $variants[] = 'ประถมศึกษาปีที่' . $num;
+        $variants[] = 'ชั้นประถมศึกษาปีที่ ' . $num;
+        $variants[] = (string)$num;
+    } else if (preg_match('/(?:ม\.?|มัธยมศึกษาปีที่\s*)(\d+)/u', $level, $m)) {
+        $num = $m[1];
+        $variants[] = 'ม.' . $num;
+        $variants[] = 'ม. ' . $num;
+        $variants[] = 'ม' . $num;
+        $variants[] = 'มัธยมศึกษาปีที่ ' . $num;
+        $variants[] = 'มัธยมศึกษาปีที่' . $num;
+        $variants[] = 'ชั้นมัธยมศึกษาปีที่ ' . $num;
+        $variants[] = (string)$num;
+    } else if (preg_match('/(?:อ\.?|อนุบาล\s*)(\d+)/u', $level, $m)) {
+        $num = $m[1];
+        $variants[] = 'อ.' . $num;
+        $variants[] = 'อ. ' . $num;
+        $variants[] = 'อ' . $num;
+        $variants[] = 'อนุบาล ' . $num;
+        $variants[] = 'อนุบาล' . $num;
+        $variants[] = 'ชั้นอนุบาล ' . $num;
+        $variants[] = (string)$num;
+    }
+    return array_values(array_unique(array_filter($variants, function($v) { return $v !== ''; })));
+}
+
+/**
+ * ฟังก์ชันสร้างตัวแปรชื่อห้องในทุกรูปแบบที่อาจถูกบันทึกในฐานข้อมูล
+ * เช่น "1" -> ["1", "ห้อง 1", "ห้อง1"]
+ * @param string $room
+ * @return array
+ */
+function getRoomVariants($room) {
+    if ($room === null || $room === '') return [];
+    $room = trim((string)$room);
+    $clean = preg_replace('/^ห้อง\s*/u', '', $room);
+    $variants = [$room];
+    if ($clean !== '') {
+        $variants[] = $clean;
+        $variants[] = 'ห้อง ' . $clean;
+        $variants[] = 'ห้อง' . $clean;
+    }
+    return array_values(array_unique(array_filter($variants, function($v) { return $v !== ''; })));
+}
+
 // ดึงข้อมูลผู้บริหารจากตาราง school_officials
 $director_name = '';
 $academic_head_name = '';
